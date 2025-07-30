@@ -1,0 +1,204 @@
+{
+  "vacuum_patterns": {
+    "pulse_patterns": [
+      {
+        "name": "Slow Pulse",
+        "type": "pulse",
+        "speed": "slow",
+        "pulse_duration_ms": 2000,
+        "pause_duration_ms": 3000,
+        "pressure_percent": 60,
+        "description": "Gentle pulsing pattern with long pauses"
+      },
+      {
+        "name": "Medium Pulse",
+        "type": "pulse",
+        "speed": "medium",
+        "pulse_duration_ms": 1500,
+        "pause_duration_ms": 2000,
+        "pressure_percent": 70,
+        "description": "Moderate pulsing pattern"
+      },
+      {
+        "name": "Fast Pulse",
+        "type": "pulse",
+        "speed": "fast",
+        "pulse_duration_ms": 1000,
+        "pause_duration_ms": 1000,
+        "pressure_percent": 80,
+        "description": "Quick pulsing pattern"
+      }
+    ],
+    "wave_patterns": [
+      {
+        "name": "Slow Wave Pattern",
+        "type": "wave",
+        "speed": "slow",
+        "wave_period_ms": 8000,
+        "min_pressure_percent": 30,
+        "max_pressure_percent": 70,
+        "description": "Gradual wave-like pressure changes"
+      },
+      {
+        "name": "Medium Wave Pattern",
+        "type": "wave",
+        "speed": "medium",
+        "wave_period_ms": 5000,
+        "min_pressure_percent": 40,
+        "max_pressure_percent": 80,
+        "description": "Moderate wave pattern"
+      },
+      {
+        "name": "Fast Wave Pattern",
+        "type": "wave",
+        "speed": "fast",
+        "wave_period_ms": 3000,
+        "min_pressure_percent": 50,
+        "max_pressure_percent": 85,
+        "description": "Rapid wave pattern"
+      }
+    ],
+    "air_pulse_patterns": [
+      {
+        "name": "Slow Air Pulse",
+        "type": "air_pulse",
+        "speed": "slow",
+        "pulse_duration_ms": 1500,
+        "air_release_duration_ms": 2500,
+        "pressure_percent": 65,
+        "description": "Air pulse with extended release"
+      },
+      {
+        "name": "Medium Air Pulse",
+        "type": "air_pulse",
+        "speed": "medium",
+        "pulse_duration_ms": 1200,
+        "air_release_duration_ms": 1800,
+        "pressure_percent": 75,
+        "description": "Balanced air pulse pattern"
+      },
+      {
+        "name": "Fast Air Pulse",
+        "type": "air_pulse",
+        "speed": "fast",
+        "pulse_duration_ms": 800,
+        "air_release_duration_ms": 1200,
+        "pressure_percent": 80,
+        "description": "Quick air pulse pattern"
+      }
+    ],
+    "milking_patterns": [
+      {
+        "name": "Slow Milking",
+        "type": "milking",
+        "speed": "slow",
+        "stroke_duration_ms": 3000,
+        "release_duration_ms": 2000,
+        "pressure_percent": 70,
+        "stroke_count": 5,
+        "description": "Gentle milking motion"
+      },
+      {
+        "name": "Medium Milking",
+        "type": "milking",
+        "speed": "medium",
+        "stroke_duration_ms": 2000,
+        "release_duration_ms": 1500,
+        "pressure_percent": 75,
+        "stroke_count": 7,
+        "description": "Moderate milking pattern"
+      },
+      {
+        "name": "Fast Milking",
+        "type": "milking",
+        "speed": "fast",
+        "stroke_duration_ms": 1500,
+        "release_duration_ms": 1000,
+        "pressure_percent": 80,
+        "stroke_count": 10,
+        "description": "Intense milking pattern"
+      }
+    ],
+    "constant_patterns": [
+      {
+        "name": "Slow Constant Orgasm",
+        "type": "constant",
+        "speed": "slow",
+        "base_pressure_percent": 60,
+        "variation_percent": 10,
+        "variation_period_ms": 5000,
+        "description": "Gentle constant pressure with slow variations"
+      },
+      {
+        "name": "Medium Constant Orgasm",
+        "type": "constant",
+        "speed": "medium",
+        "base_pressure_percent": 70,
+        "variation_percent": 15,
+        "variation_period_ms": 3000,
+        "description": "Moderate constant pressure"
+      },
+      {
+        "name": "Fast Constant Orgasm",
+        "type": "constant",
+        "speed": "fast",
+        "base_pressure_percent": 80,
+        "variation_percent": 20,
+        "variation_period_ms": 2000,
+        "description": "Intense constant pressure with rapid variations"
+      }
+    ],
+    "special_patterns": [
+      {
+        "name": "Edging",
+        "type": "edging",
+        "speed": "variable",
+        "buildup_duration_ms": 15000,
+        "peak_pressure_percent": 85,
+        "release_duration_ms": 5000,
+        "hold_duration_ms": 3000,
+        "cycles": 3,
+        "description": "Advanced edging pattern with buildup and release cycles"
+      }
+    ]
+  },
+  "pattern_categories": [
+    {
+      "name": "Pulse Patterns",
+      "patterns": ["Slow Pulse", "Medium Pulse", "Fast Pulse"],
+      "description": "Simple on/off pulsing patterns"
+    },
+    {
+      "name": "Wave Patterns", 
+      "patterns": ["Slow Wave Pattern", "Medium Wave Pattern", "Fast Wave Pattern"],
+      "description": "Gradual pressure wave patterns"
+    },
+    {
+      "name": "Air Pulse Patterns",
+      "patterns": ["Slow Air Pulse", "Medium Air Pulse", "Fast Air Pulse"],
+      "description": "Patterns with air release phases"
+    },
+    {
+      "name": "Milking Patterns",
+      "patterns": ["Slow Milking", "Medium Milking", "Fast Milking"],
+      "description": "Rhythmic milking motion patterns"
+    },
+    {
+      "name": "Constant Patterns",
+      "patterns": ["Slow Constant Orgasm", "Medium Constant Orgasm", "Fast Constant Orgasm"],
+      "description": "Continuous pressure with variations"
+    },
+    {
+      "name": "Special Patterns",
+      "patterns": ["Edging"],
+      "description": "Advanced specialized patterns"
+    }
+  ],
+  "safety_limits": {
+    "max_pressure_mmhg": 100.0,
+    "max_pattern_duration_minutes": 60,
+    "min_pressure_percent": 10,
+    "max_pressure_percent": 90,
+    "emergency_stop_pressure_mmhg": 110.0
+  }
+}

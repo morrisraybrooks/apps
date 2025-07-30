@@ -1,0 +1,132 @@
+# Build directories
+build/
+build-*/
+*build*/
+cmake-build-*/
+
+# Qt Creator files
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
+*.moc
+*.moc.cpp
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+*.qmlc
+*.jsc
+Makefile*
+*build-log*
+*.tlog
+.qmake.cache
+.qmake.stash
+
+# Qt MOC files
+moc_*.cpp
+moc_*.h
+
+# Qt Resource files
+qrc_*.cpp
+
+# Qt UI files
+ui_*.h
+
+# CMake files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+
+# Executables
+VacuumController
+VacuumController.exe
+*.exe
+*.out
+*.app
+
+# Object files
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+*.a
+*.lib
+
+# Debug files
+*.pdb
+*.ilk
+*.exp
+
+# Temporary files
+*~
+*.tmp
+*.temp
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-*
+*.kate-swp
+
+# Log files
+*.log
+logs/
+
+# Test results
+test_results/
+test_report.html
+test_results.xml
+coverage/
+
+# Configuration files with sensitive data
+config/local_settings.json
+config/production_settings.json
+
+# Runtime data
+data/
+runtime/
+cache/
+
+# Documentation build
+docs/_build/
+docs/html/
+docs/latex/
+
+# Package files
+*.deb
+*.rpm
+*.tar.gz
+*.zip
+
+# Backup files
+*.bak
+*.backup
+
+# System files
+.directory
+desktop.ini
+
+# Raspberry Pi specific
+*.img
+*.iso
+
+# Python cache (if any Python scripts)
+__pycache__/
+*.pyc
+*.pyo
+
+# Node modules (if any web components)
+node_modules/
+
+# Generated documentation
+doxygen_output/
