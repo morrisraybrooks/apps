@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Find required packages
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Charts)
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets Charts)
 
 # Enable Qt MOC, UIC, and RCC
 set(CMAKE_AUTOMOC ON)
@@ -78,12 +78,11 @@ set(HEADERS
 add_executable(VacuumController ${SOURCES} ${HEADERS})
 
 # Link Qt libraries
-target_link_libraries(VacuumController 
-    Qt6::Core 
-    Qt6::Widgets 
-    Qt6::Charts
+target_link_libraries(VacuumController
+    Qt5::Core
+    Qt5::Widgets
+    Qt5::Charts
     pthread
-    wiringPi
 )
 
 # Compiler flags for Raspberry Pi optimization

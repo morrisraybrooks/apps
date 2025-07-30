@@ -2,6 +2,7 @@
 #define THREADMANAGER_H
 
 #include <QObject>
+#include <QThread>
 #include <QMutex>
 #include <memory>
 

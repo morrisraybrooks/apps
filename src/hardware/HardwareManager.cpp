@@ -5,7 +5,10 @@
 
 #include <QDebug>
 #include <QMutexLocker>
+// Conditional wiringPi include for Raspberry Pi hardware
+#ifdef RASPBERRY_PI_BUILD
 #include <wiringPi.h>
+#endif
 #include <stdexcept>
 
 HardwareManager::HardwareManager(QObject *parent)
