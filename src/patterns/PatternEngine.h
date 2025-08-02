@@ -74,7 +74,7 @@ public:
     ~PatternEngine();
 
     // Pattern control
-    bool startPattern(const QString& patternName);
+    bool startPattern(const QString& patternName, const QJsonObject& parameters);
     void stopPattern();
     void pausePattern();
     void resumePattern();
@@ -136,7 +136,7 @@ private slots:
 
 private:
     void setState(PatternState newState);
-    bool initializePattern(const QString& patternName);
+    bool initializePattern(const QString& patternName, const QJsonObject& parameters);
     void buildPatternSteps(const QJsonObject& patternData);
     void executeStep(const PatternStep& step);
     void applyPressureTarget(double targetPressure);

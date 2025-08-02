@@ -22,8 +22,9 @@
 
 ## Vacuum System
 - Vacuum Pump (DC motor type)
-  - Controlled via PWM on GPIO 18
-  - PWM frequency: 5000Hz
+  - Controlled via software PWM on GPIO 18 using libgpiod
+  - PWM frequency: 5000Hz (configurable)
+  - Enable control via GPIO 25
 - Vacuum Storage Tank
 - Silicone Tubing (3mm ID/5mm OD) for vacuum lines
 - T-connectors for vacuum routing
@@ -31,9 +32,9 @@
 
 ## Valves & Actuators
 - 3x Solenoid Valves (for vacuum application/release)
-  - SOL1 (GPIO 17): AVL-(Applied Vacuum Line)
-  - SOL2 (GPIO 27): AVL vent valve
-  - SOL3 (GPIO 22): Tank vent valve
+  - SOL1 (GPIO 17): AVL-(Applied Vacuum Line) - controlled via libgpiod
+  - SOL2 (GPIO 27): AVL vent valve - controlled via libgpiod
+  - SOL3 (GPIO 22): Tank vent valve - controlled via libgpiod
 
 
 ## Motor Driver
@@ -81,12 +82,46 @@ GPIO 18 (PWM)    ----> IN1 (Input 1)
 - Mounting hardware for sensors and pump
 
 ## Software Requirements
-- Raspbian OS
-- C++ with:
-  - RPi.GPIO
-  - spidev (for MCP3008)
-  - PyBluez (for Bluetooth)
+- Raspbian OS (or Raspberry Pi OS)
+- C++ with Qt5 framework:
+  - libgpiod (for GPIO control)
+  - Linux SPI interface (/dev/spidev for MCP3008)
+  - Qt5::Core, Qt5::Widgets, Qt5::Charts
+  - pthread (for threading)
+- Build system: CMake 3.16+
 
+### Key Library Dependencies
+- **libgpiod**: Modern GPIO control library
+  - Provides reliable GPIO access through the Linux GPIO character device interface
+  - Used for controlling solenoid valves and pump enable/PWM signals
+  - More stable and future-proof
+- **Linux SPI**: Direct SPI communication via /dev/spidev interface
+  - Used for MCP3008 ADC communication
+  - No additional libraries required, uses standard Linux SPI ioctls
+- **Qt5 Framework**: Cross-platform GUI and application framework
+  - Qt5::Widgets for GUI components
+  - Qt5::Charts for real-time pressure monitoring graphs
+  - Qt5::Core for threading and system integration
+
+### Installation Requirements
+To install the required dependencies on Raspberry Pi OS:
+```bash
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Install development tools
+sudo apt install -y build-essential cmake git
+
+# Install Qt5 development libraries
+sudo apt install -y qtbase5-dev qtcharts5-dev
+
+# Install libgpiod (modern GPIO library)
+sudo apt install -y libgpiod-dev gpiod
+
+# Enable SPI interface (if not already enabled)
+sudo raspi-config
+# Navigate to: Interfacing Options -> SPI -> Enable
+```
 ## Vacuum Patterns
 The controller supports multiple vacuum patterns:
 1. Slow Pulse

@@ -1,0 +1,187 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        type: string
+
+env:
+  QT_VERSION: 5.15.2
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.get_version.outputs.version }}
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Get version
+      id: get_version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # Generate changelog from git commits
+        if [ -f CHANGELOG.md ]; then
+          # Extract changelog for this version
+          awk '/^## \['"${GITHUB_REF#refs/tags/}"'\]/{flag=1; next} /^## \[/{flag=0} flag' CHANGELOG.md > release_notes.md
+        else
+          # Generate from git log
+          git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD > release_notes.md
+        fi
+        echo "changelog<<EOF" >> $GITHUB_OUTPUT
+        cat release_notes.md >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+    
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.get_version.outputs.version }}
+        release_name: Vacuum Controller ${{ steps.get_version.outputs.version }}
+        body: ${{ steps.changelog.outputs.changelog }}
+        draft: false
+        prerelease: ${{ contains(steps.get_version.outputs.version, 'alpha') || contains(steps.get_version.outputs.version, 'beta') || contains(steps.get_version.outputs.version, 'rc') }}
+
+  build-packages:
+    name: Build Release Packages
+    runs-on: ubuntu-latest
+    needs: create-release
+    
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: ${{ env.QT_VERSION }}
+        modules: 'qtcharts'
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          cmake \
+          ninja-build \
+          libgpiod-dev \
+          pkg-config \
+          doxygen \
+          graphviz
+    
+    - name: Setup cross-compilation for ARM64
+      if: matrix.arch == 'arm64'
+      run: |
+        sudo apt-get install -y \
+          gcc-aarch64-linux-gnu \
+          g++-aarch64-linux-gnu
+    
+    - name: Configure CMake
+      run: |
+        if [ "${{ matrix.arch }}" = "arm64" ]; then
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE=cmake/arm64-toolchain.cmake \
+            -DRASPBERRY_PI_OPTIMIZATIONS=ON \
+            -DBUILD_TESTS=OFF \
+            -DBUILD_DOCS=ON \
+            -G Ninja
+        else
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_TESTS=ON \
+            -DBUILD_DOCS=ON \
+            -G Ninja
+        fi
+    
+    - name: Build
+      run: cmake --build build --config Release -j$(nproc)
+    
+    - name: Run tests
+      if: matrix.arch == 'amd64'
+      run: |
+        cd build
+        ctest --output-on-failure --parallel $(nproc)
+    
+    - name: Create packages
+      run: |
+        cd build
+        cpack -G DEB
+        cpack -G TGZ
+    
+    - name: Upload DEB package
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: build/vacuum-controller-${{ needs.create-release.outputs.version }}-Linux-${{ matrix.arch }}.deb
+        asset_name: vacuum-controller-${{ needs.create-release.outputs.version }}-${{ matrix.arch }}.deb
+        asset_content_type: application/vnd.debian.binary-package
+    
+    - name: Upload TAR.GZ package
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: build/vacuum-controller-${{ needs.create-release.outputs.version }}-Linux-${{ matrix.arch }}.tar.gz
+        asset_name: vacuum-controller-${{ needs.create-release.outputs.version }}-${{ matrix.arch }}.tar.gz
+        asset_content_type: application/gzip
+
+  deploy-documentation:
+    name: Deploy Documentation
+    runs-on: ubuntu-latest
+    needs: create-release
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Doxygen
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y doxygen graphviz
+    
+    - name: Build documentation
+      run: |
+        mkdir -p build
+        cd build
+        cmake .. -DBUILD_DOCS=ON
+        make docs
+    
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: build/docs/html
+        destination_dir: ${{ needs.create-release.outputs.version }}
+    
+    - name: Update latest documentation link
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: build/docs/html
+        destination_dir: latest

@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.16)
 enable_testing()
 
 # Find Qt Test module
-find_package(Qt6 REQUIRED COMPONENTS Test)
+find_package(Qt5 REQUIRED COMPONENTS Test)
 
 # Include parent directories
 include_directories(${CMAKE_SOURCE_DIR}/src)
@@ -66,10 +66,10 @@ add_library(VacuumTestFramework STATIC
 )
 
 target_link_libraries(VacuumTestFramework
-    Qt6::Core
-    Qt6::Test
-    Qt6::Widgets
-    Qt6::Charts
+    Qt5::Core
+    Qt5::Test
+    Qt5::Widgets
+    Qt5::Charts
     VacuumControllerLib
 )
 
@@ -81,7 +81,7 @@ add_executable(SafetySystemTests
 
 target_link_libraries(SafetySystemTests
     VacuumTestFramework
-    Qt6::Test
+    Qt5::Test
 )
 
 add_test(NAME SafetySystemTests COMMAND SafetySystemTests)
@@ -93,7 +93,7 @@ add_executable(HardwareTests
 
 target_link_libraries(HardwareTests
     VacuumTestFramework
-    Qt6::Test
+    Qt5::Test
 )
 
 add_test(NAME HardwareTests COMMAND HardwareTests)
@@ -105,7 +105,7 @@ add_executable(PatternTests
 
 target_link_libraries(PatternTests
     VacuumTestFramework
-    Qt6::Test
+    Qt5::Test
 )
 
 add_test(NAME PatternTests COMMAND PatternTests)
@@ -117,7 +117,7 @@ add_executable(GUITests
 
 target_link_libraries(GUITests
     VacuumTestFramework
-    Qt6::Test
+    Qt5::Test
 )
 
 add_test(NAME GUITests COMMAND GUITests)
@@ -129,7 +129,7 @@ add_executable(PerformanceTests
 
 target_link_libraries(PerformanceTests
     VacuumTestFramework
-    Qt6::Test
+    Qt5::Test
 )
 
 add_test(NAME PerformanceTests COMMAND PerformanceTests)
@@ -141,7 +141,7 @@ add_executable(IntegrationTests
 
 target_link_libraries(IntegrationTests
     VacuumTestFramework
-    Qt6::Test
+    Qt5::Test
 )
 
 add_test(NAME IntegrationTests COMMAND IntegrationTests)
@@ -154,7 +154,7 @@ add_executable(VacuumTestRunner
 
 target_link_libraries(VacuumTestRunner
     VacuumTestFramework
-    Qt6::Test
+    Qt5::Test
 )
 
 # Test data and configuration files

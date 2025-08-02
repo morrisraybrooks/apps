@@ -1,0 +1,57 @@
+[Unit]
+Description=Vacuum Controller GUI System
+Documentation=file://@CMAKE_INSTALL_FULL_DOCDIR@
+After=graphical-session.target
+Wants=graphical-session.target
+Requires=multi-user.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=@CMAKE_INSTALL_FULL_BINDIR@/VacuumController
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=10
+TimeoutStartSec=30
+TimeoutStopSec=30
+
+# Security settings
+NoNewPrivileges=false
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/log/vacuum-controller /var/lib/vacuum-controller /etc/vacuum-controller
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictNamespaces=true
+
+# Hardware access requirements
+DeviceAllow=/dev/gpiochip0 rw
+DeviceAllow=/dev/spidev0.0 rw
+DeviceAllow=/dev/input/event* rw
+DeviceAllow=/dev/fb0 rw
+DeviceAllow=/dev/dri/card0 rw
+
+# Environment
+Environment=QT_QPA_PLATFORM=eglfs
+Environment=QT_QPA_EGLFS_PHYSICAL_WIDTH=1107
+Environment=QT_QPA_EGLFS_PHYSICAL_HEIGHT=623
+Environment=QT_QPA_EGLFS_FORCE_888=1
+Environment=VACUUM_CONTROLLER_CONFIG_DIR=/etc/vacuum-controller
+Environment=VACUUM_CONTROLLER_LOG_DIR=/var/log/vacuum-controller
+Environment=VACUUM_CONTROLLER_DATA_DIR=/var/lib/vacuum-controller
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=vacuum-controller
+
+# Working directory
+WorkingDirectory=/var/lib/vacuum-controller
+
+[Install]
+WantedBy=graphical.target
+Also=vacuum-controller-watchdog.service

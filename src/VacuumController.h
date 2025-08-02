@@ -12,6 +12,7 @@ class SafetyManager;
 class PatternEngine;
 class AntiDetachmentMonitor;
 class ThreadManager;
+class CalibrationManager;
 
 /**
  * @brief Main controller class for the vacuum therapy system
@@ -43,15 +44,21 @@ public:
     
     SystemState getSystemState() const { return m_systemState; }
     bool isSystemReady() const;
+    void startMonitoringThreads();  // Start threads after GUI is ready
     
     // Hardware access
     HardwareManager* getHardwareManager() const { return m_hardwareManager.get(); }
     SafetyManager* getSafetyManager() const { return m_safetyManager.get(); }
     PatternEngine* getPatternEngine() const { return m_patternEngine.get(); }
     ThreadManager* getThreadManager() const { return m_threadManager.get(); }
+    CalibrationManager* getCalibrationManager() const { return m_calibrationManager.get(); }
+
+    // Simulation mode for testing
+    void setSimulationMode(bool enabled);
+    bool isSimulationMode() const { return m_simulationMode; }
     
     // Pattern control
-    void startPattern(const QString& patternName);
+    void startPattern(const QString& patternName, const QJsonObject& parameters);
     void stopPattern();
     void pausePattern();
     void resumePattern();
@@ -99,6 +106,7 @@ private:
     std::unique_ptr<PatternEngine> m_patternEngine;
     std::unique_ptr<AntiDetachmentMonitor> m_antiDetachmentMonitor;
     std::unique_ptr<ThreadManager> m_threadManager;
+    std::unique_ptr<CalibrationManager> m_calibrationManager;
     
     // System state
     SystemState m_systemState;
@@ -118,6 +126,7 @@ private:
     
     // System status
     bool m_initialized;
+    bool m_simulationMode;
     QString m_lastError;
 };
 

@@ -34,8 +34,12 @@ void PatternDefinitions::initializePatterns()
 
 void PatternDefinitions::loadDefaultPatterns()
 {
-    // This method loads default patterns - for now just call initializePatterns
-    initializePatterns();
+    // This method loads default patterns - only initialize if not already done
+    if (m_patterns.isEmpty()) {
+        initializePatterns();
+    } else {
+        qDebug() << "Patterns already loaded, skipping re-initialization";
+    }
 }
 
 QStringList PatternDefinitions::getPatternNames() const
@@ -157,23 +161,23 @@ void PatternDefinitions::createPulsePatterns()
     slowPulse.steps.append(step2);
     m_patterns["Slow Pulse"] = slowPulse;
     
-    // Medium Pulse Pattern
+    // medium Pulse Pattern
     PatternInfo mediumPulse;
-    mediumPulse.name = "Medium Pulse";
+    mediumPulse.name = "medium Pulse";
     mediumPulse.type = "Pulse";
     mediumPulse.description = "1-second pulses with 1-second pauses at 70% pressure";
     mediumPulse.basePressure = 70.0;
     mediumPulse.speed = 1.0;
     mediumPulse.intensity = 70.0;
-    
+
     step1.pressurePercent = 70.0;
     step1.durationMs = 1000;
     step2.pressurePercent = 0.0;
     step2.durationMs = 1000;
-    
+
     mediumPulse.steps.append(step1);
     mediumPulse.steps.append(step2);
-    m_patterns["Medium Pulse"] = mediumPulse;
+    m_patterns["medium Pulse"] = mediumPulse;
     
     // Fast Pulse Pattern
     PatternInfo fastPulse;
@@ -198,13 +202,13 @@ void PatternDefinitions::createWavePatterns()
 {
     // Slow Wave Pattern
     PatternInfo slowWave;
-    slowWave.name = "Slow Wave";
+    slowWave.name = "Slow Wave Pattern";
     slowWave.type = "Wave";
     slowWave.description = "10-second gradual pressure waves (30-70% range)";
     slowWave.basePressure = 50.0;
     slowWave.speed = 1.0;
     slowWave.intensity = 70.0;
-    
+
     // Create wave steps
     for (int i = 0; i <= 10; ++i) {
         PatternStep step;
@@ -215,18 +219,18 @@ void PatternDefinitions::createWavePatterns()
         step.description = QString("Wave step %1").arg(i + 1);
         slowWave.steps.append(step);
     }
+
+    m_patterns["Slow Wave Pattern"] = slowWave;
     
-    m_patterns["Slow Wave"] = slowWave;
-    
-    // Medium Wave Pattern
+    // medium Wave Pattern
     PatternInfo mediumWave;
-    mediumWave.name = "Medium Wave";
+    mediumWave.name = "medium Wave Pattern";
     mediumWave.type = "Wave";
     mediumWave.description = "5-second pressure waves (40-80% range)";
     mediumWave.basePressure = 60.0;
     mediumWave.speed = 1.0;
     mediumWave.intensity = 80.0;
-    
+
     for (int i = 0; i <= 10; ++i) {
         PatternStep step;
         double angle = (i * 36.0) * M_PI / 180.0;
@@ -236,18 +240,18 @@ void PatternDefinitions::createWavePatterns()
         step.description = QString("Wave step %1").arg(i + 1);
         mediumWave.steps.append(step);
     }
-    
-    m_patterns["Medium Wave"] = mediumWave;
+
+    m_patterns["medium Wave Pattern"] = mediumWave;
     
     // Fast Wave Pattern
     PatternInfo fastWave;
-    fastWave.name = "Fast Wave";
+    fastWave.name = "Fast Wave Pattern";
     fastWave.type = "Wave";
     fastWave.description = "2-second pressure waves (50-85% range)";
     fastWave.basePressure = 67.5;
     fastWave.speed = 1.0;
     fastWave.intensity = 85.0;
-    
+
     for (int i = 0; i <= 10; ++i) {
         PatternStep step;
         double angle = (i * 36.0) * M_PI / 180.0;
@@ -257,8 +261,8 @@ void PatternDefinitions::createWavePatterns()
         step.description = QString("Wave step %1").arg(i + 1);
         fastWave.steps.append(step);
     }
-    
-    m_patterns["Fast Wave"] = fastWave;
+
+    m_patterns["Fast Wave Pattern"] = fastWave;
 }
 
 void PatternDefinitions::createAirPulsePatterns()
@@ -288,23 +292,23 @@ void PatternDefinitions::createAirPulsePatterns()
     slowAirPulse.steps.append(airStep);
     m_patterns["Slow Air Pulse"] = slowAirPulse;
     
-    // Medium Air Pulse Pattern
+    // medium Air Pulse Pattern
     PatternInfo mediumAirPulse;
-    mediumAirPulse.name = "Medium Air Pulse";
+    mediumAirPulse.name = "medium Air Pulse";
     mediumAirPulse.type = "Air Pulse";
     mediumAirPulse.description = "2-second vacuum with 1.5-second air release";
     mediumAirPulse.basePressure = 70.0;
     mediumAirPulse.speed = 1.0;
     mediumAirPulse.intensity = 70.0;
-    
+
     vacStep.pressurePercent = 70.0;
     vacStep.durationMs = 2000;
     airStep.pressurePercent = -10.0;
     airStep.durationMs = 1500;
-    
+
     mediumAirPulse.steps.append(vacStep);
     mediumAirPulse.steps.append(airStep);
-    m_patterns["Medium Air Pulse"] = mediumAirPulse;
+    m_patterns["medium Air Pulse"] = mediumAirPulse;
     
     // Fast Air Pulse Pattern
     PatternInfo fastAirPulse;
@@ -357,33 +361,33 @@ void PatternDefinitions::createMilkingPatterns()
     
     m_patterns["Slow Milking"] = slowMilking;
     
-    // Medium Milking Pattern
+    // medium Milking Pattern
     PatternInfo mediumMilking;
-    mediumMilking.name = "Medium Milking";
+    mediumMilking.name = "medium Milking";
     mediumMilking.type = "Milking";
     mediumMilking.description = "2-second strokes with 1.5-second release, 8 cycles";
     mediumMilking.basePressure = 65.0;
     mediumMilking.speed = 1.0;
     mediumMilking.intensity = 65.0;
-    
+
     for (int cycle = 0; cycle < 8; ++cycle) {
         PatternStep strokeStep;
         strokeStep.pressurePercent = 65.0;
         strokeStep.durationMs = 2000;
         strokeStep.action = "vacuum";
         strokeStep.description = QString("Stroke %1").arg(cycle + 1);
-        
+
         PatternStep releaseStep;
         releaseStep.pressurePercent = 25.0;
         releaseStep.durationMs = 1500;
         releaseStep.action = "release";
         releaseStep.description = QString("Release %1").arg(cycle + 1);
-        
+
         mediumMilking.steps.append(strokeStep);
         mediumMilking.steps.append(releaseStep);
     }
-    
-    m_patterns["Medium Milking"] = mediumMilking;
+
+    m_patterns["medium Milking"] = mediumMilking;
     
     // Fast Milking Pattern
     PatternInfo fastMilking;
@@ -416,59 +420,66 @@ void PatternDefinitions::createMilkingPatterns()
 
 void PatternDefinitions::createConstantPatterns()
 {
-    // Slow Constant Pattern
-    PatternInfo slowConstant;
-    slowConstant.name = "Slow Constant";
-    slowConstant.type = "Constant";
-    slowConstant.description = "70% base pressure with ±15% variation over 3 seconds";
-    slowConstant.basePressure = 70.0;
-    slowConstant.speed = 1.0;
-    slowConstant.intensity = 70.0;
-    
+    // Slow Constant Orgasm Pattern
+    PatternInfo slowConstantOrgasm;
+    slowConstantOrgasm.name = "Slow Constant Orgasm";
+    slowConstantOrgasm.type = "Constant Orgasm";
+    slowConstantOrgasm.description = "70% base pressure with ±15% variation over 3 seconds, designed for sustained pleasure";
+    slowConstantOrgasm.basePressure = 70.0;
+    slowConstantOrgasm.speed = 1.0;
+    slowConstantOrgasm.intensity = 70.0;
+
     PatternStep constantStep;
     constantStep.pressurePercent = 70.0;
     constantStep.durationMs = 3000;
-    constantStep.action = "constant";
-    constantStep.description = "Constant pressure with variation";
+    constantStep.action = "constant_orgasm";
+    constantStep.description = "Constant orgasmic pressure with variation";
     constantStep.parameters["variation"] = 15.0;
     constantStep.parameters["variation_period"] = 3000;
+    constantStep.parameters["orgasm_mode"] = true;
+
+    slowConstantOrgasm.steps.append(constantStep);
+    m_patterns["Slow Constant Orgasm"] = slowConstantOrgasm;
     
-    slowConstant.steps.append(constantStep);
-    m_patterns["Slow Constant"] = slowConstant;
-    
-    // Medium Constant Pattern
-    PatternInfo mediumConstant;
-    mediumConstant.name = "Medium Constant";
-    mediumConstant.type = "Constant";
-    mediumConstant.description = "75% base pressure with ±10% variation over 2 seconds";
-    mediumConstant.basePressure = 75.0;
-    mediumConstant.speed = 1.0;
-    mediumConstant.intensity = 75.0;
-    
+    // Medium Constant Orgasm Pattern
+    PatternInfo mediumConstantOrgasm;
+    mediumConstantOrgasm.name = "Medium Constant Orgasm";
+    mediumConstantOrgasm.type = "Constant Orgasm";
+    mediumConstantOrgasm.description = "75% base pressure with ±10% variation over 2 seconds, designed for sustained pleasure";
+    mediumConstantOrgasm.basePressure = 75.0;
+    mediumConstantOrgasm.speed = 1.0;
+    mediumConstantOrgasm.intensity = 75.0;
+
     constantStep.pressurePercent = 75.0;
     constantStep.durationMs = 2000;
+    constantStep.action = "constant_orgasm";
+    constantStep.description = "Medium constant orgasmic pressure with variation";
     constantStep.parameters["variation"] = 10.0;
     constantStep.parameters["variation_period"] = 2000;
+    constantStep.parameters["orgasm_mode"] = true;
+
+    mediumConstantOrgasm.steps.append(constantStep);
+    m_patterns["Medium Constant Orgasm"] = mediumConstantOrgasm;
     
-    mediumConstant.steps.append(constantStep);
-    m_patterns["Medium Constant"] = mediumConstant;
-    
-    // Fast Constant Pattern
-    PatternInfo fastConstant;
-    fastConstant.name = "Fast Constant";
-    fastConstant.type = "Constant";
-    fastConstant.description = "80% base pressure with ±5% variation over 1 second";
-    fastConstant.basePressure = 80.0;
-    fastConstant.speed = 1.0;
-    fastConstant.intensity = 80.0;
-    
+    // Fast Constant Orgasm Pattern
+    PatternInfo fastConstantOrgasm;
+    fastConstantOrgasm.name = "Fast Constant Orgasm";
+    fastConstantOrgasm.type = "Constant Orgasm";
+    fastConstantOrgasm.description = "80% base pressure with ±5% variation over 1 second, designed for sustained pleasure";
+    fastConstantOrgasm.basePressure = 80.0;
+    fastConstantOrgasm.speed = 1.0;
+    fastConstantOrgasm.intensity = 80.0;
+
     constantStep.pressurePercent = 80.0;
     constantStep.durationMs = 1000;
+    constantStep.action = "constant_orgasm";
+    constantStep.description = "Fast constant orgasmic pressure with variation";
     constantStep.parameters["variation"] = 5.0;
     constantStep.parameters["variation_period"] = 1000;
-    
-    fastConstant.steps.append(constantStep);
-    m_patterns["Fast Constant"] = fastConstant;
+    constantStep.parameters["orgasm_mode"] = true;
+
+    fastConstantOrgasm.steps.append(constantStep);
+    m_patterns["Fast Constant Orgasm"] = fastConstantOrgasm;
 }
 
 void PatternDefinitions::createSpecialPatterns()
@@ -511,4 +522,102 @@ void PatternDefinitions::createSpecialPatterns()
     }
     
     m_patterns["Edging"] = edging;
+}
+
+bool PatternDefinitions::validatePulsePattern(const QJsonObject& params) const
+{
+    if (!params.contains("pulseDuration") || !params.contains("pauseDuration")) {
+        return false;
+    }
+
+    int pulseDuration = params["pulseDuration"].toInt();
+    int pauseDuration = params["pauseDuration"].toInt();
+
+    return isValidDuration(pulseDuration) && isValidDuration(pauseDuration);
+}
+
+bool PatternDefinitions::validateWavePattern(const QJsonObject& params) const
+{
+    if (!params.contains("period") || !params.contains("minPressure") || !params.contains("maxPressure")) {
+        return false;
+    }
+
+    int period = params["period"].toInt();
+    double minPressure = params["minPressure"].toDouble();
+    double maxPressure = params["maxPressure"].toDouble();
+
+    return isValidDuration(period) &&
+           isValidPressurePercent(minPressure) &&
+           isValidPressurePercent(maxPressure) &&
+           minPressure < maxPressure;
+}
+
+bool PatternDefinitions::validateAirPulsePattern(const QJsonObject& params) const
+{
+    if (!params.contains("pulseDuration") || !params.contains("releaseDuration")) {
+        return false;
+    }
+
+    int pulseDuration = params["pulseDuration"].toInt();
+    int releaseDuration = params["releaseDuration"].toInt();
+
+    return isValidDuration(pulseDuration) && isValidDuration(releaseDuration);
+}
+
+bool PatternDefinitions::validateMilkingPattern(const QJsonObject& params) const
+{
+    if (!params.contains("strokeDuration") || !params.contains("releaseDuration") || !params.contains("strokeCount")) {
+        return false;
+    }
+
+    int strokeDuration = params["strokeDuration"].toInt();
+    int releaseDuration = params["releaseDuration"].toInt();
+    int strokeCount = params["strokeCount"].toInt();
+
+    return isValidDuration(strokeDuration) &&
+           isValidDuration(releaseDuration) &&
+           strokeCount > 0 && strokeCount <= 20;
+}
+
+bool PatternDefinitions::validateConstantPattern(const QJsonObject& params) const
+{
+    if (!params.contains("basePressure") || !params.contains("variation")) {
+        return false;
+    }
+
+    double basePressure = params["basePressure"].toDouble();
+    double variation = params["variation"].toDouble();
+
+    return isValidPressurePercent(basePressure) &&
+           variation >= 0.0 && variation <= 20.0;
+}
+
+bool PatternDefinitions::validateEdgingPattern(const QJsonObject& params) const
+{
+    if (!params.contains("buildupDuration") || !params.contains("peakPressure") || !params.contains("cycles")) {
+        return false;
+    }
+
+    int buildupDuration = params["buildupDuration"].toInt();
+    double peakPressure = params["peakPressure"].toDouble();
+    int cycles = params["cycles"].toInt();
+
+    return isValidDuration(buildupDuration) &&
+           isValidPressurePercent(peakPressure) &&
+           cycles > 0 && cycles <= 10;
+}
+
+bool PatternDefinitions::isValidPressurePercent(double pressure) const
+{
+    return pressure >= 0.0 && pressure <= 100.0;
+}
+
+bool PatternDefinitions::isValidDuration(int duration) const
+{
+    return duration >= 100 && duration <= 60000; // 100ms to 60 seconds
+}
+
+bool PatternDefinitions::isValidSpeed(const QString& speed) const
+{
+    return speed == "slow" || speed == "medium" || speed == "fast";
 }

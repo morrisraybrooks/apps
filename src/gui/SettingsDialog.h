@@ -22,6 +22,7 @@
 // Forward declarations
 class VacuumController;
 class TouchButton;
+class CalibrationInterface;
 
 /**
  * @brief Comprehensive settings and calibration dialog
@@ -48,16 +49,14 @@ public slots:
     void resetToDefaults();
 
 private slots:
-    void onCalibrateSensorsClicked();
     void onTestHardwareClicked();
     void onExportSettingsClicked();
     void onImportSettingsClicked();
     void onFactoryResetClicked();
-    void onCalibrationProgress(int progress);
-    void onCalibrationComplete(bool success);
     void onApplyClicked();
     void onCancelClicked();
     void onOkClicked();
+    
 
 private:
     void setupUI();
@@ -69,9 +68,6 @@ private:
     void setupMaintenanceTab();
     void connectSignals();
     
-    void updateCalibrationStatus();
-    void performSensorCalibration();
-    void performHardwareTest();
     bool validateSettings();
     
     // Controller interface
@@ -99,13 +95,7 @@ private:
     QCheckBox* m_autoShutdownCheck;
     
     // Calibration Tab
-    QWidget* m_calibrationTab;
-    QLabel* m_avlCalibrationStatus;
-    QLabel* m_tankCalibrationStatus;
-    QLabel* m_lastCalibrationDate;
-    TouchButton* m_calibrateSensorsButton;
-    QProgressBar* m_calibrationProgress;
-    QTextEdit* m_calibrationLog;
+    CalibrationInterface* m_calibrationInterface;
     
     // Hardware Tab
     QWidget* m_hardwareTab;

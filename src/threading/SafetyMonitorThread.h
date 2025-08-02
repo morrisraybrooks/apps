@@ -1,9 +1,15 @@
 #ifndef SAFETYMONITORTHREAD_H
 #define SAFETYMONITORTHREAD_H
 
-#include <QThread>
-#include <QTimer>
-#include <QMutex>
+#include <QtCore/QThread>
+#include <QtCore/QTimer>
+#include <QtCore/QMutex>
+#include <QtCore/QObject>
+
+#ifndef QT_NO_KEYWORDS
+#define slots Q_SLOTS
+#define signals Q_SIGNALS
+#endif
 
 // Forward declarations
 class HardwareManager;
@@ -28,7 +34,7 @@ public:
     bool isMonitoring() const { return m_monitoring; }
     int getMonitoringRate() const { return m_monitoringRateHz; }
 
-signals:
+Q_SIGNALS:
     void safetyViolation(const QString& message);
     void emergencyStopTriggered();
     void emergencyStopRequired(const QString& reason);
@@ -36,11 +42,12 @@ signals:
     void monitoringStarted();
     void monitoringStopped();
     void monitoringError(const QString& error);
+    void threadStarted();  // Emitted when thread is fully running
 
 protected:
     void run() override;
 
-private slots:
+private Q_SLOTS:
     void performSafetyCheck();
 
 private:

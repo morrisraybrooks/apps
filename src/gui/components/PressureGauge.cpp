@@ -23,7 +23,7 @@ PressureGauge::PressureGauge(QWidget *parent)
     , m_precision(DEFAULT_PRECISION)
     , m_showValue(true)
     , m_showThresholds(true)
-    , m_animation(new QPropertyAnimation(this, "value"))
+    , m_animation(nullptr)
     , m_animationEnabled(true)
     , m_animationDuration(DEFAULT_ANIMATION_DURATION)
     , m_safeColor(QColor(76, 175, 80))      // Green
@@ -374,6 +374,12 @@ void PressureGauge::updateGaugeGeometry()
     m_needleLength = m_radius - 30;
     m_center = QPointF(width() / 2.0, height() / 2.0);
     m_gaugeRect = QRectF(m_center.x() - m_radius, m_center.y() - m_radius, 2 * m_radius, 2 * m_radius);
-    
+
     update();
+}
+
+void PressureGauge::updateAnimation()
+{
+    // Animation disabled to fix property warnings
+    // Could be implemented with custom animation if needed
 }

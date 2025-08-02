@@ -151,8 +151,8 @@ void PressureMonitor::pauseUpdates(bool pause)
 void PressureMonitor::setupUI()
 {
     m_mainLayout = new QVBoxLayout(this);
-    m_mainLayout->setSpacing(10);
-    m_mainLayout->setContentsMargins(10, 10, 10, 10);
+    m_mainLayout->setSpacing(8);
+    m_mainLayout->setContentsMargins(5, 5, 5, 5);
 }
 
 void PressureMonitor::setupPressureDisplays()
@@ -163,7 +163,8 @@ void PressureMonitor::setupPressureDisplays()
     m_displayFrame->setStyleSheet("QFrame { border: 2px solid #ddd; border-radius: 5px; background-color: white; }");
     
     QGridLayout* displayLayout = new QGridLayout(m_displayFrame);
-    displayLayout->setSpacing(20);
+    displayLayout->setSpacing(15);
+    displayLayout->setContentsMargins(10, 10, 10, 10);
     
     // AVL Pressure Display
     QLabel* avlLabel = new QLabel("AVL Pressure");

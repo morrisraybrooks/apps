@@ -72,7 +72,7 @@ public:
     bool isUpdating() const { return m_updating; }
     bool isPaused() const { return m_paused; }
 
-signals:
+Q_SIGNALS:
     void guiDataReady(const ProcessedData& data);
     void chartDataReady(const QList<ProcessedData>& data);
     void alarmStateChanged(bool alarmActive, const QString& message);
@@ -83,7 +83,7 @@ signals:
 protected:
     void run() override;
 
-private slots:
+private Q_SLOTS:
     void processNewData();
     void onSensorDataReady(const DataAcquisitionThread::SensorData& data);
 

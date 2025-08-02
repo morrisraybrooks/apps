@@ -100,18 +100,18 @@ public:
     void removeCustomMetric(const QString& name);
     QJsonObject getCustomMetrics() const;
 
-public slots:
+public Q_SLOTS:
     void collectMetrics();
     void checkPerformanceAlerts();
     void performOptimization();
 
-signals:
+Q_SIGNALS:
     void metricsUpdated(const PerformanceMetrics& metrics);
     void performanceAlert(const PerformanceAlert& alert);
     void performanceImproved(const QString& optimization, double improvement);
     void benchmarkCompleted(const QString& benchmarkName, const QJsonObject& results);
 
-private slots:
+private Q_SLOTS:
     void onMonitoringTimer();
     void onOptimizationTimer();
 
@@ -195,12 +195,12 @@ private:
     
     // Custom metrics
     QMap<QString, double> m_customMetrics;
-    QMutex m_customMetricsMutex;
-    
+    mutable QMutex m_customMetricsMutex;
+
     // Benchmarking
     QMap<QString, BenchmarkData> m_activeBenchmarks;
     QMap<QString, QJsonObject> m_benchmarkResults;
-    QMutex m_benchmarkMutex;
+    mutable QMutex m_benchmarkMutex;
     
     // Performance counters
     QElapsedTimer m_uptimeTimer;

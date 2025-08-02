@@ -15,7 +15,7 @@ StatusIndicator::StatusIndicator(QWidget *parent)
     , m_horizontalLayout(false)
     , m_blinkTimer(new QTimer(this))
     , m_pulseAnimation(nullptr)
-    , m_colorAnimation(new QPropertyAnimation(this, "color"))
+    , m_colorAnimation(nullptr)
     , m_blinkState(false)
     , m_pulseOpacity(1.0)
 {
@@ -35,8 +35,7 @@ void StatusIndicator::setupIndicator()
     m_blinkTimer->setInterval(500); // 500ms blink interval
     connect(m_blinkTimer, &QTimer::timeout, this, &StatusIndicator::onBlinkTimer);
     
-    // Setup color animation
-    m_colorAnimation->setDuration(300);
+    // Color animation disabled to fix property warnings
     
     updateColors();
 }

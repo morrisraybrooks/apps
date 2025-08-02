@@ -20,8 +20,14 @@ DataAcquisitionThread::DataAcquisitionThread(HardwareManager* hardware, QObject 
     , m_sampleCount(0)
     , m_errorCount(0)
     , m_acquisitionTimer(nullptr)
+    , m_safetyEnabled(true)
+    , m_safetyCheckCounter(0)
+    , m_safetyCheckInterval(1)  // Check safety every sample by default
+    , m_maxPressure(100.0)
+    , m_warningThreshold(80.0)
+    , m_consecutiveSafetyErrors(0)
 {
-    // Set thread priority for real-time performance
+    // Set thread priority for real-time performance (but not highest to avoid GUI conflicts)
     setPriority(QThread::HighPriority);
 }
 
@@ -223,23 +229,28 @@ void DataAcquisitionThread::performDataAcquisition()
     
     // Acquire sensor data
     SensorData data = acquireSensorData();
-    
+
     if (data.valid) {
         // Add to buffer
         addToBuffer(data);
-        
+
+        // Perform integrated safety monitoring
+        if (m_safetyEnabled) {
+            performIntegratedSafetyCheck(data);
+        }
+
         // Emit signal for real-time updates
         emit dataReady(data);
-        
+
         m_sampleCount++;
         m_lastUpdateTime = data.timestamp;
-        
+
         // Update statistics periodically
         updateStatistics();
-        
+
     } else {
         m_errorCount++;
-        
+
         // Stop acquisition if too many consecutive errors
         if (m_errorCount >= MAX_CONSECUTIVE_ERRORS) {
             emit samplingError(QString("Too many consecutive errors (%1), stopping acquisition").arg(m_errorCount));
@@ -303,15 +314,101 @@ void DataAcquisitionThread::addToBuffer(const SensorData& data)
 void DataAcquisitionThread::updateStatistics()
 {
     qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
-    
+
     if (currentTime - m_lastStatisticsUpdate >= STATISTICS_UPDATE_INTERVAL_MS) {
         // Calculate actual sampling rate
         qint64 timeDiff = currentTime - m_lastStatisticsUpdate;
         if (timeDiff > 0) {
             m_actualSamplingRate = (m_sampleCount * 1000.0) / timeDiff;
         }
-        
+
         m_lastStatisticsUpdate = currentTime;
         m_sampleCount = 0;  // Reset for next interval
     }
+}
+
+void DataAcquisitionThread::performIntegratedSafetyCheck(const SensorData& data)
+{
+    // Only perform safety check at specified intervals to reduce overhead
+    m_safetyCheckCounter++;
+    if (m_safetyCheckCounter < m_safetyCheckInterval) {
+        return;
+    }
+    m_safetyCheckCounter = 0;
+
+    try {
+        // Check pressure limits using the fresh sensor data
+        bool safetyViolation = false;
+
+        // Check AVL pressure
+        if (data.avlPressure > m_maxPressure) {
+            emit safetyAlarm(QString("AVL pressure alarm: %1 mmHg (max: %2)")
+                                .arg(data.avlPressure, 0, 'f', 1).arg(m_maxPressure, 0, 'f', 1));
+            safetyViolation = true;
+        } else if (data.avlPressure > m_warningThreshold) {
+            emit safetyWarning(QString("AVL pressure warning: %1 mmHg")
+                              .arg(data.avlPressure, 0, 'f', 1));
+        }
+
+        // Check tank pressure
+        if (data.tankPressure > m_maxPressure) {
+            emit safetyAlarm(QString("Tank pressure alarm: %1 mmHg (max: %2)")
+                                .arg(data.tankPressure, 0, 'f', 1).arg(m_maxPressure, 0, 'f', 1));
+            safetyViolation = true;
+        } else if (data.tankPressure > m_warningThreshold) {
+            emit safetyWarning(QString("Tank pressure warning: %1 mmHg")
+                              .arg(data.tankPressure, 0, 'f', 1));
+        }
+
+        // Check for invalid readings
+        if (data.avlPressure < 0 || data.tankPressure < 0 ||
+            data.avlPressure > 200.0 || data.tankPressure > 200.0) {
+            emit safetyWarning("Invalid pressure readings detected");
+            m_consecutiveSafetyErrors++;
+        } else {
+            m_consecutiveSafetyErrors = 0;  // Reset on valid readings
+        }
+
+        // Check hardware status
+        if (m_hardware && !m_hardware->isReady()) {
+            emit safetyWarning("Hardware system not ready");
+            m_consecutiveSafetyErrors++;
+        }
+
+        // Trigger emergency stop if too many consecutive safety errors
+        if (m_consecutiveSafetyErrors >= MAX_CONSECUTIVE_SAFETY_ERRORS) {
+            emit emergencyStopRequired("Too many consecutive safety errors");
+        }
+
+    } catch (const std::exception& e) {
+        emit safetyWarning(QString("Safety check error: %1").arg(e.what()));
+        m_consecutiveSafetyErrors++;
+    }
+}
+
+void DataAcquisitionThread::setSafetyEnabled(bool enabled)
+{
+    QMutexLocker locker(&m_controlMutex);
+    m_safetyEnabled = enabled;
+    if (enabled) {
+        qDebug() << "Integrated safety monitoring enabled in data acquisition thread";
+    } else {
+        qDebug() << "Integrated safety monitoring disabled";
+    }
+}
+
+void DataAcquisitionThread::setSafetyThresholds(double maxPressure, double warningThreshold)
+{
+    QMutexLocker locker(&m_controlMutex);
+    m_maxPressure = maxPressure;
+    m_warningThreshold = warningThreshold;
+    qDebug() << QString("Safety thresholds updated: Max = %1 mmHg, Warning = %2 mmHg")
+                .arg(m_maxPressure).arg(m_warningThreshold);
+}
+
+void DataAcquisitionThread::setSafetyCheckInterval(int interval)
+{
+    QMutexLocker locker(&m_controlMutex);
+    m_safetyCheckInterval = qMax(1, interval);  // Minimum interval of 1
+    qDebug() << "Safety check interval set to every" << m_safetyCheckInterval << "samples";
 }

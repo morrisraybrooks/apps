@@ -44,12 +44,12 @@ public:
     void setHardwareButtonEnabled(bool enabled);
     bool isHardwareButtonEnabled() const { return m_hardwareButtonEnabled; }
 
-signals:
+Q_SIGNALS:
     void emergencyStopTriggered(const QString& reason);
     void emergencyStopReset();
     void hardwareButtonPressed();
 
-private slots:
+private Q_SLOTS:
     void checkHardwareButton();
 
 private:

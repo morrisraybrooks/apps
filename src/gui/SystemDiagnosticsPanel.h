@@ -10,6 +10,7 @@
 #include <QLabel>
 #include <QProgressBar>
 #include <QTableWidget>
+#include <QListWidget>
 #include <QTextEdit>
 #include <QTimer>
 #include <QJsonObject>

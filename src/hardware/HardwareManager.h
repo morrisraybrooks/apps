@@ -49,6 +49,9 @@ public:
     bool getSOL1State() const { return m_sol1State; }
     bool getSOL2State() const { return m_sol2State; }
     bool getSOL3State() const { return m_sol3State; }
+
+    SensorInterface* getSensorInterface() const { return m_sensorInterface.get(); }
+    ActuatorControl* getActuatorControl() const { return m_actuatorControl.get(); }
     
     // Emergency controls
     void emergencyStop();
@@ -57,6 +60,15 @@ public:
     // Hardware diagnostics
     bool performSelfTest();
     QString getLastError() const { return m_lastError; }
+
+    // Simulation mode for testing
+    void setSimulationMode(bool enabled);
+    bool isSimulationMode() const { return m_simulationMode; }
+    void setSimulatedPressure(double pressure);
+    void setSimulatedSensorValues(double avlPressure, double tankPressure);
+    void simulateHardwareFailure(const QString& component);
+    void simulateSensorError(const QString& sensor);
+    void resetHardwareSimulation();
 
 signals:
     void hardwareError(const QString& error);
@@ -92,6 +104,12 @@ private:
     
     // Error tracking
     QString m_lastError;
+
+    // Simulation mode
+    bool m_simulationMode;
+    double m_simulatedAVLPressure;
+    double m_simulatedTankPressure;
+    QStringList m_simulatedFailures;
     
     // GPIO pin definitions (as per specification)
     static const int GPIO_SOL1 = 17;    // AVL (Applied Vacuum Line)

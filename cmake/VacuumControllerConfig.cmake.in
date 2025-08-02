@@ -1,0 +1,35 @@
+# VacuumControllerConfig.cmake.in
+# Configuration file for the VacuumController package
+
+@PACKAGE_INIT@
+
+# Package information
+set(VacuumController_VERSION "@PROJECT_VERSION@")
+set(VacuumController_VERSION_MAJOR "@PROJECT_VERSION_MAJOR@")
+set(VacuumController_VERSION_MINOR "@PROJECT_VERSION_MINOR@")
+set(VacuumController_VERSION_PATCH "@PROJECT_VERSION_PATCH@")
+
+# Find dependencies
+include(CMakeFindDependencyMacro)
+
+find_dependency(Qt5 REQUIRED COMPONENTS Core Widgets Charts)
+find_dependency(PkgConfig REQUIRED)
+
+# Find system dependencies
+pkg_check_modules(GPIOD REQUIRED libgpiod)
+
+# Include the targets file
+include("${CMAKE_CURRENT_LIST_DIR}/VacuumControllerTargets.cmake")
+
+# Set variables for compatibility
+set(VacuumController_LIBRARIES VacuumController::VacuumControllerLib)
+set(VacuumController_INCLUDE_DIRS "${PACKAGE_PREFIX_DIR}/include/vacuum-controller")
+set(VacuumController_FOUND TRUE)
+
+# Check that all required components are available
+check_required_components(VacuumController)
+
+# Provide information about the installation
+message(STATUS "Found VacuumController: ${VacuumController_VERSION}")
+message(STATUS "VacuumController libraries: ${VacuumController_LIBRARIES}")
+message(STATUS "VacuumController include dirs: ${VacuumController_INCLUDE_DIRS}")

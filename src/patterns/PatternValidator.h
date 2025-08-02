@@ -140,17 +140,17 @@ private:
     double m_warningGradientThreshold;     // Gradient warning threshold
     
     // Constants
-    static const double DEFAULT_MAX_PRESSURE;          // 90.0%
-    static const double DEFAULT_MIN_PRESSURE;          // 0.0%
-    static const int DEFAULT_MAX_DURATION;             // 60000ms (1 minute)
-    static const int DEFAULT_MIN_DURATION;             // 100ms
-    static const double DEFAULT_MAX_GRADIENT;          // 50.0%/s
-    static const int DEFAULT_MAX_STEPS;                // 100 steps
-    static const int DEFAULT_MAX_TOTAL_DURATION;       // 3600000ms (1 hour)
-    static const double DEFAULT_MAX_COMPLEXITY;        // 10.0
-    static const double WARNING_PRESSURE_THRESHOLD;    // 80.0%
-    static const int WARNING_DURATION_THRESHOLD;       // 30000ms (30 seconds)
-    static const double WARNING_GRADIENT_THRESHOLD;    // 30.0%/s
+    static constexpr double DEFAULT_MAX_PRESSURE = 90.0;          // 90.0%
+    static constexpr double DEFAULT_MIN_PRESSURE = 0.0;          // 0.0%
+    static constexpr int DEFAULT_MAX_DURATION = 60000;             // 60000ms (1 minute)
+    static constexpr int DEFAULT_MIN_DURATION = 100;             // 100ms
+    static constexpr double DEFAULT_MAX_GRADIENT = 50.0;          // 50.0%/s
+    static constexpr int DEFAULT_MAX_STEPS = 100;                // 100 steps
+    static constexpr int DEFAULT_MAX_TOTAL_DURATION = 3600000;       // 3600000ms (1 hour)
+    static constexpr double DEFAULT_MAX_COMPLEXITY = 10.0;        // 10.0
+    static constexpr double WARNING_PRESSURE_THRESHOLD = 80.0;    // 80.0%
+    static constexpr int WARNING_DURATION_THRESHOLD = 30000;       // 30000ms (30 seconds)
+    static constexpr double WARNING_GRADIENT_THRESHOLD = 30.0;    // 30.0%/s
     
     static const QStringList VALID_ACTIONS;
     static const QStringList REQUIRED_STEP_FIELDS;

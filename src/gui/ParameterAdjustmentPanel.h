@@ -209,9 +209,9 @@ private:
     static const int SLIDER_RESOLUTION = 1000;
     static const int UPDATE_INTERVAL_MS = 100;
     static const int ANIMATION_DURATION_MS = 300;
-    static const double DEFAULT_INTENSITY = 70.0;
-    static const double DEFAULT_SPEED = 1.0;
-    static const double DEFAULT_PRESSURE_OFFSET = 0.0;
+    static constexpr double DEFAULT_INTENSITY = 70.0;
+    static constexpr double DEFAULT_SPEED = 1.0;
+    static constexpr double DEFAULT_PRESSURE_OFFSET = 0.0;
     static const int DEFAULT_PULSE_DURATION = 1000;
 };
 

@@ -3,11 +3,14 @@
 #include "PatternSelector.h"
 #include "SafetyPanel.h"
 #include "SettingsDialog.h"
+#include "SystemDiagnosticsPanel.h"
 #include "../VacuumController.h"
 
 #include <QApplication>
 #include <QCloseEvent>
 #include <QKeyEvent>
+#include <QResizeEvent>
+#include <QWindowStateChangeEvent>
 #include <QMessageBox>
 #include <QDateTime>
 #include <QFont>
@@ -29,9 +32,22 @@ MainWindow::MainWindow(VacuumController* controller, QWidget *parent)
         return;
     }
     
-    // Set window properties for 50-inch display
+    // Set window properties with standard title bar
     setWindowTitle("Vacuum Controller - Medical Device Interface");
-    setMinimumSize(1920, 1080);  // Full HD minimum
+
+    // Force normal window behavior with decorations
+    setWindowFlags(Qt::Widget);  // Reset to default
+    setWindowFlags(Qt::Window);  // Set as top-level window
+
+    // Set size properties
+    setMinimumSize(800, 600);   // Reasonable minimum size
+    resize(1200, 800);          // Default size - user can resize
+
+    // Ensure window is resizable and has decorations
+    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
+    // Show the window to ensure it gets proper decorations
+    setAttribute(Qt::WA_ShowWithoutActivating, false);
     
     // Setup UI
     setupUI();
@@ -109,14 +125,47 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     // Handle touch events for large display
-    if (event->type() == QEvent::TouchBegin || 
-        event->type() == QEvent::TouchUpdate || 
+    if (event->type() == QEvent::TouchBegin ||
+        event->type() == QEvent::TouchUpdate ||
         event->type() == QEvent::TouchEnd) {
         // Touch events are automatically converted to mouse events by Qt
         return false;
     }
-    
+
     return QMainWindow::eventFilter(obj, event);
+}
+
+void MainWindow::changeEvent(QEvent *event)
+{
+    // Handle window state changes (minimize, maximize, etc.)
+    if (event->type() == QEvent::WindowStateChange) {
+        QWindowStateChangeEvent *stateEvent = static_cast<QWindowStateChangeEvent*>(event);
+
+        if (windowState() & Qt::WindowMinimized) {
+            qDebug() << "Window minimized";
+            // Optionally pause operations when minimized
+        } else if (windowState() & Qt::WindowMaximized) {
+            qDebug() << "Window maximized";
+        } else if (windowState() == Qt::WindowNoState) {
+            qDebug() << "Window restored to normal state";
+        }
+    }
+
+    QMainWindow::changeEvent(event);
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    // Handle window resize events
+    QSize newSize = event->size();
+    qDebug() << "Window resized to:" << newSize.width() << "x" << newSize.height();
+
+    // Ensure minimum size constraints
+    if (newSize.width() < 800 || newSize.height() < 600) {
+        resize(qMax(800, newSize.width()), qMax(600, newSize.height()));
+    }
+
+    QMainWindow::resizeEvent(event);
 }
 
 void MainWindow::onSystemStateChanged(VacuumController::SystemState state)
@@ -221,8 +270,8 @@ void MainWindow::showMainPanel()
 
 void MainWindow::showSafetyPanel()
 {
-    if (m_stackedWidget) {
-        m_stackedWidget->setCurrentWidget(m_safetyPanel);
+    if (m_stackedWidget && m_safetyPanelWidget) {
+        m_stackedWidget->setCurrentWidget(m_safetyPanelWidget.get());
         
         // Update navigation buttons
         m_mainPanelButton->setStyleSheet("");
@@ -241,8 +290,8 @@ void MainWindow::showSettingsDialog()
 
 void MainWindow::showDiagnosticsPanel()
 {
-    if (m_stackedWidget) {
-        m_stackedWidget->setCurrentWidget(m_diagnosticsPanel);
+    if (m_stackedWidget && m_diagnosticsPanelWidget) {
+        m_stackedWidget->setCurrentWidget(m_diagnosticsPanelWidget.get());
         
         // Update navigation buttons
         m_mainPanelButton->setStyleSheet("");
@@ -260,8 +309,12 @@ void MainWindow::onStartStopClicked()
         m_controller->stopPattern();
     } else {
         // Get selected pattern from pattern selector
-        QString selectedPattern = m_patternSelector ? m_patternSelector->getSelectedPattern() : "Slow Pulse";
-        m_controller->startPattern(selectedPattern);
+        PatternSelector::PatternInfo selectedPatternInfo = m_patternSelector ? m_patternSelector->getSelectedPatternInfo() : PatternSelector::PatternInfo();
+        if (!selectedPatternInfo.name.isEmpty()) {
+            m_controller->startPattern(selectedPatternInfo.name, selectedPatternInfo.parameters);
+        } else {
+            QMessageBox::warning(this, "Pattern Selection Error", "No vacuum pattern selected. Please select a pattern to start.");
+        }
     }
 }
 
@@ -374,6 +427,13 @@ void MainWindow::setupUI()
     m_mainLayout->setSpacing(10);
     m_mainLayout->setContentsMargins(10, 10, 10, 10);
 
+    // Create specialized components FIRST before setting up layouts
+    m_pressureMonitor = std::make_unique<PressureMonitor>(m_controller);
+    m_patternSelector = std::make_unique<PatternSelector>(m_controller, this);
+    m_safetyPanelWidget = std::make_unique<SafetyPanel>(m_controller);
+    m_settingsDialog = std::make_unique<SettingsDialog>(m_controller, this);
+    m_diagnosticsPanelWidget = std::make_unique<SystemDiagnosticsPanel>(m_controller);
+
     // Setup navigation bar
     setupNavigationBar();
 
@@ -381,7 +441,7 @@ void MainWindow::setupUI()
     m_stackedWidget = new QStackedWidget;
     m_mainLayout->addWidget(m_stackedWidget, 1);  // Takes most space
 
-    // Setup main panels
+    // Setup main panels (now that components exist)
     setupMainPanel();
 
     // Setup emergency controls
@@ -389,12 +449,6 @@ void MainWindow::setupUI()
 
     // Setup status bar
     setupStatusBar();
-
-    // Create specialized components
-    m_pressureMonitor = std::make_unique<PressureMonitor>(m_controller);
-    m_patternSelector = std::make_unique<PatternSelector>(m_controller);
-    m_safetyPanelWidget = std::make_unique<SafetyPanel>(m_controller);
-    m_settingsDialog = std::make_unique<SettingsDialog>(m_controller, this);
 }
 
 void MainWindow::setupMainPanel()
@@ -403,28 +457,36 @@ void MainWindow::setupMainPanel()
     m_mainPanel = new QWidget;
     QHBoxLayout* mainPanelLayout = new QHBoxLayout(m_mainPanel);
     mainPanelLayout->setSpacing(20);
+    mainPanelLayout->setContentsMargins(10, 10, 10, 10);
 
     // Left side - Pattern selection and controls
     QVBoxLayout* leftLayout = new QVBoxLayout;
 
-    // Pattern selection area
+    // Pattern selection area - make it the main focus
     QFrame* patternFrame = new QFrame;
     patternFrame->setFrameStyle(QFrame::Box);
-    patternFrame->setMinimumHeight(400);
+    patternFrame->setMinimumHeight(600); // Increased height
+    patternFrame->setStyleSheet("QFrame { border: 2px solid #2196F3; border-radius: 10px; background-color: #f8f9fa; }");
     QVBoxLayout* patternLayout = new QVBoxLayout(patternFrame);
+    patternLayout->setSpacing(10);
+    patternLayout->setContentsMargins(10, 10, 10, 10);
 
-    QLabel* patternLabel = new QLabel("PATTERN SELECTION");
+    QLabel* patternLabel = new QLabel("VACUUM CYCLE SELECTION");
     patternLabel->setAlignment(Qt::AlignCenter);
-    patternLabel->setStyleSheet("font-size: 20pt; font-weight: bold; color: #2196F3;");
+    patternLabel->setStyleSheet("font-size: 24pt; font-weight: bold; color: #2196F3; margin: 10px;");
     patternLayout->addWidget(patternLabel);
 
-    // Pattern selector will be added here
-    patternLayout->addStretch();
+    // Add pattern selector - properly integrate it
+    if (m_patternSelector) {
+        // Don't reparent, just add to layout
+        patternLayout->addWidget(m_patternSelector.get(), 1); // Give it more stretch factor
+    }
 
-    leftLayout->addWidget(patternFrame);
+    leftLayout->addWidget(patternFrame, 2); // Give pattern frame more space
 
     // Control buttons
     QHBoxLayout* controlLayout = new QHBoxLayout;
+    controlLayout->setSpacing(15);
 
     m_startStopButton = new QPushButton("START");
     m_startStopButton->setMinimumSize(LARGE_BUTTON_WIDTH, LARGE_BUTTON_HEIGHT);
@@ -447,14 +509,20 @@ void MainWindow::setupMainPanel()
     QFrame* pressureFrame = new QFrame;
     pressureFrame->setFrameStyle(QFrame::Box);
     pressureFrame->setMinimumHeight(600);
+    pressureFrame->setStyleSheet("QFrame { border: 2px solid #2196F3; border-radius: 10px; background-color: #f8f9fa; }");
     QVBoxLayout* pressureLayout = new QVBoxLayout(pressureFrame);
+    pressureLayout->setSpacing(10);
+    pressureLayout->setContentsMargins(10, 10, 10, 10);
 
     QLabel* pressureLabel = new QLabel("PRESSURE MONITORING");
     pressureLabel->setAlignment(Qt::AlignCenter);
     pressureLabel->setStyleSheet("font-size: 20pt; font-weight: bold; color: #2196F3;");
     pressureLayout->addWidget(pressureLabel);
 
-    // Pressure monitor will be added here
+    // Add pressure monitor
+    if (m_pressureMonitor) {
+        pressureLayout->addWidget(m_pressureMonitor.get());
+    }
     pressureLayout->addStretch();
 
     rightLayout->addWidget(pressureFrame);
@@ -466,22 +534,30 @@ void MainWindow::setupMainPanel()
     // Add panels to stacked widget
     m_stackedWidget->addWidget(m_mainPanel);
 
-    // Create other panels (simplified for now)
-    m_safetyPanel = new QWidget;
-    QLabel* safetyLabel = new QLabel("SAFETY PANEL - Under Construction");
-    safetyLabel->setAlignment(Qt::AlignCenter);
-    safetyLabel->setStyleSheet("font-size: 24pt; color: #666;");
-    QVBoxLayout* safetyLayout = new QVBoxLayout(m_safetyPanel);
-    safetyLayout->addWidget(safetyLabel);
-    m_stackedWidget->addWidget(m_safetyPanel);
+    // Create other panels
+    if (m_safetyPanelWidget) {
+        m_stackedWidget->addWidget(m_safetyPanelWidget.get());
+    } else {
+        QWidget* safetyPanel = new QWidget;
+        QLabel* safetyLabel = new QLabel("SAFETY PANEL - Error");
+        safetyLabel->setAlignment(Qt::AlignCenter);
+        safetyLabel->setStyleSheet("font-size: 24pt; color: #f44336;");
+        QVBoxLayout* safetyLayout = new QVBoxLayout(safetyPanel);
+        safetyLayout->addWidget(safetyLabel);
+        m_stackedWidget->addWidget(safetyPanel);
+    }
 
-    m_diagnosticsPanel = new QWidget;
-    QLabel* diagLabel = new QLabel("DIAGNOSTICS PANEL - Under Construction");
-    diagLabel->setAlignment(Qt::AlignCenter);
-    diagLabel->setStyleSheet("font-size: 24pt; color: #666;");
-    QVBoxLayout* diagLayout = new QVBoxLayout(m_diagnosticsPanel);
-    diagLayout->addWidget(diagLabel);
-    m_stackedWidget->addWidget(m_diagnosticsPanel);
+    if (m_diagnosticsPanelWidget) {
+        m_stackedWidget->addWidget(m_diagnosticsPanelWidget.get());
+    } else {
+        QWidget* diagnosticsPanel = new QWidget;
+        QLabel* diagLabel = new QLabel("DIAGNOSTICS PANEL - Error");
+        diagLabel->setAlignment(Qt::AlignCenter);
+        diagLabel->setStyleSheet("font-size: 24pt; color: #f44336;");
+        QVBoxLayout* diagLayout = new QVBoxLayout(diagnosticsPanel);
+        diagLayout->addWidget(diagLabel);
+        m_stackedWidget->addWidget(diagnosticsPanel);
+    }
 }
 
 void MainWindow::setupNavigationBar()
@@ -489,29 +565,40 @@ void MainWindow::setupNavigationBar()
     m_navigationBar = new QFrame;
     m_navigationBar->setFrameStyle(QFrame::Box);
     m_navigationBar->setFixedHeight(NAVIGATION_HEIGHT);
-    m_navigationBar->setStyleSheet("background-color: #f0f0f0; border: 2px solid #ddd;");
+    m_navigationBar->setStyleSheet("background-color: #f0f0f0; border: 2px solid #ddd; border-radius: 5px;");
 
     m_navLayout = new QHBoxLayout(m_navigationBar);
-    m_navLayout->setSpacing(10);
+    m_navLayout->setSpacing(15);
+    m_navLayout->setContentsMargins(10, 5, 10, 5);
 
-    // Navigation buttons
+    // Navigation buttons with consistent styling
     m_mainPanelButton = new QPushButton("MAIN CONTROL");
     m_mainPanelButton->setMinimumSize(BUTTON_WIDTH, BUTTON_HEIGHT);
+    m_mainPanelButton->setStyleSheet("QPushButton { font-size: 14pt; font-weight: bold; border-radius: 5px; }");
 
     m_safetyPanelButton = new QPushButton("SAFETY");
     m_safetyPanelButton->setMinimumSize(BUTTON_WIDTH, BUTTON_HEIGHT);
+    m_safetyPanelButton->setStyleSheet("QPushButton { font-size: 14pt; font-weight: bold; border-radius: 5px; }");
 
     m_settingsButton = new QPushButton("SETTINGS");
     m_settingsButton->setMinimumSize(BUTTON_WIDTH, BUTTON_HEIGHT);
+    m_settingsButton->setStyleSheet("QPushButton { font-size: 14pt; font-weight: bold; border-radius: 5px; }");
 
     m_diagnosticsButton = new QPushButton("DIAGNOSTICS");
     m_diagnosticsButton->setMinimumSize(BUTTON_WIDTH, BUTTON_HEIGHT);
+    m_diagnosticsButton->setStyleSheet("QPushButton { font-size: 14pt; font-weight: bold; border-radius: 5px; }");
 
+    m_shutdownButton = new QPushButton("SHUTDOWN");
+    m_shutdownButton->setMinimumSize(BUTTON_WIDTH, BUTTON_HEIGHT);
+    m_shutdownButton->setStyleSheet("QPushButton { background-color: #f44336; color: white; font-size: 14pt; font-weight: bold; border-radius: 5px; }");
+
+    // Add buttons with proper alignment
     m_navLayout->addWidget(m_mainPanelButton);
     m_navLayout->addWidget(m_safetyPanelButton);
     m_navLayout->addWidget(m_settingsButton);
     m_navLayout->addWidget(m_diagnosticsButton);
-    m_navLayout->addStretch();
+    m_navLayout->addStretch(); // Push shutdown button to the right
+    m_navLayout->addWidget(m_shutdownButton);
 
     m_mainLayout->addWidget(m_navigationBar);
 }
@@ -521,27 +608,32 @@ void MainWindow::setupStatusBar()
     m_statusBar = new QFrame;
     m_statusBar->setFrameStyle(QFrame::Box);
     m_statusBar->setFixedHeight(STATUS_BAR_HEIGHT);
-    m_statusBar->setStyleSheet("background-color: #f8f8f8; border: 2px solid #ddd;");
+    m_statusBar->setStyleSheet("background-color: #f8f8f8; border: 2px solid #ddd; border-radius: 5px;");
 
     m_statusLayout = new QHBoxLayout(m_statusBar);
     m_statusLayout->setSpacing(20);
+    m_statusLayout->setContentsMargins(15, 5, 15, 5);
 
-    // System status
+    // System status with proper alignment
     m_systemStatusLabel = new QLabel("STOPPED");
     m_systemStatusLabel->setMinimumSize(200, 50);
     m_systemStatusLabel->setAlignment(Qt::AlignCenter);
-    m_systemStatusLabel->setStyleSheet("font-size: 16pt; font-weight: bold; padding: 10px; border-radius: 5px;");
+    m_systemStatusLabel->setStyleSheet("font-size: 16pt; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #9E9E9E; color: white;");
 
-    // Pressure status
+    // Pressure status with consistent styling
     m_pressureStatusLabel = new QLabel("AVL: -- mmHg | Tank: -- mmHg");
-    m_pressureStatusLabel->setStyleSheet("font-size: 14pt; color: #333;");
+    m_pressureStatusLabel->setStyleSheet("font-size: 14pt; color: #333; font-weight: bold;");
+    m_pressureStatusLabel->setAlignment(Qt::AlignCenter);
 
-    // Time display
+    // Time display with consistent styling
     m_timeLabel = new QLabel;
-    m_timeLabel->setStyleSheet("font-size: 14pt; color: #333;");
+    m_timeLabel->setStyleSheet("font-size: 14pt; color: #333; font-weight: bold;");
+    m_timeLabel->setAlignment(Qt::AlignCenter);
+    m_timeLabel->setMinimumWidth(120);
 
+    // Add widgets with proper spacing
     m_statusLayout->addWidget(m_systemStatusLabel);
-    m_statusLayout->addWidget(m_pressureStatusLabel);
+    m_statusLayout->addWidget(m_pressureStatusLabel, 1); // Give it more space
     m_statusLayout->addStretch();
     m_statusLayout->addWidget(m_timeLabel);
 
@@ -552,26 +644,44 @@ void MainWindow::setupEmergencyControls()
 {
     m_emergencyFrame = new QFrame;
     m_emergencyFrame->setFrameStyle(QFrame::Box);
-    m_emergencyFrame->setStyleSheet("background-color: #ffebee; border: 3px solid #f44336;");
+    m_emergencyFrame->setStyleSheet("background-color: #ffebee; border: 3px solid #f44336; border-radius: 10px;");
+    m_emergencyFrame->setFixedHeight(100); // Fixed height for consistent layout
 
     QHBoxLayout* emergencyLayout = new QHBoxLayout(m_emergencyFrame);
     emergencyLayout->setSpacing(20);
+    emergencyLayout->setContentsMargins(15, 10, 15, 10);
 
     QLabel* emergencyLabel = new QLabel("EMERGENCY CONTROLS");
     emergencyLabel->setStyleSheet("font-size: 18pt; font-weight: bold; color: #f44336;");
+    emergencyLabel->setAlignment(Qt::AlignVCenter);
 
-    m_emergencyStopButton = new QPushButton("EMERGENCY STOP");
+    m_emergencyStopButton = new QPushButton("EMERGENCY\nSTOP");
     m_emergencyStopButton->setMinimumSize(EMERGENCY_BUTTON_SIZE, EMERGENCY_BUTTON_SIZE);
+    m_emergencyStopButton->setMaximumSize(EMERGENCY_BUTTON_SIZE, EMERGENCY_BUTTON_SIZE);
     m_emergencyStopButton->setStyleSheet(
-        "background-color: #f44336; color: white; font-size: 16pt; font-weight: bold; "
-        "border: 3px solid #da190b; border-radius: 10px;"
+        "QPushButton {"
+        "  background-color: #f44336; color: white; font-size: 14pt; font-weight: bold;"
+        "  border: 3px solid #da190b; border-radius: 10px;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: #da190b;"
+        "}"
     );
 
-    m_resetEmergencyButton = new QPushButton("RESET EMERGENCY");
+    m_resetEmergencyButton = new QPushButton("RESET\nEMERGENCY");
     m_resetEmergencyButton->setMinimumSize(BUTTON_WIDTH, BUTTON_HEIGHT);
-    m_resetEmergencyButton->setStyleSheet("font-size: 14pt; font-weight: bold;");
+    m_resetEmergencyButton->setStyleSheet(
+        "QPushButton {"
+        "  font-size: 12pt; font-weight: bold; border-radius: 5px;"
+        "  background-color: #4CAF50; color: white;"
+        "}"
+        "QPushButton:disabled {"
+        "  background-color: #cccccc; color: #666666;"
+        "}"
+    );
     m_resetEmergencyButton->setEnabled(false);
 
+    // Add widgets with proper alignment
     emergencyLayout->addWidget(emergencyLabel);
     emergencyLayout->addStretch();
     emergencyLayout->addWidget(m_emergencyStopButton);
@@ -601,6 +711,7 @@ void MainWindow::connectSignals()
     connect(m_safetyPanelButton, &QPushButton::clicked, this, &MainWindow::showSafetyPanel);
     connect(m_settingsButton, &QPushButton::clicked, this, &MainWindow::showSettingsDialog);
     connect(m_diagnosticsButton, &QPushButton::clicked, this, &MainWindow::showDiagnosticsPanel);
+    connect(m_shutdownButton, &QPushButton::clicked, this, &MainWindow::close);
 
     // Connect control buttons
     connect(m_startStopButton, &QPushButton::clicked, this, &MainWindow::onStartStopClicked);
@@ -616,20 +727,41 @@ void MainWindow::applyLargeDisplayStyles()
     appFont.setPointSize(FONT_SIZE_NORMAL);
     QApplication::setFont(appFont);
 
-    // Apply touch-friendly styles
+    // Apply consistent touch-friendly styles for 50-inch display
     setStyleSheet(
         "QPushButton { "
         "  min-height: 60px; "
         "  min-width: 120px; "
         "  font-size: 16pt; "
+        "  font-weight: bold; "
         "  padding: 10px; "
+        "  border: 2px solid #ddd; "
         "  border-radius: 8px; "
+        "  background-color: #f8f9fa; "
+        "} "
+        "QPushButton:hover { "
+        "  background-color: #e9ecef; "
+        "  border-color: #2196F3; "
+        "} "
+        "QPushButton:pressed { "
+        "  background-color: #dee2e6; "
         "} "
         "QLabel { "
         "  font-size: 14pt; "
         "} "
         "QFrame { "
         "  border-radius: 5px; "
+        "} "
+        "QGroupBox { "
+        "  font-size: 16pt; "
+        "  font-weight: bold; "
+        "  color: #2196F3; "
+        "  padding-top: 10px; "
+        "} "
+        "QGroupBox::title { "
+        "  subcontrol-origin: margin; "
+        "  left: 10px; "
+        "  padding: 0 5px 0 5px; "
         "}"
     );
 }

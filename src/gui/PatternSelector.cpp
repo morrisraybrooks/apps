@@ -1,11 +1,19 @@
+
 #include "PatternSelector.h"
 #include "components/TouchButton.h"
+#include "CustomPatternDialog.h"
 #include "../VacuumController.h"
 #include <QDebug>
 #include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 #include <QFile>
 #include <QMessageBox>
 #include <QApplication>
+#include <QStandardPaths>
+#include <QDir>
+#include <QFileInfo>
+#include <QAbstractButton>
 
 PatternSelector::PatternSelector(VacuumController* controller, QWidget *parent)
     : QWidget(parent)
@@ -14,12 +22,15 @@ PatternSelector::PatternSelector(VacuumController* controller, QWidget *parent)
     , m_patternButtonGroup(new QButtonGroup(this))
     , m_configFilePath("config/patterns.json")
 {
+    qDebug() << "PatternSelector constructor called.";
     setupUI();
     loadPatterns();
     
     // Set default selection
     if (!m_patterns.isEmpty()) {
         selectPattern(m_patterns.firstKey());
+    } else {
+        qWarning() << "No patterns loaded, default selection not set.";
     }
 }
 
@@ -29,13 +40,26 @@ PatternSelector::~PatternSelector()
 
 void PatternSelector::setupUI()
 {
-    m_mainLayout->setSpacing(15);
-    m_mainLayout->setContentsMargins(10, 10, 10, 10);
+    qDebug() << "setupUI called.";
+    m_mainLayout->setSpacing(8);
+    m_mainLayout->setContentsMargins(5, 5, 5, 5);
     
     setupCategorySelector();
     setupPatternGrid();
     setupParameterPanel();
     setupPreviewPanel();
+
+    // Add "Create New Pattern" button
+    TouchButton* createNewButton = new TouchButton("+ Create New Pattern");
+    createNewButton->setButtonType(TouchButton::Success);
+    createNewButton->setMinimumHeight(50);
+    connect(createNewButton, &TouchButton::clicked, this, &PatternSelector::onCreateNewPatternClicked);
+    m_mainLayout->addWidget(createNewButton, 0, Qt::AlignBottom);
+
+    // Ensure the widget has proper size for 50-inch display
+    this->setMinimumSize(600, 400); // Appropriate size for 50-inch display
+    this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    this->setStyleSheet("QWidget { background-color: transparent; }");
     
     // Make pattern button group exclusive
     m_patternButtonGroup->setExclusive(true);
@@ -47,6 +71,7 @@ void PatternSelector::setupUI()
 
 void PatternSelector::setupCategorySelector()
 {
+    qDebug() << "setupCategorySelector called.";
     m_categoryGroup = new QGroupBox("Pattern Categories");
     m_categoryGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
 
@@ -71,24 +96,16 @@ void PatternSelector::setupCategorySelector()
         "}"
     );
 
-    // Add pattern categories
-    m_categoryCombo->addItem("All Patterns");
-    m_categoryCombo->addItem("Pulse Patterns");
-    m_categoryCombo->addItem("Wave Patterns");
-    m_categoryCombo->addItem("Air Pulse Patterns");
-    m_categoryCombo->addItem("Milking Patterns");
-    m_categoryCombo->addItem("Constant Patterns");
-    m_categoryCombo->addItem("Special Patterns");
-
     connect(m_categoryCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &PatternSelector::onCategoryChanged);
 
     categoryLayout->addWidget(m_categoryCombo);
-    m_mainLayout->addWidget(m_categoryGroup);
+    m_mainLayout->addWidget(m_categoryGroup, 0);
 }
 
 void PatternSelector::setupPatternGrid()
 {
+    qDebug() << "setupPatternGrid called.";
     m_patternGroup = new QGroupBox("Available Patterns");
     m_patternGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
     
@@ -97,17 +114,18 @@ void PatternSelector::setupPatternGrid()
     // Create scroll area for patterns
     m_patternScrollArea = new QScrollArea();
     m_patternScrollArea->setWidgetResizable(true);
-    m_patternScrollArea->setMinimumHeight(300);
-    m_patternScrollArea->setStyleSheet("QScrollArea { border: 1px solid #ddd; border-radius: 5px; }");
+    m_patternScrollArea->setMinimumHeight(200);
+    m_patternScrollArea->setMaximumHeight(350);
+    m_patternScrollArea->setStyleSheet("QScrollArea { border: 1px solid #ddd; border-radius: 5px; background-color: white; }");
     
     m_patternWidget = new QWidget();
     m_patternGrid = new QGridLayout(m_patternWidget);
-    m_patternGrid->setSpacing(10);
+    m_patternGrid->setSpacing(5);
     
     m_patternScrollArea->setWidget(m_patternWidget);
     patternGroupLayout->addWidget(m_patternScrollArea);
     
-    m_mainLayout->addWidget(m_patternGroup);
+    m_mainLayout->addWidget(m_patternGroup, 1);
 }
 
 void PatternSelector::setupParameterPanel()
@@ -130,7 +148,7 @@ void PatternSelector::setupParameterPanel()
     m_parameterScrollArea->setWidget(m_parameterWidget);
     parameterGroupLayout->addWidget(m_parameterScrollArea);
     
-    m_mainLayout->addWidget(m_parameterGroup);
+    m_mainLayout->addWidget(m_parameterGroup, 0);
 }
 
 void PatternSelector::setupPreviewPanel()
@@ -180,11 +198,12 @@ void PatternSelector::setupPreviewPanel()
     previewLayout->addStretch();
     previewLayout->addLayout(buttonLayout);
     
-    m_mainLayout->addWidget(m_previewGroup);
+    m_mainLayout->addWidget(m_previewGroup, 0);
 }
 
 void PatternSelector::loadPatterns()
 {
+    qDebug() << "loadPatterns called.";
     loadPatternsFromConfig();
     populateCategorySelector();
     populatePatternGrid();
@@ -192,9 +211,10 @@ void PatternSelector::loadPatterns()
 
 void PatternSelector::loadPatternsFromConfig()
 {
+    qDebug() << "loadPatternsFromConfig called. Config file path:" << m_configFilePath;
     QFile file(m_configFilePath);
     if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "Could not open patterns config file:" << m_configFilePath;
+        qWarning() << "Could not open patterns config file:" << m_configFilePath << ", error: " << file.errorString();
         return;
     }
     
@@ -217,8 +237,11 @@ void PatternSelector::loadPatternsFromConfig()
         QJsonArray patterns = vacuumPatterns[categoryKey].toArray();
         QString categoryName = categoryKey;
         categoryName.replace("_", " ");
-        categoryName = categoryName.split(" ").first();
-        categoryName[0] = categoryName[0].toUpper();
+        QStringList parts = categoryName.split(" ");
+        for (int i = 0; i < parts.size(); ++i) {
+            parts[i] = parts[i].at(0).toUpper() + parts[i].mid(1);
+        }
+        categoryName = parts.join(" ");
         
         for (const auto& patternValue : patterns) {
             QJsonObject patternObj = patternValue.toObject();
@@ -226,7 +249,7 @@ void PatternSelector::loadPatternsFromConfig()
             PatternInfo info;
             info.name = patternObj["name"].toString();
             info.type = patternObj["type"].toString();
-            info.speed = patternObj["speed"].toString();
+            info.speed = patternObj["speed"].toDouble(1.0);
             info.description = patternObj["description"].toString();
             info.category = categoryName;
             info.parameters = patternObj;
@@ -245,16 +268,20 @@ void PatternSelector::loadPatternsFromConfig()
 
 void PatternSelector::populateCategorySelector()
 {
+    qDebug() << "populateCategorySelector called.";
     m_categoryCombo->clear();
     m_categoryCombo->addItem("All Categories", "all");
     
     for (const QString& category : m_categories) {
+        qDebug() << "Adding category to combo box:" << category;
         m_categoryCombo->addItem(category, category);
     }
 }
 
 void PatternSelector::populatePatternGrid()
 {
+    qDebug() << "populatePatternGrid() called";
+
     // Clear existing buttons
     for (auto button : m_patternButtonGroup->buttons()) {
         m_patternButtonGroup->removeButton(button);
@@ -270,12 +297,17 @@ void PatternSelector::populatePatternGrid()
     // Get patterns for current category
     QList<PatternInfo> patternsToShow;
     QString currentCategory = m_categoryCombo->currentData().toString();
-    
+
+    qDebug() << "PopulatePatternGrid: currentCategory =" << currentCategory;
+    qDebug() << "PopulatePatternGrid: total patterns =" << m_patterns.size();
+
     for (const auto& pattern : m_patterns) {
         if (currentCategory == "all" || pattern.category == currentCategory) {
             patternsToShow.append(pattern);
         }
     }
+
+    qDebug() << "PopulatePatternGrid: patterns to show =" << patternsToShow.size();
     
     // Create pattern buttons
     int row = 0, col = 0;
@@ -283,16 +315,18 @@ void PatternSelector::populatePatternGrid()
         TouchButton* button = createPatternButton(pattern);
         m_patternButtonGroup->addButton(button);
         m_patternGrid->addWidget(button, row, col);
-        
+        qDebug() << "Added pattern button:" << pattern.name << "at row" << row << "col" << col;
+
         col++;
         if (col >= GRID_COLUMNS) {
             col = 0;
             row++;
         }
     }
-    
+
     // Add stretch to fill remaining space
     m_patternGrid->setRowStretch(row + 1, 1);
+    qDebug() << "Pattern grid populated.";
 }
 
 TouchButton* PatternSelector::createPatternButton(const PatternInfo& pattern)
@@ -303,29 +337,27 @@ TouchButton* PatternSelector::createPatternButton(const PatternInfo& pattern)
     button->setCheckable(true);
     button->setProperty("patternName", pattern.name);
     
-    // Set button type based on pattern type
-    if (pattern.type == "pulse") {
-        button->setButtonType(TouchButton::Primary);
-    } else if (pattern.type == "wave") {
-        button->setButtonType(TouchButton::Success);
-    } else if (pattern.type == "air_pulse") {
-        button->setButtonType(TouchButton::Warning);
-    } else if (pattern.type == "milking") {
-        button->setButtonType(TouchButton::Normal);
-    } else if (pattern.type == "constant") {
-        button->setButtonType(TouchButton::Primary);
-    } else if (pattern.type == "edging") {
-        button->setButtonType(TouchButton::Danger);
-    }
+    // Set consistent button type for all patterns
+    button->setButtonType(TouchButton::Normal);
     
     // Set tooltip with description
     button->setToolTip(pattern.description);
+    
+    // Add stylesheet for selection feedback
+    button->setStyleSheet(
+        "TouchButton:checked {"
+        "  background-color: #2196F3;"
+        "  color: white;"
+        "  border: 2px solid #1976D2;"
+        "}"
+    );
     
     return button;
 }
 
 void PatternSelector::selectPattern(const QString& patternName)
 {
+    qDebug() << "selectPattern called with pattern:" << patternName;
     if (!m_patterns.contains(patternName)) {
         qWarning() << "Pattern not found:" << patternName;
         return;
@@ -338,7 +370,8 @@ void PatternSelector::selectPattern(const QString& patternName)
         TouchButton* touchButton = qobject_cast<TouchButton*>(button);
         if (touchButton && touchButton->property("patternName").toString() == patternName) {
             touchButton->setChecked(true);
-            break;
+        } else {
+            touchButton->setChecked(false);
         }
     }
     
@@ -351,6 +384,7 @@ void PatternSelector::selectPattern(const QString& patternName)
 
 void PatternSelector::selectCategory(const QString& category)
 {
+    qDebug() << "selectCategory called with category:" << category;
     // Find the category in the combo box and select it
     for (int i = 0; i < m_categoryCombo->count(); ++i) {
         if (m_categoryCombo->itemText(i) == category) {
@@ -458,15 +492,14 @@ void PatternSelector::updatePreviewPanel()
     const PatternInfo& pattern = m_patterns[m_selectedPattern];
     
     m_patternNameLabel->setText(pattern.name);
-    m_patternTypeLabel->setText(QString("%1 Pattern (%2 Speed)")
+    m_patternTypeLabel->setText(QString("%1 Pattern (Speed: %2x)")
                                .arg(pattern.type.toUpper())
-                               .arg(pattern.speed.toUpper()));
+                               .arg(pattern.speed, 0, 'f', 1));
     m_patternDescriptionLabel->setText(pattern.description);
 }
 
-void PatternSelector::onPatternButtonClicked()
+void PatternSelector::onPatternButtonClicked(QAbstractButton* button)
 {
-    TouchButton* button = qobject_cast<TouchButton*>(sender());
     if (button) {
         QString patternName = button->property("patternName").toString();
         selectPattern(patternName);
@@ -475,6 +508,7 @@ void PatternSelector::onPatternButtonClicked()
 
 void PatternSelector::onCategoryChanged()
 {
+    qDebug() << "onCategoryChanged called.";
     populatePatternGrid();
 }
 
@@ -494,8 +528,207 @@ void PatternSelector::onPreviewClicked()
 
 void PatternSelector::onCustomizeClicked()
 {
-    QMessageBox::information(this, "Customize Pattern", 
-                           "Pattern customization interface will be implemented in a future version.");
+    if (!m_controller) {
+        QMessageBox::warning(this, "Error", "Controller not available for pattern customization.");
+        return;
+    }
+
+    // Create and show custom pattern dialog
+    CustomPatternDialog* dialog = new CustomPatternDialog(m_controller, this);
+
+    // If a pattern is selected, load it for editing
+    if (!m_selectedPattern.isEmpty()) {
+        dialog->loadPattern(m_selectedPattern);
+    }
+
+    // Connect signals to handle pattern creation/modification
+    connect(dialog, &CustomPatternDialog::patternCreated,
+            this, &PatternSelector::onPatternCreated);
+    connect(dialog, &CustomPatternDialog::patternModified,
+            this, &PatternSelector::onPatternModified);
+
+    // Show dialog
+    if (dialog->exec() == QDialog::Accepted) {
+        // Pattern was saved successfully
+        // Reload patterns to include any new/modified patterns
+        loadPatterns();
+
+        // If a new pattern was created, select it
+        QString newPatternName = dialog->getPatternData()["name"].toString();
+        if (!newPatternName.isEmpty() && m_patterns.contains(newPatternName)) {
+            selectPattern(newPatternName);
+        }
+    }
+
+    dialog->deleteLater();
+}
+
+void PatternSelector::onCreateNewPatternClicked()
+{
+    if (!m_controller) {
+        QMessageBox::warning(this, "Error", "Controller not available for pattern creation.");
+        return;
+    }
+
+    // Create and show custom pattern dialog for new pattern creation
+    CustomPatternDialog* dialog = new CustomPatternDialog(m_controller, this);
+
+    // Start with a fresh new pattern
+    dialog->createNewPattern();
+
+    // Connect signals to handle pattern creation
+    connect(dialog, &CustomPatternDialog::patternCreated,
+            this, &PatternSelector::onPatternCreated);
+
+    // Show dialog
+    if (dialog->exec() == QDialog::Accepted) {
+        // Pattern was created successfully
+        // Reload patterns to include the new pattern
+        loadPatterns();
+
+        // Select the new pattern
+        QString newPatternName = dialog->getPatternData()["name"].toString();
+        if (!newPatternName.isEmpty() && m_patterns.contains(newPatternName)) {
+            selectPattern(newPatternName);
+        }
+    }
+
+    dialog->deleteLater();
+}
+
+void PatternSelector::onPatternCreated(const QString& patternName, const QJsonObject& patternData)
+{
+    qDebug() << "New pattern created:" << patternName;
+
+    // Add the new pattern to our pattern map
+    PatternInfo newPattern;
+    newPattern.name = patternName;
+    newPattern.type = patternData["type"].toString();
+    newPattern.description = patternData["description"].toString();
+    newPattern.basePressure = patternData.value("base_pressure").toDouble(50.0);
+    newPattern.speed = patternData.value("speed").toDouble(1.0);
+    newPattern.intensity = patternData.value("intensity").toDouble(50.0);
+
+    // Parse pattern steps
+    QJsonArray stepsArray = patternData["steps"].toArray();
+    for (const QJsonValue& stepValue : stepsArray) {
+        QJsonObject stepObj = stepValue.toObject();
+        PatternStep step;
+        step.pressurePercent = stepObj["pressure_percent"].toDouble();
+        step.durationMs = stepObj["duration_ms"].toInt();
+        step.action = stepObj["action"].toString();
+        step.description = stepObj["description"].toString();
+        step.parameters = stepObj["parameters"].toObject().toVariantMap();
+        newPattern.steps.append(step);
+    }
+
+    m_patterns[patternName] = newPattern;
+
+    // Save the new pattern to configuration
+    savePatternToConfig(newPattern);
+
+    // Refresh the UI
+    populatePatternGrid();
+
+    // Select the new pattern
+    selectPattern(patternName);
+
+    emit patternCreated(patternName);
+}
+
+void PatternSelector::onPatternModified(const QString& patternName, const QJsonObject& patternData)
+{
+    qDebug() << "Pattern modified:" << patternName;
+
+    // Update the existing pattern
+    if (m_patterns.contains(patternName)) {
+        PatternInfo& pattern = m_patterns[patternName];
+        pattern.type = patternData["type"].toString();
+        pattern.description = patternData["description"].toString();
+        pattern.basePressure = patternData.value("base_pressure").toDouble(pattern.basePressure);
+        pattern.speed = patternData.value("speed").toDouble(pattern.speed);
+        pattern.intensity = patternData.value("intensity").toDouble(pattern.intensity);
+
+        // Update pattern steps
+        pattern.steps.clear();
+        QJsonArray stepsArray = patternData["steps"].toArray();
+        for (const QJsonValue& stepValue : stepsArray) {
+            QJsonObject stepObj = stepValue.toObject();
+            PatternStep step;
+            step.pressurePercent = stepObj["pressure_percent"].toDouble();
+            step.durationMs = stepObj["duration_ms"].toInt();
+            step.action = stepObj["action"].toString();
+            step.description = stepObj["description"].toString();
+            step.parameters = stepObj["parameters"].toObject().toVariantMap();
+            pattern.steps.append(step);
+        }
+
+        // Save the modified pattern to configuration
+        savePatternToConfig(pattern);
+
+        // Refresh the UI
+        populatePatternGrid();
+        updatePreviewPanel();
+
+        emit patternModified(patternName);
+    }
+}
+
+void PatternSelector::savePatternToConfig(const PatternInfo& pattern)
+{
+    // This is a simplified implementation - in a real application,
+    // you would save to a proper configuration file or database
+
+    QString configPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/custom_patterns.json";
+
+    // Create directory if it doesn't exist
+    QDir().mkpath(QFileInfo(configPath).absolutePath());
+
+    // Load existing patterns
+    QJsonObject patternsObj;
+    QFile configFile(configPath);
+    if (configFile.open(QIODevice::ReadOnly)) {
+        QJsonDocument doc = QJsonDocument::fromJson(configFile.readAll());
+        if (doc.isObject()) {
+            patternsObj = doc.object();
+        }
+        configFile.close();
+    }
+
+    // Add/update the pattern
+    QJsonObject patternObj;
+    patternObj["name"] = pattern.name;
+    patternObj["type"] = pattern.type;
+    patternObj["description"] = pattern.description;
+    patternObj["base_pressure"] = pattern.basePressure;
+    patternObj["speed"] = pattern.speed;
+    patternObj["intensity"] = pattern.intensity;
+
+    // Add steps
+    QJsonArray stepsArray;
+    for (const PatternStep& step : pattern.steps) {
+        QJsonObject stepObj;
+        stepObj["pressure_percent"] = step.pressurePercent;
+        stepObj["duration_ms"] = step.durationMs;
+        stepObj["action"] = step.action;
+        stepObj["description"] = step.description;
+        stepObj["parameters"] = QJsonObject::fromVariantMap(step.parameters);
+        stepsArray.append(stepObj);
+    }
+    patternObj["steps"] = stepsArray;
+
+    patternsObj[pattern.name] = patternObj;
+
+    // Save back to file
+    if (configFile.open(QIODevice::WriteOnly)) {
+        QJsonDocument doc(patternsObj);
+        configFile.write(doc.toJson());
+        configFile.close();
+
+        qDebug() << "Pattern saved to config:" << pattern.name;
+    } else {
+        qWarning() << "Failed to save pattern to config:" << pattern.name;
+    }
 }
 
 QJsonObject PatternSelector::getCurrentParameters() const

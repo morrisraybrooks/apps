@@ -39,8 +39,8 @@ SafetyPanel::~SafetyPanel()
 
 void SafetyPanel::setupUI()
 {
-    m_mainLayout->setSpacing(15);
-    m_mainLayout->setContentsMargins(15, 15, 15, 15);
+    m_mainLayout->setSpacing(10);
+    m_mainLayout->setContentsMargins(10, 10, 10, 10);
     
     setupEmergencyControls();
     setupStatusMonitoring();

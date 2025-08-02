@@ -1,3 +1,4 @@
+
 #ifndef PATTERNSELECTOR_H
 #define PATTERNSELECTOR_H
 
@@ -19,6 +20,7 @@
 // Forward declarations
 class VacuumController;
 class TouchButton;
+class QAbstractButton;
 
 /**
  * @brief Pattern selection and configuration widget
@@ -35,17 +37,30 @@ class PatternSelector : public QWidget
     Q_OBJECT
 
 public:
+    struct PatternStep {
+        double pressurePercent;
+        int durationMs;
+        QString action;
+        QString description;
+        QVariantMap parameters;
+
+        PatternStep() : pressurePercent(0.0), durationMs(0) {}
+    };
+
     struct PatternInfo {
         QString name;
         QString type;
-        QString speed;
         QString description;
-        QJsonObject parameters;
         QString category;
-        
-        PatternInfo() = default;
-        PatternInfo(const QString& n, const QString& t, const QString& s, const QString& d, const QJsonObject& p, const QString& c)
-            : name(n), type(t), speed(s), description(d), parameters(p), category(c) {}
+        double basePressure;
+        double speed;
+        double intensity;
+        QList<PatternStep> steps;
+        QJsonObject parameters;
+
+        PatternInfo() : basePressure(50.0), speed(1.0), intensity(50.0) {}
+        PatternInfo(const QString& n, const QString& t, const QString& d, const QString& c)
+            : name(n), type(t), description(d), category(c), basePressure(50.0), speed(1.0), intensity(50.0) {}
     };
 
     explicit PatternSelector(VacuumController* controller, QWidget *parent = nullptr);
@@ -74,13 +89,18 @@ signals:
     void patternSelected(const QString& patternName);
     void parametersChanged(const QString& patternName, const QJsonObject& parameters);
     void previewRequested(const QString& patternName);
+    void patternCreated(const QString& patternName);
+    void patternModified(const QString& patternName);
 
 private slots:
-    void onPatternButtonClicked();
+    void onPatternButtonClicked(QAbstractButton* button);
     void onCategoryChanged();
     void onParameterChanged();
     void onPreviewClicked();
     void onCustomizeClicked();
+    void onCreateNewPatternClicked();
+    void onPatternCreated(const QString& patternName, const QJsonObject& patternData);
+    void onPatternModified(const QString& patternName, const QJsonObject& patternData);
 
 private:
     void setupUI();
@@ -100,6 +120,7 @@ private:
     
     void highlightSelectedPattern();
     void showPatternDescription(const PatternInfo& pattern);
+    void savePatternToConfig(const PatternInfo& pattern);
     
     // Controller interface
     VacuumController* m_controller;
@@ -143,9 +164,9 @@ private:
     QString m_configFilePath;
     
     // Constants for touch interface
-    static const int PATTERN_BUTTON_WIDTH = 180;
-    static const int PATTERN_BUTTON_HEIGHT = 120;
-    static const int GRID_COLUMNS = 3;
+    static const int PATTERN_BUTTON_WIDTH = 120;
+    static const int PATTERN_BUTTON_HEIGHT = 80;
+    static const int GRID_COLUMNS = 4;
     static const int PARAMETER_CONTROL_HEIGHT = 60;
     static const int PREVIEW_PANEL_HEIGHT = 200;
 };

@@ -1,130 +1,130 @@
 {
-  "system_settings": {
-    "device_name": "Vacuum Controller v1.0",
-    "manufacturer": "Medical Devices Inc",
-    "serial_number": "VC-001-2024",
-    "firmware_version": "1.0.0"
-  },
-  "safety_settings": {
-    "max_pressure_mmhg": 100.0,
-    "warning_threshold_mmhg": 80.0,
-    "anti_detachment_threshold_mmhg": 50.0,
-    "sensor_timeout_ms": 1000,
-    "emergency_stop_enabled": true,
-    "overpressure_protection_enabled": true,
-    "auto_shutdown_on_error": true
-  },
-  "hardware_settings": {
-    "gpio_pins": {
-      "sol1_avl": 17,
-      "sol2_avl_vent": 27,
-      "sol3_tank_vent": 22,
-      "pump_enable": 25,
-      "pump_pwm": 18,
-      "emergency_button": 21
+    "advanced_settings": {
+        "debug_mode": false,
+        "developer_mode": false,
+        "hardware_simulation": false,
+        "performance_monitoring": true,
+        "test_mode": false,
+        "verbose_logging": false
     },
-    "spi_settings": {
-      "channel": 0,
-      "speed_hz": 1000000,
-      "mcp3008_channels": {
-        "avl_sensor": 0,
-        "tank_sensor": 1
-      }
+    "hardware_settings": {
+        "gpio_pins": {
+            "emergency_button": 21,
+            "pump_enable": 25,
+            "pump_pwm": 18,
+            "sol1_avl": 17,
+            "sol2_avl_vent": 27,
+            "sol3_tank_vent": 22
+        },
+        "pwm_settings": {
+            "frequency_hz": 5000,
+            "range": 1024
+        },
+        "spi_settings": {
+            "channel": 0,
+            "mcp3008_channels": {
+                "avl_sensor": 0,
+                "tank_sensor": 1
+            },
+            "speed_hz": 1000000
+        }
     },
-    "pwm_settings": {
-      "frequency_hz": 5000,
-      "range": 1024
+    "logging_settings": {
+        "log_file_path": "/var/log/vacuum-controller.log",
+        "log_level": "INFO",
+        "log_pattern_execution": true,
+        "log_pressure_data": true,
+        "log_rotation_enabled": true,
+        "log_safety_events": true,
+        "log_to_file": true,
+        "max_log_file_size_mb": 100
+    },
+    "maintenance_settings": {
+        "component_lifetime_tracking": true,
+        "maintenance_reminder_enabled": true,
+        "periodic_calibration_days": 30,
+        "self_test_on_startup": true,
+        "usage_tracking_enabled": true
+    },
+    "network_settings": {
+        "api_enabled": false,
+        "bluetooth_enabled": false,
+        "remote_monitoring_enabled": false,
+        "security_enabled": true,
+        "wifi_enabled": false
+    },
+    "pattern_settings": {
+        "auto_start_enabled": false,
+        "custom_patterns_enabled": true,
+        "default_pattern": "Slow Pulse",
+        "pattern_timeout_minutes": 60,
+        "pattern_validation_enabled": true
+    },
+    "safety_settings": {
+        "anti_detachment_threshold_mmhg": 50,
+        "auto_shutdown_on_error": true,
+        "emergency_stop_enabled": true,
+        "max_pressure_mmhg": 100,
+        "overpressure_protection_enabled": true,
+        "sensor_timeout_ms": 1000,
+        "warning_threshold_mmhg": 80
+    },
+    "sensor_calibration": {
+        "avl_sensor": {
+            "calibrated": true,
+            "calibration_date": "2024-01-01T00:00:00Z",
+            "max_voltage": 5,
+            "min_voltage": 0.1,
+            "offset_mmhg": -3.33,
+            "slope_mmhg_per_volt": 16.67
+        },
+        "tank_sensor": {
+            "calibrated": true,
+            "calibration_date": "2024-01-01T00:00:00Z",
+            "max_voltage": 5,
+            "min_voltage": 0.1,
+            "offset_mmhg": -3.33,
+            "slope_mmhg_per_volt": 16.67
+        }
+    },
+    "system_settings": {
+        "device_name": "Vacuum Controller v1.0",
+        "firmware_version": "1.0.0",
+        "manufacturer": "Medical Devices Inc",
+        "serial_number": "VC-001-2024"
+    },
+    "ui_settings": {
+        "display_settings": {
+            "font_size_huge": 24,
+            "font_size_large": 20,
+            "font_size_normal": 16,
+            "fullscreen": true,
+            "screen_height": 1080,
+            "screen_width": 1920,
+            "touch_enabled": true
+        },
+        "pressure_monitor": {
+            "chart_time_range_seconds": 300,
+            "max_data_points": 1000,
+            "show_alarms": true,
+            "show_grid": true,
+            "update_interval_ms": 1000
+        },
+        "theme": {
+            "background_color": "#f0f0f0",
+            "error_color": "#f44336",
+            "primary_color": "#2196F3",
+            "secondary_color": "#4CAF50",
+            "warning_color": "#FF9800"
+        }
+    },
+    "user_preferences": {
+        "confirmation_dialogs": true,
+        "date_format": "YYYY-MM-DD",
+        "language": "en_US",
+        "sound_enabled": false,
+        "time_format": "24h",
+        "units": "metric",
+        "vibration_feedback": false
     }
-  },
-  "sensor_calibration": {
-    "avl_sensor": {
-      "slope_mmhg_per_volt": 16.67,
-      "offset_mmhg": -3.33,
-      "min_voltage": 0.1,
-      "max_voltage": 5.0,
-      "calibrated": true,
-      "calibration_date": "2024-01-01T00:00:00Z"
-    },
-    "tank_sensor": {
-      "slope_mmhg_per_volt": 16.67,
-      "offset_mmhg": -3.33,
-      "min_voltage": 0.1,
-      "max_voltage": 5.0,
-      "calibrated": true,
-      "calibration_date": "2024-01-01T00:00:00Z"
-    }
-  },
-  "ui_settings": {
-    "display_settings": {
-      "fullscreen": true,
-      "screen_width": 1920,
-      "screen_height": 1080,
-      "font_size_normal": 16,
-      "font_size_large": 20,
-      "font_size_huge": 24,
-      "touch_enabled": true
-    },
-    "pressure_monitor": {
-      "chart_time_range_seconds": 300,
-      "update_interval_ms": 1000,
-      "show_grid": true,
-      "show_alarms": true,
-      "max_data_points": 1000
-    },
-    "theme": {
-      "primary_color": "#2196F3",
-      "secondary_color": "#4CAF50",
-      "warning_color": "#FF9800",
-      "error_color": "#f44336",
-      "background_color": "#f0f0f0"
-    }
-  },
-  "pattern_settings": {
-    "default_pattern": "Slow Pulse",
-    "auto_start_enabled": false,
-    "pattern_timeout_minutes": 60,
-    "custom_patterns_enabled": true,
-    "pattern_validation_enabled": true
-  },
-  "logging_settings": {
-    "log_level": "INFO",
-    "log_to_file": true,
-    "log_file_path": "/var/log/vacuum-controller.log",
-    "max_log_file_size_mb": 100,
-    "log_rotation_enabled": true,
-    "log_pressure_data": true,
-    "log_pattern_execution": true,
-    "log_safety_events": true
-  },
-  "network_settings": {
-    "wifi_enabled": false,
-    "bluetooth_enabled": false,
-    "remote_monitoring_enabled": false,
-    "api_enabled": false,
-    "security_enabled": true
-  },
-  "maintenance_settings": {
-    "self_test_on_startup": true,
-    "periodic_calibration_days": 30,
-    "maintenance_reminder_enabled": true,
-    "usage_tracking_enabled": true,
-    "component_lifetime_tracking": true
-  },
-  "user_preferences": {
-    "language": "en_US",
-    "units": "metric",
-    "date_format": "YYYY-MM-DD",
-    "time_format": "24h",
-    "confirmation_dialogs": true,
-    "sound_enabled": false,
-    "vibration_feedback": false
-  },
-  "advanced_settings": {
-    "debug_mode": false,
-    "developer_mode": false,
-    "hardware_simulation": false,
-    "test_mode": false,
-    "verbose_logging": false,
-    "performance_monitoring": true
-  }
 }

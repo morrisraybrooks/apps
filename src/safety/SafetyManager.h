@@ -7,6 +7,7 @@
 
 // Forward declarations
 class HardwareManager;
+class CrashHandler;
 
 /**
  * @brief Core safety management system for vacuum controller
@@ -61,23 +62,36 @@ public:
     // System health
     bool performSafetyCheck();
     QString getLastSafetyError() const { return m_lastSafetyError; }
-    
+
+    // Auto-recovery mechanisms
+    void enableAutoRecovery(bool enabled);
+    bool isAutoRecoveryEnabled() const { return m_autoRecoveryEnabled; }
+    void setCrashHandler(CrashHandler* crashHandler);
+    void performSystemRecovery();
+    void handleSystemCrash(const QString& crashInfo);
+
     // Safety statistics
     int getOverpressureEvents() const { return m_overpressureEvents; }
     int getSensorErrorEvents() const { return m_sensorErrorEvents; }
     int getEmergencyStopEvents() const { return m_emergencyStopEvents; }
+    int getRecoveryAttempts() const { return m_recoveryAttempts; }
 
-signals:
+Q_SIGNALS:
     void safetyStateChanged(SafetyState newState);
     void overpressureDetected(double pressure);
     void sensorTimeout(const QString& sensor);
     void emergencyStopTriggered(const QString& reason);
     void systemError(const QString& error);
     void safetyWarning(const QString& warning);
+    void systemRecoveryStarted();
+    void systemRecoveryCompleted(bool success);
+    void crashDetected(const QString& crashInfo);
 
-private slots:
+private Q_SLOTS:
     void performSafetyMonitoring();
     void handleSensorError(const QString& sensor, const QString& error);
+    void onCrashDetected(const QString& crashInfo);
+    void onSystemStateRestored();
 
 private:
     void setState(SafetyState newState);
@@ -90,6 +104,7 @@ private:
 
     // Hardware interface
     HardwareManager* m_hardware;
+    CrashHandler* m_crashHandler;
     
     // Safety state
     SafetyState m_safetyState;
@@ -113,6 +128,11 @@ private:
     int m_overpressureEvents;
     int m_sensorErrorEvents;
     int m_emergencyStopEvents;
+    int m_recoveryAttempts;
+
+    // Auto-recovery
+    bool m_autoRecoveryEnabled;
+    bool m_recoveryInProgress;
     
     // Safety constants
     static const double DEFAULT_MAX_PRESSURE;      // 100.0 mmHg

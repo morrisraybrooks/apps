@@ -13,6 +13,7 @@
 #include <QSpinBox>
 #include <QDoubleSpinBox>
 #include <QComboBox>
+#include <QCheckBox>
 #include <QSlider>
 #include <QTableWidget>
 #include <QListWidget>
@@ -21,24 +22,13 @@
 #include <QTimer>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QFormLayout>
 
 // Forward declarations
 class VacuumController;
 class TouchButton;
 class PatternEngine;
 
-/**
- * @brief Custom pattern creation and editing dialog
- * 
- * This dialog provides comprehensive pattern creation capabilities:
- * - Visual pattern designer with drag-and-drop
- * - Step-by-step pattern builder
- * - Real-time pattern preview
- * - Pattern validation and testing
- * - Template-based pattern creation
- * - Pattern import/export
- * - Advanced timing and pressure controls
- */
 class CustomPatternDialog : public QDialog
 {
     Q_OBJECT
@@ -47,7 +37,7 @@ public:
     struct PatternStep {
         double pressurePercent;
         int durationMs;
-        QString action;         // "vacuum", "release", "hold", "ramp"
+        QString action;
         QString description;
         QJsonObject parameters;
         
@@ -59,13 +49,11 @@ public:
     explicit CustomPatternDialog(VacuumController* controller, QWidget *parent = nullptr);
     ~CustomPatternDialog();
 
-    // Pattern management
     void loadPattern(const QString& patternName);
     void createNewPattern();
     bool savePattern();
     bool savePatternAs();
     
-    // Pattern data
     QJsonObject getPatternData() const;
     void setPatternData(const QJsonObject& data);
     QList<PatternStep> getPatternSteps() const;
@@ -95,6 +83,14 @@ private slots:
     void onApplyClicked();
     void onCancelClicked();
     void onOkClicked();
+    void onTabChanged(int index);
+    void onPatternNameChanged();
+    void onParameterChanged();
+    void onStepSelectionChanged(int row);
+    void onPreviewClicked();
+    void onTestClicked();
+    void onSaveClicked();
+    void onLoadTemplateClicked();
 
 private:
     void setupUI();
@@ -118,33 +114,52 @@ private:
     void createPatternFromTemplate(const QString& templateName);
     bool validatePatternData();
     QString generatePatternDescription();
-    
-    // Controller interface
+
+    QJsonObject stepToJson(const PatternStep& step) const;
+    PatternStep jsonToStep(const QJsonObject& json) const;
+
+    void updateStepList();
+    void updatePreview();
+    void applyTouchOptimizedStyles();
+    void initializeDefaultPattern();
+    void addDefaultStep();
+
+    void addPatternStep();
+    void removePatternStep();
+    void moveStepUp();
+    void moveStepDown();
+    void duplicateStep();
+    void clearAllSteps();
+
+    void loadTemplate(const QString& templateName);
+    void exportPattern();
+    void importPattern();
+
     VacuumController* m_controller;
     PatternEngine* m_patternEngine;
     
-    // Main UI
     QTabWidget* m_tabWidget;
     QVBoxLayout* m_mainLayout;
     QHBoxLayout* m_buttonLayout;
     
-    // Buttons
     TouchButton* m_previewButton;
     TouchButton* m_testButton;
     TouchButton* m_validateButton;
     TouchButton* m_applyButton;
     TouchButton* m_cancelButton;
     TouchButton* m_okButton;
+    TouchButton* m_saveButton;
     
-    // Basic Info Tab
     QWidget* m_basicInfoTab;
     QLineEdit* m_patternNameEdit;
     QComboBox* m_patternTypeCombo;
     QComboBox* m_patternSpeedCombo;
     QTextEdit* m_patternDescriptionEdit;
     QComboBox* m_patternCategoryCombo;
+    QDoubleSpinBox* m_basePressureSpin;
+    QDoubleSpinBox* m_speedSpin;
+    QDoubleSpinBox* m_intensitySpin;
     
-    // Step Editor Tab
     QWidget* m_stepEditorTab;
     QTableWidget* m_stepTable;
     QGroupBox* m_stepDetailsGroup;
@@ -156,8 +171,10 @@ private:
     TouchButton* m_removeStepButton;
     TouchButton* m_moveUpButton;
     TouchButton* m_moveDownButton;
+    QListWidget* m_stepsList;
+    TouchButton* m_duplicateStepButton;
+    TouchButton* m_clearStepsButton;
     
-    // Visual Designer Tab
     QWidget* m_visualDesignerTab;
     QGraphicsView* m_designerView;
     QGraphicsScene* m_designerScene;
@@ -167,9 +184,8 @@ private:
     TouchButton* m_removePointButton;
     TouchButton* m_smoothButton;
     
-    // Preview Tab
     QWidget* m_previewTab;
-    QGraphicsView* m_previewChart;
+    QLabel* m_previewChart;
     QGraphicsScene* m_previewScene;
     QLabel* m_previewStatusLabel;
     QLabel* m_patternDurationLabel;
@@ -178,8 +194,11 @@ private:
     TouchButton* m_playButton;
     TouchButton* m_pauseButton;
     TouchButton* m_stopButton;
+    QLabel* m_totalDurationLabel;
+    QLabel* m_totalStepsLabel;
+    QLabel* m_avgPressureLabel;
+    QLabel* m_maxPressureLabel;
     
-    // Advanced Tab
     QWidget* m_advancedTab;
     QGroupBox* m_timingGroup;
     QSpinBox* m_minStepDurationSpin;
@@ -194,7 +213,6 @@ private:
     QSpinBox* m_emergencyStopDelaySpin;
     QCheckBox* m_enableSafetyChecksBox;
     
-    // Templates and Import/Export
     QGroupBox* m_templatesGroup;
     QListWidget* m_templatesList;
     TouchButton* m_loadTemplateButton;
@@ -202,32 +220,38 @@ private:
     TouchButton* m_importButton;
     TouchButton* m_exportButton;
     TouchButton* m_resetButton;
+    QComboBox* m_templateCombo;
+    QTextEdit* m_validationResults;
+    QCheckBox* m_loopPatternCheck;
+    QSpinBox* m_loopCountSpin;
+    QCheckBox* m_autoStartCheck;
+    QComboBox* m_priorityCombo;
     
-    // Pattern data
     QString m_currentPatternName;
     QList<PatternStep> m_patternSteps;
     QJsonObject m_patternMetadata;
     bool m_patternModified;
     
-    // Preview state
     QTimer* m_previewTimer;
     int m_previewPosition;
     bool m_previewPlaying;
     bool m_previewTesting;
     
-    // Visual designer state
     QList<QPointF> m_designerPoints;
     int m_selectedPoint;
+    int m_currentTab;
     
-    // Constants
-    static const int DEFAULT_STEP_DURATION = 1000;     // 1 second
-    static const double DEFAULT_PRESSURE = 50.0;       // 50%
-    static const int MIN_STEP_DURATION = 100;          // 100ms
-    static const int MAX_STEP_DURATION = 60000;        // 60 seconds
-    static const double MIN_PRESSURE = 0.0;            // 0%
-    static const double MAX_PRESSURE = 100.0;          // 100%
-    static const int PREVIEW_UPDATE_INTERVAL = 100;    // 100ms
-    static const int MAX_PATTERN_STEPS = 100;          // Maximum steps per pattern
+    static const int DEFAULT_STEP_DURATION = 1000;
+    static constexpr double DEFAULT_PRESSURE = 50.0;
+    static const int MIN_STEP_DURATION = 100;
+    static const int MAX_STEP_DURATION = 60000;
+    static constexpr double MIN_PRESSURE = 0.0;
+    static constexpr double MAX_PRESSURE = 100.0;
+    static const int PREVIEW_UPDATE_INTERVAL = 100;
+    static const int MAX_PATTERN_STEPS = 100;
+    static const int SPACING_NORMAL = 10;
+    static const int BUTTON_MIN_WIDTH = 150;
+    static const int BUTTON_MIN_HEIGHT = 40;
 };
 
 #endif // CUSTOMPATTERNDIALOG_H

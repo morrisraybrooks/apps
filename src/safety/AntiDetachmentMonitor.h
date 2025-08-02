@@ -84,7 +84,7 @@ public:
     bool performSelfTest();
     QString getLastError() const { return m_lastError; }
 
-signals:
+Q_SIGNALS:
     void detachmentDetected(double avlPressure);
     void detachmentWarning(double avlPressure);
     void detachmentResolved();
@@ -94,7 +94,7 @@ signals:
     void systemError(const QString& error);
     void selfTestCompleted(bool passed);
 
-private slots:
+private Q_SLOTS:
     void performMonitoringCycle();
     void onResponseTimer();
 

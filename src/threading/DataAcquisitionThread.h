@@ -68,17 +68,28 @@ public:
     bool isAcquiring() const { return m_acquiring; }
     bool isPaused() const { return m_paused; }
 
-signals:
+    // Integrated safety monitoring
+    void setSafetyEnabled(bool enabled);
+    void setSafetyThresholds(double maxPressure, double warningThreshold);
+    void setSafetyCheckInterval(int interval);  // Check every N samples
+    bool isSafetyEnabled() const { return m_safetyEnabled; }
+
+Q_SIGNALS:
     void dataReady(const SensorData& data);
     void bufferFull();
     void samplingError(const QString& error);
     void threadStarted();
     void threadStopped();
 
+    // Safety monitoring signals
+    void safetyAlarm(const QString& message);
+    void safetyWarning(const QString& message);
+    void emergencyStopRequired(const QString& reason);
+
 protected:
     void run() override;
 
-private slots:
+private Q_SLOTS:
     void performDataAcquisition();
 
 private:
@@ -87,6 +98,7 @@ private:
     SensorData acquireSensorData();
     void addToBuffer(const SensorData& data);
     void updateStatistics();
+    void performIntegratedSafetyCheck(const SensorData& data);
 
     // Hardware interface
     HardwareManager* m_hardware;
@@ -114,12 +126,21 @@ private:
     
     // High-resolution timer for precise timing
     QTimer* m_acquisitionTimer;
-    
+
+    // Integrated safety monitoring
+    bool m_safetyEnabled;
+    int m_safetyCheckCounter;
+    int m_safetyCheckInterval;
+    double m_maxPressure;
+    double m_warningThreshold;
+    int m_consecutiveSafetyErrors;
+
     // Constants
     static const int DEFAULT_SAMPLING_RATE_HZ = 50;    // 50Hz for smooth real-time updates
     static const int DEFAULT_BUFFER_SIZE = 1000;       // 20 seconds at 50Hz
     static const int STATISTICS_UPDATE_INTERVAL_MS = 1000;  // Update stats every second
     static const int MAX_CONSECUTIVE_ERRORS = 10;      // Max errors before stopping
+    static const int MAX_CONSECUTIVE_SAFETY_ERRORS = 5; // Max safety errors before emergency stop
 };
 
 #endif // DATAACQUISITIONTHREAD_H

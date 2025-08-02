@@ -1,5 +1,6 @@
 #include "SettingsDialog.h"
 #include "components/TouchButton.h"
+#include "CalibrationInterface.h"
 #include "../VacuumController.h"
 #include <QDebug>
 #include <QMessageBox>
@@ -152,61 +153,8 @@ void SettingsDialog::setupSafetyTab()
 
 void SettingsDialog::setupCalibrationTab()
 {
-    m_calibrationTab = new QWidget();
-    m_tabWidget->addTab(m_calibrationTab, "Calibration");
-    
-    QVBoxLayout* calibrationLayout = new QVBoxLayout(m_calibrationTab);
-    
-    // Calibration Status Group
-    QGroupBox* statusGroup = new QGroupBox("Calibration Status");
-    statusGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
-    QFormLayout* statusForm = new QFormLayout(statusGroup);
-    
-    m_avlCalibrationStatus = new QLabel("Not Calibrated");
-    m_avlCalibrationStatus->setStyleSheet("color: #f44336; font-weight: bold;");
-    
-    m_tankCalibrationStatus = new QLabel("Not Calibrated");
-    m_tankCalibrationStatus->setStyleSheet("color: #f44336; font-weight: bold;");
-    
-    m_lastCalibrationDate = new QLabel("Never");
-    m_lastCalibrationDate->setStyleSheet("color: #666;");
-    
-    statusForm->addRow("AVL Sensor:", m_avlCalibrationStatus);
-    statusForm->addRow("Tank Sensor:", m_tankCalibrationStatus);
-    statusForm->addRow("Last Calibration:", m_lastCalibrationDate);
-    
-    // Calibration Controls Group
-    QGroupBox* controlsGroup = new QGroupBox("Calibration Controls");
-    controlsGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
-    QVBoxLayout* controlsLayout = new QVBoxLayout(controlsGroup);
-    
-    m_calibrateSensorsButton = new TouchButton("Calibrate Sensors");
-    m_calibrateSensorsButton->setButtonType(TouchButton::Primary);
-    m_calibrateSensorsButton->setMinimumSize(200, 60);
-    
-    m_calibrationProgress = new QProgressBar();
-    m_calibrationProgress->setVisible(false);
-    m_calibrationProgress->setMinimumHeight(30);
-    
-    controlsLayout->addWidget(m_calibrateSensorsButton);
-    controlsLayout->addWidget(m_calibrationProgress);
-    
-    // Calibration Log Group
-    QGroupBox* logGroup = new QGroupBox("Calibration Log");
-    logGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
-    QVBoxLayout* logLayout = new QVBoxLayout(logGroup);
-    
-    m_calibrationLog = new QTextEdit();
-    m_calibrationLog->setMaximumHeight(150);
-    m_calibrationLog->setReadOnly(true);
-    m_calibrationLog->setStyleSheet("font-family: monospace; font-size: 10pt;");
-    
-    logLayout->addWidget(m_calibrationLog);
-    
-    calibrationLayout->addWidget(statusGroup);
-    calibrationLayout->addWidget(controlsGroup);
-    calibrationLayout->addWidget(logGroup);
-    calibrationLayout->addStretch();
+    m_calibrationInterface = new CalibrationInterface(m_controller, this);
+    m_tabWidget->addTab(m_calibrationInterface, "Calibration");
 }
 
 void SettingsDialog::setupHardwareTab()
@@ -495,9 +443,6 @@ void SettingsDialog::connectSignals()
     connect(m_okButton, &TouchButton::clicked, this, &SettingsDialog::onOkClicked);
     connect(m_resetButton, &TouchButton::clicked, this, &SettingsDialog::resetToDefaults);
     
-    // Calibration connections
-    connect(m_calibrateSensorsButton, &TouchButton::clicked, this, &SettingsDialog::onCalibrateSensorsClicked);
-    
     // Hardware connections
     connect(m_testHardwareButton, &TouchButton::clicked, this, &SettingsDialog::onTestHardwareClicked);
     
@@ -524,7 +469,6 @@ void SettingsDialog::loadSettings()
         m_sensorTimeoutSpin->setValue(safetySettings["sensor_timeout_ms"].toInt(DEFAULT_SENSOR_TIMEOUT_MS));
         
         // Load other settings...
-        updateCalibrationStatus();
     }
 }
 
@@ -580,128 +524,9 @@ void SettingsDialog::resetToDefaults()
     }
 }
 
-void SettingsDialog::onCalibrateSensorsClicked()
-{
-    if (m_calibrationInProgress) {
-        return;
-    }
-    
-    QMessageBox::StandardButton reply = QMessageBox::question(this,
-        "Sensor Calibration",
-        "This will calibrate both pressure sensors.\n\n"
-        "Ensure the system is at atmospheric pressure before proceeding.\n\n"
-        "Continue with calibration?",
-        QMessageBox::Yes | QMessageBox::No,
-        QMessageBox::No);
-    
-    if (reply == QMessageBox::Yes) {
-        performSensorCalibration();
-    }
-}
-
-void SettingsDialog::performSensorCalibration()
-{
-    m_calibrationInProgress = true;
-    m_calibrateSensorsButton->setEnabled(false);
-    m_calibrationProgress->setVisible(true);
-    m_calibrationProgress->setValue(0);
-    
-    m_calibrationLog->append(QString("[%1] Starting sensor calibration...")
-                            .arg(QDateTime::currentDateTime().toString("hh:mm:ss")));
-    
-    // Simulate calibration process
-    QTimer* calibrationTimer = new QTimer(this);
-    int progress = 0;
-    
-    connect(calibrationTimer, &QTimer::timeout, [this, calibrationTimer, &progress]() {
-        progress += 10;
-        m_calibrationProgress->setValue(progress);
-        
-        if (progress >= 100) {
-            calibrationTimer->stop();
-            calibrationTimer->deleteLater();
-            onCalibrationComplete(true);
-        }
-    });
-    
-    calibrationTimer->start(200);  // Update every 200ms
-}
-
-void SettingsDialog::onCalibrationComplete(bool success)
-{
-    m_calibrationInProgress = false;
-    m_calibrateSensorsButton->setEnabled(true);
-    m_calibrationProgress->setVisible(false);
-    
-    if (success) {
-        m_calibrationLog->append(QString("[%1] Calibration completed successfully")
-                                .arg(QDateTime::currentDateTime().toString("hh:mm:ss")));
-        
-        m_avlCalibrationStatus->setText("Calibrated");
-        m_avlCalibrationStatus->setStyleSheet("color: #4CAF50; font-weight: bold;");
-        
-        m_tankCalibrationStatus->setText("Calibrated");
-        m_tankCalibrationStatus->setStyleSheet("color: #4CAF50; font-weight: bold;");
-        
-        m_lastCalibrationDate->setText(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
-        
-        QMessageBox::information(this, "Calibration Complete", "Sensor calibration completed successfully.");
-    } else {
-        m_calibrationLog->append(QString("[%1] Calibration failed")
-                                .arg(QDateTime::currentDateTime().toString("hh:mm:ss")));
-        
-        QMessageBox::warning(this, "Calibration Failed", "Sensor calibration failed. Please check connections and try again.");
-    }
-}
-
 void SettingsDialog::onTestHardwareClicked()
 {
-    performHardwareTest();
-}
-
-void SettingsDialog::performHardwareTest()
-{
-    m_testHardwareButton->setEnabled(false);
-    m_hardwareTestStatus->setText("Testing...");
-    m_hardwareTestStatus->setStyleSheet("color: #FF9800; font-weight: bold;");
-    
-    // Simulate hardware test
-    QTimer::singleShot(2000, this, [this]() {
-        bool testPassed = true;  // Simulate test result
-        
-        if (testPassed) {
-            m_hardwareTestStatus->setText("All tests passed");
-            m_hardwareTestStatus->setStyleSheet("color: #4CAF50; font-weight: bold;");
-        } else {
-            m_hardwareTestStatus->setText("Test failed");
-            m_hardwareTestStatus->setStyleSheet("color: #f44336; font-weight: bold;");
-        }
-        
-        m_testHardwareButton->setEnabled(true);
-    });
-}
-
-void SettingsDialog::updateCalibrationStatus()
-{
-    // Update calibration status from settings
-    QJsonObject sensorCalibration = m_currentSettings["sensor_calibration"].toObject();
-    
-    QJsonObject avlSensor = sensorCalibration["avl_sensor"].toObject();
-    if (avlSensor["calibrated"].toBool()) {
-        m_avlCalibrationStatus->setText("Calibrated");
-        m_avlCalibrationStatus->setStyleSheet("color: #4CAF50; font-weight: bold;");
-    }
-    
-    QJsonObject tankSensor = sensorCalibration["tank_sensor"].toObject();
-    if (tankSensor["calibrated"].toBool()) {
-        m_tankCalibrationStatus->setText("Calibrated");
-        m_tankCalibrationStatus->setStyleSheet("color: #4CAF50; font-weight: bold;");
-    }
-    
-    QString calibrationDate = avlSensor["calibration_date"].toString();
-    if (!calibrationDate.isEmpty()) {
-        m_lastCalibrationDate->setText(calibrationDate);
-    }
+    // performHardwareTest();
 }
 
 bool SettingsDialog::validateSettings()
@@ -805,22 +630,9 @@ void SettingsDialog::onFactoryResetClicked()
         m_currentSettings = QJsonObject();  // Clear all settings
         resetToDefaults();
         
-        // Reset calibration status
-        m_avlCalibrationStatus->setText("Not Calibrated");
-        m_avlCalibrationStatus->setStyleSheet("color: #f44336; font-weight: bold;");
-        m_tankCalibrationStatus->setText("Not Calibrated");
-        m_tankCalibrationStatus->setStyleSheet("color: #f44336; font-weight: bold;");
-        m_lastCalibrationDate->setText("Never");
-        
         QMessageBox::information(this, "Factory Reset Complete",
                                "All settings have been reset to factory defaults.\n\n"
                                "Please recalibrate sensors before use.");
     }
 }
 
-void SettingsDialog::onCalibrationProgress(int progress)
-{
-    // Update calibration progress - this would be connected to a progress bar
-    // For now, just log the progress
-    qDebug() << "Calibration progress:" << progress << "%";
-}

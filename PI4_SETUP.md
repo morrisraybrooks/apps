@@ -22,8 +22,8 @@ sudo apt install -y build-essential cmake git
 # 3. Install Qt5 (complete package)
 sudo apt install -y qt5-default qtbase5-dev qtcharts5-dev libqt5charts5-dev qttools5-dev
 
-# 4. Install Raspberry Pi libraries
-sudo apt install -y wiringpi libwiringpi-dev
+# 4. Install GPIO libraries (modern libgpiod replaces deprecated wiringPi)
+sudo apt install -y libgpiod-dev gpiod
 
 # 5. Enable hardware interfaces
 sudo raspi-config
@@ -136,14 +136,43 @@ sudo apt install -y qt5-default qtbase5-dev qtcharts5-dev
 sudo apt install -y libqt5charts5-dev qttools5-dev
 ```
 
-#### Issue 2: wiringPi Missing
+#### Issue 2: libgpiod Missing
 ```bash
-# Error: wiringPi.h: No such file or directory
+# Error: gpiod.h: No such file or directory
 # Solution:
-sudo apt install -y wiringpi libwiringpi-dev
+sudo apt install -y libgpiod-dev gpiod
 
 # Verify installation:
-gpio readall
+gpioinfo
+# Or test specific GPIO chip:
+gpiodetect
+```
+
+#### Important: WiringPi Migration
+**Note**: This project has been updated from WiringPi to libgpiod due to WiringPi deprecation.
+
+**If you encounter old WiringPi references:**
+- WiringPi is no longer maintained (deprecated 2019)
+- libgpiod is the modern, official Linux GPIO interface
+- All GPIO operations now use `/dev/gpiochip0` character device
+- Commands changed: `gpio readall` → `gpioinfo`, `gpio` → `gpioset/gpioget`
+
+**libgpiod Command Reference:**
+```bash
+# List all GPIO chips and lines
+gpioinfo
+
+# Detect GPIO chips
+gpiodetect
+
+# Read GPIO state
+gpioget gpiochip0 17
+
+# Set GPIO state
+gpioset gpiochip0 17=1
+
+# Monitor GPIO changes
+gpiomon gpiochip0 17
 ```
 
 #### Issue 3: SPI Not Enabled
@@ -187,10 +216,16 @@ ssh -X pi@raspberry-pi-ip
 ### 1. Hardware Test Sequence
 ```bash
 # Test GPIO pins
-gpio readall
+gpioinfo
 
 # Test SPI communication
-# (Build and run SPI test program)
+ls /dev/spi*  # Should show spidev devices
+
+# Test individual GPIO pins (examples)
+# Read GPIO 17 (SOL1):
+gpioget gpiochip0 17
+# Set GPIO 17 high:
+gpioset gpiochip0 17=1
 
 # Test sensors
 sudo ./VacuumController --test-sensors

@@ -18,6 +18,9 @@ HardwareManager::HardwareManager(QObject *parent)
     , m_sol1State(false)
     , m_sol2State(false)
     , m_sol3State(false)
+    , m_simulationMode(false)
+    , m_simulatedAVLPressure(0.0)
+    , m_simulatedTankPressure(0.0)
 {
 }
 
@@ -115,6 +118,12 @@ void HardwareManager::shutdown()
 
 double HardwareManager::readAVLPressure()
 {
+    QMutexLocker locker(&m_stateMutex);
+
+    if (m_simulationMode) {
+        return m_simulatedAVLPressure;
+    }
+
     if (!m_sensorInterface) {
         throw std::runtime_error("Sensor interface not initialized");
     }
@@ -123,6 +132,12 @@ double HardwareManager::readAVLPressure()
 
 double HardwareManager::readTankPressure()
 {
+    QMutexLocker locker(&m_stateMutex);
+
+    if (m_simulationMode) {
+        return m_simulatedTankPressure;
+    }
+
     if (!m_sensorInterface) {
         throw std::runtime_error("Sensor interface not initialized");
     }
@@ -321,4 +336,76 @@ void HardwareManager::safeShutdown()
     m_sol2State = true;  // AVL vent valve open
     m_sol3State = true;  // Tank vent valve open
     m_sol1State = false; // AVL valve closed
+}
+
+void HardwareManager::setSimulationMode(bool enabled)
+{
+    QMutexLocker locker(&m_stateMutex);
+
+    m_simulationMode = enabled;
+
+    if (enabled) {
+        qDebug() << "Hardware simulation mode enabled";
+        // Initialize simulated values
+        m_simulatedAVLPressure = 0.0;
+        m_simulatedTankPressure = 0.0;
+        m_simulatedFailures.clear();
+    } else {
+        qDebug() << "Hardware simulation mode disabled";
+    }
+}
+
+void HardwareManager::setSimulatedPressure(double pressure)
+{
+    QMutexLocker locker(&m_stateMutex);
+
+    if (m_simulationMode) {
+        m_simulatedAVLPressure = pressure;
+        m_simulatedTankPressure = pressure * 0.8; // Tank typically lower
+    }
+}
+
+void HardwareManager::setSimulatedSensorValues(double avlPressure, double tankPressure)
+{
+    QMutexLocker locker(&m_stateMutex);
+
+    if (m_simulationMode) {
+        m_simulatedAVLPressure = avlPressure;
+        m_simulatedTankPressure = tankPressure;
+    }
+}
+
+void HardwareManager::simulateHardwareFailure(const QString& component)
+{
+    QMutexLocker locker(&m_stateMutex);
+
+    if (m_simulationMode) {
+        if (!m_simulatedFailures.contains(component)) {
+            m_simulatedFailures.append(component);
+            qDebug() << "Simulating hardware failure for:" << component;
+            emit hardwareError(QString("Simulated failure: %1").arg(component));
+        }
+    }
+}
+
+void HardwareManager::simulateSensorError(const QString& sensor)
+{
+    QMutexLocker locker(&m_stateMutex);
+
+    if (m_simulationMode) {
+        qDebug() << "Simulating sensor error for:" << sensor;
+        emit sensorError(sensor, "Simulated sensor error");
+    }
+}
+
+void HardwareManager::resetHardwareSimulation()
+{
+    QMutexLocker locker(&m_stateMutex);
+
+    if (m_simulationMode) {
+        m_simulatedAVLPressure = 0.0;
+        m_simulatedTankPressure = 0.0;
+        m_simulatedFailures.clear();
+        qDebug() << "Hardware simulation reset";
+    }
 }

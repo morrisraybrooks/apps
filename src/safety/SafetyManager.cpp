@@ -1,5 +1,6 @@
 #include "SafetyManager.h"
-#include "hardware/HardwareManager.h"
+#include "../hardware/HardwareManager.h"
+#include "../error/CrashHandler.h"
 #include <QDebug>
 #include <QMutexLocker>
 #include <QDateTime>
@@ -14,6 +15,7 @@ const int SafetyManager::MAX_CONSECUTIVE_ERRORS = 3;           // 3 errors trigg
 SafetyManager::SafetyManager(HardwareManager* hardware, QObject *parent)
     : QObject(parent)
     , m_hardware(hardware)
+    , m_crashHandler(nullptr)
     , m_safetyState(SAFE)
     , m_active(false)
     , m_maxPressure(DEFAULT_MAX_PRESSURE)
@@ -25,7 +27,10 @@ SafetyManager::SafetyManager(HardwareManager* hardware, QObject *parent)
     , m_overpressureEvents(0)
     , m_sensorErrorEvents(0)
     , m_emergencyStopEvents(0)
+    , m_recoveryAttempts(0)
     , m_consecutiveErrors(0)
+    , m_autoRecoveryEnabled(true)
+    , m_recoveryInProgress(false)
 {
     // Set up monitoring timer
     m_monitoringTimer->setInterval(MONITORING_INTERVAL_MS);
@@ -366,5 +371,131 @@ void SafetyManager::initializeSafetyParameters()
     m_overpressureEvents = 0;
     m_sensorErrorEvents = 0;
     m_emergencyStopEvents = 0;
+    m_recoveryAttempts = 0;
     m_consecutiveErrors = 0;
+}
+
+// Auto-recovery implementation
+void SafetyManager::enableAutoRecovery(bool enabled)
+{
+    m_autoRecoveryEnabled = enabled;
+    qDebug() << "Auto-recovery" << (enabled ? "enabled" : "disabled");
+}
+
+void SafetyManager::setCrashHandler(CrashHandler* crashHandler)
+{
+    m_crashHandler = crashHandler;
+
+    if (m_crashHandler) {
+        // Connect crash handler signals
+        connect(m_crashHandler, &CrashHandler::crashDetected,
+                this, &SafetyManager::onCrashDetected);
+        connect(m_crashHandler, &CrashHandler::systemStateRestored,
+                this, &SafetyManager::onSystemStateRestored);
+
+        qDebug() << "CrashHandler connected to SafetyManager";
+    }
+}
+
+void SafetyManager::performSystemRecovery()
+{
+    if (m_recoveryInProgress || !m_autoRecoveryEnabled) {
+        return;
+    }
+
+    m_recoveryInProgress = true;
+    m_recoveryAttempts++;
+
+    qWarning() << "Starting system recovery attempt" << m_recoveryAttempts;
+    emit systemRecoveryStarted();
+
+    bool recoverySuccess = true;
+
+    try {
+        // Step 1: Reset safety state to safe
+        setState(SAFE);
+
+        // Step 2: Reset hardware to safe state
+        if (m_hardware) {
+            // Stop all actuators
+            m_hardware->setPumpEnabled(false);
+            m_hardware->setPumpSpeed(0.0);
+
+            // Open vent valves for safety
+            m_hardware->setSOL2(true);  // AVL vent valve
+            m_hardware->setSOL3(true);  // Tank vent valve
+            m_hardware->setSOL1(false); // Close AVL valve
+
+            // Clear emergency stop if set
+            m_hardware->resetEmergencyStop();
+
+            qDebug() << "Hardware reset to safe state";
+        }
+
+        // Step 3: Reset error counters
+        m_consecutiveErrors = 0;
+        m_lastSafetyError.clear();
+
+        // Step 4: Perform safety check
+        if (!performSafetyCheck()) {
+            throw std::runtime_error("Safety check failed during recovery");
+        }
+
+        // Step 5: Restart monitoring if it was stopped
+        if (!m_monitoringTimer->isActive() && m_active) {
+            m_monitoringTimer->start();
+        }
+
+        qDebug() << "System recovery completed successfully";
+
+    } catch (const std::exception& e) {
+        recoverySuccess = false;
+        m_lastSafetyError = QString("Recovery failed: %1").arg(e.what());
+        qCritical() << m_lastSafetyError;
+
+        // If recovery fails, trigger emergency stop
+        triggerEmergencyStop("System recovery failed");
+    }
+
+    m_recoveryInProgress = false;
+    emit systemRecoveryCompleted(recoverySuccess);
+
+    if (!recoverySuccess && m_recoveryAttempts < 3) {
+        // Attempt recovery again after a delay
+        QTimer::singleShot(5000, this, &SafetyManager::performSystemRecovery);
+    }
+}
+
+void SafetyManager::handleSystemCrash(const QString& crashInfo)
+{
+    qCritical() << "System crash detected:" << crashInfo;
+
+    // Emit crash detection signal
+    emit crashDetected(crashInfo);
+
+    // Trigger emergency stop immediately
+    triggerEmergencyStop(QString("System crash: %1").arg(crashInfo));
+
+    // Attempt recovery if enabled
+    if (m_autoRecoveryEnabled) {
+        // Delay recovery to allow system to stabilize
+        QTimer::singleShot(2000, this, &SafetyManager::performSystemRecovery);
+    }
+}
+
+// Slot implementations
+void SafetyManager::onCrashDetected(const QString& crashInfo)
+{
+    handleSystemCrash(crashInfo);
+}
+
+void SafetyManager::onSystemStateRestored()
+{
+    qDebug() << "System state restored - checking for recovery needs";
+
+    // Check if we need to perform recovery
+    if (m_safetyState == EMERGENCY_STOP && m_autoRecoveryEnabled) {
+        // Delay recovery to allow system to fully initialize
+        QTimer::singleShot(3000, this, &SafetyManager::performSystemRecovery);
+    }
 }

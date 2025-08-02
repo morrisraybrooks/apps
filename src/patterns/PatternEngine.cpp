@@ -56,7 +56,7 @@ PatternEngine::~PatternEngine()
     stopPattern();
 }
 
-bool PatternEngine::startPattern(const QString& patternName)
+bool PatternEngine::startPattern(const QString& patternName, const QJsonObject& parameters)
 {
     QMutexLocker locker(&m_stateMutex);
     
@@ -71,7 +71,7 @@ bool PatternEngine::startPattern(const QString& patternName)
         return false;
     }
     
-    if (!initializePattern(patternName)) {
+    if (!initializePattern(patternName, parameters)) {
         return false;
     }
     
@@ -202,7 +202,7 @@ void PatternEngine::emergencyStop()
     emit patternError("Emergency stop activated");
 }
 
-bool PatternEngine::initializePattern(const QString& patternName)
+bool PatternEngine::initializePattern(const QString& patternName, const QJsonObject& parameters)
 {
     if (!m_patternDefinitions->isValidPattern(patternName)) {
         QString error = QString("Invalid pattern: %1").arg(patternName);
@@ -218,7 +218,7 @@ bool PatternEngine::initializePattern(const QString& patternName)
     }
     
     // Build pattern steps based on type
-    buildPatternSteps(patternInfo.parameters);
+    buildPatternSteps(parameters);
     
     if (m_patternSteps.isEmpty()) {
         QString error = QString("No steps generated for pattern: %1").arg(patternName);

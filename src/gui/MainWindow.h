@@ -18,6 +18,7 @@ class PressureMonitor;
 class PatternSelector;
 class SafetyPanel;
 class SettingsDialog;
+class SystemDiagnosticsPanel;
 
 /**
  * @brief Main window for the vacuum controller GUI
@@ -41,6 +42,8 @@ protected:
     void closeEvent(QCloseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
     bool eventFilter(QObject *obj, QEvent *event) override;
+    void changeEvent(QEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
 
 private slots:
     void onSystemStateChanged(VacuumController::SystemState state);
@@ -89,6 +92,7 @@ private:
     QPushButton* m_safetyPanelButton;
     QPushButton* m_settingsButton;
     QPushButton* m_diagnosticsButton;
+    QPushButton* m_shutdownButton;
     
     // Status bar
     QFrame* m_statusBar;
@@ -104,14 +108,13 @@ private:
     
     // Main panels
     QWidget* m_mainPanel;
-    QWidget* m_safetyPanel;
-    QWidget* m_diagnosticsPanel;
     
     // Specialized UI components
     std::unique_ptr<PressureMonitor> m_pressureMonitor;
     std::unique_ptr<PatternSelector> m_patternSelector;
     std::unique_ptr<SafetyPanel> m_safetyPanelWidget;
     std::unique_ptr<SettingsDialog> m_settingsDialog;
+    std::unique_ptr<SystemDiagnosticsPanel> m_diagnosticsPanelWidget;
     
     // Control buttons
     QPushButton* m_startStopButton;
@@ -125,7 +128,7 @@ private:
     bool m_systemPaused;
     bool m_emergencyStop;
     
-    // UI constants for 50-inch display
+    // UI constants for big screen display
     static const int BUTTON_HEIGHT = 80;
     static const int BUTTON_WIDTH = 200;
     static const int LARGE_BUTTON_HEIGHT = 120;
@@ -133,7 +136,7 @@ private:
     static const int NAVIGATION_HEIGHT = 100;
     static const int STATUS_BAR_HEIGHT = 80;
     static const int EMERGENCY_BUTTON_SIZE = 150;
-    static const int FONT_SIZE_NORMAL = 16;
+    static const int FONT_SIZE_NORMAL = 10;
     static const int FONT_SIZE_LARGE = 20;
     static const int FONT_SIZE_HUGE = 24;
 };

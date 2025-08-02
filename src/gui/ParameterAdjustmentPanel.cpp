@@ -26,7 +26,7 @@ ParameterAdjustmentPanel::ParameterAdjustmentPanel(VacuumController* controller,
     connectSignals();
     
     // Initialize preset configurations
-    setupPresetConfigurations();
+    // setupPresetConfigurations(); // TODO: Implement preset configurations
     
     // Start real-time update timer
     m_updateTimer->setInterval(UPDATE_INTERVAL_MS);
@@ -334,4 +334,327 @@ void ParameterAdjustmentPanel::setupSafetyControls()
     safetyLayout->addWidget(m_safetyLimitBar);
     
     m_mainLayout->addWidget(m_safetyGroup);
+}
+
+QSlider* ParameterAdjustmentPanel::createTouchSlider(Qt::Orientation orientation)
+{
+    QSlider* slider = new QSlider(orientation);
+    slider->setStyleSheet(
+        "QSlider::groove:horizontal {"
+        "    border: 1px solid #999999;"
+        "    height: 8px;"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #B1B1B1, stop:1 #c4c4c4);"
+        "    margin: 2px 0;"
+        "    border-radius: 4px;"
+        "}"
+        "QSlider::handle:horizontal {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #b4b4b4, stop:1 #8f8f8f);"
+        "    border: 1px solid #5c5c5c;"
+        "    width: 24px;"
+        "    margin: -2px 0;"
+        "    border-radius: 12px;"
+        "}"
+        "QSlider::handle:horizontal:hover {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #d4d4d4, stop:1 #afafaf);"
+        "}"
+        "QSlider::handle:horizontal:pressed {"
+        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #8f8f8f, stop:1 #6f6f6f);"
+        "}"
+    );
+    return slider;
+}
+
+QLabel* ParameterAdjustmentPanel::createValueLabel(const QString& initialText)
+{
+    QLabel* label = new QLabel(initialText);
+    label->setAlignment(Qt::AlignCenter);
+    label->setStyleSheet(
+        "QLabel {"
+        "    font-size: 16pt;"
+        "    font-weight: bold;"
+        "    color: #333333;"
+        "    background-color: #f0f0f0;"
+        "    border: 2px solid #cccccc;"
+        "    border-radius: 8px;"
+        "    padding: 8px;"
+        "    min-width: 80px;"
+        "}"
+    );
+    return label;
+}
+
+void ParameterAdjustmentPanel::connectSignals()
+{
+    // Connect intensity controls
+    if (m_intensitySlider) {
+        connect(m_intensitySlider, &QSlider::valueChanged, this, &ParameterAdjustmentPanel::onIntensitySliderChanged);
+    }
+
+    // Connect speed controls
+    if (m_speedSlider) {
+        connect(m_speedSlider, &QSlider::valueChanged, this, &ParameterAdjustmentPanel::onSpeedSliderChanged);
+    }
+
+    // Connect pressure controls
+    if (m_pressureOffsetSlider) {
+        connect(m_pressureOffsetSlider, &QSlider::valueChanged, this, &ParameterAdjustmentPanel::onPressureOffsetSliderChanged);
+    }
+
+    // Connect timing controls
+    if (m_pulseDurationSlider) {
+        connect(m_pulseDurationSlider, &QSlider::valueChanged, this, &ParameterAdjustmentPanel::onPulseDurationChanged);
+    }
+
+    // Connect buttons
+    if (m_resetButton) {
+        connect(m_resetButton, &TouchButton::clicked, this, &ParameterAdjustmentPanel::onResetButtonClicked);
+    }
+
+    if (m_safetyModeButton) {
+        connect(m_safetyModeButton, &TouchButton::toggled, this, &ParameterAdjustmentPanel::onSafetyModeToggled);
+    }
+
+    // Connect controller signals
+    if (m_controller) {
+        connect(m_controller, &VacuumController::patternStarted, this, &ParameterAdjustmentPanel::onPatternStarted);
+        connect(m_controller, &VacuumController::systemStateChanged, this, [this](VacuumController::SystemState state) {
+            if (state == VacuumController::STOPPED) {
+                onPatternStopped();
+            }
+        });
+    }
+}
+
+void ParameterAdjustmentPanel::onRealTimeUpdateTimer()
+{
+    updateRealTimeValues();
+}
+
+void ParameterAdjustmentPanel::onPatternChanged(const QString& patternName)
+{
+    Q_UNUSED(patternName);
+    // Update UI to reflect new pattern parameters
+    // For now, just update the display
+    updateParameterDisplay();
+}
+
+void ParameterAdjustmentPanel::onPatternStarted()
+{
+    // Disable certain controls during pattern execution
+    if (m_intensitySlider) m_intensitySlider->setEnabled(true); // Allow real-time adjustment
+    if (m_speedSlider) m_speedSlider->setEnabled(true);
+    if (m_pressureOffsetSlider) m_pressureOffsetSlider->setEnabled(true);
+    if (m_resetButton) m_resetButton->setEnabled(false); // Disable reset during execution
+}
+
+void ParameterAdjustmentPanel::onPatternStopped()
+{
+    // Re-enable all controls
+    if (m_intensitySlider) m_intensitySlider->setEnabled(true);
+    if (m_speedSlider) m_speedSlider->setEnabled(true);
+    if (m_pressureOffsetSlider) m_pressureOffsetSlider->setEnabled(true);
+    if (m_resetButton) m_resetButton->setEnabled(true);
+}
+
+void ParameterAdjustmentPanel::updateRealTimeValues()
+{
+    if (!m_controller) return;
+
+    // Update current pressure reading
+    double currentPressure = m_controller->getAVLPressure();
+
+    // Update intensity display
+    if (m_intensityValueLabel) {
+        m_intensityValueLabel->setText(QString("%1%").arg(m_currentIntensity, 0, 'f', 1));
+    }
+    if (m_intensityProgressBar) {
+        m_intensityProgressBar->setValue(static_cast<int>(m_currentIntensity));
+    }
+
+    // Update speed display
+    if (m_speedValueLabel) {
+        m_speedValueLabel->setText(QString("%1x").arg(m_currentSpeed, 0, 'f', 1));
+    }
+
+    // Update pressure display
+    if (m_pressureOffsetValueLabel) {
+        m_pressureOffsetValueLabel->setText(QString("%1%").arg(m_currentPressureOffset, 0, 'f', 1));
+    }
+
+    // Update pulse duration display
+    if (m_pulseDurationValueLabel) {
+        m_pulseDurationValueLabel->setText(QString("%1 ms").arg(m_currentPulseDuration));
+    }
+
+    // Update safety status - use a simple check based on system state
+    if (m_safetyStatusLabel) {
+        // For now, just show if system is running
+        bool systemRunning = (m_controller->getSystemState() == VacuumController::RUNNING);
+        m_safetyStatusLabel->setText(systemRunning ? "System: RUNNING" : "System: STANDBY");
+        m_safetyStatusLabel->setStyleSheet(systemRunning ?
+            "color: #4CAF50; font-weight: bold;" :
+            "color: #FF9800; font-weight: bold;");
+    }
+}
+
+void ParameterAdjustmentPanel::onIntensitySliderChanged(int value)
+{
+    m_currentIntensity = static_cast<double>(value) * 100.0 / SLIDER_RESOLUTION;
+
+    // For now, we'll store the values and emit signals
+    // The actual controller integration will be implemented later
+
+    // Update display immediately
+    if (m_intensityValueLabel) {
+        m_intensityValueLabel->setText(QString("%1%").arg(m_currentIntensity, 0, 'f', 1));
+    }
+    if (m_intensityProgressBar) {
+        m_intensityProgressBar->setValue(static_cast<int>(m_currentIntensity));
+    }
+
+    emit intensityChanged(m_currentIntensity);
+}
+
+void ParameterAdjustmentPanel::onSpeedSliderChanged(int value)
+{
+    m_currentSpeed = static_cast<double>(value) / SLIDER_RESOLUTION;
+
+    // For now, we'll store the values and emit signals
+    // The actual controller integration will be implemented later
+
+    // Update display immediately
+    if (m_speedValueLabel) {
+        m_speedValueLabel->setText(QString("%1x").arg(m_currentSpeed, 0, 'f', 1));
+    }
+
+    emit speedChanged(m_currentSpeed);
+}
+
+void ParameterAdjustmentPanel::onPressureOffsetSliderChanged(int value)
+{
+    m_currentPressureOffset = static_cast<double>(value) * 100.0 / SLIDER_RESOLUTION;
+
+    // For now, we'll store the values and emit signals
+    // The actual controller integration will be implemented later
+
+    // Update display immediately
+    if (m_pressureOffsetValueLabel) {
+        m_pressureOffsetValueLabel->setText(QString("%1%").arg(m_currentPressureOffset, 0, 'f', 1));
+    }
+
+    emit pressureOffsetChanged(m_currentPressureOffset);
+}
+
+void ParameterAdjustmentPanel::onPulseDurationChanged(int value)
+{
+    m_currentPulseDuration = value;
+
+    // For now, we'll store the values and emit signals
+    // The actual controller integration will be implemented later
+
+    // Update display immediately
+    if (m_pulseDurationValueLabel) {
+        m_pulseDurationValueLabel->setText(QString("%1 ms").arg(m_currentPulseDuration));
+    }
+
+    emit pulseDurationChanged(m_currentPulseDuration);
+}
+
+void ParameterAdjustmentPanel::onResetButtonClicked()
+{
+    // Reset all parameters to defaults
+    m_currentIntensity = DEFAULT_INTENSITY;
+    m_currentSpeed = DEFAULT_SPEED;
+    m_currentPressureOffset = DEFAULT_PRESSURE_OFFSET;
+    m_currentPulseDuration = DEFAULT_PULSE_DURATION;
+
+    // Update sliders
+    if (m_intensitySlider) {
+        m_intensitySlider->setValue(static_cast<int>(m_currentIntensity * SLIDER_RESOLUTION / 100.0));
+    }
+    if (m_speedSlider) {
+        m_speedSlider->setValue(static_cast<int>(m_currentSpeed * SLIDER_RESOLUTION));
+    }
+    if (m_pressureOffsetSlider) {
+        m_pressureOffsetSlider->setValue(static_cast<int>(m_currentPressureOffset * SLIDER_RESOLUTION / 100.0));
+    }
+    if (m_pulseDurationSlider) {
+        m_pulseDurationSlider->setValue(m_currentPulseDuration);
+    }
+
+    // Create parameters object and emit the existing signal
+    QJsonObject parameters;
+    parameters["intensity"] = m_currentIntensity;
+    parameters["speed"] = m_currentSpeed;
+    parameters["pressureOffset"] = m_currentPressureOffset;
+    parameters["pulseDuration"] = m_currentPulseDuration;
+
+    emit parametersChanged(parameters);
+}
+
+void ParameterAdjustmentPanel::onSafetyModeToggled(bool enabled)
+{
+    // For now, just update the UI appearance
+    // The actual safety system integration will be implemented later
+
+    // Update safety button appearance
+    if (m_safetyModeButton) {
+        m_safetyModeButton->setText(enabled ? "Safety: ON" : "Safety: OFF");
+        m_safetyModeButton->setStyleSheet(enabled ?
+            "background-color: #4CAF50; color: white; font-weight: bold;" :
+            "background-color: #FF5722; color: white; font-weight: bold;");
+    }
+
+    // For now, we'll emit a safety limit exceeded signal as a placeholder
+    if (enabled) {
+        emit safetyLimitExceeded("safety_mode", enabled ? 1.0 : 0.0);
+    }
+}
+
+void ParameterAdjustmentPanel::onPresetButtonClicked()
+{
+    // Handle preset button clicks - this would typically show a preset selection dialog
+    // For now, create a simple preset and emit the parameters changed signal
+    QJsonObject presetParameters;
+    presetParameters["intensity"] = 50.0;
+    presetParameters["speed"] = 1.0;
+    presetParameters["pressureOffset"] = 0.0;
+    presetParameters["pulseDuration"] = 1000;
+
+    emit parametersChanged(presetParameters);
+}
+
+void ParameterAdjustmentPanel::updateParameterDisplay()
+{
+    // Update all parameter displays with current values
+    if (m_intensityValueLabel) {
+        m_intensityValueLabel->setText(QString("%1%").arg(m_currentIntensity, 0, 'f', 1));
+    }
+    if (m_intensityProgressBar) {
+        m_intensityProgressBar->setValue(static_cast<int>(m_currentIntensity));
+    }
+    if (m_intensitySlider) {
+        m_intensitySlider->setValue(static_cast<int>(m_currentIntensity * SLIDER_RESOLUTION / 100.0));
+    }
+
+    if (m_speedValueLabel) {
+        m_speedValueLabel->setText(QString("%1x").arg(m_currentSpeed, 0, 'f', 1));
+    }
+    if (m_speedSlider) {
+        m_speedSlider->setValue(static_cast<int>(m_currentSpeed * SLIDER_RESOLUTION));
+    }
+
+    if (m_pressureOffsetValueLabel) {
+        m_pressureOffsetValueLabel->setText(QString("%1%").arg(m_currentPressureOffset, 0, 'f', 1));
+    }
+    if (m_pressureOffsetSlider) {
+        m_pressureOffsetSlider->setValue(static_cast<int>(m_currentPressureOffset * SLIDER_RESOLUTION / 100.0));
+    }
+
+    if (m_pulseDurationValueLabel) {
+        m_pulseDurationValueLabel->setText(QString("%1 ms").arg(m_currentPulseDuration));
+    }
+    if (m_pulseDurationSlider) {
+        m_pulseDurationSlider->setValue(m_currentPulseDuration);
+    }
 }

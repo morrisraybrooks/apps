@@ -1,0 +1,88 @@
+--- a/src/performance/MemoryManager.cpp
++++ b/src/performance/MemoryManager.cpp
+@@ -293,7 +293,7 @@
+     
+     QStringList buffersToRemove;
+     for (auto it = m_buffers.constBegin(); it != m_buffers.constEnd(); ++it) {
+-        if (it.value().use_count() <= 1) {
++        if (it.value().use_count() <= 1) {
+             buffersToRemove.append(it.key());
+         }
+     }
+@@ -388,7 +388,7 @@
+     
+     QStringList unusedBuffers; 
+     for (auto it = m_buffers.begin(); it != m_buffers.end();) {
+-        if (it.value().use_count() <= 1) {
++        if (it.value().use_count() <= 1) {
+             unusedBuffers.append(it.key());
+             trackDeallocation(it.value()->size());
+             emit bufferReleased(it.key());
+--- a/src/reporting/DataExporter.cpp
++++ b/src/reporting/DataExporter.cpp
+@@ -6,6 +6,7 @@
+ #include <QJsonDocument>
+ #include <QXmlStreamWriter>
+ #include <QStandardPaths>
++#include <QMetaEnum>
+ #include <QApplication>
+ 
+ // Constants
+@@ -60,7 +61,7 @@
+     m_exportInProgress = true;
+     m_currentExportPath = options.outputPath;
+     
+-    emit exportStarted(QString("Exporting %1 data").arg(QMetaEnum::fromType<ReportType>().valueToKey(options.reportType)));
++    emit exportStarted(QString("Exporting %1 data").arg(QString(QMetaEnum::fromType<ReportType>().valueToKey(options.reportType))));
+     
+     bool success = false;
+     
+@@ -93,9 +94,9 @@
+         }
+         
+         // Apply filters if specified
+-        if (!options.dataFilters.isEmpty()) {
+-            reportData.dataPoints = applyDataFilters(reportData.dataPoints, options.dataFilters);
+-        }
++        // if (!options.dataFilters.isEmpty()) {
++        //     reportData.dataPoints = applyDataFilters(reportData.dataPoints, options.dataFilters);
++        // }
+         
+         // Limit data points if necessary
+         if (reportData.dataPoints.size() > m_maxDataPointsPerExport) {
+@@ -196,7 +197,7 @@
+     report.dataPoints = combinedData;
+     
+     // Generate statistics
+-    report.statistics = calculateSessionStatistics(pressureData, patternData, safetyData);
++    // report.statistics = calculateSessionStatistics(pressureData, patternData, safetyData);
+     
+     return report;
+ }
+@@ -221,7 +222,7 @@
+     }
+     
+     // Get pressure log entries from the logger
+-    auto logEntries = m_logger->getLogEntries(startTime, endTime, DataLogger::PRESSURE_LOG);
++    auto logEntries = m_logger->getLogEntries(startTime, endTime, "pressure");
+     
+     for (const auto& entry : logEntries) {
+         QJsonObject dataPoint;
+@@ -246,7 +247,7 @@
+     }
+     
+     // Get pattern log entries from the logger
+-    auto logEntries = m_logger->getLogEntries(startTime, endTime, DataLogger::PATTERN_LOG);
++    auto logEntries = m_logger->getLogEntries(startTime, endTime, "pattern");
+     
+     for (const auto& entry : logEntries) {
+         QJsonObject dataPoint;
+@@ -272,7 +273,7 @@
+     }
+     
+     // Get safety log entries from the logger
+-    auto logEntries = m_logger->getLogEntries(startTime, endTime, DataLogger::SAFETY_LOG);
++    auto logEntries = m_logger->getLogEntries(startTime, endTime, "safety");
+     
+     for (const auto& entry : logEntries) {
+         QJsonObject dataPoint;

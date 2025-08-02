@@ -56,6 +56,10 @@ public:
     bool performSelfTest();
     QString getLastError() const { return m_lastError; }
 
+    // PWM configuration
+    void setPWMFrequency(int frequency);
+    int getPWMFrequency() const { return m_pwmFrequency; }
+
 signals:
     void actuatorError(const QString& actuator, const QString& error);
     void emergencyStopActivated();
@@ -89,6 +93,7 @@ private:
     
     // PWM control
     QTimer* m_pwmTimer;
+    int m_pwmFrequency;
 
     // GPIO control using libgpiod
     struct gpiod_chip* m_gpioChip;
@@ -102,7 +107,7 @@ private:
     QString m_lastError;
     
     // GPIO pin definitions (as per specification)
-    static const int GPIO_SOL1 = 17;         // AVL (Applied Vacuum Line)
+    static const int GPIO_SOL1 = 23;         // AVL (Applied Vacuum Line) - Changed from 17 to 23 to avoid EBUSY error
     static const int GPIO_SOL2 = 27;         // AVL vent valve
     static const int GPIO_SOL3 = 22;         // Tank vent valve
     static const int GPIO_PUMP_ENABLE = 25;  // L293D Enable pin

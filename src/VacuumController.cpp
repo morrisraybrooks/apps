@@ -4,6 +4,7 @@
 #include "safety/AntiDetachmentMonitor.h"
 #include "patterns/PatternEngine.h"
 #include "threading/ThreadManager.h"
+#include "calibration/CalibrationManager.h"
 
 #include <QDebug>
 #include <QMutexLocker>
@@ -18,6 +19,7 @@ VacuumController::VacuumController(QObject *parent)
     , m_antiDetachmentThreshold(50.0)  // Default threshold
     , m_updateTimer(new QTimer(this))
     , m_initialized(false)
+    , m_simulationMode(false)
 {
     // Set up update timer for real-time monitoring
     m_updateTimer->setInterval(50);  // 20Hz update rate for smooth UI
@@ -86,14 +88,27 @@ void VacuumController::shutdown()
 bool VacuumController::isSystemReady() const
 {
     QMutexLocker locker(&m_stateMutex);
-    return m_initialized && 
-           m_systemState != ERROR && 
+    return m_initialized &&
+           m_systemState != ERROR &&
            m_systemState != EMERGENCY_STOP &&
-           m_hardwareManager && 
+           m_hardwareManager &&
            m_hardwareManager->isReady();
 }
 
-void VacuumController::startPattern(const QString& patternName)
+void VacuumController::startMonitoringThreads()
+{
+    if (m_threadManager && !m_threadManager->areAllThreadsRunning()) {
+        qDebug() << "Starting monitoring threads after GUI initialization...";
+        if (!m_threadManager->startAllThreads()) {
+            qWarning() << "Failed to start monitoring threads";
+            emit systemError("Failed to start monitoring threads");
+        } else {
+            qDebug() << "Monitoring threads started successfully";
+        }
+    }
+}
+
+void VacuumController::startPattern(const QString& patternName, const QJsonObject& parameters)
 {
     if (!isSystemReady()) {
         emit systemError("System not ready to start pattern");
@@ -101,7 +116,7 @@ void VacuumController::startPattern(const QString& patternName)
     }
     
     try {
-        m_patternEngine->startPattern(patternName);
+        m_patternEngine->startPattern(patternName, parameters);
         setState(RUNNING);
         emit patternStarted(patternName);
         qDebug() << "Started pattern:" << patternName;
@@ -258,11 +273,12 @@ void VacuumController::initializeSubsystems()
     m_antiDetachmentMonitor = std::make_unique<AntiDetachmentMonitor>(m_hardwareManager.get());
     m_antiDetachmentMonitor->setThreshold(m_antiDetachmentThreshold);
 
-    // Initialize thread manager
+    // Initialize thread manager (but don't start threads yet)
     m_threadManager = std::make_unique<ThreadManager>(m_hardwareManager.get());
-    if (!m_threadManager->startAllThreads()) {
-        throw std::runtime_error("Failed to start system threads");
-    }
+    // Threads will be started after GUI initialization to prevent hanging
+
+    // Initialize calibration manager
+    m_calibrationManager = std::make_unique<CalibrationManager>(m_hardwareManager.get());
 }
 
 void VacuumController::connectSignals()
@@ -280,4 +296,19 @@ void VacuumController::connectSignals()
         connect(m_antiDetachmentMonitor.get(), &AntiDetachmentMonitor::detachmentDetected,
                 this, &VacuumController::antiDetachmentActivated);
     }
+}
+
+void VacuumController::setSimulationMode(bool enabled)
+{
+    m_simulationMode = enabled;
+
+    qDebug() << "Simulation mode" << (enabled ? "enabled" : "disabled");
+
+    // Configure subsystems for simulation mode
+    if (m_hardwareManager) {
+        m_hardwareManager->setSimulationMode(enabled);
+    }
+
+    // Note: SafetyManager, PatternEngine and AntiDetachmentMonitor don't have simulation mode yet
+    // This could be added in future if needed
 }

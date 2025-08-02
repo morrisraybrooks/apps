@@ -1,0 +1,93 @@
+#!/bin/bash
+# postinst script for vacuum-controller
+# This script runs after package installation
+
+set -e
+
+case "$1" in
+    configure)
+        # Create vacuum-controller user if it doesn't exist
+        if ! id "vacuum-controller" &>/dev/null; then
+            useradd -r -s /bin/false -d /var/lib/vacuum-controller -c "Vacuum Controller System User" vacuum-controller
+        fi
+
+        # Create necessary directories
+        mkdir -p /var/lib/vacuum-controller
+        mkdir -p /var/log/vacuum-controller
+        mkdir -p /etc/vacuum-controller
+
+        # Set proper ownership and permissions
+        chown -R vacuum-controller:vacuum-controller /var/lib/vacuum-controller
+        chown -R vacuum-controller:vacuum-controller /var/log/vacuum-controller
+        chmod 755 /var/lib/vacuum-controller
+        chmod 755 /var/log/vacuum-controller
+
+        # Copy default configuration if it doesn't exist
+        if [ ! -f /etc/vacuum-controller/settings.json ]; then
+            cp /usr/share/vacuum-controller/settings.json /etc/vacuum-controller/
+            chown vacuum-controller:vacuum-controller /etc/vacuum-controller/settings.json
+            chmod 644 /etc/vacuum-controller/settings.json
+        fi
+
+        if [ ! -f /etc/vacuum-controller/patterns.json ]; then
+            cp /usr/share/vacuum-controller/patterns.json /etc/vacuum-controller/
+            chown vacuum-controller:vacuum-controller /etc/vacuum-controller/patterns.json
+            chmod 644 /etc/vacuum-controller/patterns.json
+        fi
+
+        # Add vacuum-controller user to gpio and spi groups for hardware access
+        usermod -a -G gpio,spi,dialout vacuum-controller 2>/dev/null || true
+
+        # Set up udev rules for hardware access
+        cat > /etc/udev/rules.d/99-vacuum-controller.rules << 'EOF'
+# GPIO access for vacuum controller
+SUBSYSTEM=="gpio", GROUP="gpio", MODE="0664"
+# SPI access for vacuum controller
+SUBSYSTEM=="spidev", GROUP="spi", MODE="0664"
+# Allow vacuum-controller user to access hardware
+KERNEL=="gpiochip*", GROUP="gpio", MODE="0664"
+KERNEL=="spidev*", GROUP="spi", MODE="0664"
+EOF
+
+        # Reload udev rules
+        udevadm control --reload-rules
+        udevadm trigger
+
+        # Enable and start systemd service if systemd is available
+        if [ -d /run/systemd/system ]; then
+            systemctl daemon-reload
+            systemctl enable vacuum-controller.service
+            echo "Vacuum Controller service enabled. Start with: sudo systemctl start vacuum-controller"
+        fi
+
+        # Create desktop entry for GUI access
+        cat > /usr/share/applications/vacuum-controller.desktop << 'EOF'
+[Desktop Entry]
+Name=Vacuum Controller
+Comment=Industrial Vacuum Controller GUI System
+Exec=sudo /usr/bin/VacuumController
+Icon=applications-engineering
+Terminal=false
+Type=Application
+Categories=Engineering;Electronics;
+StartupNotify=true
+EOF
+
+        echo "Vacuum Controller installation completed successfully!"
+        echo "Configuration files are located in /etc/vacuum-controller/"
+        echo "Log files will be written to /var/log/vacuum-controller/"
+        echo ""
+        echo "IMPORTANT: This application requires sudo privileges for hardware access."
+        echo "Run with: sudo VacuumController"
+        ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+        ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+        ;;
+esac
+
+exit 0

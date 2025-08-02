@@ -113,7 +113,7 @@ private:
     
     // Configuration
     QString m_templatesFilePath;
-    QString m_lastValidationError;
+    mutable QString m_lastValidationError;
     
     // Constants
     static const QString DEFAULT_TEMPLATES_FILE;

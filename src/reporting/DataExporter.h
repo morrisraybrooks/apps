@@ -120,21 +120,21 @@ public:
     QJsonObject aggregateSafetyData(const QJsonArray& rawData);
     QJsonObject calculateStatistics(const QJsonArray& data, const QStringList& fields);
 
-public slots:
+public Q_SLOTS:
     void exportCurrentSession();
     void exportLastHour();
     void exportLastDay();
     void exportLastWeek();
     void generateScheduledReports();
 
-signals:
+Q_SIGNALS:
     void exportStarted(const QString& description);
     void exportProgress(int percentage);
     void exportCompleted(const QString& filePath, bool success);
     void exportError(const QString& error);
     void reportGenerated(ReportType type, const QString& filePath);
 
-private slots:
+private Q_SLOTS:
     void onScheduledReportTimer();
 
 private:
@@ -159,6 +159,7 @@ private:
     QJsonObject calculatePatternStatistics(const QJsonArray& data);
     QJsonObject calculateSafetyStatistics(const QJsonArray& data);
     QJsonObject calculateSystemStatistics();
+    QJsonObject calculateSessionStatistics(const QJsonArray& pressureData, const QJsonArray& patternData, const QJsonArray& safetyData);
     
     // Formatting helpers
     QString formatDuration(qint64 milliseconds);

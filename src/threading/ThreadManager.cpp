@@ -50,18 +50,22 @@ bool ThreadManager::startAllThreads()
     
     try {
         // Start threads in order of dependency
-        if (!startSafetyMonitoring()) {
-            throw std::runtime_error("Failed to start safety monitoring thread");
+        // Enable integrated safety monitoring in data acquisition thread
+        if (m_dataThread) {
+            m_dataThread->setSafetyEnabled(true);
+            m_dataThread->setSafetyThresholds(100.0, 80.0);  // Max: 100 mmHg, Warning: 80 mmHg
+            m_dataThread->setSafetyCheckInterval(1);  // Check every sample for maximum safety
+            qDebug() << "Integrated safety monitoring enabled in data acquisition thread";
         }
-        
+
         if (!startDataAcquisition()) {
             throw std::runtime_error("Failed to start data acquisition thread");
         }
-        
+
         if (!startGuiUpdates()) {
             throw std::runtime_error("Failed to start GUI update thread");
         }
-        
+
         m_overallState = RUNNING;
         qDebug() << "All threads started successfully";
         emit allThreadsStarted();
@@ -214,13 +218,15 @@ void ThreadManager::stopSafetyMonitoring()
 bool ThreadManager::areAllThreadsRunning() const
 {
     QMutexLocker locker(&m_stateMutex);
-    return m_dataThreadRunning && m_guiThreadRunning && m_safetyThreadRunning;
+    // Safety monitoring integrated into data thread, so only check data and GUI threads
+    return m_dataThreadRunning && m_guiThreadRunning; // && m_safetyThreadRunning;
 }
 
 bool ThreadManager::areAllThreadsStopped() const
 {
     QMutexLocker locker(&m_stateMutex);
-    return !m_dataThreadRunning && !m_guiThreadRunning && !m_safetyThreadRunning;
+    // Safety monitoring integrated into data thread, so only check data and GUI threads
+    return !m_dataThreadRunning && !m_guiThreadRunning; // && !m_safetyThreadRunning;
 }
 
 void ThreadManager::setDataAcquisitionRate(int hz)
@@ -335,17 +341,18 @@ void ThreadManager::initializeThreads()
 {
     // Create data acquisition thread
     m_dataThread = std::make_unique<DataAcquisitionThread>(m_hardware);
-    
+
     // Create GUI update thread
     m_guiThread = std::make_unique<GuiUpdateThread>(m_dataThread.get());
-    
-    // Create safety monitoring thread
-    m_safetyThread = std::make_unique<SafetyMonitorThread>(m_hardware);
-    
+
+    // DISABLED: Safety monitoring thread causes EGLFS display conflicts
+    // Using integrated safety monitoring in DataAcquisitionThread instead
+    // m_safetyThread = std::make_unique<SafetyMonitorThread>(m_hardware);
+
     // Connect signals
     connectThreadSignals();
-    
-    qDebug() << "Threads initialized";
+
+    qDebug() << "Threads initialized with integrated safety monitoring (EGLFS compatible)";
 }
 
 void ThreadManager::connectThreadSignals()
@@ -358,6 +365,14 @@ void ThreadManager::connectThreadSignals()
                 this, &ThreadManager::onDataThreadStopped);
         connect(m_dataThread.get(), &DataAcquisitionThread::samplingError,
                 this, &ThreadManager::onDataThreadError);
+
+        // Connect integrated safety monitoring signals
+        connect(m_dataThread.get(), &DataAcquisitionThread::safetyAlarm,
+                this, &ThreadManager::onSafetyViolation);
+        connect(m_dataThread.get(), &DataAcquisitionThread::safetyWarning,
+                this, &ThreadManager::onSafetyWarning);
+        connect(m_dataThread.get(), &DataAcquisitionThread::emergencyStopRequired,
+                this, &ThreadManager::emergencyStopAllThreads);
     }
     
     // GUI update thread signals
@@ -485,4 +500,19 @@ void ThreadManager::updateOverallState()
             m_overallState = STOPPED;
         }
     }
+}
+
+void ThreadManager::onSafetyViolation(const QString& message)
+{
+    qCritical() << "SAFETY VIOLATION:" << message;
+    emit threadError("Integrated Safety", QString("SAFETY VIOLATION: %1").arg(message));
+
+    // Safety violation is critical - trigger emergency stop
+    emergencyStopAllThreads();
+}
+
+void ThreadManager::onSafetyWarning(const QString& message)
+{
+    qWarning() << "Safety warning:" << message;
+    emit threadError("Integrated Safety", QString("Safety Warning: %1").arg(message));
 }

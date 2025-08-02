@@ -1,11 +1,16 @@
 #ifndef THREADMANAGER_H
 #define THREADMANAGER_H
 
-#include <QObject>
-#include <QThread>
-#include <QMutex>
-#include <QTimer>
+#include <QtCore/QObject>
+#include <QtCore/QThread>
+#include <QtCore/QMutex>
+#include <QtCore/QTimer>
 #include <memory>
+
+#ifndef QT_NO_KEYWORDS
+#define slots Q_SLOTS
+#define signals Q_SIGNALS
+#endif
 
 // Forward declarations
 class HardwareManager;
@@ -80,14 +85,14 @@ public:
     void emergencyStopAllThreads();
     bool resetAfterEmergencyStop();
 
-signals:
+Q_SIGNALS:
     void allThreadsStarted();
     void allThreadsStopped();
     void threadError(const QString& threadName, const QString& error);
     void threadStateChanged(const QString& threadName, ThreadState state);
     void emergencyStopTriggered();
 
-private slots:
+private Q_SLOTS:
     void onDataThreadStarted();
     void onDataThreadStopped();
     void onDataThreadError(const QString& error);
@@ -99,6 +104,10 @@ private slots:
     void onSafetyThreadStarted();
     void onSafetyThreadStopped();
     void onSafetyThreadError(const QString& error);
+
+    // Integrated safety monitoring slots
+    void onSafetyViolation(const QString& message);
+    void onSafetyWarning(const QString& message);
 
 private:
     void updateOverallState();

@@ -8,6 +8,8 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <linux/spi/spidev.h>
+#include <errno.h>
+#include <cstring>
 
 // Constants
 const double MCP3008::REFERENCE_VOLTAGE = 3.3;
@@ -51,9 +53,14 @@ bool MCP3008::initialize(int spiChannel, int spiSpeed)
         }
         
         // Test communication by reading a channel
-        uint16_t testValue = readRawValue(0);
+        qDebug() << "Testing MCP3008 communication...";
+        // Bypass the initialization check for testing
+        uint16_t testValue = spiTransfer(0);
+        qDebug() << "MCP3008 test read returned:" << testValue;
+
         if (testValue == 0xFFFF) {  // Error value
-            m_lastError = "Failed to communicate with MCP3008";
+            m_lastError = "Failed to communicate with MCP3008 - no response from chip";
+            qCritical() << "MCP3008 communication test failed - check wiring and connections";
             return false;
         }
         
@@ -162,11 +169,13 @@ bool MCP3008::initializeSPI()
 {
     // Open SPI device
     QString spiDevice = QString("/dev/spidev0.%1").arg(m_spiChannel);
+    qDebug() << "Opening SPI device:" << spiDevice;
     m_spiFd = open(spiDevice.toLocal8Bit().data(), O_RDWR);
     if (m_spiFd < 0) {
-        qCritical() << "Failed to open SPI device" << spiDevice;
+        qCritical() << "Failed to open SPI device" << spiDevice << "- Error:" << strerror(errno);
         return false;
     }
+    qDebug() << "SPI device opened successfully, fd:" << m_spiFd;
 
     // Configure SPI mode
     uint8_t mode = SPI_MODE_0;
@@ -201,32 +210,53 @@ bool MCP3008::initializeSPI()
 
 uint16_t MCP3008::spiTransfer(uint8_t channel)
 {
-    // MCP3008 SPI protocol:
-    // Send: [start bit][single/diff][channel][don't care bits]
-    // Receive: [don't care][null bit][data bits 9-0]
-    
-    uint8_t buffer[3];
-    
+    // MCP3008 SPI protocol (corrected):
+    // Send 3 bytes: [0x01][0x80 | (channel << 4)][0x00]
+    // Receive: [don't care][null bit + MSB 2 bits][LSB 8 bits]
+
+    uint8_t tx_buffer[3];
+    uint8_t rx_buffer[3];
+
     // Build command: start bit (1) + single-ended (1) + channel (3 bits)
-    buffer[0] = 0x01;  // Start bit
-    buffer[1] = (0x80) | (channel << 4);  // Single-ended + channel
-    buffer[2] = 0x00;  // Don't care
-    
+    tx_buffer[0] = 0x01;                    // Start bit
+    tx_buffer[1] = 0x80 | (channel << 4);   // Single-ended + channel
+    tx_buffer[2] = 0x00;                    // Don't care
+
+    // Clear receive buffer
+    rx_buffer[0] = 0x00;
+    rx_buffer[1] = 0x00;
+    rx_buffer[2] = 0x00;
+
     // Perform SPI transfer using Linux SPI
     struct spi_ioc_transfer transfer = {};
-    transfer.tx_buf = (unsigned long)buffer;
-    transfer.rx_buf = (unsigned long)buffer;
+    transfer.tx_buf = (unsigned long)tx_buffer;
+    transfer.rx_buf = (unsigned long)rx_buffer;
     transfer.len = 3;
     transfer.speed_hz = m_spiSpeed;
     transfer.bits_per_word = 8;
+    transfer.delay_usecs = 0;
+    transfer.cs_change = 0;
 
     if (ioctl(m_spiFd, SPI_IOC_MESSAGE(1), &transfer) < 0) {
+        qCritical() << "SPI ioctl failed:" << strerror(errno);
         throw std::runtime_error("SPI transfer failed");
     }
-    
-    // Extract 10-bit result
-    uint16_t result = ((buffer[1] & 0x03) << 8) | buffer[2];
-    
+
+    // Extract 10-bit result from received data
+    // rx_buffer[1] contains the 2 MSB bits in bits 1:0
+    // rx_buffer[2] contains the 8 LSB bits
+    uint16_t result = ((rx_buffer[1] & 0x03) << 8) | rx_buffer[2];
+
+    qDebug() << "MCP3008 channel" << channel << "raw SPI:"
+             << QString("TX[%1,%2,%3] RX[%4,%5,%6] Result:%7")
+                .arg(tx_buffer[0], 2, 16, QChar('0'))
+                .arg(tx_buffer[1], 2, 16, QChar('0'))
+                .arg(tx_buffer[2], 2, 16, QChar('0'))
+                .arg(rx_buffer[0], 2, 16, QChar('0'))
+                .arg(rx_buffer[1], 2, 16, QChar('0'))
+                .arg(rx_buffer[2], 2, 16, QChar('0'))
+                .arg(result);
+
     return result;
 }
 
