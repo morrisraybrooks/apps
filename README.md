@@ -336,9 +336,9 @@ src/
    - Confirm MCP3008 power supply
 
 3. **Qt Application Won't Start**
-   - Install Qt6 development packages
+   - Install Qt5 development packages: `sudo apt install qtbase5-dev`
    - Check display configuration
-   - Verify X11 forwarding if using SSH
+   - **For SSH with Wayland**: Use `ssh user@raspberry-pi` and configure Wayland forwarding
 
 4. **Pressure Readings Invalid**
    - Check sensor calibration
@@ -349,6 +349,135 @@ src/
 
 System logs are written to `/var/log/vacuum-controller.log` (configurable).
 Enable debug logging in `config/settings.json` for detailed troubleshooting.
+
+## 🖥️ Wayland Display Configuration
+
+This system is designed for modern Wayland-based environments. All display configurations use Wayland protocols.
+
+### Running on Local Display (Raspberry Pi)
+
+For direct connection to the Raspberry Pi with attached display:
+
+```bash
+# Run directly on the Pi with Wayland
+./VacuumController
+
+# Force Wayland platform
+QT_QPA_PLATFORM=wayland ./VacuumController
+
+# For embedded fullscreen mode
+QT_QPA_PLATFORM=eglfs ./VacuumController
+```
+
+### SSH with Wayland Support
+
+For remote access using SSH with Wayland forwarding:
+
+#### Option 1: VNC over Wayland (Recommended)
+```bash
+# On the Raspberry Pi, install Wayland VNC server
+sudo apt install -y wayvnc
+
+# Start VNC server
+wayvnc 0.0.0.0 5900
+
+# From your client machine, connect with VNC viewer
+# Then run the application on the Pi desktop
+./VacuumController
+```
+
+#### Option 2: Wayland Socket Forwarding
+```bash
+# SSH to the Pi without display forwarding
+ssh user@raspberry-pi-ip
+
+# On the Pi, ensure Wayland is running
+echo $WAYLAND_DISPLAY  # Should show wayland-0
+
+# Run with Wayland platform
+QT_QPA_PLATFORM=wayland ./VacuumController
+```
+
+#### Option 3: Remote Desktop with Wayland
+```bash
+# Install RDP server for Wayland
+sudo apt install -y xrdp-wayland
+
+# Configure and start RDP service
+sudo systemctl enable xrdp-wayland
+sudo systemctl start xrdp-wayland
+
+# Connect from client using RDP
+# Run application in the remote session
+```
+
+### Qt Platform Configuration
+
+Configure Qt for optimal Wayland performance:
+
+```bash
+# Set Wayland as default Qt platform
+export QT_QPA_PLATFORM=wayland
+
+# Enable Wayland-specific features
+export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+
+# For high-DPI displays (50-inch)
+export QT_SCALE_FACTOR=1.5
+export QT_AUTO_SCREEN_SCALE_FACTOR=1
+
+# Run the application
+./VacuumController
+```
+
+### Wayland Environment Setup
+
+Ensure proper Wayland environment:
+
+```bash
+# Check Wayland session
+echo $XDG_SESSION_TYPE  # Should show 'wayland'
+echo $WAYLAND_DISPLAY   # Should show 'wayland-0'
+
+# Install Wayland development packages
+sudo apt install -y libwayland-dev wayland-protocols
+
+# Install Qt Wayland support
+sudo apt install -y qtwayland5
+```
+
+### Troubleshooting Wayland Issues
+
+1. **"Cannot connect to Wayland display" error**:
+   ```bash
+   echo $WAYLAND_DISPLAY  # Should show wayland-0
+   ls -la /run/user/$(id -u)/wayland-*  # Check socket exists
+   ```
+
+2. **Qt Wayland platform not found**:
+   ```bash
+   sudo apt install -y qtwayland5
+   export QT_QPA_PLATFORM=wayland
+   ```
+
+3. **Application debugging with Wayland**:
+   ```bash
+   QT_LOGGING_RULES="qt.qpa.wayland.*=true" ./VacuumController
+   ```
+
+4. **Force fallback to embedded mode**:
+   ```bash
+   # If Wayland fails, use embedded mode
+   QT_QPA_PLATFORM=eglfs ./VacuumController
+   ```
+
+5. **High-DPI display configuration**:
+   ```bash
+   # For 50-inch displays
+   export QT_SCALE_FACTOR=1.5
+   export QT_FONT_DPI=120
+   ./VacuumController
+   ```
 
 ## License
 
