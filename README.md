@@ -356,18 +356,28 @@ This system is designed for modern Wayland-based environments. All display confi
 
 ### Running on Local Display (Raspberry Pi)
 
-For direct connection to the Raspberry Pi with attached display:
-
+#### Production Mode (Recommended for Medical Use)
 ```bash
-# Run directly on the Pi with Wayland
-./VacuumController
-
-# Force Wayland platform
+# Wayland: Modern compositor with excellent performance
+# Best for clinical deployment on dedicated 50-inch display
 QT_QPA_PLATFORM=wayland ./VacuumController
 
-# For embedded fullscreen mode
+# Enable high-DPI scaling for 50-inch displays
+QT_SCALE_FACTOR=1.5 QT_QPA_PLATFORM=wayland ./VacuumController
+
+# Auto-detect platform (defaults to Wayland if available)
+./VacuumController
+```
+
+#### Fallback Mode (If Wayland Issues)
+```bash
+# EGLFS: Direct framebuffer rendering as fallback only
 QT_QPA_PLATFORM=eglfs ./VacuumController
 ```
+
+#### Platform Advantages
+- **Wayland**: Modern architecture, remote access, better debugging, future-proof
+- **EGLFS**: Fallback option for embedded systems without Wayland support
 
 ### SSH with Wayland Support
 
@@ -413,22 +423,59 @@ sudo systemctl start xrdp-wayland
 
 ### Qt Platform Configuration
 
-Configure Qt for optimal Wayland performance:
-
+#### Wayland Configuration (Primary Platform)
 ```bash
 # Set Wayland as default Qt platform
 export QT_QPA_PLATFORM=wayland
 
-# Enable Wayland-specific features
-export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
-
-# For high-DPI displays (50-inch)
+# High-DPI configuration for 50-inch medical displays
 export QT_SCALE_FACTOR=1.5
 export QT_AUTO_SCREEN_SCALE_FACTOR=1
+export QT_FONT_DPI=120
+
+# Enable Wayland-specific features for medical device
+export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+export QT_WAYLAND_FORCE_DPI=120
+
+# Optimize for touch interface
+export QT_IM_MODULE=qtvirtualkeyboard
 
 # Run the application
 ./VacuumController
 ```
+
+#### EGLFS Configuration (Fallback Only)
+```bash
+# Direct framebuffer rendering as fallback
+export QT_QPA_PLATFORM=eglfs
+
+# High-DPI configuration
+export QT_SCALE_FACTOR=1.5
+export QT_FONT_DPI=120
+
+# Disable cursor for touch-only interface
+export QT_QPA_EGLFS_HIDECURSOR=1
+
+# Run the application
+./VacuumController
+```
+
+#### Why Wayland is Recommended
+
+**Wayland Advantages:**
+- ✅ **Modern architecture** - Future-proof display protocol
+- ✅ **Excellent performance** - Hardware-accelerated compositing
+- ✅ **Remote access support** - SSH with VNC for maintenance
+- ✅ **Better security** - Isolated application rendering
+- ✅ **Multi-application** - Can run diagnostic tools alongside
+- ✅ **Development friendly** - Remote debugging and testing
+- ✅ **Touch optimization** - Native touch and gesture support
+- ✅ **High-DPI support** - Perfect for 50-inch medical displays
+
+**EGLFS as Fallback:**
+- ⚠️ **Use only if** Wayland is not available or has issues
+- ⚠️ **Limited functionality** - No remote access, single application
+- ⚠️ **Legacy approach** - Being phased out in favor of Wayland
 
 ### Wayland Environment Setup
 
@@ -465,17 +512,36 @@ sudo apt install -y qtwayland5
    QT_LOGGING_RULES="qt.qpa.wayland.*=true" ./VacuumController
    ```
 
-4. **Force fallback to embedded mode**:
+4. **EGLFS issues (black screen, no display)**:
    ```bash
-   # If Wayland fails, use embedded mode
-   QT_QPA_PLATFORM=eglfs ./VacuumController
+   # Check framebuffer device
+   ls -la /dev/fb*
+
+   # Test with specific framebuffer
+   QT_QPA_EGLFS_FB=/dev/fb0 ./VacuumController
+
+   # Debug EGLFS initialization
+   QT_LOGGING_RULES="qt.qpa.eglfs.*=true" ./VacuumController
    ```
 
-5. **High-DPI display configuration**:
+5. **Platform switching for debugging**:
    ```bash
-   # For 50-inch displays
+   # Primary: Use Wayland (recommended)
+   QT_QPA_PLATFORM=wayland ./VacuumController
+
+   # Fallback: Use EGLFS only if Wayland fails
+   QT_QPA_PLATFORM=eglfs ./VacuumController
+
+   # Force software rendering if GPU issues
+   QT_QUICK_BACKEND=software ./VacuumController
+   ```
+
+6. **High-DPI display configuration**:
+   ```bash
+   # For 50-inch displays with EGLFS
    export QT_SCALE_FACTOR=1.5
    export QT_FONT_DPI=120
+   export QT_QPA_EGLFS_HIDECURSOR=1
    ./VacuumController
    ```
 

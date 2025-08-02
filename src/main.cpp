@@ -20,11 +20,30 @@ int runGUIApplication(QApplication& app);
 
 int main(int argc, char *argv[])
 {
-    // Configure Qt EGLFS for optimal display on Raspberry Pi
-    // Set environment variables before QApplication creation
-    qputenv("QT_QPA_PLATFORM", "eglfs");
-    qputenv("QT_QPA_EGLFS_ALWAYS_SET_MODE", "1");
-    qputenv("QT_QPA_EGLFS_HIDECURSOR", "0");  // Make mouse cursor visible
+    // Configure Qt platform for optimal display on Raspberry Pi
+    // Priority: Wayland > EGLFS > Auto-detect
+
+    // Check if platform is specified via command line or environment
+    QString platform = qgetenv("QT_QPA_PLATFORM");
+    if (platform.isEmpty()) {
+        // Default to Wayland for modern systems
+        qputenv("QT_QPA_PLATFORM", "wayland");
+        platform = "wayland";
+    }
+
+    // Configure platform-specific settings
+    if (platform == "wayland") {
+        qputenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1");
+        qputenv("QT_SCALE_FACTOR", "1.5");  // High-DPI for 50-inch display
+        qputenv("QT_AUTO_SCREEN_SCALE_FACTOR", "1");
+        qputenv("QT_FONT_DPI", "120");
+        qputenv("QT_IM_MODULE", "qtvirtualkeyboard");
+    } else if (platform == "eglfs") {
+        qputenv("QT_QPA_EGLFS_ALWAYS_SET_MODE", "1");
+        qputenv("QT_QPA_EGLFS_HIDECURSOR", "1");  // Hide cursor for touch-only
+        qputenv("QT_SCALE_FACTOR", "1.5");
+        qputenv("QT_FONT_DPI", "120");
+    }
 
     QApplication app(argc, argv);
     
