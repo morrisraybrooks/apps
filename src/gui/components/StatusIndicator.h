@@ -52,6 +52,7 @@ public:
     // Status properties
     StatusLevel status() const { return m_status; }
     void setStatus(StatusLevel status);
+    void setStatus(StatusLevel status, const QString& text);
     
     // Text and display
     void setText(const QString& text);
@@ -70,6 +71,7 @@ public:
     // Animation
     bool isAnimated() const { return m_animated; }
     void setAnimated(bool animated);
+    void setAnimationEnabled(bool enabled);
     
     void setBlinkEnabled(bool enabled);
     bool isBlinkEnabled() const { return m_blinkEnabled; }
@@ -108,8 +110,11 @@ private slots:
 private:
     void setupUI();
     void setupAnimations();
+    void setupIndicator();
     void updateIndicatorAppearance();
     void updateTextAppearance();
+    void updateColors();
+    void setBlinkingEnabled(bool enabled);
     
     void drawCircleIndicator(QPainter& painter, const QRect& rect);
     void drawSquareIndicator(QPainter& painter, const QRect& rect);
@@ -131,10 +136,12 @@ private:
     
     // Animation properties
     bool m_animated;
+    bool m_animationEnabled;
     bool m_blinkEnabled;
     bool m_pulseEnabled;
     QTimer* m_blinkTimer;
     QPropertyAnimation* m_pulseAnimation;
+    QPropertyAnimation* m_colorAnimation;
     bool m_blinkState;
     double m_pulseOpacity;
     
@@ -146,6 +153,9 @@ private:
     
     // Colors for different status levels
     QMap<StatusLevel, QColor> m_statusColors;
+    QColor m_backgroundColor;
+    QColor m_textColor;
+    QColor m_borderColor;
     
     // Constants
     static const QSize DEFAULT_INDICATOR_SIZE;

@@ -14,6 +14,8 @@
 #include <QtCharts/QValueAxis>
 #include <QQueue>
 
+QT_CHARTS_USE_NAMESPACE
+
 // Forward declarations
 class VacuumController;
 class PressureChart;
@@ -88,6 +90,12 @@ private:
     // Chart components
     QFrame* m_chartFrame;
     PressureChart* m_chart;
+
+    // Chart series and axes
+    class QLineSeries* m_avlSeries;
+    class QLineSeries* m_tankSeries;
+    class QValueAxis* m_timeAxis;
+    class QValueAxis* m_pressureAxis;
     
     // Alarm indicators
     QFrame* m_alarmFrame;

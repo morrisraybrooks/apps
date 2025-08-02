@@ -246,7 +246,7 @@ void SafetyPanel::connectSignals()
         connect(m_controller, &VacuumController::emergencyStopTriggered,
                 this, &SafetyPanel::onEmergencyStopTriggered);
         
-        connect(m_controller, QOverload<int>::of(&VacuumController::systemStateChanged),
+        connect(m_controller, &VacuumController::systemStateChanged,
                 this, &SafetyPanel::onSafetyStateChanged);
     }
 }
@@ -402,7 +402,7 @@ void SafetyPanel::updateStatusIndicators()
     m_tankPressureBar->setStyleSheet(QString("QProgressBar::chunk { background-color: %1; }").arg(tankColor));
     
     // Update status indicators based on current conditions
-    if (m_controller && m_controller->isReady()) {
+    if (m_controller && m_controller->isSystemReady()) {
         m_statusIndicators->updateStatus("hardware", StatusIndicator::OK, "Ready");
     } else {
         m_statusIndicators->updateStatus("hardware", StatusIndicator::ERROR, "Not Ready");

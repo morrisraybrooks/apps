@@ -1,11 +1,13 @@
 #include "ThreadManager.h"
 #include "DataAcquisitionThread.h"
 #include "GuiUpdateThread.h"
+#include "SafetyMonitorThread.h"
 #include "../hardware/HardwareManager.h"
 #include <QDebug>
 #include <QMutexLocker>
 #include <QTimer>
 #include <QDateTime>
+#include <QCoreApplication>
 
 ThreadManager::ThreadManager(HardwareManager* hardware, QObject *parent)
     : QObject(parent)

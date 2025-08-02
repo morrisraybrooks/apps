@@ -2,16 +2,22 @@
 #include <QPainter>
 #include <QPropertyAnimation>
 #include <QTimer>
+#include <QGridLayout>
 
 StatusIndicator::StatusIndicator(QWidget *parent)
     : QWidget(parent)
     , m_status(OK)
     , m_text("OK")
+    , m_animated(false)
     , m_animationEnabled(true)
-    , m_blinkingEnabled(false)
+    , m_blinkEnabled(false)
+    , m_pulseEnabled(false)
+    , m_horizontalLayout(false)
     , m_blinkTimer(new QTimer(this))
-    , m_blinkState(false)
+    , m_pulseAnimation(nullptr)
     , m_colorAnimation(new QPropertyAnimation(this, "color"))
+    , m_blinkState(false)
+    , m_pulseOpacity(1.0)
 {
     setupIndicator();
 }
@@ -35,7 +41,7 @@ void StatusIndicator::setupIndicator()
     updateColors();
 }
 
-void StatusIndicator::setStatus(Status status, const QString &text)
+void StatusIndicator::setStatus(StatusLevel status, const QString &text)
 {
     if (m_status != status || m_text != text) {
         m_status = status;
@@ -45,7 +51,7 @@ void StatusIndicator::setStatus(Status status, const QString &text)
         
         // Enable blinking for critical status
         if (status == CRITICAL || status == ERROR) {
-            if (m_blinkingEnabled) {
+            if (m_blinkEnabled) {
                 m_blinkTimer->start();
             }
         } else {
@@ -54,7 +60,7 @@ void StatusIndicator::setStatus(Status status, const QString &text)
         }
         
         update();
-        emit statusChanged(status, text);
+        emit statusChanged(status);
     }
 }
 
@@ -65,14 +71,107 @@ void StatusIndicator::setAnimationEnabled(bool enabled)
 
 void StatusIndicator::setBlinkingEnabled(bool enabled)
 {
-    m_blinkingEnabled = enabled;
-    
+    m_blinkEnabled = enabled;
+
     if (!enabled) {
         m_blinkTimer->stop();
         m_blinkState = false;
         update();
     } else if (m_status == CRITICAL || m_status == ERROR) {
         m_blinkTimer->start();
+    }
+}
+
+void StatusIndicator::setPulseEnabled(bool enabled)
+{
+    m_pulseEnabled = enabled;
+    if (m_pulseAnimation) {
+        if (enabled) {
+            m_pulseAnimation->start();
+        } else {
+            m_pulseAnimation->stop();
+        }
+    }
+}
+
+void StatusIndicator::setHorizontalLayout(bool horizontal)
+{
+    m_horizontalLayout = horizontal;
+    // Layout changes would require UI restructuring
+    update();
+}
+
+void StatusIndicator::setStatusColor(StatusLevel status, const QColor& color)
+{
+    m_statusColors[status] = color;
+    if (m_status == status) {
+        updateColors();
+        update();
+    }
+}
+
+QColor StatusIndicator::getStatusColor(StatusLevel status) const
+{
+    if (m_statusColors.contains(status)) {
+        return m_statusColors[status];
+    }
+
+    // Return default colors if not customized
+    switch (status) {
+    case OK:
+        return QColor(76, 175, 80);    // Green
+    case INFO:
+        return QColor(33, 150, 243);   // Blue
+    case WARNING:
+        return QColor(255, 193, 7);    // Amber
+    case CRITICAL:
+        return QColor(244, 67, 54);    // Red
+    case ERROR:
+        return QColor(156, 39, 176);   // Purple
+    case OFFLINE:
+        return QColor(158, 158, 158);  // Gray
+    default:
+        return QColor(158, 158, 158);  // Gray
+    }
+}
+
+void StatusIndicator::updateStatus(StatusLevel status, const QString& message)
+{
+    setStatus(status, message);
+}
+
+void StatusIndicator::clearStatus()
+{
+    setStatus(OK, "OK");
+}
+
+void StatusIndicator::startAnimation()
+{
+    setAnimated(true);
+}
+
+void StatusIndicator::stopAnimation()
+{
+    setAnimated(false);
+}
+
+void StatusIndicator::setAnimated(bool animated)
+{
+    m_animated = animated;
+    if (animated) {
+        if (m_pulseAnimation && m_pulseEnabled) {
+            m_pulseAnimation->start();
+        }
+        if (m_blinkEnabled && (m_status == CRITICAL || m_status == ERROR)) {
+            m_blinkTimer->start();
+        }
+    } else {
+        if (m_pulseAnimation) {
+            m_pulseAnimation->stop();
+        }
+        m_blinkTimer->stop();
+        m_blinkState = false;
+        update();
     }
 }
 
@@ -103,12 +202,7 @@ void StatusIndicator::updateColors()
         m_borderColor = QColor(136, 14, 79);        // Purple-red
         break;
         
-    case UNKNOWN:
-        m_backgroundColor = QColor(158, 158, 158);  // Gray
-        m_textColor = QColor(255, 255, 255);        // White
-        m_borderColor = QColor(117, 117, 117);      // Dark gray
-        break;
-        
+
     case OFFLINE:
         m_backgroundColor = QColor(96, 125, 139);   // Blue-gray
         m_textColor = QColor(255, 255, 255);        // White
@@ -172,4 +266,123 @@ void StatusIndicator::onBlinkTimer()
 {
     m_blinkState = !m_blinkState;
     update();
+}
+
+QSize StatusIndicator::minimumSizeHint() const
+{
+    return QSize(80, 24);
+}
+
+void StatusIndicator::mousePressEvent(QMouseEvent *event)
+{
+    Q_UNUSED(event)
+    emit clicked();
+}
+
+void StatusIndicator::setStatus(StatusLevel status)
+{
+    setStatus(status, QString());
+}
+
+void StatusIndicator::onPulseAnimation()
+{
+    // Pulse animation slot - could update opacity or other visual effects
+    if (m_pulseAnimation && m_pulseEnabled) {
+        m_pulseAnimation->start();
+    }
+}
+
+// MultiStatusIndicator implementation
+MultiStatusIndicator::MultiStatusIndicator(QWidget *parent)
+    : QWidget(parent)
+    , m_gridLayout(new QGridLayout(this))
+    , m_columns(DEFAULT_COLUMNS)
+{
+    setLayout(m_gridLayout);
+}
+
+MultiStatusIndicator::~MultiStatusIndicator()
+{
+    // Qt will handle cleanup of child widgets
+}
+
+void MultiStatusIndicator::addStatus(const QString& name, const QString& label, StatusIndicator::StatusLevel initialStatus)
+{
+    if (m_indicators.contains(name)) {
+        return; // Already exists
+    }
+
+    StatusIndicator* indicator = new StatusIndicator(this);
+    indicator->setStatus(initialStatus, label);
+    m_indicators[name] = indicator;
+
+    // Connect click signal
+    connect(indicator, &StatusIndicator::clicked, this, &MultiStatusIndicator::onIndicatorClicked);
+
+    updateLayout();
+}
+
+void MultiStatusIndicator::removeStatus(const QString& name)
+{
+    if (m_indicators.contains(name)) {
+        StatusIndicator* indicator = m_indicators.take(name);
+        m_gridLayout->removeWidget(indicator);
+        indicator->deleteLater();
+        updateLayout();
+    }
+}
+
+void MultiStatusIndicator::updateStatus(const QString& name, StatusIndicator::StatusLevel status, const QString& message)
+{
+    if (m_indicators.contains(name)) {
+        m_indicators[name]->setStatus(status, message);
+    }
+}
+
+void MultiStatusIndicator::setColumns(int columns)
+{
+    if (columns > 0) {
+        m_columns = columns;
+        updateLayout();
+    }
+}
+
+StatusIndicator* MultiStatusIndicator::getIndicator(const QString& name) const
+{
+    return m_indicators.value(name, nullptr);
+}
+
+QStringList MultiStatusIndicator::getStatusNames() const
+{
+    return m_indicators.keys();
+}
+
+void MultiStatusIndicator::onIndicatorClicked()
+{
+    StatusIndicator* indicator = qobject_cast<StatusIndicator*>(sender());
+    if (indicator) {
+        QString name = m_indicators.key(indicator);
+        if (!name.isEmpty()) {
+            emit statusClicked(name, indicator->status());
+        }
+    }
+}
+
+void MultiStatusIndicator::updateLayout()
+{
+    // Clear current layout
+    while (QLayoutItem* item = m_gridLayout->takeAt(0)) {
+        delete item;
+    }
+
+    // Re-add indicators in grid layout
+    int row = 0, col = 0;
+    for (auto it = m_indicators.begin(); it != m_indicators.end(); ++it) {
+        m_gridLayout->addWidget(it.value(), row, col);
+        col++;
+        if (col >= m_columns) {
+            col = 0;
+            row++;
+        }
+    }
 }

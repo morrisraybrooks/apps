@@ -1,10 +1,10 @@
 #include "ActuatorControl.h"
 #include <QDebug>
 #include <QMutexLocker>
-#include <wiringPi.h>
-#include <softPwm.h>
+#include <gpiod.h>
 #include <stdexcept>
 #include <cmath>
+#include <algorithm>
 
 // Constants
 const double ActuatorControl::MAX_PUMP_SPEED = 100.0;
@@ -21,6 +21,12 @@ ActuatorControl::ActuatorControl(QObject *parent)
     , m_sol2State(false)
     , m_sol3State(false)
     , m_pwmTimer(new QTimer(this))
+    , m_gpioChip(nullptr)
+    , m_sol1Line(nullptr)
+    , m_sol2Line(nullptr)
+    , m_sol3Line(nullptr)
+    , m_pumpEnableLine(nullptr)
+    , m_pumpPwmLine(nullptr)
 {
     // Set up PWM update timer
     m_pwmTimer->setInterval(20);  // 50Hz PWM update
@@ -67,15 +73,43 @@ bool ActuatorControl::initialize()
 void ActuatorControl::shutdown()
 {
     if (!m_initialized) return;
-    
+
     qDebug() << "Shutting down Actuator Control...";
-    
+
     // Stop PWM timer
     m_pwmTimer->stop();
-    
+
     // Safe shutdown all actuators
     safeShutdownAll();
-    
+
+    // Release GPIO lines
+    if (m_sol1Line) {
+        gpiod_line_release(m_sol1Line);
+        m_sol1Line = nullptr;
+    }
+    if (m_sol2Line) {
+        gpiod_line_release(m_sol2Line);
+        m_sol2Line = nullptr;
+    }
+    if (m_sol3Line) {
+        gpiod_line_release(m_sol3Line);
+        m_sol3Line = nullptr;
+    }
+    if (m_pumpEnableLine) {
+        gpiod_line_release(m_pumpEnableLine);
+        m_pumpEnableLine = nullptr;
+    }
+    if (m_pumpPwmLine) {
+        gpiod_line_release(m_pumpPwmLine);
+        m_pumpPwmLine = nullptr;
+    }
+
+    // Close GPIO chip
+    if (m_gpioChip) {
+        gpiod_chip_close(m_gpioChip);
+        m_gpioChip = nullptr;
+    }
+
     m_initialized = false;
     qDebug() << "Actuator Control shutdown complete";
 }
@@ -255,30 +289,49 @@ bool ActuatorControl::performSelfTest()
 
 void ActuatorControl::updatePWM()
 {
-    if (m_initialized && m_pumpEnabled && !m_emergencyStop) {
-        // Update software PWM
-        softPwmWrite(GPIO_PUMP_PWM, m_pwmValue);
+    if (m_initialized && m_pumpEnabled && !m_emergencyStop && m_pumpPwmLine) {
+        // Simple software PWM: toggle GPIO based on PWM value
+        // This is a basic implementation - for production, consider hardware PWM
+        static int pwmCounter = 0;
+        pwmCounter = (pwmCounter + 1) % PWM_RANGE;
+
+        bool pwmState = (pwmCounter < m_pwmValue);
+        gpiod_line_set_value(m_pumpPwmLine, pwmState ? 1 : 0);
     }
 }
 
 bool ActuatorControl::initializeGPIO()
 {
     try {
-        // Set up solenoid valve pins as outputs
-        pinMode(GPIO_SOL1, OUTPUT);
-        pinMode(GPIO_SOL2, OUTPUT);
-        pinMode(GPIO_SOL3, OUTPUT);
-        pinMode(GPIO_PUMP_ENABLE, OUTPUT);
-        
-        // Initialize all outputs to LOW (safe state)
-        digitalWrite(GPIO_SOL1, LOW);
-        digitalWrite(GPIO_SOL2, LOW);
-        digitalWrite(GPIO_SOL3, LOW);
-        digitalWrite(GPIO_PUMP_ENABLE, LOW);
-        
-        qDebug() << "GPIO pins initialized";
+        // Open GPIO chip (usually gpiochip0 on Raspberry Pi)
+        m_gpioChip = gpiod_chip_open_by_name("gpiochip0");
+        if (!m_gpioChip) {
+            throw std::runtime_error("Failed to open GPIO chip");
+        }
+
+        // Get GPIO lines for solenoid valves
+        m_sol1Line = gpiod_chip_get_line(m_gpioChip, GPIO_SOL1);
+        m_sol2Line = gpiod_chip_get_line(m_gpioChip, GPIO_SOL2);
+        m_sol3Line = gpiod_chip_get_line(m_gpioChip, GPIO_SOL3);
+        m_pumpEnableLine = gpiod_chip_get_line(m_gpioChip, GPIO_PUMP_ENABLE);
+        m_pumpPwmLine = gpiod_chip_get_line(m_gpioChip, GPIO_PUMP_PWM);
+
+        if (!m_sol1Line || !m_sol2Line || !m_sol3Line || !m_pumpEnableLine || !m_pumpPwmLine) {
+            throw std::runtime_error("Failed to get GPIO lines");
+        }
+
+        // Request lines as outputs with initial low state
+        if (gpiod_line_request_output(m_sol1Line, "VacuumController-SOL1", 0) < 0 ||
+            gpiod_line_request_output(m_sol2Line, "VacuumController-SOL2", 0) < 0 ||
+            gpiod_line_request_output(m_sol3Line, "VacuumController-SOL3", 0) < 0 ||
+            gpiod_line_request_output(m_pumpEnableLine, "VacuumController-PumpEnable", 0) < 0 ||
+            gpiod_line_request_output(m_pumpPwmLine, "VacuumController-PumpPWM", 0) < 0) {
+            throw std::runtime_error("Failed to request GPIO lines as outputs");
+        }
+
+        qDebug() << "GPIO pins initialized using libgpiod";
         return true;
-        
+
     } catch (const std::exception& e) {
         qCritical() << "GPIO initialization failed:" << e.what();
         return false;
@@ -288,15 +341,14 @@ bool ActuatorControl::initializeGPIO()
 bool ActuatorControl::initializePWM()
 {
     try {
-        // Initialize software PWM for pump control
-        if (softPwmCreate(GPIO_PUMP_PWM, 0, PWM_RANGE) != 0) {
-            throw std::runtime_error("Failed to create software PWM");
-        }
-        
-        qDebug() << QString("PWM initialized on GPIO %1 with range %2")
-                    .arg(GPIO_PUMP_PWM).arg(PWM_RANGE);
+        // PWM is handled through the GPIO line we already set up
+        // For now, we'll use software PWM via the timer
+        // Hardware PWM could be implemented later using /sys/class/pwm
+
+        qDebug() << QString("PWM initialized on GPIO %1 (software PWM)")
+                    .arg(GPIO_PUMP_PWM);
         return true;
-        
+
     } catch (const std::exception& e) {
         qCritical() << "PWM initialization failed:" << e.what();
         return false;
@@ -305,12 +357,46 @@ bool ActuatorControl::initializePWM()
 
 void ActuatorControl::setGPIOOutput(int pin, bool state)
 {
-    digitalWrite(pin, state ? HIGH : LOW);
+    struct gpiod_line* line = nullptr;
+
+    // Map pin number to GPIO line
+    switch (pin) {
+        case GPIO_SOL1: line = m_sol1Line; break;
+        case GPIO_SOL2: line = m_sol2Line; break;
+        case GPIO_SOL3: line = m_sol3Line; break;
+        case GPIO_PUMP_ENABLE: line = m_pumpEnableLine; break;
+        case GPIO_PUMP_PWM: line = m_pumpPwmLine; break;
+        default:
+            qWarning() << "Unknown GPIO pin:" << pin;
+            return;
+    }
+
+    if (line && gpiod_line_set_value(line, state ? 1 : 0) < 0) {
+        qWarning() << "Failed to set GPIO pin" << pin << "to" << state;
+    }
 }
 
 bool ActuatorControl::getGPIOState(int pin)
 {
-    return digitalRead(pin) == HIGH;
+    struct gpiod_line* line = nullptr;
+
+    // Map pin number to GPIO line
+    switch (pin) {
+        case GPIO_SOL1: line = m_sol1Line; break;
+        case GPIO_SOL2: line = m_sol2Line; break;
+        case GPIO_SOL3: line = m_sol3Line; break;
+        case GPIO_PUMP_ENABLE: line = m_pumpEnableLine; break;
+        case GPIO_PUMP_PWM: line = m_pumpPwmLine; break;
+        default:
+            qWarning() << "Unknown GPIO pin:" << pin;
+            return false;
+    }
+
+    if (line) {
+        int value = gpiod_line_get_value(line);
+        return value > 0;
+    }
+    return false;
 }
 
 void ActuatorControl::safeShutdownAll()
@@ -330,7 +416,7 @@ void ActuatorControl::safeShutdownAll()
     setGPIOOutput(GPIO_SOL3, true);
     
     if (m_initialized) {
-        softPwmWrite(GPIO_PUMP_PWM, 0);
+        setGPIOOutput(GPIO_PUMP_PWM, false);
     }
     
     qDebug() << "All actuators set to safe state";

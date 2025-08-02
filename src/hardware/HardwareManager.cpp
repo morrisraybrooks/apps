@@ -5,10 +5,8 @@
 
 #include <QDebug>
 #include <QMutexLocker>
-// Conditional wiringPi include for Raspberry Pi hardware
-#ifdef RASPBERRY_PI_BUILD
-#include <wiringPi.h>
-#endif
+// Modern GPIO library using libgpiod
+#include <gpiod.h>
 #include <stdexcept>
 
 HardwareManager::HardwareManager(QObject *parent)
@@ -33,10 +31,11 @@ bool HardwareManager::initialize()
     try {
         qDebug() << "Initializing Hardware Manager...";
         
-        // Initialize wiringPi library
-        if (wiringPiSetupGpio() < 0) {
-            throw std::runtime_error("Failed to initialize wiringPi GPIO");
-        }
+        // Initialize GPIO using libgpiod
+        qDebug() << "Initializing GPIO using libgpiod...";
+
+        // Note: GPIO initialization will be handled by individual components
+        // that need GPIO access (ActuatorControl, EmergencyStop, etc.)
         
         // Initialize GPIO pins
         initializeGPIO();

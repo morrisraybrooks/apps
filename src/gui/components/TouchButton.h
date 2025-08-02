@@ -66,6 +66,18 @@ public:
     bool hasHapticFeedback() const { return m_hapticFeedback; }
     bool hasSoundFeedback() const { return m_soundFeedback; }
 
+    // Animation configuration
+    void setAnimationEnabled(bool enabled);
+    bool isAnimationEnabled() const { return m_animationEnabled; }
+
+    // Touch feedback configuration
+    void setTouchFeedbackEnabled(bool enabled);
+    bool isTouchFeedbackEnabled() const { return m_touchFeedbackEnabled; }
+
+    // Size hints
+    QSize sizeHint() const override;
+    QSize minimumSizeHint() const override;
+
 public slots:
     void startPulse();
     void stopPulse();
@@ -82,9 +94,9 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
     void enterEvent(QEvent *event) override;
     void leaveEvent(QEvent *event) override;
+    void focusInEvent(QFocusEvent *event) override;
+    void focusOutEvent(QFocusEvent *event) override;
     bool event(QEvent *event) override;
-    QSize sizeHint() const override;
-    QSize minimumSizeHint() const override;
 
 private slots:
     void onLongPressTimer();
@@ -96,6 +108,7 @@ private:
     void setupAnimations();
     void setupEffects();
     void applyButtonStyle();
+    void updateButtonStyle();
     void updateButtonColors();
     void provideFeedback();
     
@@ -114,6 +127,7 @@ private:
     QGraphicsDropShadowEffect* m_shadowEffect;
     QPropertyAnimation* m_pulseAnimation;
     QPropertyAnimation* m_pressAnimation;
+    QPropertyAnimation* m_colorAnimation;
     
     // Touch and interaction
     bool m_longPressEnabled;
@@ -124,6 +138,8 @@ private:
     // Feedback
     bool m_hapticFeedback;
     bool m_soundFeedback;
+    bool m_touchFeedbackEnabled;
+    bool m_animationEnabled;
     
     // Flash effect
     QTimer* m_flashTimer;

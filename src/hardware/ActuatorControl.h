@@ -5,6 +5,10 @@
 #include <QMutex>
 #include <QTimer>
 
+// Forward declaration for libgpiod
+struct gpiod_chip;
+struct gpiod_line;
+
 /**
  * @brief Control interface for vacuum system actuators
  * 
@@ -85,7 +89,15 @@ private:
     
     // PWM control
     QTimer* m_pwmTimer;
-    
+
+    // GPIO control using libgpiod
+    struct gpiod_chip* m_gpioChip;
+    struct gpiod_line* m_sol1Line;
+    struct gpiod_line* m_sol2Line;
+    struct gpiod_line* m_sol3Line;
+    struct gpiod_line* m_pumpEnableLine;
+    struct gpiod_line* m_pumpPwmLine;
+
     // Error tracking
     QString m_lastError;
     

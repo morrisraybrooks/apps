@@ -3,7 +3,8 @@
 #include <QDebug>
 #include <QMutexLocker>
 #include <QDateTime>
-#include <wiringPi.h>
+#include <gpiod.h>
+#include <stdexcept>
 
 EmergencyStop::EmergencyStop(HardwareManager* hardware, QObject *parent)
     : QObject(parent)
@@ -15,6 +16,8 @@ EmergencyStop::EmergencyStop(HardwareManager* hardware, QObject *parent)
     , m_hardwareButtonEnabled(true)
     , m_lastButtonState(false)
     , m_buttonCheckTimer(new QTimer(this))
+    , m_gpioChip(nullptr)
+    , m_buttonLine(nullptr)
 {
     // Set up button checking timer
     m_buttonCheckTimer->setInterval(BUTTON_CHECK_INTERVAL_MS);
@@ -61,7 +64,17 @@ void EmergencyStop::shutdown()
     
     // Stop button monitoring
     m_buttonCheckTimer->stop();
-    
+
+    // Release GPIO resources
+    if (m_buttonLine) {
+        gpiod_line_release(m_buttonLine);
+        m_buttonLine = nullptr;
+    }
+    if (m_gpioChip) {
+        gpiod_chip_close(m_gpioChip);
+        m_gpioChip = nullptr;
+    }
+
     m_active = false;
     qDebug() << "Emergency stop system shutdown";
 }
@@ -145,18 +158,21 @@ void EmergencyStop::checkHardwareButton()
     if (!m_hardwareButtonEnabled || !m_active) return;
     
     try {
+        if (!m_buttonLine) return;
+
         // Read button state (assuming active low button)
-        bool currentButtonState = (digitalRead(GPIO_EMERGENCY_BUTTON) == LOW);
-        
+        int buttonValue = gpiod_line_get_value(m_buttonLine);
+        bool currentButtonState = (buttonValue == 0);  // Active low
+
         // Detect button press (transition from not pressed to pressed)
         if (currentButtonState && !m_lastButtonState) {
             qWarning() << "Hardware emergency button pressed";
             emit hardwareButtonPressed();
             trigger("Hardware emergency button pressed");
         }
-        
+
         m_lastButtonState = currentButtonState;
-        
+
     } catch (const std::exception& e) {
         qWarning() << "Error reading emergency button:" << e.what();
     }
@@ -207,15 +223,28 @@ bool EmergencyStop::validateResetConditions()
 void EmergencyStop::initializeHardwareButton()
 {
     try {
-        // Configure emergency button pin as input with pull-up
-        pinMode(GPIO_EMERGENCY_BUTTON, INPUT);
-        pullUpDnControl(GPIO_EMERGENCY_BUTTON, PUD_UP);
-        
-        // Read initial state
-        m_lastButtonState = (digitalRead(GPIO_EMERGENCY_BUTTON) == LOW);
-        
+        // Open GPIO chip
+        m_gpioChip = gpiod_chip_open_by_name("gpiochip0");
+        if (!m_gpioChip) {
+            throw std::runtime_error("Failed to open GPIO chip");
+        }
+
+        // Get GPIO line for emergency button
+        m_buttonLine = gpiod_chip_get_line(m_gpioChip, GPIO_EMERGENCY_BUTTON);
+        if (!m_buttonLine) {
+            throw std::runtime_error("Failed to get GPIO line for emergency button");
+        }
+
+        // Request line as input with pull-up
+        if (gpiod_line_request_input(m_buttonLine, "VacuumController-EmergencyStop") < 0) {
+            throw std::runtime_error("Failed to request GPIO line as input");
+        }
+
+        // Read initial state (button is active low)
+        m_lastButtonState = (gpiod_line_get_value(m_buttonLine) == 0);
+
         qDebug() << "Emergency button initialized on GPIO" << GPIO_EMERGENCY_BUTTON;
-        
+
     } catch (const std::exception& e) {
         qWarning() << "Failed to initialize emergency button:" << e.what();
         m_hardwareButtonEnabled = false;

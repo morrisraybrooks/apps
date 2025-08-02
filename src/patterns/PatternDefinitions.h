@@ -22,6 +22,16 @@ class PatternDefinitions : public QObject
     Q_OBJECT
 
 public:
+    struct PatternStep {
+        double pressurePercent;
+        int durationMs;
+        QString action;
+        QString description;
+        QJsonObject parameters;
+
+        PatternStep() : pressurePercent(0.0), durationMs(0) {}
+    };
+
     struct PatternInfo {
         QString name;
         QString type;
@@ -29,9 +39,12 @@ public:
         QString description;
         QString category;
         QJsonObject parameters;
+        QList<PatternStep> steps;
+        double basePressure;
+        double intensity;
         bool isValid;
-        
-        PatternInfo() : isValid(false) {}
+
+        PatternInfo() : basePressure(0.0), intensity(0.0), isValid(false) {}
     };
 
     explicit PatternDefinitions(QObject *parent = nullptr);
@@ -45,12 +58,15 @@ public:
     // Pattern access
     PatternInfo getPattern(const QString& name) const;
     QJsonObject getPatternParameters(const QString& name) const;
+    QStringList getPatternNames() const;
+    QStringList getPatternsByType(const QString& type) const;
     QStringList getAllPatternNames() const;
     QStringList getPatternsByCategory(const QString& category) const;
     QStringList getAllCategories() const;
     
     // Pattern validation
     bool isValidPattern(const QString& name) const;
+    bool hasPattern(const QString& name) const;
     bool validatePatternParameters(const QJsonObject& parameters) const;
     QString getValidationError() const { return m_lastError; }
     
@@ -73,7 +89,14 @@ signals:
     void patternLoadError(const QString& error);
 
 private:
+    void initializePatterns();
     void initializeDefaultPatterns();
+    void createPulsePatterns();
+    void createConstantPatterns();
+    void createSpecialPatterns();
+    void createAirPulsePatterns();
+    void createMilkingPatterns();
+    void createWavePatterns();
     bool validatePulsePattern(const QJsonObject& params) const;
     bool validateWavePattern(const QJsonObject& params) const;
     bool validateAirPulsePattern(const QJsonObject& params) const;

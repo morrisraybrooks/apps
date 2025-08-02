@@ -349,6 +349,18 @@ void PatternSelector::selectPattern(const QString& patternName)
     emit patternSelected(patternName);
 }
 
+void PatternSelector::selectCategory(const QString& category)
+{
+    // Find the category in the combo box and select it
+    for (int i = 0; i < m_categoryCombo->count(); ++i) {
+        if (m_categoryCombo->itemText(i) == category) {
+            m_categoryCombo->setCurrentIndex(i);
+            onCategoryChanged();
+            break;
+        }
+    }
+}
+
 void PatternSelector::updateParameterPanel()
 {
     // Clear existing controls
@@ -532,4 +544,14 @@ QStringList PatternSelector::getAvailablePatterns() const
 QStringList PatternSelector::getPatternCategories() const
 {
     return m_categories;
+}
+
+void PatternSelector::resetToDefaults()
+{
+    // Reset all pattern parameters to their default values
+    // Clear current pattern selection
+    m_selectedPattern.clear();
+    m_selectedCategory.clear();
+    updateParameterPanel();
+    updatePreviewPanel();
 }

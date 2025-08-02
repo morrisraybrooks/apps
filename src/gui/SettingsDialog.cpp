@@ -812,8 +812,15 @@ void SettingsDialog::onFactoryResetClicked()
         m_tankCalibrationStatus->setStyleSheet("color: #f44336; font-weight: bold;");
         m_lastCalibrationDate->setText("Never");
         
-        QMessageBox::information(this, "Factory Reset Complete", 
+        QMessageBox::information(this, "Factory Reset Complete",
                                "All settings have been reset to factory defaults.\n\n"
                                "Please recalibrate sensors before use.");
     }
+}
+
+void SettingsDialog::onCalibrationProgress(int progress)
+{
+    // Update calibration progress - this would be connected to a progress bar
+    // For now, just log the progress
+    qDebug() << "Calibration progress:" << progress << "%";
 }

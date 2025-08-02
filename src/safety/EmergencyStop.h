@@ -3,9 +3,12 @@
 
 #include <QObject>
 #include <QMutex>
+#include <QTimer>
 
 // Forward declarations
 class HardwareManager;
+struct gpiod_chip;
+struct gpiod_line;
 
 /**
  * @brief Emergency stop system for vacuum controller
@@ -71,6 +74,10 @@ private:
     bool m_hardwareButtonEnabled;
     bool m_lastButtonState;
     QTimer* m_buttonCheckTimer;
+
+    // GPIO control using libgpiod
+    struct gpiod_chip* m_gpioChip;
+    struct gpiod_line* m_buttonLine;
     
     // GPIO pin for emergency stop button (if implemented)
     static const int GPIO_EMERGENCY_BUTTON = 21;  // GPIO 21 for emergency button

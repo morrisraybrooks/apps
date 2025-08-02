@@ -6,6 +6,8 @@
 #include <QApplication>
 #include <cmath>
 
+QT_CHARTS_USE_NAMESPACE
+
 // Constants
 const double PressureChart::DEFAULT_MIN_PRESSURE = 0.0;
 const double PressureChart::DEFAULT_MAX_PRESSURE = 100.0;
@@ -153,9 +155,23 @@ void PressureChart::pauseUpdates(bool pause)
 void PressureChart::resetZoom()
 {
     if (m_chartView) {
-        m_chartView->zoomReset();
+        m_chartView->chart()->zoomReset();
         updateTimeAxis();
         updatePressureAxis();
+    }
+}
+
+void PressureChart::zoomIn()
+{
+    if (m_chartView) {
+        m_chartView->chart()->zoom(1.5);
+    }
+}
+
+void PressureChart::zoomOut()
+{
+    if (m_chartView) {
+        m_chartView->chart()->zoom(0.75);
     }
 }
 

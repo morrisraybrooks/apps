@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QThread>
 #include <QMutex>
+#include <QTimer>
 #include <memory>
 
 // Forward declarations
@@ -143,61 +144,6 @@ private:
     static const int MAX_THREAD_ERRORS = 5;
 };
 
-/**
- * @brief Safety monitoring thread for critical system checks
- * 
- * This high-priority thread performs safety checks at 100Hz to ensure
- * rapid response to dangerous conditions.
- */
-class SafetyMonitorThread : public QThread
-{
-    Q_OBJECT
 
-public:
-    explicit SafetyMonitorThread(HardwareManager* hardware, QObject *parent = nullptr);
-    ~SafetyMonitorThread();
-
-    void startMonitoring();
-    void stopMonitoring();
-    void setMonitoringRate(int hz);
-    
-    bool isMonitoring() const { return m_monitoring; }
-    int getMonitoringRate() const { return m_monitoringRateHz; }
-
-signals:
-    void safetyViolation(const QString& violation);
-    void emergencyStopRequired(const QString& reason);
-    void monitoringStarted();
-    void monitoringStopped();
-    void monitoringError(const QString& error);
-
-protected:
-    void run() override;
-
-private slots:
-    void performSafetyCheck();
-
-private:
-    void initializeMonitoring();
-    void cleanupMonitoring();
-    bool checkPressureLimits();
-    bool checkSensorHealth();
-    bool checkHardwareStatus();
-
-    HardwareManager* m_hardware;
-    bool m_monitoring;
-    bool m_stopRequested;
-    int m_monitoringRateHz;
-    int m_monitoringIntervalMs;
-    QTimer* m_monitoringTimer;
-    
-    // Safety thresholds
-    double m_maxPressure;
-    double m_criticalPressure;
-    int m_consecutiveErrors;
-    
-    static const int DEFAULT_MONITORING_RATE_HZ = 100;
-    static const int MAX_CONSECUTIVE_ERRORS = 3;
-};
 
 #endif // THREADMANAGER_H

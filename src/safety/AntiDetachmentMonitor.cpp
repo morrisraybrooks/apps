@@ -3,7 +3,9 @@
 #include <QDebug>
 #include <QMutexLocker>
 #include <QDateTime>
+#include <QThread>
 #include <cmath>
+#include <algorithm>
 
 // Constants
 const double AntiDetachmentMonitor::DEFAULT_DETACHMENT_THRESHOLD = 50.0;  // 50 mmHg

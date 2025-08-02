@@ -59,7 +59,7 @@ private:
     double convertToPressure(int channel, double voltage);
 
     // SPI communication
-    int m_spiHandle;
+    int m_spiFd;         // SPI file descriptor
     int m_spiChannel;
     int m_spiSpeed;
     bool m_initialized;

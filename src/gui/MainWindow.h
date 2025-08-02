@@ -11,9 +11,9 @@
 #include <QFrame>
 #include <QTimer>
 #include <memory>
+#include "../VacuumController.h"
 
 // Forward declarations
-class VacuumController;
 class PressureMonitor;
 class PatternSelector;
 class SafetyPanel;
@@ -43,7 +43,7 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 private slots:
-    void onSystemStateChanged(int state);
+    void onSystemStateChanged(VacuumController::SystemState state);
     void onPressureUpdated(double avlPressure, double tankPressure);
     void onEmergencyStopTriggered();
     void onSystemError(const QString& error);

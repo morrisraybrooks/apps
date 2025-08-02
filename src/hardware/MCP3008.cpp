@@ -1,10 +1,13 @@
 #include "MCP3008.h"
 #include <QDebug>
 #include <QMutexLocker>
-#include <wiringPiSPI.h>
-#include <wiringPi.h>
 #include <stdexcept>
 #include <cmath>
+#include <algorithm>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <linux/spi/spidev.h>
 
 // Constants
 const double MCP3008::REFERENCE_VOLTAGE = 3.3;
@@ -18,7 +21,7 @@ const double MCP3008::DEFAULT_OFFSET_MMHG = -3.33;  // Offset to zero at 0.2V
 
 MCP3008::MCP3008(QObject *parent)
     : QObject(parent)
-    , m_spiHandle(-1)
+    , m_spiFd(-1)
     , m_spiChannel(0)
     , m_spiSpeed(1000000)
     , m_initialized(false)
@@ -68,7 +71,11 @@ bool MCP3008::initialize(int spiChannel, int spiSpeed)
 void MCP3008::shutdown()
 {
     if (m_initialized) {
-        // No specific shutdown needed for SPI
+        // Close SPI file descriptor
+        if (m_spiFd >= 0) {
+            close(m_spiFd);
+            m_spiFd = -1;
+        }
         m_initialized = false;
         qDebug() << "MCP3008 shutdown complete";
     }
@@ -153,14 +160,42 @@ void MCP3008::setChannelCalibration(int channel, double slope, double offset)
 
 bool MCP3008::initializeSPI()
 {
-    // Initialize wiringPi SPI
-    m_spiHandle = wiringPiSPISetup(m_spiChannel, m_spiSpeed);
-    if (m_spiHandle < 0) {
-        qCritical() << "Failed to initialize SPI channel" << m_spiChannel;
+    // Open SPI device
+    QString spiDevice = QString("/dev/spidev0.%1").arg(m_spiChannel);
+    m_spiFd = open(spiDevice.toLocal8Bit().data(), O_RDWR);
+    if (m_spiFd < 0) {
+        qCritical() << "Failed to open SPI device" << spiDevice;
         return false;
     }
-    
-    qDebug() << "SPI initialized on channel" << m_spiChannel << "at" << m_spiSpeed << "Hz";
+
+    // Configure SPI mode
+    uint8_t mode = SPI_MODE_0;
+    if (ioctl(m_spiFd, SPI_IOC_WR_MODE, &mode) < 0) {
+        qCritical() << "Failed to set SPI mode";
+        close(m_spiFd);
+        m_spiFd = -1;
+        return false;
+    }
+
+    // Configure SPI speed
+    uint32_t speed = m_spiSpeed;
+    if (ioctl(m_spiFd, SPI_IOC_WR_MAX_SPEED_HZ, &speed) < 0) {
+        qCritical() << "Failed to set SPI speed";
+        close(m_spiFd);
+        m_spiFd = -1;
+        return false;
+    }
+
+    // Configure bits per word
+    uint8_t bits = 8;
+    if (ioctl(m_spiFd, SPI_IOC_WR_BITS_PER_WORD, &bits) < 0) {
+        qCritical() << "Failed to set SPI bits per word";
+        close(m_spiFd);
+        m_spiFd = -1;
+        return false;
+    }
+
+    qDebug() << "SPI initialized on" << spiDevice << "at" << m_spiSpeed << "Hz";
     return true;
 }
 
@@ -177,8 +212,15 @@ uint16_t MCP3008::spiTransfer(uint8_t channel)
     buffer[1] = (0x80) | (channel << 4);  // Single-ended + channel
     buffer[2] = 0x00;  // Don't care
     
-    // Perform SPI transfer
-    if (wiringPiSPIDataRW(m_spiChannel, buffer, 3) < 0) {
+    // Perform SPI transfer using Linux SPI
+    struct spi_ioc_transfer transfer = {};
+    transfer.tx_buf = (unsigned long)buffer;
+    transfer.rx_buf = (unsigned long)buffer;
+    transfer.len = 3;
+    transfer.speed_hz = m_spiSpeed;
+    transfer.bits_per_word = 8;
+
+    if (ioctl(m_spiFd, SPI_IOC_MESSAGE(1), &transfer) < 0) {
         throw std::runtime_error("SPI transfer failed");
     }
     

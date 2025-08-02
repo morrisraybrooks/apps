@@ -1,5 +1,10 @@
 #include "PatternDefinitions.h"
 #include <QDebug>
+#include <cmath>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 PatternDefinitions::PatternDefinitions(QObject *parent)
     : QObject(parent)
@@ -25,6 +30,12 @@ void PatternDefinitions::initializePatterns()
     createSpecialPatterns();
     
     qDebug() << "Initialized" << m_patterns.size() << "vacuum patterns";
+}
+
+void PatternDefinitions::loadDefaultPatterns()
+{
+    // This method loads default patterns - for now just call initializePatterns
+    initializePatterns();
 }
 
 QStringList PatternDefinitions::getPatternNames() const
@@ -53,6 +64,70 @@ PatternDefinitions::PatternInfo PatternDefinitions::getPattern(const QString& na
 bool PatternDefinitions::hasPattern(const QString& name) const
 {
     return m_patterns.contains(name);
+}
+
+bool PatternDefinitions::isValidPattern(const QString& name) const
+{
+    return hasPattern(name) && m_patterns[name].isValid;
+}
+
+bool PatternDefinitions::validatePatternParameters(const QJsonObject& parameters) const
+{
+    // Basic parameter validation
+    if (parameters.contains("base_pressure_percent")) {
+        double pressure = parameters["base_pressure_percent"].toDouble();
+        if (pressure < 0.0 || pressure > 100.0) {
+            return false;
+        }
+    }
+
+    if (parameters.contains("intensity")) {
+        double intensity = parameters["intensity"].toDouble();
+        if (intensity < 0.0 || intensity > 100.0) {
+            return false;
+        }
+    }
+
+    if (parameters.contains("duration_ms")) {
+        int duration = parameters["duration_ms"].toInt();
+        if (duration < 100 || duration > 60000) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+QString PatternDefinitions::getPatternDescription(const QString& name) const
+{
+    if (hasPattern(name)) {
+        return m_patterns[name].description;
+    }
+    return QString();
+}
+
+QString PatternDefinitions::getPatternType(const QString& name) const
+{
+    if (hasPattern(name)) {
+        return m_patterns[name].type;
+    }
+    return QString();
+}
+
+QString PatternDefinitions::getPatternSpeed(const QString& name) const
+{
+    if (hasPattern(name)) {
+        return m_patterns[name].speed;
+    }
+    return QString();
+}
+
+QString PatternDefinitions::getPatternCategory(const QString& name) const
+{
+    if (hasPattern(name)) {
+        return m_patterns[name].category;
+    }
+    return QString();
 }
 
 void PatternDefinitions::createPulsePatterns()

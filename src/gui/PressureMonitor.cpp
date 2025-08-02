@@ -5,6 +5,10 @@
 #include "../VacuumController.h"
 #include <QDebug>
 #include <QDateTime>
+#include <QtCharts/QLineSeries>
+#include <QtCharts/QValueAxis>
+
+QT_CHARTS_USE_NAMESPACE
 
 // Constants
 const double PressureMonitor::DEFAULT_MAX_PRESSURE = 100.0;
@@ -24,6 +28,10 @@ PressureMonitor::PressureMonitor(VacuumController* controller, QWidget *parent)
     , m_currentAVL(0.0)
     , m_currentTank(0.0)
     , m_chartUpdateTimer(new QTimer(this))
+    , m_avlSeries(nullptr)
+    , m_tankSeries(nullptr)
+    , m_timeAxis(nullptr)
+    , m_pressureAxis(nullptr)
 {
     setupUI();
     setupPressureDisplays();

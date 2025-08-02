@@ -46,6 +46,7 @@ set(SOURCES
     src/threading/ThreadManager.cpp
     src/threading/DataAcquisitionThread.cpp
     src/threading/GuiUpdateThread.cpp
+    src/threading/SafetyMonitorThread.cpp
 )
 
 # Header files
@@ -72,17 +73,19 @@ set(HEADERS
     src/threading/ThreadManager.h
     src/threading/DataAcquisitionThread.h
     src/threading/GuiUpdateThread.h
+    src/threading/SafetyMonitorThread.h
 )
 
 # Create executable
 add_executable(VacuumController ${SOURCES} ${HEADERS})
 
-# Link Qt libraries
+# Link Qt libraries and system libraries
 target_link_libraries(VacuumController
     Qt5::Core
     Qt5::Widgets
     Qt5::Charts
     pthread
+    gpiod
 )
 
 # Compiler flags for Raspberry Pi optimization

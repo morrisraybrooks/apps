@@ -17,6 +17,8 @@
 #include <QtCharts/QLegend>
 #include <QDateTime>
 
+QT_CHARTS_USE_NAMESPACE
+
 /**
  * @brief Real-time pressure chart widget for vacuum controller
  * 

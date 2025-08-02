@@ -1,14 +1,15 @@
 #ifndef GUIUPDATETHREAD_H
 #define GUIUPDATETHREAD_H
 
+#include <QObject>
 #include <QThread>
 #include <QMutex>
 #include <QTimer>
 #include <QQueue>
 #include <QWaitCondition>
+#include "DataAcquisitionThread.h"
 
 // Forward declarations
-class DataAcquisitionThread;
 
 /**
  * @brief Dedicated thread for GUI updates and data processing
@@ -39,10 +40,12 @@ public:
                          avlFiltered(0.0), tankFiltered(0.0), alarmState(false) {}
     };
 
-    explicit GuiUpdateThread(DataAcquisitionThread* dataThread, QObject *parent = nullptr);
+    explicit GuiUpdateThread(QObject *parent = nullptr);
     ~GuiUpdateThread();
 
     // Thread control
+    void startThread();
+    void stopThread();
     void startUpdates();
     void stopUpdates();
     void pauseUpdates();
@@ -61,6 +64,8 @@ public:
     
     // Statistics
     double getActualUpdateRate() const { return m_actualUpdateRate; }
+    double getFrameRate() const;
+    int getFrameCount() const;
     int getProcessedSampleCount() const { return m_processedSamples; }
     
     // Status
@@ -73,6 +78,7 @@ signals:
     void alarmStateChanged(bool alarmActive, const QString& message);
     void updateThreadStarted();
     void updateThreadStopped();
+    void performanceUpdate(double frameRate, qint64 frameTime);
 
 protected:
     void run() override;
@@ -89,6 +95,7 @@ private:
     void checkAlarmConditions(ProcessedData& data);
     void updateStatistics();
     void addToChartBuffer(const ProcessedData& data);
+    void calculateFrameRate(qint64 currentTime);
 
     // Data source
     DataAcquisitionThread* m_dataThread;
@@ -121,9 +128,12 @@ private:
     
     // Statistics
     double m_actualUpdateRate;
+    double m_averageFrameRate;
     qint64 m_lastStatisticsUpdate;
+    qint64 m_lastFrameTime;
     int m_processedSamples;
     int m_updateCount;
+    int m_frameCount;
     
     // Timer for GUI updates
     QTimer* m_updateTimer;

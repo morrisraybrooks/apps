@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QMutexLocker>
 #include <cmath>
+#include <algorithm>
 
 // Constants
 const double SensorInterface::DEFAULT_MIN_VOLTAGE = 0.1;  // Below MPX5010DP range

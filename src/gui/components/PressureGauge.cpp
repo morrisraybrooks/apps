@@ -3,6 +3,7 @@
 #include <QResizeEvent>
 #include <QMouseEvent>
 #include <QDebug>
+#include <QtMath>
 #include <cmath>
 
 // Constants

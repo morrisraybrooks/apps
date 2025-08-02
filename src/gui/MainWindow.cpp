@@ -119,9 +119,9 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     return QMainWindow::eventFilter(obj, event);
 }
 
-void MainWindow::onSystemStateChanged(int state)
+void MainWindow::onSystemStateChanged(VacuumController::SystemState state)
 {
-    VacuumController::SystemState systemState = static_cast<VacuumController::SystemState>(state);
+    VacuumController::SystemState systemState = state;
     
     switch (systemState) {
     case VacuumController::STOPPED:
@@ -585,7 +585,7 @@ void MainWindow::connectSignals()
     if (!m_controller) return;
 
     // Connect controller signals
-    connect(m_controller, QOverload<int>::of(&VacuumController::systemStateChanged),
+    connect(m_controller, &VacuumController::systemStateChanged,
             this, &MainWindow::onSystemStateChanged);
     connect(m_controller, &VacuumController::pressureUpdated,
             this, &MainWindow::onPressureUpdated);

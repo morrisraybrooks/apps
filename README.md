@@ -13,6 +13,30 @@ This system provides a complete GUI solution for controlling a vacuum therapy de
 - **Touch-optimized interface** designed for 50-inch displays
 - **Comprehensive safety systems** with overpressure protection
 
+## 🏗️ Industry-Standard Development Practices
+
+This project implements comprehensive industry-standard practices for embedded safety-critical systems:
+
+### Build System & Quality
+- **Modern CMake**: Multi-configuration, cross-platform build system with Raspberry Pi optimizations
+- **Static Analysis**: Integrated clang-tidy, cppcheck, and clang-format
+- **Code Coverage**: lcov integration with automated CI reporting
+- **Sanitizers**: AddressSanitizer and UndefinedBehaviorSanitizer for debug builds
+- **Comprehensive Testing**: Unit, integration, and system tests with Qt Test Framework
+
+### CI/CD & Automation
+- **GitHub Actions**: Multi-platform builds (x86_64, ARM64) with automated testing
+- **Package Generation**: Native Debian packages with proper dependencies
+- **Documentation**: Automated Doxygen API docs deployed to GitHub Pages
+- **Version Management**: Semantic versioning with automated changelog generation
+- **Cross-compilation**: ARM64 packages for Raspberry Pi deployment
+
+### Security & Distribution
+- **System Integration**: systemd service with security hardening
+- **Hardware Permissions**: Automatic udev rules and GPIO/SPI group setup
+- **Package Management**: Professional .deb packages with installation scripts
+- **Service Management**: Automatic startup, logging, and monitoring integration
+
 ## 🔧 Current Build Status
 
 **✅ COMPLETE**: All 25 development tasks finished - 100% production-ready system
@@ -22,13 +46,68 @@ This system provides a complete GUI solution for controlling a vacuum therapy de
 **Quick Pi 4 Setup Summary**:
 ```bash
 # Install dependencies
-sudo apt install qt5-default qtbase5-dev qtcharts5-dev libqt5charts5-dev wiringpi
+sudo apt install qtbase5-dev qtcharts5-dev libqt5charts5-dev libgpiod-dev pkg-config
 
 # Build and run
 git clone https://github.com/morrisraybrooks/apps.git
 cd apps && mkdir build && cd build
 cmake .. -DRASPBERRY_PI_BUILD=ON && make -j4
 sudo ./VacuumController
+```
+
+## 🚀 Quick Start for Developers
+
+### 1. Development Environment Setup
+```bash
+# Clone the repository
+git clone https://github.com/morrisraybrooks/vacuum-controller.git
+cd vacuum-controller
+
+# Set up development environment (installs all tools and dependencies)
+./setup-dev-environment.sh
+
+# Build with enhanced build script
+./build.sh -c -r  # Clean build with tests
+```
+
+### 2. Build Options
+```bash
+# Development builds
+./build.sh -t Debug -c -r --enable-coverage    # Debug with coverage
+./build.sh -t Release -c -i                    # Release build and install
+./build.sh --enable-static-analysis            # With static analysis
+
+# Package generation
+cd build && cpack -G DEB                       # Create .deb package
+```
+
+### 3. Development Tools
+```bash
+# Code formatting
+find src -name "*.cpp" -o -name "*.h" | xargs clang-format -i
+
+# Static analysis
+cppcheck --enable=all --std=c++17 src/
+
+# Memory checking
+valgrind --tool=memcheck ./build/VacuumController
+
+# Version management
+./scripts/version.sh bump minor               # Bump version
+./scripts/version.sh release 1.2.0           # Full release process
+```
+
+### 4. Testing & Quality
+```bash
+# Run all tests
+cd build && ctest --output-on-failure
+
+# Generate coverage report
+./build.sh -t Debug --enable-coverage -r
+cd build && lcov --capture --directory . --output-file coverage.info
+
+# Generate documentation
+cd build && make docs
 ```
 
 ## Hardware Requirements
@@ -60,6 +139,8 @@ GPIO 9 (MISO)  → DOUT
 GPIO 8 (CS)    → CS
 ```
 
+> **📝 Important**: This system uses the modern `libgpiod` library for GPIO control instead of the deprecated `wiringPi`. This ensures compatibility with current and future Raspberry Pi OS versions and provides better security and performance.
+
 ## Software Architecture
 
 ### Core Components
@@ -89,14 +170,14 @@ Install required dependencies on Raspberry Pi:
 # Update system
 sudo apt update && sudo apt upgrade -y
 
-# Install Qt6 and development tools
-sudo apt install -y qt6-base-dev qt6-charts-dev cmake build-essential
+# Install Qt5 and development tools
+sudo apt install -y qtbase5-dev qtcharts5-dev cmake build-essential pkg-config
 
-# Install wiringPi for GPIO control
-sudo apt install -y wiringpi
+# Install libgpiod for modern GPIO control (replaces deprecated wiringPi)
+sudo apt install -y libgpiod-dev libgpiod2
 
-# Install additional libraries
-sudo apt install -y libqt6charts6-dev
+# Install additional development tools
+sudo apt install -y doxygen graphviz clang-format clang-tidy cppcheck valgrind lcov
 ```
 
 ### Build Process

@@ -7,6 +7,7 @@
 #include <QJsonDocument>
 #include <QFile>
 #include <cmath>
+#include <algorithm>
 
 // Constants
 const double PatternEngine::DEFAULT_INTENSITY = 100.0;
@@ -498,4 +499,18 @@ void PatternEngine::setSpeed(double speedMultiplier)
 void PatternEngine::setPressureOffset(double offsetPercent)
 {
     m_pressureOffset = std::max(-20.0, std::min(20.0, offsetPercent));
+}
+
+void PatternEngine::setPatternParameters(const QJsonObject& parameters)
+{
+    // Set pattern parameters - could update intensity, speed, etc.
+    if (parameters.contains("intensity")) {
+        setIntensity(parameters["intensity"].toDouble());
+    }
+    if (parameters.contains("speed")) {
+        setSpeed(parameters["speed"].toDouble());
+    }
+    if (parameters.contains("pressure_offset")) {
+        setPressureOffset(parameters["pressure_offset"].toDouble());
+    }
 }
