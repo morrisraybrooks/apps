@@ -11,6 +11,7 @@
 
 #include "VacuumController.h"
 #include "gui/MainWindow.h"
+#include "gui/styles/ModernMedicalStyle.h"
 #include "safety/SafetyManager.h"
 #include "testing/HardwareTester.h"
 
@@ -31,18 +32,21 @@ int main(int argc, char *argv[])
         platform = "wayland";
     }
 
-    // Configure platform-specific settings
+    // Configure platform-specific settings with enhanced high-DPI support
     if (platform == "wayland") {
         qputenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1");
-        qputenv("QT_SCALE_FACTOR", "1.5");  // High-DPI for 50-inch display
         qputenv("QT_AUTO_SCREEN_SCALE_FACTOR", "1");
-        qputenv("QT_FONT_DPI", "120");
+        qputenv("QT_ENABLE_HIGHDPI_SCALING", "1");
         qputenv("QT_IM_MODULE", "qtvirtualkeyboard");
+        // Scale factor will be determined automatically by ModernMedicalStyle
     } else if (platform == "eglfs") {
         qputenv("QT_QPA_EGLFS_ALWAYS_SET_MODE", "1");
         qputenv("QT_QPA_EGLFS_HIDECURSOR", "1");  // Hide cursor for touch-only
-        qputenv("QT_SCALE_FACTOR", "1.5");
-        qputenv("QT_FONT_DPI", "120");
+        qputenv("QT_AUTO_SCREEN_SCALE_FACTOR", "1");
+        qputenv("QT_ENABLE_HIGHDPI_SCALING", "1");
+    } else if (platform == "xcb") {
+        qputenv("QT_AUTO_SCREEN_SCALE_FACTOR", "1");
+        qputenv("QT_ENABLE_HIGHDPI_SCALING", "1");
     }
 
     QApplication app(argc, argv);
@@ -88,76 +92,65 @@ int main(int argc, char *argv[])
         return runHardwareTests(app, parser);
     }
 
-    // Configure for large display (50-inch HDMI)
+    // Initialize modern medical styling system
+    ModernMedicalStyle::initialize(&app);
+
+    // Configure for large display (50-inch HDMI and beyond)
     QScreen *screen = QApplication::primaryScreen();
     if (screen) {
         QRect screenGeometry = screen->geometry();
-        std::cout << "Display resolution: " << screenGeometry.width() 
+        qreal dpi = screen->logicalDotsPerInch();
+        qreal physicalDpi = screen->physicalDotsPerInch();
+
+        std::cout << "Display configuration:" << std::endl;
+        std::cout << "  Resolution: " << screenGeometry.width()
                   << "x" << screenGeometry.height() << std::endl;
+        std::cout << "  Logical DPI: " << dpi << std::endl;
+        std::cout << "  Physical DPI: " << physicalDpi << std::endl;
+        std::cout << "  Scale Factor: " << ModernMedicalStyle::getScaleFactor() << std::endl;
+
+        // Apply enhanced high-DPI scaling for large medical displays
+        if (screenGeometry.width() >= 3840 || screenGeometry.height() >= 2160) {
+            std::cout << "  Detected 4K+ display - optimizing for ultra-high resolution" << std::endl;
+        } else if (screenGeometry.width() >= 2560 || screenGeometry.height() >= 1440) {
+            std::cout << "  Detected QHD+ display - optimizing for high resolution" << std::endl;
+        } else if (screenGeometry.width() >= 1920 || screenGeometry.height() >= 1080) {
+            std::cout << "  Detected Full HD+ display - optimizing for standard resolution" << std::endl;
+        }
     }
-    
-    // Set application style for touch interface
-    app.setStyle(QStyleFactory::create("Fusion"));
-    
-    // Apply custom stylesheet for medical device UI
-    QString styleSheet = R"(
-        QMainWindow {
-            background-color: #f0f0f0;
-            font-size: 16pt;
-        }
-        QPushButton {
-            background-color: #4CAF50;
-            border: 2px solid #45a049;
-            color: white;
-            padding: 15px 32px;
-            text-align: center;
-            font-size: 18pt;
-            margin: 4px 2px;
-            border-radius: 8px;
-            min-height: 60px;
-            min-width: 120px;
-        }
-        QPushButton:hover {
-            background-color: #45a049;
-        }
-        QPushButton:pressed {
-            background-color: #3d8b40;
-        }
-        QPushButton:disabled {
-            background-color: #cccccc;
-            color: #666666;
-        }
-        .emergency-button {
-            background-color: #f44336;
-            border: 2px solid #da190b;
-        }
-        .emergency-button:hover {
-            background-color: #da190b;
-        }
-        QLabel {
-            font-size: 14pt;
-            color: #333333;
-        }
-        .status-label {
-            font-size: 16pt;
-            font-weight: bold;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            background-color: white;
-        }
-        .pressure-display {
-            font-size: 24pt;
-            font-weight: bold;
-            color: #2196F3;
-            background-color: #e3f2fd;
-            border: 3px solid #2196F3;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-        }
-    )";
-    app.setStyleSheet(styleSheet);
+
+    // Apply comprehensive modern medical device styling
+    QString modernStyleSheet = QString(
+        "QMainWindow {"
+        "    background-color: %1;"
+        "    font-family: %2;"
+        "    font-size: %3pt;"
+        "}"
+        "%4"  // Primary button style
+        "%5"  // Secondary button style
+        "%6"  // Success button style
+        "%7"  // Warning button style
+        "%8"  // Danger button style
+        "%9"  // Emergency button style
+        "%10" // Label styles
+        "%11" // GroupBox style
+        "%12" // Frame style
+        "%13" // Pressure display style
+    ).arg(ModernMedicalStyle::Colors::BACKGROUND_LIGHT.name())
+     .arg(ModernMedicalStyle::Typography::PRIMARY_FONT)
+     .arg(ModernMedicalStyle::Typography::getBody())
+     .arg(ModernMedicalStyle::getButtonStyle("primary"))
+     .arg(ModernMedicalStyle::getButtonStyle("secondary"))
+     .arg(ModernMedicalStyle::getButtonStyle("success"))
+     .arg(ModernMedicalStyle::getButtonStyle("warning"))
+     .arg(ModernMedicalStyle::getButtonStyle("danger"))
+     .arg(ModernMedicalStyle::getEmergencyButtonStyle())
+     .arg(ModernMedicalStyle::getLabelStyle("body"))
+     .arg(ModernMedicalStyle::getGroupBoxStyle())
+     .arg(ModernMedicalStyle::getFrameStyle())
+     .arg(ModernMedicalStyle::getPressureDisplayStyle());
+
+    app.setStyleSheet(modernStyleSheet);
     
     try {
         // Initialize the vacuum controller system

@@ -2,6 +2,7 @@
 #include "PatternSelector.h"
 #include "components/TouchButton.h"
 #include "CustomPatternDialog.h"
+#include "styles/ModernMedicalStyle.h"
 #include "../VacuumController.h"
 #include <QDebug>
 #include <QJsonDocument>
@@ -41,9 +42,37 @@ PatternSelector::~PatternSelector()
 void PatternSelector::setupUI()
 {
     qDebug() << "setupUI called.";
-    m_mainLayout->setSpacing(8);
-    m_mainLayout->setContentsMargins(5, 5, 5, 5);
-    
+
+    // Apply modern medical styling to the main widget
+    ModernMedicalStyle::applyToWidget(this);
+
+    // Enhanced layout with modern spacing
+    m_mainLayout->setSpacing(ModernMedicalStyle::Spacing::getMedium());
+    m_mainLayout->setContentsMargins(
+        ModernMedicalStyle::Spacing::getMedium(),
+        ModernMedicalStyle::Spacing::getMedium(),
+        ModernMedicalStyle::Spacing::getMedium(),
+        ModernMedicalStyle::Spacing::getMedium()
+    );
+
+    // Apply modern background styling to the pattern selector
+    setStyleSheet(QString(
+        "PatternSelector {"
+        "    background-color: %1;"
+        "    border-radius: %2;"
+        "    %3"
+        "}"
+        "QScrollArea {"
+        "    background-color: transparent;"
+        "    border: none;"
+        "}"
+        "QScrollArea > QWidget > QWidget {"
+        "    background-color: transparent;"
+        "}"
+    ).arg(ModernMedicalStyle::Colors::BACKGROUND_LIGHT.name())
+     .arg(ModernMedicalStyle::scalePixelValue(ModernMedicalStyle::Spacing::getMediumRadius()))
+     .arg(ModernMedicalStyle::Elevation::getLevel1()));
+
     setupCategorySelector();
     setupPatternGrid();
     setupParameterPanel();
@@ -333,25 +362,82 @@ TouchButton* PatternSelector::createPatternButton(const PatternInfo& pattern)
 {
     TouchButton* button = new TouchButton();
     button->setText(pattern.name);
-    button->setMinimumSize(PATTERN_BUTTON_WIDTH, PATTERN_BUTTON_HEIGHT);
+
+    // Use modern scaling for button sizes
+    int buttonWidth = ModernMedicalStyle::scaleValue(PATTERN_BUTTON_WIDTH);
+    int buttonHeight = ModernMedicalStyle::scaleValue(PATTERN_BUTTON_HEIGHT);
+    button->setMinimumSize(buttonWidth, buttonHeight);
+    button->setMaximumSize(buttonWidth * 1.5, buttonHeight);
     button->setCheckable(true);
     button->setProperty("patternName", pattern.name);
-    
-    // Set consistent button type for all patterns
-    button->setButtonType(TouchButton::Normal);
-    
-    // Set tooltip with description
-    button->setToolTip(pattern.description);
-    
-    // Add stylesheet for selection feedback
-    button->setStyleSheet(
-        "TouchButton:checked {"
-        "  background-color: #2196F3;"
-        "  color: white;"
-        "  border: 2px solid #1976D2;"
+
+    // Set button type based on pattern category with enhanced visual hierarchy
+    if (pattern.category == "Emergency" || pattern.category == "Special") {
+        button->setButtonType(TouchButton::Danger);
+    } else if (pattern.category == "Pulse" || pattern.category == "Wave") {
+        button->setButtonType(TouchButton::Success);
+    } else if (pattern.category == "Air Pulse" || pattern.category == "Milking") {
+        button->setButtonType(TouchButton::Warning);
+    } else if (pattern.category == "Constant") {
+        button->setButtonType(TouchButton::Primary);
+    } else {
+        button->setButtonType(TouchButton::Normal);
+    }
+
+    // Enhanced tooltip with modern formatting
+    QString tooltip = QString(
+        "<div style='font-family: %1; font-size: %2pt; line-height: 1.4;'>"
+        "<h3 style='color: %3; margin: 0 0 8px 0;'>%4</h3>"
+        "<p style='color: %5; margin: 0 0 4px 0;'><strong>Category:</strong> %6</p>"
+        "<p style='color: %5; margin: 0 0 4px 0;'><strong>Type:</strong> %7</p>"
+        "<p style='color: %5; margin: 0 0 4px 0;'><strong>Intensity:</strong> %8%</p>"
+        "<p style='color: %5; margin: 0;'><strong>Description:</strong><br>%9</p>"
+        "</div>"
+    ).arg(ModernMedicalStyle::Typography::PRIMARY_FONT)
+     .arg(ModernMedicalStyle::Typography::getCaption())
+     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE.name())
+     .arg(pattern.name)
+     .arg(ModernMedicalStyle::Colors::TEXT_PRIMARY.name())
+     .arg(pattern.category)
+     .arg(pattern.type)
+     .arg(static_cast<int>(pattern.intensity))
+     .arg(pattern.description);
+    button->setToolTip(tooltip);
+
+    // Enhanced modern stylesheet for selection feedback
+    QString modernButtonStyle = QString(
+        "TouchButton {"
+        "    font-family: %1;"
+        "    font-size: %2pt;"
+        "    font-weight: %3;"
+        "    text-align: center;"
+        "    word-wrap: break-word;"
+        "    %4"
         "}"
-    );
-    
+        "TouchButton:checked {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
+        "                stop:0 %5, stop:1 %6);"
+        "    color: %7;"
+        "    border: %8 solid %9;"
+        "    %10"
+        "}"
+        "TouchButton:hover {"
+        "    transform: translateY(%11);"
+        "}"
+    ).arg(ModernMedicalStyle::Typography::PRIMARY_FONT)
+     .arg(ModernMedicalStyle::Typography::getCaption())
+     .arg(ModernMedicalStyle::Typography::WEIGHT_MEDIUM)
+     .arg(ModernMedicalStyle::Elevation::getLevel2())
+     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE_LIGHT.name())
+     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE.name())
+     .arg(ModernMedicalStyle::Colors::TEXT_ON_PRIMARY.name())
+     .arg(ModernMedicalStyle::scalePixelValue(3))
+     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE_DARK.name())
+     .arg(ModernMedicalStyle::Elevation::getLevel4())
+     .arg(ModernMedicalStyle::scalePixelValue(-2));
+
+    button->setStyleSheet(modernButtonStyle);
+
     return button;
 }
 

@@ -4,6 +4,7 @@
 #include "SafetyPanel.h"
 #include "SettingsDialog.h"
 #include "SystemDiagnosticsPanel.h"
+#include "styles/ModernMedicalStyle.h"
 #include "../VacuumController.h"
 
 #include <QApplication>
@@ -722,46 +723,109 @@ void MainWindow::connectSignals()
 
 void MainWindow::applyLargeDisplayStyles()
 {
-    // Set application-wide font for large display
-    QFont appFont = QApplication::font();
-    appFont.setPointSize(FONT_SIZE_NORMAL);
-    QApplication::setFont(appFont);
+    // Apply modern medical device styling to the main window
+    ModernMedicalStyle::applyToWidget(this);
 
-    // Apply consistent touch-friendly styles for 50-inch display
-    setStyleSheet(
-        "QPushButton { "
-        "  min-height: 60px; "
-        "  min-width: 120px; "
-        "  font-size: 16pt; "
-        "  font-weight: bold; "
-        "  padding: 10px; "
-        "  border: 2px solid #ddd; "
-        "  border-radius: 8px; "
-        "  background-color: #f8f9fa; "
-        "} "
-        "QPushButton:hover { "
-        "  background-color: #e9ecef; "
-        "  border-color: #2196F3; "
-        "} "
-        "QPushButton:pressed { "
-        "  background-color: #dee2e6; "
-        "} "
-        "QLabel { "
-        "  font-size: 14pt; "
-        "} "
-        "QFrame { "
-        "  border-radius: 5px; "
-        "} "
-        "QGroupBox { "
-        "  font-size: 16pt; "
-        "  font-weight: bold; "
-        "  color: #2196F3; "
-        "  padding-top: 10px; "
-        "} "
-        "QGroupBox::title { "
-        "  subcontrol-origin: margin; "
-        "  left: 10px; "
-        "  padding: 0 5px 0 5px; "
+    // Set enhanced styling for main window components
+    QString mainWindowStyle = QString(
+        "MainWindow {"
+        "    background-color: %1;"
+        "    color: %2;"
         "}"
-    );
+        "QStackedWidget {"
+        "    background-color: %3;"
+        "    border: none;"
+        "}"
+        "/* Navigation Bar Styling */"
+        "QFrame#navigationBar {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
+        "                stop:0 %4, stop:1 %5);"
+        "    border-bottom: %6 solid %7;"
+        "    min-height: %8;"
+        "    %9"
+        "}"
+        "/* Status Bar Styling */"
+        "QFrame#statusBar {"
+        "    background-color: %10;"
+        "    border-top: %11 solid %12;"
+        "    min-height: %13;"
+        "    %14"
+        "}"
+        "/* Emergency Controls Styling */"
+        "QFrame#emergencyFrame {"
+        "    background: qradialgradient(cx:0.5, cy:0.5, radius:1, "
+        "                fx:0.3, fy:0.3, stop:0 %15, stop:1 %16);"
+        "    border: %17 solid %18;"
+        "    border-radius: %19;"
+        "    %20"
+        "}"
+        "/* Enhanced button styling for navigation */"
+        "QPushButton#navButton {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
+        "                stop:0 %21, stop:1 %22);"
+        "    border: %23 solid %24;"
+        "    border-radius: %25;"
+        "    color: %26;"
+        "    font-size: %27pt;"
+        "    font-weight: %28;"
+        "    min-height: %29;"
+        "    min-width: %30;"
+        "    padding: %31 %32;"
+        "    %33"
+        "}"
+        "QPushButton#navButton:hover {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
+        "                stop:0 %34, stop:1 %35);"
+        "}"
+        "QPushButton#navButton:pressed {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
+        "                stop:0 %36, stop:1 %37);"
+        "}"
+        "QPushButton#navButton:checked {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
+        "                stop:0 %38, stop:1 %39);"
+        "    border-color: %40;"
+        "}"
+    ).arg(ModernMedicalStyle::Colors::BACKGROUND_LIGHT.name())
+     .arg(ModernMedicalStyle::Colors::TEXT_PRIMARY.name())
+     .arg(ModernMedicalStyle::Colors::BACKGROUND_LIGHT.name())
+     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE_LIGHT.name())
+     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE.name())
+     .arg(ModernMedicalStyle::scalePixelValue(2))
+     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE.name())
+     .arg(ModernMedicalStyle::scalePixelValue(NAVIGATION_HEIGHT))
+     .arg(ModernMedicalStyle::Elevation::getLevel3())
+     .arg(ModernMedicalStyle::Colors::BACKGROUND_MEDIUM.name())
+     .arg(ModernMedicalStyle::scalePixelValue(1))
+     .arg(ModernMedicalStyle::Colors::BORDER_LIGHT.name())
+     .arg(ModernMedicalStyle::scalePixelValue(STATUS_BAR_HEIGHT))
+     .arg(ModernMedicalStyle::Elevation::getLevel1())
+     .arg(ModernMedicalStyle::adjustColorForContrast(ModernMedicalStyle::Colors::MEDICAL_RED, 0.2).name())
+     .arg(ModernMedicalStyle::Colors::MEDICAL_RED.name())
+     .arg(ModernMedicalStyle::scalePixelValue(3))
+     .arg(ModernMedicalStyle::Colors::MEDICAL_RED.name())
+     .arg(ModernMedicalStyle::scalePixelValue(ModernMedicalStyle::Spacing::getLargeRadius()))
+     .arg(ModernMedicalStyle::Elevation::getLevel4())
+     .arg(ModernMedicalStyle::Colors::BACKGROUND_LIGHT.name())
+     .arg(ModernMedicalStyle::Colors::BACKGROUND_MEDIUM.name())
+     .arg(ModernMedicalStyle::scalePixelValue(2))
+     .arg(ModernMedicalStyle::Colors::BORDER_MEDIUM.name())
+     .arg(ModernMedicalStyle::scalePixelValue(ModernMedicalStyle::Spacing::getMediumRadius()))
+     .arg(ModernMedicalStyle::Colors::TEXT_PRIMARY.name())
+     .arg(ModernMedicalStyle::Typography::getSubtitle())
+     .arg(ModernMedicalStyle::Typography::WEIGHT_MEDIUM)
+     .arg(ModernMedicalStyle::scalePixelValue(ModernMedicalStyle::Spacing::getLargeTouchTarget()))
+     .arg(ModernMedicalStyle::scalePixelValue(150))
+     .arg(ModernMedicalStyle::scalePixelValue(ModernMedicalStyle::Spacing::getMedium()))
+     .arg(ModernMedicalStyle::scalePixelValue(ModernMedicalStyle::Spacing::getLarge()))
+     .arg(ModernMedicalStyle::Elevation::getLevel2())
+     .arg(ModernMedicalStyle::Colors::BACKGROUND_MEDIUM.name())
+     .arg(ModernMedicalStyle::Colors::BACKGROUND_DARK.name())
+     .arg(ModernMedicalStyle::Colors::BACKGROUND_DARK.name())
+     .arg(ModernMedicalStyle::Colors::BORDER_DARK.name())
+     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE_LIGHT.name())
+     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE.name())
+     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE.name());
+
+    setStyleSheet(mainWindowStyle);
 }

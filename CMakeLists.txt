@@ -106,6 +106,7 @@ set(SOURCES
     src/gui/components/PressureChart.cpp
     src/gui/components/TouchButton.cpp
     src/gui/components/StatusIndicator.cpp
+    src/gui/styles/ModernMedicalStyle.cpp
     src/patterns/PatternEngine.cpp
     src/patterns/PatternDefinitions.cpp
     src/patterns/PatternValidator.cpp
@@ -144,6 +145,7 @@ set(HEADERS
     src/gui/components/PressureChart.h
     src/gui/components/TouchButton.h
     src/gui/components/StatusIndicator.h
+    src/gui/styles/ModernMedicalStyle.h
     src/patterns/PatternEngine.h
     src/patterns/PatternDefinitions.h
     src/patterns/PatternValidator.h

@@ -1,4 +1,5 @@
 #include "TouchButton.h"
+#include "../styles/ModernMedicalStyle.h"
 #include <QStyleOption>
 #include <QPainter>
 #include <QMouseEvent>
@@ -55,24 +56,25 @@ TouchButton::~TouchButton()
 
 void TouchButton::setupButton()
 {
-    // Set minimum size for touch targets (44px minimum for accessibility)
-    setMinimumSize(60, 44);
-    
+    // Set minimum size for touch targets using modern scaling
+    int minTouchTarget = ModernMedicalStyle::Spacing::getMinTouchTarget();
+    int recommendedTarget = ModernMedicalStyle::Spacing::getRecommendedTouchTarget();
+    setMinimumSize(recommendedTarget, minTouchTarget);
+
     // Enable focus for keyboard navigation
     setFocusPolicy(Qt::StrongFocus);
-    
-    // Setup animations
-    m_pressAnimation->setDuration(100);
-    // Color animation disabled to fix property warnings
-    
-    // Apply initial styling
+
+    // Setup animations with modern timing
+    m_pressAnimation->setDuration(ModernMedicalStyle::Animation::FAST_DURATION);
+
+    // Apply initial modern styling
     updateButtonStyle();
-    
-    // Add drop shadow effect for depth
+
+    // Add enhanced drop shadow effect for modern depth
     auto shadowEffect = new QGraphicsDropShadowEffect(this);
-    shadowEffect->setBlurRadius(8);
-    shadowEffect->setOffset(2, 2);
-    shadowEffect->setColor(QColor(0, 0, 0, 60));
+    shadowEffect->setBlurRadius(ModernMedicalStyle::scaleValue(12));
+    shadowEffect->setOffset(ModernMedicalStyle::scaleValue(2), ModernMedicalStyle::scaleValue(4));
+    shadowEffect->setColor(ModernMedicalStyle::Colors::SHADOW_MEDIUM);
     setGraphicsEffect(shadowEffect);
 }
 
@@ -198,97 +200,64 @@ void TouchButton::applyButtonStyle()
 
 void TouchButton::updateButtonStyle()
 {
-    QString baseStyle = 
-        "TouchButton {"
-        "    border: 2px solid %1;"
-        "    border-radius: 8px;"
-        "    background-color: %2;"
-        "    color: %3;"
-        "    font-size: 14pt;"
-        "    font-weight: bold;"
-        "    padding: 8px 16px;"
-        "    text-align: center;"
-        "}"
-        "TouchButton:hover {"
-        "    background-color: %4;"
-        "    border-color: %5;"
-        "}"
-        "TouchButton:pressed {"
-        "    background-color: %6;"
-        "    border-color: %7;"
-        "}"
-        "TouchButton:disabled {"
-        "    background-color: #f0f0f0;"
-        "    color: #999999;"
-        "    border-color: #cccccc;"
-        "}";
-    
-    QString borderColor, backgroundColor, textColor;
-    QString hoverBg, hoverBorder, pressedBg, pressedBorder;
-    
+    QString styleType;
     switch (m_buttonType) {
     case Primary:
-        borderColor = "#2196F3";
-        backgroundColor = "#2196F3";
-        textColor = "white";
-        hoverBg = "#1976D2";
-        hoverBorder = "#1976D2";
-        pressedBg = "#0D47A1";
-        pressedBorder = "#0D47A1";
+        styleType = "primary";
         break;
-        
     case Success:
-        borderColor = "#4CAF50";
-        backgroundColor = "#4CAF50";
-        textColor = "white";
-        hoverBg = "#388E3C";
-        hoverBorder = "#388E3C";
-        pressedBg = "#1B5E20";
-        pressedBorder = "#1B5E20";
+        styleType = "success";
         break;
-        
     case Warning:
-        borderColor = "#FF9800";
-        backgroundColor = "#FF9800";
-        textColor = "white";
-        hoverBg = "#F57C00";
-        hoverBorder = "#F57C00";
-        pressedBg = "#E65100";
-        pressedBorder = "#E65100";
+        styleType = "warning";
         break;
-        
     case Danger:
-        borderColor = "#f44336";
-        backgroundColor = "#f44336";
-        textColor = "white";
-        hoverBg = "#D32F2F";
-        hoverBorder = "#D32F2F";
-        pressedBg = "#B71C1C";
-        pressedBorder = "#B71C1C";
+        styleType = "danger";
         break;
-        
     case Normal:
     default:
-        borderColor = "#ddd";
-        backgroundColor = "white";
-        textColor = "#333";
-        hoverBg = "#f5f5f5";
-        hoverBorder = "#bbb";
-        pressedBg = "#e0e0e0";
-        pressedBorder = "#999";
+        styleType = "secondary";
         break;
     }
-    
-    QString style = baseStyle
-                   .arg(borderColor)
-                   .arg(backgroundColor)
-                   .arg(textColor)
-                   .arg(hoverBg)
-                   .arg(hoverBorder)
-                   .arg(pressedBg)
-                   .arg(pressedBorder);
-    
-    setStyleSheet(style);
+
+    // Use the modern medical style system for consistent styling
+    QString modernStyle = ModernMedicalStyle::getButtonStyle(styleType);
+
+    // Add TouchButton-specific enhancements
+    QString enhancedStyle = modernStyle + QString(
+        "TouchButton {"
+        "    transition: all %1ms %2;"
+        "}"
+        "TouchButton:focus {"
+        "    outline: %3 solid %4;"
+        "    outline-offset: %5;"
+        "}"
+        "TouchButton:checked {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
+        "                stop:0 %6, stop:1 %7);"
+        "    border-color: %8;"
+        "    %9"
+        "}"
+        "TouchButton[animated='true'] {"
+        "    animation: pulse %10ms infinite;"
+        "}"
+        "@keyframes pulse {"
+        "    0% { transform: scale(1); }"
+        "    50% { transform: scale(1.05); }"
+        "    100% { transform: scale(1); }"
+        "}"
+    ).arg(ModernMedicalStyle::Animation::NORMAL_DURATION)
+     .arg(ModernMedicalStyle::Animation::getEaseInOut())
+     .arg(ModernMedicalStyle::scalePixelValue(2))
+     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE.name())
+     .arg(ModernMedicalStyle::scalePixelValue(2))
+     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE_LIGHT.name())
+     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE.name())
+     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE_DARK.name())
+     .arg(ModernMedicalStyle::Elevation::getLevel3())
+     .arg(ModernMedicalStyle::Animation::SLOW_DURATION * 2);
+
+    setStyleSheet(enhancedStyle);
 }
 
 void TouchButton::mousePressEvent(QMouseEvent *event)

@@ -1,9 +1,11 @@
 #include "PressureChart.h"
+#include "../styles/ModernMedicalStyle.h"
 #include <QDebug>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QTextStream>
 #include <QApplication>
+#include <QGraphicsDropShadowEffect>
 #include <cmath>
 
 QT_CHARTS_USE_NAMESPACE
@@ -184,55 +186,121 @@ void PressureChart::setupUI()
 
 void PressureChart::setupChart()
 {
-    // Create chart
+    // Create chart with modern medical styling
     m_chart = new QtCharts::QChart();
-    m_chart->setTitle("Pressure Monitoring");
-    m_chart->setTitleFont(QFont("Arial", 16, QFont::Bold));
-    m_chart->setBackgroundBrush(QBrush(QColor(250, 250, 250)));
-    
-    // Create series
+    m_chart->setTitle("Real-Time Pressure Monitoring");
+
+    // Apply modern typography
+    QFont titleFont(ModernMedicalStyle::Typography::PRIMARY_FONT,
+                   ModernMedicalStyle::Typography::getTitle(),
+                   ModernMedicalStyle::Typography::WEIGHT_BOLD);
+    m_chart->setTitleFont(titleFont);
+
+    // Modern gradient background
+    QLinearGradient backgroundGradient(0, 0, 0, 1);
+    backgroundGradient.setColorAt(0.0, ModernMedicalStyle::Colors::BACKGROUND_LIGHT);
+    backgroundGradient.setColorAt(1.0, ModernMedicalStyle::Colors::BACKGROUND_MEDIUM);
+    backgroundGradient.setCoordinateMode(QGradient::ObjectBoundingMode);
+    m_chart->setBackgroundBrush(QBrush(backgroundGradient));
+
+    // Enhanced chart margins and spacing
+    m_chart->setMargins(QMargins(ModernMedicalStyle::Spacing::getMedium(),
+                                ModernMedicalStyle::Spacing::getMedium(),
+                                ModernMedicalStyle::Spacing::getMedium(),
+                                ModernMedicalStyle::Spacing::getMedium()));
+
+    // Create series with enhanced styling
     m_avlSeries = new QtCharts::QLineSeries();
-    m_avlSeries->setName("AVL Pressure");
-    m_avlSeries->setColor(m_avlColor);
-    m_avlSeries->setPen(QPen(m_avlColor, m_lineWidth));
-    
+    m_avlSeries->setName("Applied Vacuum Line");
+    m_avlSeries->setColor(ModernMedicalStyle::Colors::PRIMARY_BLUE);
+
+    // Enhanced line styling with anti-aliasing
+    QPen avlPen(ModernMedicalStyle::Colors::PRIMARY_BLUE, ModernMedicalStyle::scaleValue(3));
+    avlPen.setCapStyle(Qt::RoundCap);
+    avlPen.setJoinStyle(Qt::RoundJoin);
+    m_avlSeries->setPen(avlPen);
+
     m_tankSeries = new QtCharts::QLineSeries();
     m_tankSeries->setName("Tank Pressure");
-    m_tankSeries->setColor(m_tankColor);
-    m_tankSeries->setPen(QPen(m_tankColor, m_lineWidth));
-    
+    m_tankSeries->setColor(ModernMedicalStyle::Colors::MEDICAL_GREEN);
+
+    QPen tankPen(ModernMedicalStyle::Colors::MEDICAL_GREEN, ModernMedicalStyle::scaleValue(3));
+    tankPen.setCapStyle(Qt::RoundCap);
+    tankPen.setJoinStyle(Qt::RoundJoin);
+    m_tankSeries->setPen(tankPen);
+
     // Add series to chart
     m_chart->addSeries(m_avlSeries);
     m_chart->addSeries(m_tankSeries);
     
-    // Create axes
+    // Create modern styled axes
     m_timeAxis = new QtCharts::QDateTimeAxis();
     m_timeAxis->setFormat("hh:mm:ss");
     m_timeAxis->setTitleText("Time");
-    m_timeAxis->setTitleFont(QFont("Arial", 12, QFont::Bold));
+
+    QFont axisFont(ModernMedicalStyle::Typography::PRIMARY_FONT,
+                   ModernMedicalStyle::Typography::getCaption(),
+                   ModernMedicalStyle::Typography::WEIGHT_MEDIUM);
+    m_timeAxis->setTitleFont(axisFont);
+    m_timeAxis->setLabelsFont(QFont(ModernMedicalStyle::Typography::PRIMARY_FONT,
+                                   ModernMedicalStyle::Typography::getCaption()));
+    m_timeAxis->setLabelsColor(ModernMedicalStyle::Colors::TEXT_SECONDARY);
+    m_timeAxis->setGridLineColor(ModernMedicalStyle::Colors::BORDER_LIGHT);
     m_chart->addAxis(m_timeAxis, Qt::AlignBottom);
-    
+
     m_pressureAxis = new QtCharts::QValueAxis();
     m_pressureAxis->setTitleText("Pressure (mmHg)");
-    m_pressureAxis->setTitleFont(QFont("Arial", 12, QFont::Bold));
+    m_pressureAxis->setTitleFont(axisFont);
+    m_pressureAxis->setLabelsFont(QFont(ModernMedicalStyle::Typography::PRIMARY_FONT,
+                                       ModernMedicalStyle::Typography::getCaption()));
+    m_pressureAxis->setLabelsColor(ModernMedicalStyle::Colors::TEXT_SECONDARY);
+    m_pressureAxis->setGridLineColor(ModernMedicalStyle::Colors::BORDER_LIGHT);
     m_pressureAxis->setLabelFormat("%.1f");
     m_chart->addAxis(m_pressureAxis, Qt::AlignLeft);
-    
+
     // Attach series to axes
     m_avlSeries->attachAxis(m_timeAxis);
     m_avlSeries->attachAxis(m_pressureAxis);
     m_tankSeries->attachAxis(m_timeAxis);
     m_tankSeries->attachAxis(m_pressureAxis);
-    
-    // Configure legend
+
+    // Configure modern legend
     m_chart->legend()->setVisible(m_showLegend);
     m_chart->legend()->setAlignment(Qt::AlignTop);
-    m_chart->legend()->setFont(QFont("Arial", 10));
-    
-    // Create chart view
+    m_chart->legend()->setFont(QFont(ModernMedicalStyle::Typography::PRIMARY_FONT,
+                                    ModernMedicalStyle::Typography::getCaption()));
+    m_chart->legend()->setLabelColor(ModernMedicalStyle::Colors::TEXT_PRIMARY);
+    m_chart->legend()->setBackgroundVisible(true);
+    m_chart->legend()->setBrush(QBrush(ModernMedicalStyle::Colors::BACKGROUND_LIGHT));
+    m_chart->legend()->setPen(QPen(ModernMedicalStyle::Colors::BORDER_LIGHT));
+
+    // Create enhanced chart view
     m_chartView = new QtCharts::QChartView(m_chart);
-    m_chartView->setRenderHint(QPainter::Antialiasing);
-    m_chartView->setMinimumHeight(400);
+    m_chartView->setRenderHint(QPainter::Antialiasing, true);
+    m_chartView->setRenderHint(QPainter::TextAntialiasing, true);
+    m_chartView->setRenderHint(QPainter::SmoothPixmapTransform, true);
+    m_chartView->setMinimumHeight(ModernMedicalStyle::scaleValue(400));
+
+    // Add modern styling to chart view
+    m_chartView->setStyleSheet(QString(
+        "QChartView {"
+        "    background-color: %1;"
+        "    border: %2 solid %3;"
+        "    border-radius: %4;"
+        "    %5"
+        "}"
+    ).arg(ModernMedicalStyle::Colors::BACKGROUND_LIGHT.name())
+     .arg(ModernMedicalStyle::scalePixelValue(2))
+     .arg(ModernMedicalStyle::Colors::BORDER_LIGHT.name())
+     .arg(ModernMedicalStyle::scalePixelValue(ModernMedicalStyle::Spacing::getMediumRadius()))
+     .arg(ModernMedicalStyle::Elevation::getLevel2()));
+
+    // Add subtle drop shadow to chart view
+    auto chartShadow = new QGraphicsDropShadowEffect();
+    chartShadow->setBlurRadius(ModernMedicalStyle::scaleValue(15));
+    chartShadow->setOffset(ModernMedicalStyle::scaleValue(0), ModernMedicalStyle::scaleValue(3));
+    chartShadow->setColor(ModernMedicalStyle::Colors::SHADOW_MEDIUM);
+    m_chartView->setGraphicsEffect(chartShadow);
     
     // Add threshold lines
     addThresholdLines();
