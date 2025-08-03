@@ -72,6 +72,7 @@ private:
     
     // UI components
     QVBoxLayout* m_mainLayout;
+    QVBoxLayout* m_contentLayout;  // Layout for scrollable content
     
     // Emergency controls
     QGroupBox* m_emergencyGroup;

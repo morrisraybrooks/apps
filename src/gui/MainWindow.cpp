@@ -16,6 +16,7 @@
 #include <QDateTime>
 #include <QFont>
 #include <QSizePolicy>
+#include <QScrollArea>
 #include <QDebug>
 
 MainWindow::MainWindow(VacuumController* controller, QWidget *parent)
@@ -33,19 +34,35 @@ MainWindow::MainWindow(VacuumController* controller, QWidget *parent)
         return;
     }
     
-    // Set window properties with standard title bar
-    setWindowTitle("Vacuum Controller - Medical Device Interface");
+    // Set window properties for 50-inch medical display
+    setWindowTitle("Vacuum Controller - Professional Medical Device Interface");
 
-    // Force normal window behavior with decorations
-    setWindowFlags(Qt::Widget);  // Reset to default
-    setWindowFlags(Qt::Window);  // Set as top-level window
+    // Configure for large display with window decorations
+    setWindowFlags(Qt::Window | Qt::WindowMaximizeButtonHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
 
-    // Set size properties
-    setMinimumSize(800, 600);   // Reasonable minimum size
-    resize(1200, 800);          // Default size - user can resize
+    // Set reasonable size constraints for large display
+    QScreen* screen = QApplication::primaryScreen();
+    if (screen) {
+        QRect screenGeometry = screen->geometry();
+        qDebug() << "Screen size available:" << screenGeometry.size();
 
-    // Ensure window is resizable and has decorations
-    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        // Set window to use most of the screen but leave room for window decorations
+        int windowWidth = screenGeometry.width() - 100;  // Leave some margin
+        int windowHeight = screenGeometry.height() - 100; // Leave room for title bar and taskbar
+
+        setMinimumSize(1200, 800);  // Reasonable minimum
+        resize(windowWidth, windowHeight);
+
+        // Center the window
+        move((screenGeometry.width() - windowWidth) / 2,
+             (screenGeometry.height() - windowHeight) / 2);
+    }
+
+    // Start maximized but with window decorations visible
+    showMaximized();
+
+    // Ensure proper sizing policy for large displays
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     // Show the window to ensure it gets proper decorations
     setAttribute(Qt::WA_ShowWithoutActivating, false);
@@ -157,14 +174,12 @@ void MainWindow::changeEvent(QEvent *event)
 
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
-    // Handle window resize events
+    // Handle window resize events for full-screen medical display
     QSize newSize = event->size();
     qDebug() << "Window resized to:" << newSize.width() << "x" << newSize.height();
 
-    // Ensure minimum size constraints
-    if (newSize.width() < 800 || newSize.height() < 600) {
-        resize(qMax(800, newSize.width()), qMax(600, newSize.height()));
-    }
+    // For 50-inch displays, we want to use the full screen
+    // No artificial size constraints - let it use the full display
 
     QMainWindow::resizeEvent(event);
 }
@@ -332,15 +347,10 @@ void MainWindow::onPauseResumeClicked()
 
 void MainWindow::onEmergencyStopClicked()
 {
-    if (m_controller) {
-        m_controller->emergencyStop();
-    }
-}
+    if (!m_controller) return;
 
-void MainWindow::onResetEmergencyStopClicked()
-{
-    if (m_controller && m_emergencyStop) {
-        // Confirm reset
+    if (m_emergencyStop) {
+        // Currently in emergency stop - handle reset
         QMessageBox::StandardButton reply = QMessageBox::question(
             this,
             "Reset Emergency Stop",
@@ -349,10 +359,13 @@ void MainWindow::onResetEmergencyStopClicked()
             QMessageBox::Yes | QMessageBox::No,
             QMessageBox::No
         );
-        
+
         if (reply == QMessageBox::Yes) {
             m_controller->resetEmergencyStop();
         }
+    } else {
+        // Normal operation - trigger emergency stop
+        m_controller->emergencyStop();
     }
 }
 
@@ -412,9 +425,15 @@ void MainWindow::updateControlButtons()
     bool controlsEnabled = !m_emergencyStop;
     m_startStopButton->setEnabled(controlsEnabled);
     m_pauseResumeButton->setEnabled(controlsEnabled && m_systemRunning);
-    
-    // Update emergency stop reset button
-    m_resetEmergencyButton->setEnabled(m_emergencyStop);
+
+    // Update shutdown button text based on emergency state
+    if (m_emergencyStop) {
+        m_shutdownButton->setText("RESET EMERGENCY");
+        m_shutdownButton->setStyleSheet(ModernMedicalStyle::getButtonStyle("success"));
+    } else {
+        m_shutdownButton->setText("EMERGENCY STOP");
+        m_shutdownButton->setStyleSheet(ModernMedicalStyle::getButtonStyle("danger"));
+    }
 }
 
 void MainWindow::setupUI()
@@ -423,10 +442,15 @@ void MainWindow::setupUI()
     m_centralWidget = new QWidget;
     setCentralWidget(m_centralWidget);
 
-    // Create main layout
+    // Create main layout with generous spacing for 50-inch display
     m_mainLayout = new QVBoxLayout(m_centralWidget);
-    m_mainLayout->setSpacing(10);
-    m_mainLayout->setContentsMargins(10, 10, 10, 10);
+    m_mainLayout->setSpacing(ModernMedicalStyle::Spacing::getXLarge());
+    m_mainLayout->setContentsMargins(
+        ModernMedicalStyle::Spacing::getXLarge(),
+        ModernMedicalStyle::Spacing::getLarge(),
+        ModernMedicalStyle::Spacing::getXLarge(),
+        ModernMedicalStyle::Spacing::getLarge()
+    );
 
     // Create specialized components FIRST before setting up layouts
     m_pressureMonitor = std::make_unique<PressureMonitor>(m_controller);
@@ -438,15 +462,23 @@ void MainWindow::setupUI()
     // Setup navigation bar
     setupNavigationBar();
 
-    // Create stacked widget for main content
+    // Create stacked widget for main content with scroll support
     m_stackedWidget = new QStackedWidget;
-    m_mainLayout->addWidget(m_stackedWidget, 1);  // Takes most space
+
+    // Wrap stacked widget in scroll area for better space utilization
+    QScrollArea* mainScrollArea = new QScrollArea;
+    mainScrollArea->setWidget(m_stackedWidget);
+    mainScrollArea->setWidgetResizable(true);
+    mainScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    mainScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    mainScrollArea->setFrameStyle(QFrame::NoFrame);
+
+    m_mainLayout->addWidget(mainScrollArea, 1);  // Takes most space
 
     // Setup main panels (now that components exist)
     setupMainPanel();
 
-    // Setup emergency controls
-    setupEmergencyControls();
+    // Emergency controls are now only in the navigation bar
 
     // Setup status bar
     setupStatusBar();
@@ -454,83 +486,34 @@ void MainWindow::setupUI()
 
 void MainWindow::setupMainPanel()
 {
-    // Create main control panel
+    // Create main control panel with modern dashboard design
     m_mainPanel = new QWidget;
-    QHBoxLayout* mainPanelLayout = new QHBoxLayout(m_mainPanel);
-    mainPanelLayout->setSpacing(20);
-    mainPanelLayout->setContentsMargins(10, 10, 10, 10);
 
-    // Left side - Pattern selection and controls
-    QVBoxLayout* leftLayout = new QVBoxLayout;
+    // Use a grid layout for modern dashboard appearance
+    QGridLayout* dashboardLayout = new QGridLayout(m_mainPanel);
+    dashboardLayout->setSpacing(ModernMedicalStyle::Spacing::getXXLarge());
+    dashboardLayout->setContentsMargins(
+        ModernMedicalStyle::Spacing::getXXLarge(),
+        ModernMedicalStyle::Spacing::getXLarge(),
+        ModernMedicalStyle::Spacing::getXXLarge(),
+        ModernMedicalStyle::Spacing::getXLarge()
+    );
 
-    // Pattern selection area - make it the main focus
-    QFrame* patternFrame = new QFrame;
-    patternFrame->setFrameStyle(QFrame::Box);
-    patternFrame->setMinimumHeight(600); // Increased height
-    patternFrame->setStyleSheet("QFrame { border: 2px solid #2196F3; border-radius: 10px; background-color: #f8f9fa; }");
-    QVBoxLayout* patternLayout = new QVBoxLayout(patternFrame);
-    patternLayout->setSpacing(10);
-    patternLayout->setContentsMargins(10, 10, 10, 10);
+    // Create large dashboard cards
+    setupPatternSelectionCard(dashboardLayout);
+    setupPressureMonitoringCard(dashboardLayout);
+    setupControlPanelCard(dashboardLayout);
+    setupStatusCard(dashboardLayout);
 
-    QLabel* patternLabel = new QLabel("VACUUM CYCLE SELECTION");
-    patternLabel->setAlignment(Qt::AlignCenter);
-    patternLabel->setStyleSheet("font-size: 24pt; font-weight: bold; color: #2196F3; margin: 10px;");
-    patternLayout->addWidget(patternLabel);
+    // Set column and row stretch factors to make the layout expand properly
+    dashboardLayout->setColumnStretch(0, 1);  // Left column gets equal space
+    dashboardLayout->setColumnStretch(1, 1);  // Right column gets equal space
+    dashboardLayout->setRowStretch(0, 2);     // Top row gets more space
+    dashboardLayout->setRowStretch(1, 2);     // Middle row gets more space
+    dashboardLayout->setRowStretch(2, 1);     // Bottom row gets less space
 
-    // Add pattern selector - properly integrate it
-    if (m_patternSelector) {
-        // Don't reparent, just add to layout
-        patternLayout->addWidget(m_patternSelector.get(), 1); // Give it more stretch factor
-    }
-
-    leftLayout->addWidget(patternFrame, 2); // Give pattern frame more space
-
-    // Control buttons
-    QHBoxLayout* controlLayout = new QHBoxLayout;
-    controlLayout->setSpacing(15);
-
-    m_startStopButton = new QPushButton("START");
-    m_startStopButton->setMinimumSize(LARGE_BUTTON_WIDTH, LARGE_BUTTON_HEIGHT);
-    m_startStopButton->setStyleSheet("font-size: 18pt; font-weight: bold;");
-
-    m_pauseResumeButton = new QPushButton("PAUSE");
-    m_pauseResumeButton->setMinimumSize(LARGE_BUTTON_WIDTH, LARGE_BUTTON_HEIGHT);
-    m_pauseResumeButton->setStyleSheet("font-size: 18pt; font-weight: bold;");
-    m_pauseResumeButton->setEnabled(false);
-
-    controlLayout->addWidget(m_startStopButton);
-    controlLayout->addWidget(m_pauseResumeButton);
-    controlLayout->addStretch();
-
-    leftLayout->addLayout(controlLayout);
-
-    // Right side - Pressure monitoring
-    QVBoxLayout* rightLayout = new QVBoxLayout;
-
-    QFrame* pressureFrame = new QFrame;
-    pressureFrame->setFrameStyle(QFrame::Box);
-    pressureFrame->setMinimumHeight(600);
-    pressureFrame->setStyleSheet("QFrame { border: 2px solid #2196F3; border-radius: 10px; background-color: #f8f9fa; }");
-    QVBoxLayout* pressureLayout = new QVBoxLayout(pressureFrame);
-    pressureLayout->setSpacing(10);
-    pressureLayout->setContentsMargins(10, 10, 10, 10);
-
-    QLabel* pressureLabel = new QLabel("PRESSURE MONITORING");
-    pressureLabel->setAlignment(Qt::AlignCenter);
-    pressureLabel->setStyleSheet("font-size: 20pt; font-weight: bold; color: #2196F3;");
-    pressureLayout->addWidget(pressureLabel);
-
-    // Add pressure monitor
-    if (m_pressureMonitor) {
-        pressureLayout->addWidget(m_pressureMonitor.get());
-    }
-    pressureLayout->addStretch();
-
-    rightLayout->addWidget(pressureFrame);
-
-    // Add layouts to main panel
-    mainPanelLayout->addLayout(leftLayout, 1);
-    mainPanelLayout->addLayout(rightLayout, 1);
+    // Add the main panel to stacked widget
+    m_stackedWidget->addWidget(m_mainPanel);
 
     // Add panels to stacked widget
     m_stackedWidget->addWidget(m_mainPanel);
@@ -564,34 +547,70 @@ void MainWindow::setupMainPanel()
 void MainWindow::setupNavigationBar()
 {
     m_navigationBar = new QFrame;
-    m_navigationBar->setFrameStyle(QFrame::Box);
-    m_navigationBar->setFixedHeight(NAVIGATION_HEIGHT);
-    m_navigationBar->setStyleSheet("background-color: #f0f0f0; border: 2px solid #ddd; border-radius: 5px;");
+    m_navigationBar->setFixedHeight(ModernMedicalStyle::scaleValue(150));
+
+    // Modern navigation bar styling
+    QString navStyle = QString(
+        "QFrame {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
+        "                stop:0 %1, stop:1 %2);"
+        "    border: %3 solid %4;"
+        "    border-radius: %5;"
+        "    %6"
+        "}"
+    ).arg(ModernMedicalStyle::Colors::PRIMARY_BLUE_LIGHT.name())
+     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE.name())
+     .arg(ModernMedicalStyle::scalePixelValue(3))
+     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE_DARK.name())
+     .arg(ModernMedicalStyle::scalePixelValue(ModernMedicalStyle::Spacing::getLargeRadius()))
+     .arg(ModernMedicalStyle::Elevation::getLevel4());
+
+    m_navigationBar->setStyleSheet(navStyle);
 
     m_navLayout = new QHBoxLayout(m_navigationBar);
-    m_navLayout->setSpacing(15);
-    m_navLayout->setContentsMargins(10, 5, 10, 5);
+    m_navLayout->setSpacing(ModernMedicalStyle::Spacing::getXLarge());
+    m_navLayout->setContentsMargins(
+        ModernMedicalStyle::Spacing::getXLarge(),
+        ModernMedicalStyle::Spacing::getMedium(),
+        ModernMedicalStyle::Spacing::getXLarge(),
+        ModernMedicalStyle::Spacing::getMedium()
+    );
 
-    // Navigation buttons with consistent styling
+    // Large navigation buttons for 50-inch display
     m_mainPanelButton = new QPushButton("MAIN CONTROL");
-    m_mainPanelButton->setMinimumSize(BUTTON_WIDTH, BUTTON_HEIGHT);
-    m_mainPanelButton->setStyleSheet("QPushButton { font-size: 14pt; font-weight: bold; border-radius: 5px; }");
+    m_mainPanelButton->setMinimumSize(
+        ModernMedicalStyle::scaleValue(300),
+        ModernMedicalStyle::scaleValue(120)
+    );
+    m_mainPanelButton->setStyleSheet(ModernMedicalStyle::getButtonStyle("primary"));
 
-    m_safetyPanelButton = new QPushButton("SAFETY");
-    m_safetyPanelButton->setMinimumSize(BUTTON_WIDTH, BUTTON_HEIGHT);
-    m_safetyPanelButton->setStyleSheet("QPushButton { font-size: 14pt; font-weight: bold; border-radius: 5px; }");
+    m_safetyPanelButton = new QPushButton("SAFETY PANEL");
+    m_safetyPanelButton->setMinimumSize(
+        ModernMedicalStyle::scaleValue(300),
+        ModernMedicalStyle::scaleValue(120)
+    );
+    m_safetyPanelButton->setStyleSheet(ModernMedicalStyle::getButtonStyle("warning"));
 
     m_settingsButton = new QPushButton("SETTINGS");
-    m_settingsButton->setMinimumSize(BUTTON_WIDTH, BUTTON_HEIGHT);
-    m_settingsButton->setStyleSheet("QPushButton { font-size: 14pt; font-weight: bold; border-radius: 5px; }");
+    m_settingsButton->setMinimumSize(
+        ModernMedicalStyle::scaleValue(300),
+        ModernMedicalStyle::scaleValue(120)
+    );
+    m_settingsButton->setStyleSheet(ModernMedicalStyle::getButtonStyle("secondary"));
 
     m_diagnosticsButton = new QPushButton("DIAGNOSTICS");
-    m_diagnosticsButton->setMinimumSize(BUTTON_WIDTH, BUTTON_HEIGHT);
-    m_diagnosticsButton->setStyleSheet("QPushButton { font-size: 14pt; font-weight: bold; border-radius: 5px; }");
+    m_diagnosticsButton->setMinimumSize(
+        ModernMedicalStyle::scaleValue(300),
+        ModernMedicalStyle::scaleValue(120)
+    );
+    m_diagnosticsButton->setStyleSheet(ModernMedicalStyle::getButtonStyle("secondary"));
 
-    m_shutdownButton = new QPushButton("SHUTDOWN");
-    m_shutdownButton->setMinimumSize(BUTTON_WIDTH, BUTTON_HEIGHT);
-    m_shutdownButton->setStyleSheet("QPushButton { background-color: #f44336; color: white; font-size: 14pt; font-weight: bold; border-radius: 5px; }");
+    m_shutdownButton = new QPushButton("EMERGENCY STOP");
+    m_shutdownButton->setMinimumSize(
+        ModernMedicalStyle::scaleValue(350),
+        ModernMedicalStyle::scaleValue(120)
+    );
+    m_shutdownButton->setStyleSheet(ModernMedicalStyle::getButtonStyle("danger"));
 
     // Add buttons with proper alignment
     m_navLayout->addWidget(m_mainPanelButton);
@@ -607,30 +626,97 @@ void MainWindow::setupNavigationBar()
 void MainWindow::setupStatusBar()
 {
     m_statusBar = new QFrame;
-    m_statusBar->setFrameStyle(QFrame::Box);
-    m_statusBar->setFixedHeight(STATUS_BAR_HEIGHT);
-    m_statusBar->setStyleSheet("background-color: #f8f8f8; border: 2px solid #ddd; border-radius: 5px;");
+    m_statusBar->setFixedHeight(ModernMedicalStyle::scaleValue(120));
+
+    // Modern status bar styling
+    QString statusStyle = QString(
+        "QFrame {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
+        "                stop:0 %1, stop:1 %2);"
+        "    border: %3 solid %4;"
+        "    border-radius: %5;"
+        "    %6"
+        "}"
+    ).arg(ModernMedicalStyle::Colors::BACKGROUND_MEDIUM.name())
+     .arg(ModernMedicalStyle::Colors::BACKGROUND_DARK.name())
+     .arg(ModernMedicalStyle::scalePixelValue(2))
+     .arg(ModernMedicalStyle::Colors::BORDER_MEDIUM.name())
+     .arg(ModernMedicalStyle::scalePixelValue(ModernMedicalStyle::Spacing::getMediumRadius()))
+     .arg(ModernMedicalStyle::Elevation::getLevel2());
+
+    m_statusBar->setStyleSheet(statusStyle);
 
     m_statusLayout = new QHBoxLayout(m_statusBar);
-    m_statusLayout->setSpacing(20);
-    m_statusLayout->setContentsMargins(15, 5, 15, 5);
+    m_statusLayout->setSpacing(ModernMedicalStyle::Spacing::getXXLarge());
+    m_statusLayout->setContentsMargins(
+        ModernMedicalStyle::Spacing::getXLarge(),
+        ModernMedicalStyle::Spacing::getMedium(),
+        ModernMedicalStyle::Spacing::getXLarge(),
+        ModernMedicalStyle::Spacing::getMedium()
+    );
 
-    // System status with proper alignment
-    m_systemStatusLabel = new QLabel("STOPPED");
-    m_systemStatusLabel->setMinimumSize(200, 50);
+    // Large system status display
+    m_systemStatusLabel = new QLabel("SYSTEM: READY");
+    m_systemStatusLabel->setMinimumSize(
+        ModernMedicalStyle::scaleValue(300),
+        ModernMedicalStyle::scaleValue(80)
+    );
+    m_systemStatusLabel->setStyleSheet(QString(
+        "QLabel {"
+        "    font-family: %1;"
+        "    font-size: %2pt;"
+        "    font-weight: %3;"
+        "    color: %4;"
+        "    background-color: %5;"
+        "    border: %6 solid %7;"
+        "    border-radius: %8;"
+        "    padding: %9;"
+        "}"
+    ).arg(ModernMedicalStyle::Typography::PRIMARY_FONT)
+     .arg(ModernMedicalStyle::Typography::getTitle())
+     .arg(ModernMedicalStyle::Typography::WEIGHT_BOLD)
+     .arg(ModernMedicalStyle::Colors::TEXT_ON_PRIMARY.name())
+     .arg(ModernMedicalStyle::Colors::MEDICAL_GREEN.name())
+     .arg(ModernMedicalStyle::scalePixelValue(2))
+     .arg(ModernMedicalStyle::Colors::MEDICAL_GREEN.name())
+     .arg(ModernMedicalStyle::scalePixelValue(ModernMedicalStyle::Spacing::getMediumRadius()))
+     .arg(ModernMedicalStyle::scalePixelValue(ModernMedicalStyle::Spacing::getMedium())));
     m_systemStatusLabel->setAlignment(Qt::AlignCenter);
-    m_systemStatusLabel->setStyleSheet("font-size: 16pt; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #9E9E9E; color: white;");
 
-    // Pressure status with consistent styling
+    // Large pressure status display
     m_pressureStatusLabel = new QLabel("AVL: -- mmHg | Tank: -- mmHg");
-    m_pressureStatusLabel->setStyleSheet("font-size: 14pt; color: #333; font-weight: bold;");
+    m_pressureStatusLabel->setStyleSheet(QString(
+        "QLabel {"
+        "    font-family: %1;"
+        "    font-size: %2pt;"
+        "    font-weight: %3;"
+        "    color: %4;"
+        "    background: transparent;"
+        "    border: none;"
+        "}"
+    ).arg(ModernMedicalStyle::Typography::PRIMARY_FONT)
+     .arg(ModernMedicalStyle::Typography::getSubtitle())
+     .arg(ModernMedicalStyle::Typography::WEIGHT_MEDIUM)
+     .arg(ModernMedicalStyle::Colors::TEXT_PRIMARY.name()));
     m_pressureStatusLabel->setAlignment(Qt::AlignCenter);
 
-    // Time display with consistent styling
+    // Large time display
     m_timeLabel = new QLabel;
-    m_timeLabel->setStyleSheet("font-size: 14pt; color: #333; font-weight: bold;");
+    m_timeLabel->setStyleSheet(QString(
+        "QLabel {"
+        "    font-family: %1;"
+        "    font-size: %2pt;"
+        "    font-weight: %3;"
+        "    color: %4;"
+        "    background: transparent;"
+        "    border: none;"
+        "}"
+    ).arg(ModernMedicalStyle::Typography::MONOSPACE_FONT)
+     .arg(ModernMedicalStyle::Typography::getSubtitle())
+     .arg(ModernMedicalStyle::Typography::WEIGHT_MEDIUM)
+     .arg(ModernMedicalStyle::Colors::TEXT_SECONDARY.name()));
     m_timeLabel->setAlignment(Qt::AlignCenter);
-    m_timeLabel->setMinimumWidth(120);
+    m_timeLabel->setMinimumWidth(ModernMedicalStyle::scaleValue(200));
 
     // Add widgets with proper spacing
     m_statusLayout->addWidget(m_systemStatusLabel);
@@ -641,55 +727,7 @@ void MainWindow::setupStatusBar()
     m_mainLayout->addWidget(m_statusBar);
 }
 
-void MainWindow::setupEmergencyControls()
-{
-    m_emergencyFrame = new QFrame;
-    m_emergencyFrame->setFrameStyle(QFrame::Box);
-    m_emergencyFrame->setStyleSheet("background-color: #ffebee; border: 3px solid #f44336; border-radius: 10px;");
-    m_emergencyFrame->setFixedHeight(100); // Fixed height for consistent layout
-
-    QHBoxLayout* emergencyLayout = new QHBoxLayout(m_emergencyFrame);
-    emergencyLayout->setSpacing(20);
-    emergencyLayout->setContentsMargins(15, 10, 15, 10);
-
-    QLabel* emergencyLabel = new QLabel("EMERGENCY CONTROLS");
-    emergencyLabel->setStyleSheet("font-size: 18pt; font-weight: bold; color: #f44336;");
-    emergencyLabel->setAlignment(Qt::AlignVCenter);
-
-    m_emergencyStopButton = new QPushButton("EMERGENCY\nSTOP");
-    m_emergencyStopButton->setMinimumSize(EMERGENCY_BUTTON_SIZE, EMERGENCY_BUTTON_SIZE);
-    m_emergencyStopButton->setMaximumSize(EMERGENCY_BUTTON_SIZE, EMERGENCY_BUTTON_SIZE);
-    m_emergencyStopButton->setStyleSheet(
-        "QPushButton {"
-        "  background-color: #f44336; color: white; font-size: 14pt; font-weight: bold;"
-        "  border: 3px solid #da190b; border-radius: 10px;"
-        "}"
-        "QPushButton:hover {"
-        "  background-color: #da190b;"
-        "}"
-    );
-
-    m_resetEmergencyButton = new QPushButton("RESET\nEMERGENCY");
-    m_resetEmergencyButton->setMinimumSize(BUTTON_WIDTH, BUTTON_HEIGHT);
-    m_resetEmergencyButton->setStyleSheet(
-        "QPushButton {"
-        "  font-size: 12pt; font-weight: bold; border-radius: 5px;"
-        "  background-color: #4CAF50; color: white;"
-        "}"
-        "QPushButton:disabled {"
-        "  background-color: #cccccc; color: #666666;"
-        "}"
-    );
-    m_resetEmergencyButton->setEnabled(false);
-
-    // Add widgets with proper alignment
-    emergencyLayout->addWidget(emergencyLabel);
-    emergencyLayout->addStretch();
-    emergencyLayout->addWidget(m_emergencyStopButton);
-    emergencyLayout->addWidget(m_resetEmergencyButton);
-
-    m_mainLayout->addWidget(m_emergencyFrame);
-}
+// Emergency controls removed - now only in navigation bar
 
 void MainWindow::connectSignals()
 {
@@ -717,8 +755,9 @@ void MainWindow::connectSignals()
     // Connect control buttons
     connect(m_startStopButton, &QPushButton::clicked, this, &MainWindow::onStartStopClicked);
     connect(m_pauseResumeButton, &QPushButton::clicked, this, &MainWindow::onPauseResumeClicked);
-    connect(m_emergencyStopButton, &QPushButton::clicked, this, &MainWindow::onEmergencyStopClicked);
-    connect(m_resetEmergencyButton, &QPushButton::clicked, this, &MainWindow::onResetEmergencyStopClicked);
+
+    // Connect navigation emergency shutdown button
+    connect(m_shutdownButton, &QPushButton::clicked, this, &MainWindow::onEmergencyStopClicked);
 }
 
 void MainWindow::applyLargeDisplayStyles()
@@ -744,61 +783,61 @@ void MainWindow::applyLargeDisplayStyles()
         "    min-height: %8;"
         "    %9"
         "}"
+    ).arg(ModernMedicalStyle::Colors::PRIMARY_BLUE_LIGHT.name())
+     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE.name())
+     .arg(ModernMedicalStyle::scalePixelValue(2))
+     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE.name())
+     .arg(ModernMedicalStyle::scaleValue(150))
+     .arg(ModernMedicalStyle::Elevation::getLevel3());
+
+    // Set enhanced styling for main window components
+    mainWindowStyle += QString(
         "/* Status Bar Styling */"
         "QFrame#statusBar {"
-        "    background-color: %10;"
-        "    border-top: %11 solid %12;"
-        "    min-height: %13;"
-        "    %14"
+        "    background-color: %1;"
+        "    border-top: %2 solid %3;"
+        "    min-height: %4;"
+        "    %5"
         "}"
         "/* Emergency Controls Styling */"
         "QFrame#emergencyFrame {"
         "    background: qradialgradient(cx:0.5, cy:0.5, radius:1, "
-        "                fx:0.3, fy:0.3, stop:0 %15, stop:1 %16);"
-        "    border: %17 solid %18;"
-        "    border-radius: %19;"
-        "    %20"
+        "                fx:0.3, fy:0.3, stop:0 %6, stop:1 %7);"
+        "    border: %8 solid %9;"
+        "    border-radius: %10;"
+        "    %11"
         "}"
         "/* Enhanced button styling for navigation */"
         "QPushButton#navButton {"
         "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
-        "                stop:0 %21, stop:1 %22);"
-        "    border: %23 solid %24;"
-        "    border-radius: %25;"
-        "    color: %26;"
-        "    font-size: %27pt;"
-        "    font-weight: %28;"
-        "    min-height: %29;"
-        "    min-width: %30;"
-        "    padding: %31 %32;"
-        "    %33"
+        "                stop:0 %12, stop:1 %13);"
+        "    border: %14 solid %15;"
+        "    border-radius: %16;"
+        "    color: %17;"
+        "    font-size: %18pt;"
+        "    font-weight: %19;"
+        "    min-height: %20;"
+        "    min-width: %21;"
+        "    padding: %22 %23;"
+        "    %24"
         "}"
         "QPushButton#navButton:hover {"
         "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
-        "                stop:0 %34, stop:1 %35);"
+        "                stop:0 %25, stop:1 %26);"
         "}"
         "QPushButton#navButton:pressed {"
         "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
-        "                stop:0 %36, stop:1 %37);"
+        "                stop:0 %27, stop:1 %28);"
         "}"
         "QPushButton#navButton:checked {"
         "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
-        "                stop:0 %38, stop:1 %39);"
-        "    border-color: %40;"
+        "                stop:0 %29, stop:1 %30);"
+        "    border-color: %31;"
         "}"
-    ).arg(ModernMedicalStyle::Colors::BACKGROUND_LIGHT.name())
-     .arg(ModernMedicalStyle::Colors::TEXT_PRIMARY.name())
-     .arg(ModernMedicalStyle::Colors::BACKGROUND_LIGHT.name())
-     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE_LIGHT.name())
-     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE.name())
-     .arg(ModernMedicalStyle::scalePixelValue(2))
-     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE.name())
-     .arg(ModernMedicalStyle::scalePixelValue(NAVIGATION_HEIGHT))
-     .arg(ModernMedicalStyle::Elevation::getLevel3())
-     .arg(ModernMedicalStyle::Colors::BACKGROUND_MEDIUM.name())
+    ).arg(ModernMedicalStyle::Colors::BACKGROUND_MEDIUM.name())
      .arg(ModernMedicalStyle::scalePixelValue(1))
      .arg(ModernMedicalStyle::Colors::BORDER_LIGHT.name())
-     .arg(ModernMedicalStyle::scalePixelValue(STATUS_BAR_HEIGHT))
+     .arg(ModernMedicalStyle::scaleValue(120))
      .arg(ModernMedicalStyle::Elevation::getLevel1())
      .arg(ModernMedicalStyle::adjustColorForContrast(ModernMedicalStyle::Colors::MEDICAL_RED, 0.2).name())
      .arg(ModernMedicalStyle::Colors::MEDICAL_RED.name())
@@ -829,3 +868,162 @@ void MainWindow::applyLargeDisplayStyles()
 
     setStyleSheet(mainWindowStyle);
 }
+
+// Modern Dashboard Card Implementation
+QFrame* MainWindow::createDashboardCard(const QString& title, QWidget* content)
+{
+    QFrame* card = new QFrame;
+
+    // Use percentage-based sizing instead of fixed sizes
+    // Cards will automatically resize with the window
+    card->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    card->setProperty("isDashboardCard", true);  // Mark as dashboard card for resizing
+
+    // Modern card styling
+    QString cardStyle = QString(
+        "QFrame {"
+        "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
+        "                stop:0 %1, stop:1 %2);"
+        "    border: %3 solid %4;"
+        "    border-radius: %5;"
+        "    %6"
+        "}"
+    ).arg(ModernMedicalStyle::Colors::BACKGROUND_LIGHT.name())
+     .arg(ModernMedicalStyle::Colors::BACKGROUND_MEDIUM.name())
+     .arg(ModernMedicalStyle::scalePixelValue(3))
+     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE.name())
+     .arg(ModernMedicalStyle::scalePixelValue(ModernMedicalStyle::Spacing::getLargeRadius()))
+     .arg(ModernMedicalStyle::Elevation::getLevel3());
+
+    card->setStyleSheet(cardStyle);
+
+    QVBoxLayout* cardLayout = new QVBoxLayout(card);
+    cardLayout->setSpacing(ModernMedicalStyle::Spacing::getLarge());
+    cardLayout->setContentsMargins(
+        ModernMedicalStyle::Spacing::getXLarge(),
+        ModernMedicalStyle::Spacing::getLarge(),
+        ModernMedicalStyle::Spacing::getXLarge(),
+        ModernMedicalStyle::Spacing::getLarge()
+    );
+
+    // Card title
+    QLabel* titleLabel = new QLabel(title);
+    titleLabel->setAlignment(Qt::AlignCenter);
+    titleLabel->setStyleSheet(QString(
+        "QLabel {"
+        "    font-family: %1;"
+        "    font-size: %2pt;"
+        "    font-weight: %3;"
+        "    color: %4;"
+        "    background: transparent;"
+        "    border: none;"
+        "    padding: %5;"
+        "}"
+    ).arg(ModernMedicalStyle::Typography::PRIMARY_FONT)
+     .arg(ModernMedicalStyle::Typography::getDisplaySubtitle())
+     .arg(ModernMedicalStyle::Typography::WEIGHT_BOLD)
+     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE.name())
+     .arg(ModernMedicalStyle::scalePixelValue(ModernMedicalStyle::Spacing::getMedium())));
+
+    cardLayout->addWidget(titleLabel);
+
+    // Card content
+    if (content) {
+        cardLayout->addWidget(content, 1);
+    }
+
+    return card;
+}
+
+void MainWindow::setupPatternSelectionCard(QGridLayout* layout)
+{
+    if (m_patternSelector) {
+        QFrame* card = createDashboardCard("VACUUM CYCLE SELECTION", m_patternSelector.get());
+        layout->addWidget(card, 0, 0, 2, 1);  // Span 2 rows, 1 column (left side)
+    }
+}
+
+void MainWindow::setupPressureMonitoringCard(QGridLayout* layout)
+{
+    if (m_pressureMonitor) {
+        QFrame* card = createDashboardCard("REAL-TIME PRESSURE MONITORING", m_pressureMonitor.get());
+        layout->addWidget(card, 0, 1, 1, 1);  // Top right
+    }
+}
+
+void MainWindow::setupControlPanelCard(QGridLayout* layout)
+{
+    // Create control panel content
+    QWidget* controlContent = new QWidget;
+    QVBoxLayout* controlLayout = new QVBoxLayout(controlContent);
+    controlLayout->setSpacing(ModernMedicalStyle::Spacing::getXLarge());
+
+    // Large control buttons
+    QHBoxLayout* buttonLayout = new QHBoxLayout;
+    buttonLayout->setSpacing(ModernMedicalStyle::Spacing::getLarge());
+
+    m_startStopButton = new QPushButton("START SYSTEM");
+    m_startStopButton->setMinimumSize(
+        ModernMedicalStyle::scaleValue(450),
+        ModernMedicalStyle::scaleValue(180)
+    );
+    m_startStopButton->setStyleSheet(ModernMedicalStyle::getButtonStyle("success"));
+
+    m_pauseResumeButton = new QPushButton("PAUSE");
+    m_pauseResumeButton->setMinimumSize(
+        ModernMedicalStyle::scaleValue(450),
+        ModernMedicalStyle::scaleValue(180)
+    );
+    m_pauseResumeButton->setStyleSheet(ModernMedicalStyle::getButtonStyle("warning"));
+    m_pauseResumeButton->setEnabled(false);
+
+    buttonLayout->addWidget(m_startStopButton);
+    buttonLayout->addWidget(m_pauseResumeButton);
+    buttonLayout->addStretch();
+
+    controlLayout->addLayout(buttonLayout);
+    controlLayout->addStretch();
+
+    QFrame* card = createDashboardCard("SYSTEM CONTROL", controlContent);
+    layout->addWidget(card, 1, 1, 1, 1);  // Bottom right
+}
+
+void MainWindow::setupStatusCard(QGridLayout* layout)
+{
+    // Create status content
+    QWidget* statusContent = new QWidget;
+    QVBoxLayout* statusLayout = new QVBoxLayout(statusContent);
+    statusLayout->setSpacing(ModernMedicalStyle::Spacing::getLarge());
+
+    // System status display
+    QLabel* systemStatus = new QLabel("SYSTEM STATUS: READY");
+    systemStatus->setAlignment(Qt::AlignCenter);
+    systemStatus->setStyleSheet(QString(
+        "QLabel {"
+        "    font-family: %1;"
+        "    font-size: %2pt;"
+        "    font-weight: %3;"
+        "    color: %4;"
+        "    background-color: %5;"
+        "    border: %6 solid %7;"
+        "    border-radius: %8;"
+        "    padding: %9;"
+        "}"
+    ).arg(ModernMedicalStyle::Typography::PRIMARY_FONT)
+     .arg(ModernMedicalStyle::Typography::getTitle())
+     .arg(ModernMedicalStyle::Typography::WEIGHT_BOLD)
+     .arg(ModernMedicalStyle::Colors::TEXT_ON_PRIMARY.name())
+     .arg(ModernMedicalStyle::Colors::MEDICAL_GREEN.name())
+     .arg(ModernMedicalStyle::scalePixelValue(2))
+     .arg(ModernMedicalStyle::Colors::MEDICAL_GREEN.name())
+     .arg(ModernMedicalStyle::scalePixelValue(ModernMedicalStyle::Spacing::getMediumRadius()))
+     .arg(ModernMedicalStyle::scalePixelValue(ModernMedicalStyle::Spacing::getLarge())));
+
+    statusLayout->addWidget(systemStatus);
+    statusLayout->addStretch();
+
+    QFrame* card = createDashboardCard("SYSTEM STATUS", statusContent);
+    layout->addWidget(card, 2, 0, 1, 2);  // Bottom spanning both columns
+}
+
+

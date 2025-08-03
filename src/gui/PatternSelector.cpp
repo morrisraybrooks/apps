@@ -411,7 +411,6 @@ TouchButton* PatternSelector::createPatternButton(const PatternInfo& pattern)
         "    font-size: %2pt;"
         "    font-weight: %3;"
         "    text-align: center;"
-        "    word-wrap: break-word;"
         "    %4"
         "}"
         "TouchButton:checked {"
@@ -422,7 +421,7 @@ TouchButton* PatternSelector::createPatternButton(const PatternInfo& pattern)
         "    %10"
         "}"
         "TouchButton:hover {"
-        "    transform: translateY(%11);"
+        "    background-color: %11;"
         "}"
     ).arg(ModernMedicalStyle::Typography::PRIMARY_FONT)
      .arg(ModernMedicalStyle::Typography::getCaption())
@@ -434,7 +433,7 @@ TouchButton* PatternSelector::createPatternButton(const PatternInfo& pattern)
      .arg(ModernMedicalStyle::scalePixelValue(3))
      .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE_DARK.name())
      .arg(ModernMedicalStyle::Elevation::getLevel4())
-     .arg(ModernMedicalStyle::scalePixelValue(-2));
+     .arg(ModernMedicalStyle::Colors::BACKGROUND_MEDIUM.name());
 
     button->setStyleSheet(modernButtonStyle);
 
@@ -704,7 +703,7 @@ void PatternSelector::onPatternCreated(const QString& patternName, const QJsonOb
         step.durationMs = stepObj["duration_ms"].toInt();
         step.action = stepObj["action"].toString();
         step.description = stepObj["description"].toString();
-        step.parameters = stepObj["parameters"].toObject().toVariantMap();
+        step.parameters = stepObj["parameters"].toObject();
         newPattern.steps.append(step);
     }
 
@@ -745,7 +744,7 @@ void PatternSelector::onPatternModified(const QString& patternName, const QJsonO
             step.durationMs = stepObj["duration_ms"].toInt();
             step.action = stepObj["action"].toString();
             step.description = stepObj["description"].toString();
-            step.parameters = stepObj["parameters"].toObject().toVariantMap();
+            step.parameters = stepObj["parameters"].toObject();
             pattern.steps.append(step);
         }
 
@@ -798,7 +797,7 @@ void PatternSelector::savePatternToConfig(const PatternInfo& pattern)
         stepObj["duration_ms"] = step.durationMs;
         stepObj["action"] = step.action;
         stepObj["description"] = step.description;
-        stepObj["parameters"] = QJsonObject::fromVariantMap(step.parameters);
+        stepObj["parameters"] = step.parameters;
         stepsArray.append(stepObj);
     }
     patternObj["steps"] = stepsArray;

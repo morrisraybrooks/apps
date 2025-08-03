@@ -1,5 +1,6 @@
 #include "CustomPatternDialog.h"
 #include "../VacuumController.h"
+#include "../patterns/PatternDefinitions.h"
 #include "components/TouchButton.h"
 #include <QDebug>
 #include <QMessageBox>
@@ -483,12 +484,64 @@ void CustomPatternDialog::loadPattern(const QString& patternName)
 {
     qDebug() << "Loading pattern:" << patternName;
 
-    m_patternNameEdit->setText(patternName);
+    // Try to load from custom patterns first
+    QString configPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/custom_patterns.json";
+    QFile configFile(configPath);
 
-    QMessageBox::information(this, "Load Pattern",
-                           QString("Pattern '%1' loaded for editing.\n\n"
-                                   "Note: Full pattern loading functionality will be implemented "
-                                   "when pattern storage system is complete.").arg(patternName));
+    if (configFile.open(QIODevice::ReadOnly)) {
+        QJsonDocument doc = QJsonDocument::fromJson(configFile.readAll());
+        if (doc.isObject()) {
+            QJsonObject patternsObj = doc.object();
+            if (patternsObj.contains(patternName)) {
+                QJsonObject patternData = patternsObj[patternName].toObject();
+                setPatternData(patternData);
+                m_patternModified = false;
+                qDebug() << "Pattern loaded from custom patterns:" << patternName;
+                return;
+            }
+        }
+        configFile.close();
+    }
+
+    // If not found in custom patterns, try to load from built-in patterns via controller
+    if (m_controller) {
+        // Get pattern data from the pattern definitions
+        auto patternDefinitions = m_controller->getPatternDefinitions();
+        if (patternDefinitions && patternDefinitions->hasPattern(patternName)) {
+            auto patternInfo = patternDefinitions->getPattern(patternName);
+
+            // Convert PatternInfo to JSON format for the dialog
+            QJsonObject patternData;
+            patternData["name"] = patternInfo.name;
+            patternData["type"] = patternInfo.type;
+            patternData["description"] = patternInfo.description;
+            patternData["base_pressure"] = patternInfo.basePressure;
+            patternData["speed"] = patternInfo.speed;
+            patternData["intensity"] = patternInfo.intensity;
+
+            QJsonArray stepsArray;
+            for (const auto& step : patternInfo.steps) {
+                QJsonObject stepObj;
+                stepObj["pressure_percent"] = step.pressurePercent;
+                stepObj["duration_ms"] = step.durationMs;
+                stepObj["action"] = step.action;
+                stepObj["description"] = step.description;
+                stepObj["parameters"] = step.parameters;
+                stepsArray.append(stepObj);
+            }
+            patternData["steps"] = stepsArray;
+
+            setPatternData(patternData);
+            m_patternModified = false;
+            qDebug() << "Pattern loaded from built-in patterns:" << patternName;
+            return;
+        }
+    }
+
+    // Pattern not found
+    QMessageBox::warning(this, "Pattern Not Found",
+                        QString("Pattern '%1' could not be loaded.\n\n"
+                               "The pattern may have been deleted or is not available.").arg(patternName));
 }
 
 void CustomPatternDialog::createNewPattern()
@@ -525,6 +578,55 @@ QJsonObject CustomPatternDialog::getPatternData() const
     data["priority"] = m_priorityCombo->currentText();
 
     return data;
+}
+
+void CustomPatternDialog::setPatternData(const QJsonObject& data)
+{
+    // Set basic pattern information
+    m_patternNameEdit->setText(data["name"].toString());
+
+    // Set pattern type if it exists in combo box
+    QString patternType = data["type"].toString();
+    int typeIndex = m_patternTypeCombo->findText(patternType);
+    if (typeIndex >= 0) {
+        m_patternTypeCombo->setCurrentIndex(typeIndex);
+    }
+
+    m_patternDescriptionEdit->setPlainText(data["description"].toString());
+    m_basePressureSpin->setValue(data["base_pressure"].toDouble(50.0));
+    m_speedSpin->setValue(data["speed"].toDouble(1.0));
+    m_intensitySpin->setValue(data["intensity"].toDouble(50.0));
+
+    // Set advanced options
+    m_loopPatternCheck->setChecked(data["loop_pattern"].toBool(false));
+    m_loopCountSpin->setValue(data["loop_count"].toInt(1));
+    m_autoStartCheck->setChecked(data["auto_start"].toBool(false));
+
+    QString priority = data["priority"].toString();
+    int priorityIndex = m_priorityCombo->findText(priority);
+    if (priorityIndex >= 0) {
+        m_priorityCombo->setCurrentIndex(priorityIndex);
+    }
+
+    // Load pattern steps
+    m_patternSteps.clear();
+    QJsonArray stepsArray = data["steps"].toArray();
+    for (const QJsonValue& stepValue : stepsArray) {
+        QJsonObject stepObj = stepValue.toObject();
+        PatternStep step;
+        step.pressurePercent = stepObj["pressure_percent"].toDouble();
+        step.durationMs = stepObj["duration_ms"].toInt();
+        step.action = stepObj["action"].toString();
+        step.description = stepObj["description"].toString();
+        step.parameters = stepObj["parameters"].toObject();
+        m_patternSteps.append(step);
+    }
+
+    // Update UI
+    updateStepList();
+    updatePreview();
+
+    qDebug() << "Pattern data loaded into dialog:" << data["name"].toString();
 }
 
 void CustomPatternDialog::onTabChanged(int index)

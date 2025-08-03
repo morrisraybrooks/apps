@@ -114,6 +114,9 @@ public:
     bool createCustomPattern(const QString& name, const QList<PatternStep>& steps);
     bool savePattern(const QString& patternName, const QString& filePath);
 
+    // Pattern definitions access
+    PatternDefinitions* getPatternDefinitions() const;
+
 public Q_SLOTS:
     void setPatternParameters(const QJsonObject& parameters);
 

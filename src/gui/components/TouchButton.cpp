@@ -226,36 +226,26 @@ void TouchButton::updateButtonStyle()
     // Add TouchButton-specific enhancements
     QString enhancedStyle = modernStyle + QString(
         "TouchButton {"
-        "    transition: all %1ms %2;"
         "}"
         "TouchButton:focus {"
         "    outline: %3 solid %4;"
         "    outline-offset: %5;"
         "}"
+        "TouchButton:focus {"
+        "    outline: %1 solid %2;"
+        "    outline-offset: %3;"
+        "}"
         "TouchButton:checked {"
         "    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
-        "                stop:0 %6, stop:1 %7);"
-        "    border-color: %8;"
-        "    %9"
+        "                stop:0 %4, stop:1 %5);"
+        "    border-color: %6;"
         "}"
-        "TouchButton[animated='true'] {"
-        "    animation: pulse %10ms infinite;"
-        "}"
-        "@keyframes pulse {"
-        "    0% { transform: scale(1); }"
-        "    50% { transform: scale(1.05); }"
-        "    100% { transform: scale(1); }"
-        "}"
-    ).arg(ModernMedicalStyle::Animation::NORMAL_DURATION)
-     .arg(ModernMedicalStyle::Animation::getEaseInOut())
-     .arg(ModernMedicalStyle::scalePixelValue(2))
+    ).arg(ModernMedicalStyle::scalePixelValue(2))
      .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE.name())
      .arg(ModernMedicalStyle::scalePixelValue(2))
      .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE_LIGHT.name())
      .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE.name())
-     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE_DARK.name())
-     .arg(ModernMedicalStyle::Elevation::getLevel3())
-     .arg(ModernMedicalStyle::Animation::SLOW_DURATION * 2);
+     .arg(ModernMedicalStyle::Colors::PRIMARY_BLUE_DARK.name());
 
     setStyleSheet(enhancedStyle);
 }

@@ -21,30 +21,22 @@ if ! groups | grep -q "spi"; then
     echo "Warning: User not in spi group - may need sudo for hardware access"
 fi
 
-# Set display configuration for direct hardware rendering
-echo "Configuring EGLFS for 50-inch HDMI display..."
+# Set display configuration for Wayland
+echo "Configuring for Wayland display..."
 
-# Configure Qt for direct hardware rendering (no X11/Wayland needed)
-export QT_QPA_PLATFORM=eglfs
-export QT_QPA_EGLFS_ALWAYS_SET_MODE=1
-export QT_QPA_EGLFS_HIDECURSOR=0
+# Configure Qt to use the Wayland platform plugin
+export QT_QPA_PLATFORM=wayland
 export QT_QPA_FONTDIR=/usr/share/fonts
-export QT_QPA_GENERIC_PLUGINS=evdevmouse,evdevkeyboard
-export QT_QPA_EVDEV_MOUSE_PARAMETERS=/dev/input/event0
-
-# Optional: Force specific display if multiple outputs
-# export QT_QPA_EGLFS_KMS_CONFIG=/dev/dri/card1
 
 echo "Environment configured:"
-echo "  Platform: EGLFS (Direct Hardware Rendering)"
-echo "  Display: Full Screen on Primary Output"
+echo "  Platform: Wayland"
 echo "  Hardware Access: Via user groups (gpio, spi)"
 
 # Start the vacuum controller
 echo "Launching Vacuum Controller..."
 cd "$(dirname "$0")"
 
-# Run with EGLFS for direct hardware rendering
-QT_QPA_PLATFORM=eglfs QT_QPA_EGLFS_ALWAYS_SET_MODE=1 QT_QPA_EGLFS_HIDECURSOR=0 QT_QPA_GENERIC_PLUGINS=evdevmouse,evdevkeyboard ./build/VacuumController
+# Run with Wayland
+QT_QPA_PLATFORM=wayland ./build/VacuumController
 
 echo "Vacuum Controller has exited."

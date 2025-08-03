@@ -10,6 +10,7 @@
 class HardwareManager;
 class SafetyManager;
 class PatternEngine;
+class PatternDefinitions;
 class AntiDetachmentMonitor;
 class ThreadManager;
 class CalibrationManager;
@@ -62,6 +63,7 @@ public:
     void stopPattern();
     void pausePattern();
     void resumePattern();
+    PatternDefinitions* getPatternDefinitions() const;
     
     // Safety controls
     void emergencyStop();

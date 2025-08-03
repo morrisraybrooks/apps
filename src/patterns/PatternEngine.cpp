@@ -514,3 +514,8 @@ void PatternEngine::setPatternParameters(const QJsonObject& parameters)
         setPressureOffset(parameters["pressure_offset"].toDouble());
     }
 }
+
+PatternDefinitions* PatternEngine::getPatternDefinitions() const
+{
+    return m_patternDefinitions.get();
+}

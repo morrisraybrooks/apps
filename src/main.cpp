@@ -49,12 +49,15 @@ int main(int argc, char *argv[])
         qputenv("QT_ENABLE_HIGHDPI_SCALING", "1");
     }
 
-    QApplication app(argc, argv);
+        QApplication a(argc, argv);
+    a.setAttribute(Qt::AA_EnableHighDpiScaling);
+    a.setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+
     
     // Set application properties
-    app.setApplicationName("Vacuum Controller");
-    app.setApplicationVersion("1.0.0");
-    app.setOrganizationName("Medical Devices Inc");
+    a.setApplicationName("Vacuum Controller");
+    a.setApplicationVersion("1.0.0");
+    a.setOrganizationName("Medical Devices Inc");
 
     // Setup command line parser
     QCommandLineParser parser;
@@ -85,15 +88,15 @@ int main(int argc, char *argv[])
     parser.addOption(continueOnFailureOption);
 
     // Parse command line arguments
-    parser.process(app);
+    parser.process(a);
 
     // Check if running in test mode
     if (parser.isSet(testSensorsOption) || parser.isSet(testActuatorsOption) || parser.isSet(testAllOption)) {
-        return runHardwareTests(app, parser);
+        return runHardwareTests(a, parser);
     }
 
     // Initialize modern medical styling system
-    ModernMedicalStyle::initialize(&app);
+    ModernMedicalStyle::initialize(&a);
 
     // Configure for large display (50-inch HDMI and beyond)
     QScreen *screen = QApplication::primaryScreen();
@@ -150,7 +153,7 @@ int main(int argc, char *argv[])
      .arg(ModernMedicalStyle::getFrameStyle())
      .arg(ModernMedicalStyle::getPressureDisplayStyle());
 
-    app.setStyleSheet(modernStyleSheet);
+    a.setStyleSheet(modernStyleSheet);
     
     try {
         // Initialize the vacuum controller system
@@ -192,7 +195,7 @@ int main(int argc, char *argv[])
 
         std::cout << "Vacuum Controller GUI started successfully" << std::endl;
         
-        return runGUIApplication(app);
+        return runGUIApplication(a);
 
     } catch (const std::exception& e) {
         QMessageBox::critical(nullptr, "Startup Error",

@@ -62,7 +62,6 @@ private Q_SLOTS:
     void onStartStopClicked();
     void onPauseResumeClicked();
     void onEmergencyStopClicked();
-    void onResetEmergencyStopClicked();
     
     // UI updates
     void updateStatusDisplay();
@@ -73,9 +72,16 @@ private:
     void setupMainPanel();
     void setupNavigationBar();
     void setupStatusBar();
-    void setupEmergencyControls();
     void connectSignals();
     void applyLargeDisplayStyles();
+
+    // Modern dashboard card setup methods
+    void setupPatternSelectionCard(QGridLayout* layout);
+    void setupPressureMonitoringCard(QGridLayout* layout);
+    void setupControlPanelCard(QGridLayout* layout);
+    void setupStatusCard(QGridLayout* layout);
+    QFrame* createDashboardCard(const QString& title, QWidget* content);
+    void updateDashboardCardSizes(const QSize& windowSize);
     
     // Controller interface
     VacuumController* m_controller;
@@ -101,10 +107,7 @@ private:
     QLabel* m_pressureStatusLabel;
     QLabel* m_timeLabel;
     
-    // Emergency controls (always visible)
-    QFrame* m_emergencyFrame;
-    QPushButton* m_emergencyStopButton;
-    QPushButton* m_resetEmergencyButton;
+    // Emergency control is now only the shutdown button in navigation
     
     // Main panels
     QWidget* m_mainPanel;
@@ -128,17 +131,8 @@ private:
     bool m_systemPaused;
     bool m_emergencyStop;
     
-    // UI constants for big screen display
-    static const int BUTTON_HEIGHT = 80;
-    static const int BUTTON_WIDTH = 200;
-    static const int LARGE_BUTTON_HEIGHT = 120;
-    static const int LARGE_BUTTON_WIDTH = 300;
-    static const int NAVIGATION_HEIGHT = 100;
-    static const int STATUS_BAR_HEIGHT = 80;
-    static const int EMERGENCY_BUTTON_SIZE = 150;
-    static const int FONT_SIZE_NORMAL = 10;
-    static const int FONT_SIZE_LARGE = 20;
-    static const int FONT_SIZE_HUGE = 24;
+    // UI constants for 50-inch medical display
+    
 };
 
 #endif // MAINWINDOW_H

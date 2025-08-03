@@ -1,9 +1,11 @@
 #include "SafetyPanel.h"
 #include "components/TouchButton.h"
 #include "components/StatusIndicator.h"
+#include "styles/ModernMedicalStyle.h"
 #include "../VacuumController.h"
 #include <QDebug>
 #include <QDateTime>
+#include <QScrollArea>
 
 // Constants
 const double SafetyPanel::PRESSURE_LIMIT = 100.0;
@@ -39,8 +41,31 @@ SafetyPanel::~SafetyPanel()
 
 void SafetyPanel::setupUI()
 {
-    m_mainLayout->setSpacing(10);
-    m_mainLayout->setContentsMargins(10, 10, 10, 10);
+    // Create scroll area for better space utilization with compact scaling
+    QScrollArea* scrollArea = new QScrollArea(this);
+    QWidget* scrollContent = new QWidget;
+    QVBoxLayout* scrollLayout = new QVBoxLayout(scrollContent);
+
+    scrollLayout->setSpacing(ModernMedicalStyle::Spacing::getMedium());
+    scrollLayout->setContentsMargins(
+        ModernMedicalStyle::Spacing::getMedium(),
+        ModernMedicalStyle::Spacing::getMedium(),
+        ModernMedicalStyle::Spacing::getMedium(),
+        ModernMedicalStyle::Spacing::getMedium()
+    );
+
+    // Configure scroll area
+    scrollArea->setWidget(scrollContent);
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scrollArea->setFrameStyle(QFrame::NoFrame);
+
+    // Add scroll area to main layout
+    m_mainLayout->addWidget(scrollArea);
+
+    // Use scroll layout for content instead of main layout
+    m_contentLayout = scrollLayout;
     
     setupEmergencyControls();
     setupStatusMonitoring();
@@ -66,9 +91,9 @@ void SafetyPanel::setupUI()
     
     alertLayout->addWidget(m_alertLabel);
     alertLayout->addWidget(m_clearAlertsButton);
-    
-    m_mainLayout->addWidget(m_alertGroup);
-    m_mainLayout->addStretch();
+
+    m_contentLayout->addWidget(m_alertGroup);
+    m_contentLayout->addStretch();
 }
 
 void SafetyPanel::setupEmergencyControls()
@@ -104,7 +129,7 @@ void SafetyPanel::setupEmergencyControls()
     emergencyLayout->addLayout(buttonLayout);
     emergencyLayout->addWidget(m_emergencyStatusLabel);
     
-    m_mainLayout->addWidget(m_emergencyGroup);
+    m_contentLayout->addWidget(m_emergencyGroup);
 }
 
 void SafetyPanel::setupStatusMonitoring()
@@ -132,7 +157,7 @@ void SafetyPanel::setupStatusMonitoring()
             });
     
     statusLayout->addWidget(m_statusIndicators);
-    m_mainLayout->addWidget(m_statusGroup);
+    m_contentLayout->addWidget(m_statusGroup);
 }
 
 void SafetyPanel::setupPressureLimits()
@@ -186,7 +211,7 @@ void SafetyPanel::setupPressureLimits()
     pressureLayout->addWidget(m_pressureLimitLabel, 2, 0, 1, 3);
     pressureLayout->addWidget(m_antiDetachmentLabel, 3, 0, 1, 3);
     
-    m_mainLayout->addWidget(m_pressureGroup);
+    m_contentLayout->addWidget(m_pressureGroup);
 }
 
 void SafetyPanel::setupSystemDiagnostics()
@@ -222,7 +247,7 @@ void SafetyPanel::setupSystemDiagnostics()
     diagnosticsLayout->addWidget(m_lastTestLabel);
     diagnosticsLayout->addWidget(m_systemHealthLabel);
     
-    m_mainLayout->addWidget(m_diagnosticsGroup);
+    m_contentLayout->addWidget(m_diagnosticsGroup);
 }
 
 void SafetyPanel::connectSignals()

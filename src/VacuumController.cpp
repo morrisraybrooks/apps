@@ -155,6 +155,11 @@ void VacuumController::resumePattern()
     }
 }
 
+PatternDefinitions* VacuumController::getPatternDefinitions() const
+{
+    return m_patternEngine ? m_patternEngine->getPatternDefinitions() : nullptr;
+}
+
 void VacuumController::emergencyStop()
 {
     qWarning() << "EMERGENCY STOP ACTIVATED";

@@ -3,6 +3,7 @@
 #include <QGuiApplication>
 #include <QStyleFactory>
 #include <QFontDatabase>
+#include <QDebug>
 #include <cmath>
 
 // Static member initialization
@@ -43,43 +44,55 @@ const QString ModernMedicalStyle::Typography::MONOSPACE_FONT = "Consolas, Monaco
 void ModernMedicalStyle::initialize(QApplication* app)
 {
     if (s_initialized) return;
-    
+
+    // Set a baseline DPI for scaling calculations
+    const double baselineDpi = 96.0;
+
     // Detect display characteristics and set scale factor
     QScreen* screen = QGuiApplication::primaryScreen();
     if (screen) {
         QRect geometry = screen->geometry();
         qreal dpi = screen->logicalDotsPerInch();
-        
-        // Calculate scale factor based on display size and DPI
-        // Base calculation for 50-inch displays and high DPI
-        double baseScale = 1.0;
-        
-        // Scale based on resolution
+
+        // Use a much smaller scale factor for optimal space utilization on large displays
+        double baseScale = 0.64;  // 25% reduction from 0.85x for better information density
+
+        // Adjust slightly based on resolution but keep it compact
         if (geometry.width() >= 3840) {          // 4K and above
-            baseScale = 2.0;
+            baseScale = 0.68;  // Slightly larger for 4K but still compact
         } else if (geometry.width() >= 2560) {   // QHD
-            baseScale = 1.5;
+            baseScale = 0.66;  // Slightly larger for QHD but still compact
         } else if (geometry.width() >= 1920) {   // Full HD
-            baseScale = 1.2;
+            baseScale = 0.64;  // Compact for Full HD - optimal for 50-inch
+        } else {
+            baseScale = 0.62;  // Even more compact for lower resolutions
         }
-        
-        // Adjust for DPI
+
+        // Apply DPI adjustment
         if (dpi > 120) {
-            baseScale *= (dpi / 96.0) * 0.8;  // Moderate DPI scaling
+            baseScale *= (dpi / baselineDpi) * 0.9;
         }
-        
+
         s_scaleFactor = baseScale;
+
+        qDebug() << "Display Scaling:";
+        qDebug() << "  Resolution:" << geometry.width() << "x" << geometry.height();
+        qDebug() << "  DPI:" << dpi;
+        qDebug() << "  Final Scale Factor:" << s_scaleFactor;
+    } else {
+        // Fallback if no screen is found
+        s_scaleFactor = 0.64;  // Default compact scale for better space utilization
     }
-    
+
     // Set application style
     app->setStyle(QStyleFactory::create("Fusion"));
-    
+
     // Set application font
     QFont appFont(Typography::PRIMARY_FONT);
     appFont.setPointSize(Typography::getBody());
     appFont.setWeight(Typography::WEIGHT_NORMAL);
     app->setFont(appFont);
-    
+
     s_initialized = true;
 }
 
@@ -103,7 +116,7 @@ QString ModernMedicalStyle::scalePixelValue(int baseValue)
     return QString("%1px").arg(scaleValue(baseValue));
 }
 
-// Typography methods
+// Typography methods - Reasonable base sizes
 int ModernMedicalStyle::Typography::getDisplayTitle() { return scaleValue(32); }
 int ModernMedicalStyle::Typography::getDisplaySubtitle() { return scaleValue(24); }
 int ModernMedicalStyle::Typography::getHeadline() { return scaleValue(20); }
@@ -131,45 +144,40 @@ int ModernMedicalStyle::Spacing::getMediumRadius() { return scaleValue(8); }
 int ModernMedicalStyle::Spacing::getLargeRadius() { return scaleValue(12); }
 int ModernMedicalStyle::Spacing::getCircularRadius() { return 9999; } // Large value for circular
 
-// Elevation methods
+// Elevation methods - Using Qt-native border styling instead of unsupported box-shadow
 QString ModernMedicalStyle::Elevation::getLevel1()
 {
-    return QString("box-shadow: 0 %1 %2 %3;")
+    return QString("border: %1 solid %2;")
            .arg(scalePixelValue(1))
-           .arg(scalePixelValue(3))
-           .arg(Colors::SHADOW_LIGHT.name(QColor::HexArgb));
+           .arg(Colors::BORDER_LIGHT.name());
 }
 
 QString ModernMedicalStyle::Elevation::getLevel2()
 {
-    return QString("box-shadow: 0 %1 %2 %3;")
+    return QString("border: %1 solid %2;")
            .arg(scalePixelValue(2))
-           .arg(scalePixelValue(6))
-           .arg(Colors::SHADOW_MEDIUM.name(QColor::HexArgb));
+           .arg(Colors::BORDER_MEDIUM.name());
 }
 
 QString ModernMedicalStyle::Elevation::getLevel3()
 {
-    return QString("box-shadow: 0 %1 %2 %3;")
-           .arg(scalePixelValue(4))
-           .arg(scalePixelValue(12))
-           .arg(Colors::SHADOW_MEDIUM.name(QColor::HexArgb));
+    return QString("border: %1 solid %2;")
+           .arg(scalePixelValue(3))
+           .arg(Colors::PRIMARY_BLUE.name());
 }
 
 QString ModernMedicalStyle::Elevation::getLevel4()
 {
-    return QString("box-shadow: 0 %1 %2 %3;")
-           .arg(scalePixelValue(6))
-           .arg(scalePixelValue(18))
-           .arg(Colors::SHADOW_DARK.name(QColor::HexArgb));
+    return QString("border: %1 solid %2;")
+           .arg(scalePixelValue(4))
+           .arg(Colors::PRIMARY_BLUE_DARK.name());
 }
 
 QString ModernMedicalStyle::Elevation::getLevel5()
 {
-    return QString("box-shadow: 0 %1 %2 %3;")
-           .arg(scalePixelValue(8))
-           .arg(scalePixelValue(24))
-           .arg(Colors::SHADOW_DARK.name(QColor::HexArgb));
+    return QString("border: %1 solid %2;")
+           .arg(scalePixelValue(5))
+           .arg(Colors::PRIMARY_BLUE_DARK.name());
 }
 
 // Animation methods
@@ -246,7 +254,6 @@ QString ModernMedicalStyle::getButtonStyle(const QString& type)
         "    min-height: %11;"
         "    min-width: %12;"
         "    text-align: center;"
-        "    %13"
         "}"
         "QPushButton:hover {"
         "    background-color: %14;"
@@ -273,7 +280,6 @@ QString ModernMedicalStyle::getButtonStyle(const QString& type)
      .arg(scalePixelValue(Spacing::getLarge()))
      .arg(scalePixelValue(Spacing::getRecommendedTouchTarget()))
      .arg(scalePixelValue(120))
-     .arg(Elevation::getLevel2())
      .arg(hoverColor.name())
      .arg(borderColor.name())
      .arg(pressedColor.name())

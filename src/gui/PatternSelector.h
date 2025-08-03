@@ -42,7 +42,7 @@ public:
         int durationMs;
         QString action;
         QString description;
-        QVariantMap parameters;
+        QJsonObject parameters;
 
         PatternStep() : pressurePercent(0.0), durationMs(0) {}
     };
