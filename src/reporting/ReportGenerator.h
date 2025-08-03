@@ -114,11 +114,11 @@ public:
     QString getLocalizedString(const QString& key) const;
     void loadTranslations(const QString& translationPath);
 
-public slots:
+public Q_SLOTS:
     void generateScheduledReport();
     void previewReport();
 
-signals:
+Q_SIGNALS:
     void reportGenerationStarted(const QString& reportPath);
     void reportGenerationProgress(int percentage);
     void reportGenerationCompleted(const QString& reportPath, bool success);

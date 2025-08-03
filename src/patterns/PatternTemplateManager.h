@@ -83,7 +83,7 @@ public:
     bool exportAllTemplates(const QString& filePath) const;
     bool importTemplatesFromFile(const QString& filePath);
 
-signals:
+Q_SIGNALS:
     void templateAdded(const QString& templateName);
     void templateRemoved(const QString& templateName);
     void templateUpdated(const QString& templateName);

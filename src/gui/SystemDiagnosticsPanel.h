@@ -67,7 +67,7 @@ public:
     QJsonObject getCurrentSystemStatus() const;
     QJsonObject getPerformanceMetrics() const;
 
-public slots:
+public Q_SLOTS:
     void updateDiagnostics();
     void runSystemTest();
     void runHardwareTest();
@@ -75,12 +75,12 @@ public slots:
     void runSafetyTest();
     void exportDiagnostics();
 
-signals:
+Q_SIGNALS:
     void diagnosticAlert(const QString& component, const QString& message);
     void systemTestCompleted(bool success);
     void hardwareTestCompleted(const QString& component, bool success);
 
-private slots:
+private Q_SLOTS:
     void onDiagnosticTimer();
     void onTestButtonClicked();
     void onExportButtonClicked();

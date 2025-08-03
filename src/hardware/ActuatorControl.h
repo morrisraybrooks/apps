@@ -5,9 +5,9 @@
 #include <QMutex>
 #include <QTimer>
 
-// Forward declaration for libgpiod
+// Forward declaration for libgpiod v2.x
 struct gpiod_chip;
-struct gpiod_line;
+struct gpiod_line_request;
 
 /**
  * @brief Control interface for vacuum system actuators
@@ -60,13 +60,13 @@ public:
     void setPWMFrequency(int frequency);
     int getPWMFrequency() const { return m_pwmFrequency; }
 
-signals:
+Q_SIGNALS:
     void actuatorError(const QString& actuator, const QString& error);
     void emergencyStopActivated();
     void pumpStateChanged(bool enabled, double speed);
     void valveStateChanged(int valve, bool open);
 
-private slots:
+private Q_SLOTS:
     void updatePWM();
 
 private:
@@ -95,13 +95,13 @@ private:
     QTimer* m_pwmTimer;
     int m_pwmFrequency;
 
-    // GPIO control using libgpiod
+    // GPIO control using libgpiod v2.x
     struct gpiod_chip* m_gpioChip;
-    struct gpiod_line* m_sol1Line;
-    struct gpiod_line* m_sol2Line;
-    struct gpiod_line* m_sol3Line;
-    struct gpiod_line* m_pumpEnableLine;
-    struct gpiod_line* m_pumpPwmLine;
+    struct gpiod_line_request* m_sol1Request;
+    struct gpiod_line_request* m_sol2Request;
+    struct gpiod_line_request* m_sol3Request;
+    struct gpiod_line_request* m_pumpEnableRequest;
+    struct gpiod_line_request* m_pumpPwmRequest;
 
     // Error tracking
     QString m_lastError;

@@ -41,7 +41,7 @@ public:
     // Error handling
     QString getLastError() const { return m_lastError; }
 
-signals:
+Q_SIGNALS:
     void readingError(int channel, const QString& error);
 
 private:

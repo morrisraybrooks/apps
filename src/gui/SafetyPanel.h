@@ -42,17 +42,17 @@ public:
     void showSensorErrorAlert(const QString& sensor);
     void clearAlerts();
 
-public slots:
+public Q_SLOTS:
     void updateSafetyStatus();
     void onEmergencyStopTriggered();
     void onSafetyStateChanged(int state);
 
-signals:
+Q_SIGNALS:
     void emergencyStopRequested();
     void resetEmergencyStopRequested();
     void safetyTestRequested();
 
-private slots:
+private Q_SLOTS:
     void onEmergencyStopClicked();
     void onResetEmergencyStopClicked();
     void onSafetyTestClicked();

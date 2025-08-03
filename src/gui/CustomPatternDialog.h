@@ -59,17 +59,17 @@ public:
     QList<PatternStep> getPatternSteps() const;
     void setPatternSteps(const QList<PatternStep>& steps);
 
-public slots:
+public Q_SLOTS:
     void previewPattern();
     void stopPreview();
     void testPattern();
     void validatePattern();
 
-signals:
+Q_SIGNALS:
     void patternCreated(const QString& patternName, const QJsonObject& patternData);
     void patternModified(const QString& patternName, const QJsonObject& patternData);
 
-private slots:
+private Q_SLOTS:
     void onPatternTypeChanged();
     void onStepAdded();
     void onStepRemoved();

@@ -81,13 +81,13 @@ public:
     void enablePatternSpecificControls(bool enabled);
     void resetToDefaults();
 
-public slots:
+public Q_SLOTS:
     void onPatternChanged(const QString& patternName);
     void onPatternStarted();
     void onPatternStopped();
     void updateRealTimeValues();
 
-signals:
+Q_SIGNALS:
     void intensityChanged(double intensity);
     void speedChanged(double speed);
     void pressureOffsetChanged(double offset);
@@ -95,7 +95,7 @@ signals:
     void parametersChanged(const QJsonObject& parameters);
     void safetyLimitExceeded(const QString& parameter, double value);
 
-private slots:
+private Q_SLOTS:
     void onIntensitySliderChanged(int value);
     void onSpeedSliderChanged(int value);
     void onPressureOffsetSliderChanged(int value);

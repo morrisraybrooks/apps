@@ -22,11 +22,11 @@ ActuatorControl::ActuatorControl(QObject *parent)
     , m_sol3State(false)
     , m_pwmTimer(new QTimer(this))
     , m_gpioChip(nullptr)
-    , m_sol1Line(nullptr)
-    , m_sol2Line(nullptr)
-    , m_sol3Line(nullptr)
-    , m_pumpEnableLine(nullptr)
-    , m_pumpPwmLine(nullptr)
+    , m_sol1Request(nullptr)
+    , m_sol2Request(nullptr)
+    , m_sol3Request(nullptr)
+    , m_pumpEnableRequest(nullptr)
+    , m_pumpPwmRequest(nullptr)
 {
     // Set up PWM update timer
     m_pwmTimer->setInterval(20);  // 50Hz PWM update
@@ -82,26 +82,26 @@ void ActuatorControl::shutdown()
     // Safe shutdown all actuators
     safeShutdownAll();
 
-    // Release GPIO lines
-    if (m_sol1Line) {
-        gpiod_line_release(m_sol1Line);
-        m_sol1Line = nullptr;
+    // Release GPIO line requests (libgpiod v2.x)
+    if (m_sol1Request) {
+        gpiod_line_request_release(m_sol1Request);
+        m_sol1Request = nullptr;
     }
-    if (m_sol2Line) {
-        gpiod_line_release(m_sol2Line);
-        m_sol2Line = nullptr;
+    if (m_sol2Request) {
+        gpiod_line_request_release(m_sol2Request);
+        m_sol2Request = nullptr;
     }
-    if (m_sol3Line) {
-        gpiod_line_release(m_sol3Line);
-        m_sol3Line = nullptr;
+    if (m_sol3Request) {
+        gpiod_line_request_release(m_sol3Request);
+        m_sol3Request = nullptr;
     }
-    if (m_pumpEnableLine) {
-        gpiod_line_release(m_pumpEnableLine);
-        m_pumpEnableLine = nullptr;
+    if (m_pumpEnableRequest) {
+        gpiod_line_request_release(m_pumpEnableRequest);
+        m_pumpEnableRequest = nullptr;
     }
-    if (m_pumpPwmLine) {
-        gpiod_line_release(m_pumpPwmLine);
-        m_pumpPwmLine = nullptr;
+    if (m_pumpPwmRequest) {
+        gpiod_line_request_release(m_pumpPwmRequest);
+        m_pumpPwmRequest = nullptr;
     }
 
     // Close GPIO chip
@@ -289,47 +289,76 @@ bool ActuatorControl::performSelfTest()
 
 void ActuatorControl::updatePWM()
 {
-    if (m_initialized && m_pumpEnabled && !m_emergencyStop && m_pumpPwmLine) {
+    if (m_initialized && m_pumpEnabled && !m_emergencyStop && m_pumpPwmRequest) {
         // Simple software PWM: toggle GPIO based on PWM value
         // This is a basic implementation - for production, consider hardware PWM
         static int pwmCounter = 0;
         pwmCounter = (pwmCounter + 1) % PWM_RANGE;
 
         bool pwmState = (pwmCounter < m_pwmValue);
-        gpiod_line_set_value(m_pumpPwmLine, pwmState ? 1 : 0);
+        if (m_pumpPwmRequest) {
+            enum gpiod_line_value value = pwmState ? GPIOD_LINE_VALUE_ACTIVE : GPIOD_LINE_VALUE_INACTIVE;
+            gpiod_line_request_set_value(m_pumpPwmRequest, GPIO_PUMP_PWM, value);
+        }
     }
 }
 
 bool ActuatorControl::initializeGPIO()
 {
     try {
-        // Open GPIO chip (usually gpiochip0 on Raspberry Pi)
-        m_gpioChip = gpiod_chip_open_by_name("gpiochip0");
+        // Open GPIO chip (usually gpiochip0 on Raspberry Pi) - libgpiod v2.x
+        m_gpioChip = gpiod_chip_open("/dev/gpiochip0");
         if (!m_gpioChip) {
             throw std::runtime_error("Failed to open GPIO chip");
         }
 
-        // Get GPIO lines for solenoid valves
-        m_sol1Line = gpiod_chip_get_line(m_gpioChip, GPIO_SOL1);
-        m_sol2Line = gpiod_chip_get_line(m_gpioChip, GPIO_SOL2);
-        m_sol3Line = gpiod_chip_get_line(m_gpioChip, GPIO_SOL3);
-        m_pumpEnableLine = gpiod_chip_get_line(m_gpioChip, GPIO_PUMP_ENABLE);
-        m_pumpPwmLine = gpiod_chip_get_line(m_gpioChip, GPIO_PUMP_PWM);
+        // Create individual requests for each line (libgpiod v2.x approach)
+        // Helper function to create a single line request
+        auto createLineRequest = [this](unsigned int offset, const char* consumer) -> struct gpiod_line_request* {
+            struct gpiod_request_config *req_cfg = gpiod_request_config_new();
+            if (!req_cfg) return nullptr;
 
-        if (!m_sol1Line || !m_sol2Line || !m_sol3Line || !m_pumpEnableLine || !m_pumpPwmLine) {
-            throw std::runtime_error("Failed to get GPIO lines");
+            gpiod_request_config_set_consumer(req_cfg, consumer);
+
+            struct gpiod_line_settings *settings = gpiod_line_settings_new();
+            if (!settings) {
+                gpiod_request_config_free(req_cfg);
+                return nullptr;
+            }
+
+            gpiod_line_settings_set_direction(settings, GPIOD_LINE_DIRECTION_OUTPUT);
+            gpiod_line_settings_set_output_value(settings, GPIOD_LINE_VALUE_INACTIVE);
+
+            struct gpiod_line_config *line_cfg = gpiod_line_config_new();
+            if (!line_cfg) {
+                gpiod_line_settings_free(settings);
+                gpiod_request_config_free(req_cfg);
+                return nullptr;
+            }
+
+            gpiod_line_config_add_line_settings(line_cfg, &offset, 1, settings);
+
+            struct gpiod_line_request *request = gpiod_chip_request_lines(m_gpioChip, req_cfg, line_cfg);
+
+            gpiod_line_config_free(line_cfg);
+            gpiod_line_settings_free(settings);
+            gpiod_request_config_free(req_cfg);
+
+            return request;
+        };
+
+        // Create requests for each GPIO line
+        m_sol1Request = createLineRequest(GPIO_SOL1, "VacuumController-SOL1");
+        m_sol2Request = createLineRequest(GPIO_SOL2, "VacuumController-SOL2");
+        m_sol3Request = createLineRequest(GPIO_SOL3, "VacuumController-SOL3");
+        m_pumpEnableRequest = createLineRequest(GPIO_PUMP_ENABLE, "VacuumController-PumpEnable");
+        m_pumpPwmRequest = createLineRequest(GPIO_PUMP_PWM, "VacuumController-PumpPWM");
+
+        if (!m_sol1Request || !m_sol2Request || !m_sol3Request || !m_pumpEnableRequest || !m_pumpPwmRequest) {
+            throw std::runtime_error("Failed to create individual line requests");
         }
 
-        // Request lines as outputs with initial low state
-        if (gpiod_line_request_output(m_sol1Line, "VacuumController-SOL1", 0) < 0 ||
-            gpiod_line_request_output(m_sol2Line, "VacuumController-SOL2", 0) < 0 ||
-            gpiod_line_request_output(m_sol3Line, "VacuumController-SOL3", 0) < 0 ||
-            gpiod_line_request_output(m_pumpEnableLine, "VacuumController-PumpEnable", 0) < 0 ||
-            gpiod_line_request_output(m_pumpPwmLine, "VacuumController-PumpPWM", 0) < 0) {
-            throw std::runtime_error("Failed to request GPIO lines as outputs");
-        }
-
-        qDebug() << "GPIO pins initialized using libgpiod";
+        qDebug() << "GPIO pins initialized using libgpiod v2.2.1";
         return true;
 
     } catch (const std::exception& e) {
@@ -357,44 +386,47 @@ bool ActuatorControl::initializePWM()
 
 void ActuatorControl::setGPIOOutput(int pin, bool state)
 {
-    struct gpiod_line* line = nullptr;
+    struct gpiod_line_request* request = nullptr;
 
-    // Map pin number to GPIO line
+    // Map pin number to GPIO line request (libgpiod v2.x)
     switch (pin) {
-        case GPIO_SOL1: line = m_sol1Line; break;
-        case GPIO_SOL2: line = m_sol2Line; break;
-        case GPIO_SOL3: line = m_sol3Line; break;
-        case GPIO_PUMP_ENABLE: line = m_pumpEnableLine; break;
-        case GPIO_PUMP_PWM: line = m_pumpPwmLine; break;
+        case GPIO_SOL1: request = m_sol1Request; break;
+        case GPIO_SOL2: request = m_sol2Request; break;
+        case GPIO_SOL3: request = m_sol3Request; break;
+        case GPIO_PUMP_ENABLE: request = m_pumpEnableRequest; break;
+        case GPIO_PUMP_PWM: request = m_pumpPwmRequest; break;
         default:
             qWarning() << "Unknown GPIO pin:" << pin;
             return;
     }
 
-    if (line && gpiod_line_set_value(line, state ? 1 : 0) < 0) {
-        qWarning() << "Failed to set GPIO pin" << pin << "to" << state;
+    if (request) {
+        enum gpiod_line_value value = state ? GPIOD_LINE_VALUE_ACTIVE : GPIOD_LINE_VALUE_INACTIVE;
+        if (gpiod_line_request_set_value(request, pin, value) < 0) {
+            qWarning() << "Failed to set GPIO pin" << pin << "to" << state;
+        }
     }
 }
 
 bool ActuatorControl::getGPIOState(int pin)
 {
-    struct gpiod_line* line = nullptr;
+    struct gpiod_line_request* request = nullptr;
 
-    // Map pin number to GPIO line
+    // Map pin number to GPIO line request (libgpiod v2.x)
     switch (pin) {
-        case GPIO_SOL1: line = m_sol1Line; break;
-        case GPIO_SOL2: line = m_sol2Line; break;
-        case GPIO_SOL3: line = m_sol3Line; break;
-        case GPIO_PUMP_ENABLE: line = m_pumpEnableLine; break;
-        case GPIO_PUMP_PWM: line = m_pumpPwmLine; break;
+        case GPIO_SOL1: request = m_sol1Request; break;
+        case GPIO_SOL2: request = m_sol2Request; break;
+        case GPIO_SOL3: request = m_sol3Request; break;
+        case GPIO_PUMP_ENABLE: request = m_pumpEnableRequest; break;
+        case GPIO_PUMP_PWM: request = m_pumpPwmRequest; break;
         default:
             qWarning() << "Unknown GPIO pin:" << pin;
             return false;
     }
 
-    if (line) {
-        int value = gpiod_line_get_value(line);
-        return value > 0;
+    if (request) {
+        enum gpiod_line_value value = gpiod_line_request_get_value(request, pin);
+        return value == GPIOD_LINE_VALUE_ACTIVE;
     }
     return false;
 }

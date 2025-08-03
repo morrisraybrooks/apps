@@ -61,12 +61,12 @@ public:
     void setNeedleColor(const QColor& color);
     void setBackgroundColor(const QColor& color);
 
-public slots:
+public Q_SLOTS:
     void setValue(double value);
     void setTargetValue(double value);
     void resetValue();
 
-signals:
+Q_SIGNALS:
     void valueChanged(double value);
     void thresholdExceeded(double value, const QString& level);
     void clicked();
@@ -78,7 +78,7 @@ protected:
     QSize sizeHint() const override;
     QSize minimumSizeHint() const override;
 
-private slots:
+private Q_SLOTS:
     void updateAnimation();
 
 private:

@@ -6,6 +6,9 @@
 #include <gpiod.h>
 #include <stdexcept>
 
+// Define GPIO line offset
+#define GPIO_EMERGENCY_BUTTON 21 // Example GPIO pin
+
 EmergencyStop::EmergencyStop(HardwareManager* hardware, QObject *parent)
     : QObject(parent)
     , m_hardware(hardware)
@@ -17,7 +20,7 @@ EmergencyStop::EmergencyStop(HardwareManager* hardware, QObject *parent)
     , m_lastButtonState(false)
     , m_buttonCheckTimer(new QTimer(this))
     , m_gpioChip(nullptr)
-    , m_buttonLine(nullptr)
+    , m_buttonRequest(nullptr)
 {
     // Set up button checking timer
     m_buttonCheckTimer->setInterval(BUTTON_CHECK_INTERVAL_MS);
@@ -65,10 +68,10 @@ void EmergencyStop::shutdown()
     // Stop button monitoring
     m_buttonCheckTimer->stop();
 
-    // Release GPIO resources
-    if (m_buttonLine) {
-        gpiod_line_release(m_buttonLine);
-        m_buttonLine = nullptr;
+    // Release GPIO resources (libgpiod v2.x)
+    if (m_buttonRequest) {
+        gpiod_line_request_release(m_buttonRequest);
+        m_buttonRequest = nullptr;
     }
     if (m_gpioChip) {
         gpiod_chip_close(m_gpioChip);
@@ -158,11 +161,11 @@ void EmergencyStop::checkHardwareButton()
     if (!m_hardwareButtonEnabled || !m_active) return;
     
     try {
-        if (!m_buttonLine) return;
+        if (!m_buttonRequest) return;
 
         // Read button state (assuming active low button)
-        int buttonValue = gpiod_line_get_value(m_buttonLine);
-        bool currentButtonState = (buttonValue == 0);  // Active low
+        enum gpiod_line_value buttonValue = gpiod_line_request_get_value(m_buttonRequest, GPIO_EMERGENCY_BUTTON);
+        bool currentButtonState = (buttonValue == GPIOD_LINE_VALUE_ACTIVE);  // Active low
 
         // Detect button press (transition from not pressed to pressed)
         if (currentButtonState && !m_lastButtonState) {
@@ -223,30 +226,60 @@ bool EmergencyStop::validateResetConditions()
 void EmergencyStop::initializeHardwareButton()
 {
     try {
-        // Open GPIO chip
-        m_gpioChip = gpiod_chip_open_by_name("gpiochip0");
+        // Open GPIO chip (libgpiod v2.x)
+        m_gpioChip = gpiod_chip_open("/dev/gpiochip0");
         if (!m_gpioChip) {
             throw std::runtime_error("Failed to open GPIO chip");
         }
 
-        // Get GPIO line for emergency button
-        m_buttonLine = gpiod_chip_get_line(m_gpioChip, GPIO_EMERGENCY_BUTTON);
-        if (!m_buttonLine) {
-            throw std::runtime_error("Failed to get GPIO line for emergency button");
+        // Create line request for the emergency button (libgpiod v2.x)
+        struct gpiod_request_config *req_cfg = gpiod_request_config_new();
+        if (!req_cfg) {
+            throw std::runtime_error("Failed to create request config");
+        }
+        gpiod_request_config_set_consumer(req_cfg, "VacuumController-EmergencyStop");
+
+        struct gpiod_line_settings *settings = gpiod_line_settings_new();
+        if (!settings) {
+            gpiod_request_config_free(req_cfg);
+            throw std::runtime_error("Failed to create line settings");
+        }
+        gpiod_line_settings_set_direction(settings, GPIOD_LINE_DIRECTION_INPUT);
+        gpiod_line_settings_set_edge_detection(settings, GPIOD_LINE_EDGE_FALLING); // Trigger on press (active low)
+        gpiod_line_settings_set_bias(settings, GPIOD_LINE_BIAS_PULL_UP);
+
+        struct gpiod_line_config *line_cfg = gpiod_line_config_new();
+        if (!line_cfg) {
+            gpiod_line_settings_free(settings);
+            gpiod_request_config_free(req_cfg);
+            throw std::runtime_error("Failed to create line config");
+        }
+        unsigned int offsets[] = {GPIO_EMERGENCY_BUTTON};
+        gpiod_line_config_add_line_settings(line_cfg, offsets, 1, settings);
+
+        m_buttonRequest = gpiod_chip_request_lines(m_gpioChip, req_cfg, line_cfg);
+
+        gpiod_line_config_free(line_cfg);
+        gpiod_line_settings_free(settings);
+        gpiod_request_config_free(req_cfg);
+
+        if (!m_buttonRequest) {
+            throw std::runtime_error("Failed to request GPIO line for emergency button");
         }
 
-        // Request line as input with pull-up
-        if (gpiod_line_request_input(m_buttonLine, "VacuumController-EmergencyStop") < 0) {
-            throw std::runtime_error("Failed to request GPIO line as input");
-        }
-
-        // Read initial state (button is active low)
-        m_lastButtonState = (gpiod_line_get_value(m_buttonLine) == 0);
+        // Read initial state
+        enum gpiod_line_value initial_value = gpiod_line_request_get_value(m_buttonRequest, GPIO_EMERGENCY_BUTTON);
+        m_lastButtonState = (initial_value == GPIOD_LINE_VALUE_ACTIVE);
 
         qDebug() << "Emergency button initialized on GPIO" << GPIO_EMERGENCY_BUTTON;
 
     } catch (const std::exception& e) {
         qWarning() << "Failed to initialize emergency button:" << e.what();
         m_hardwareButtonEnabled = false;
+        // Clean up on failure
+        if (m_buttonRequest) gpiod_line_request_release(m_buttonRequest);
+        if (m_gpioChip) gpiod_chip_close(m_gpioChip);
+        m_buttonRequest = nullptr;
+        m_gpioChip = nullptr;
     }
 }

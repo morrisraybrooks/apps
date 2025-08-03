@@ -112,11 +112,11 @@ public:
     void loadConfiguration(const QString& configPath);
     void saveConfiguration(const QString& configPath);
 
-public slots:
+public Q_SLOTS:
     void performHealthCheck();
     void attemptRecovery();
 
-signals:
+Q_SIGNALS:
     void errorReported(const ErrorRecord& error);
     void criticalErrorOccurred(const ErrorRecord& error);
     void fatalErrorOccurred(const ErrorRecord& error);
@@ -124,7 +124,7 @@ signals:
     void recoveryAttempted(const QString& component, bool success);
     void recoveryFailed(const QString& component, int attempts);
 
-private slots:
+private Q_SLOTS:
     void onHealthCheckTimer();
     void onRecoveryTimer();
 

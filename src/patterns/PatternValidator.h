@@ -89,7 +89,7 @@ public:
     double calculatePressureVariability(const QJsonArray& steps);
     int calculateTotalDuration(const QJsonArray& steps);
 
-signals:
+Q_SIGNALS:
     void validationCompleted(const ValidationReport& report);
     void criticalIssueFound(const ValidationIssue& issue);
 

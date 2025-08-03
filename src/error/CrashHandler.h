@@ -54,15 +54,15 @@ public:
     void saveSystemState();
     void restoreSystemState();
 
-public slots:
+public Q_SLOTS:
     void onApplicationAboutToQuit();
 
-signals:
+Q_SIGNALS:
     void crashDetected(const QString& crashInfo);
     void safeShutdownRequested();
     void systemStateRestored();
 
-private slots:
+private Q_SLOTS:
     void onHeartbeatTimer();
     void checkForCrash();
 

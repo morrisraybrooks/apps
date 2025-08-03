@@ -42,7 +42,7 @@ public:
     void showCalibrationResults(const QString& component);
     void resetInterface();
 
-public slots:
+public Q_SLOTS:
     void startSensorCalibration();
     void startActuatorCalibration();
     void startSystemCalibration();
@@ -50,13 +50,13 @@ public slots:
     void saveCalibrationSettings();
     void loadCalibrationSettings();
 
-signals:
+Q_SIGNALS:
     void calibrationStarted(const QString& component);
     void calibrationCompleted(const QString& component, bool successful);
     void calibrationCancelled();
     void settingsChanged();
 
-private slots:
+private Q_SLOTS:
     // CalibrationManager signals
     void onCalibrationStarted(const QString& component, CalibrationManager::CalibrationType type);
     void onCalibrationProgress(int percentage, const QString& status);

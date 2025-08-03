@@ -84,7 +84,7 @@ public:
     QJsonObject createConstantPattern(const QString& speed, double basePressure, double variation, int variationPeriod);
     QJsonObject createEdgingPattern(int buildupDuration, double peakPressure, int releaseDuration, int holdDuration, int cycles);
 
-signals:
+Q_SIGNALS:
     void patternsLoaded(int count);
     void patternLoadError(const QString& error);
 

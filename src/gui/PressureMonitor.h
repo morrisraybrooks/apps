@@ -51,15 +51,15 @@ public:
     void setShowGrid(bool show);
     void setShowAlarms(bool show);
 
-public slots:
+public Q_SLOTS:
     void resetChart();
     void pauseUpdates(bool pause);
 
-signals:
+Q_SIGNALS:
     void pressureAlarm(const QString& message);
     void antiDetachmentTriggered();
 
-private slots:
+private Q_SLOTS:
     void updateChart();
 
 private:

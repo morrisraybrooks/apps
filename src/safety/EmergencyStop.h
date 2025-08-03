@@ -8,7 +8,7 @@
 // Forward declarations
 class HardwareManager;
 struct gpiod_chip;
-struct gpiod_line;
+struct gpiod_line_request;
 
 /**
  * @brief Emergency stop system for vacuum controller
@@ -77,7 +77,7 @@ private:
 
     // GPIO control using libgpiod
     struct gpiod_chip* m_gpioChip;
-    struct gpiod_line* m_buttonLine;
+    struct gpiod_line_request* m_buttonRequest; // For libgpiod v2.x
     
     // GPIO pin for emergency stop button (if implemented)
     static const int GPIO_EMERGENCY_BUTTON = 21;  // GPIO 21 for emergency button

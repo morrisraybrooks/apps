@@ -70,12 +70,12 @@ public:
     void simulateSensorError(const QString& sensor);
     void resetHardwareSimulation();
 
-signals:
+Q_SIGNALS:
     void hardwareError(const QString& error);
     void sensorError(const QString& sensor, const QString& error);
     void actuatorError(const QString& actuator, const QString& error);
 
-private slots:
+private Q_SLOTS:
     void handleSensorError(const QString& error);
     void handleActuatorError(const QString& error);
 

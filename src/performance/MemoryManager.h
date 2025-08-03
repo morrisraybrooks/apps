@@ -72,12 +72,12 @@ public:
     void setAutoCleanupInterval(int intervalMs);
     void setFragmentationThreshold(double threshold);
 
-public slots:
+public Q_SLOTS:
     void performCleanup();
     void checkMemoryUsage();
     void optimizeBuffers();
 
-signals:
+Q_SIGNALS:
     void memoryLimitExceeded(qint64 currentUsage, qint64 limit);
     void memoryOptimized(qint64 freedBytes);
     void bufferCreated(const QString& name, qint64 size);

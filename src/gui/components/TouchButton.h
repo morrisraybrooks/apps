@@ -78,12 +78,12 @@ public:
     QSize sizeHint() const override;
     QSize minimumSizeHint() const override;
 
-public slots:
+public Q_SLOTS:
     void startPulse();
     void stopPulse();
     void flashButton(int count = 3);
 
-signals:
+Q_SIGNALS:
     void longPressed();
     void touchStarted();
     void touchEnded();
@@ -98,7 +98,7 @@ protected:
     void focusOutEvent(QFocusEvent *event) override;
     bool event(QEvent *event) override;
 
-private slots:
+private Q_SLOTS:
     void onLongPressTimer();
     void onPulseTimer();
     void onFlashTimer();

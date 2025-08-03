@@ -60,8 +60,8 @@ sudo ./VacuumController
 ### 1. Development Environment Setup
 ```bash
 # Clone the repository
-git clone https://github.com/morrisraybrooks/vacuum-controller.git
-cd vacuum-controller
+git clone https://github.com/morrisraybrooks/apps.git
+cd apps
 
 # Set up development environment (installs all tools and dependencies)
 ./setup-dev-environment.sh

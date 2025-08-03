@@ -99,12 +99,12 @@ public:
     void setMaxCalibrationError(double maxError) { m_maxCalibrationError = maxError; }
     void setAutoSaveEnabled(bool enabled) { m_autoSaveEnabled = enabled; }
 
-public slots:
+public Q_SLOTS:
     void addCalibrationPoint(double referenceValue, double measuredValue);
     void completeCurrentCalibration();
     void onCalibrationTimer();
 
-signals:
+Q_SIGNALS:
     void calibrationStarted(const QString& component, CalibrationType type);
     void calibrationProgress(int percentage, const QString& status);
     void calibrationPointAdded(const CalibrationPoint& point);
@@ -113,7 +113,7 @@ signals:
     void calibrationDataSaved(const QString& component);
     void calibrationValidated(const QString& component, bool valid);
 
-private slots:
+private Q_SLOTS:
     void performCalibrationStep();
     void collectCalibrationData();
     void calculateCalibrationParameters();

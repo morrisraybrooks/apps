@@ -87,13 +87,13 @@ public:
     void setStatusColor(StatusLevel status, const QColor& color);
     QColor getStatusColor(StatusLevel status) const;
 
-public slots:
+public Q_SLOTS:
     void updateStatus(StatusLevel status, const QString& message = QString());
     void clearStatus();
     void startAnimation();
     void stopAnimation();
 
-signals:
+Q_SIGNALS:
     void statusChanged(StatusLevel status);
     void clicked();
 
@@ -103,7 +103,7 @@ protected:
     QSize sizeHint() const override;
     QSize minimumSizeHint() const override;
 
-private slots:
+private Q_SLOTS:
     void onBlinkTimer();
     void onPulseAnimation();
 
@@ -196,10 +196,10 @@ public:
     StatusIndicator* getIndicator(const QString& name) const;
     QStringList getStatusNames() const;
 
-signals:
+Q_SIGNALS:
     void statusClicked(const QString& name, StatusIndicator::StatusLevel status);
 
-private slots:
+private Q_SLOTS:
     void onIndicatorClicked();
 
 private:

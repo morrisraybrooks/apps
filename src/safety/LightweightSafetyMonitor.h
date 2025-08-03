@@ -39,7 +39,7 @@ public:
     double getMaxPressure() const { return m_maxPressure; }
     double getWarningThreshold() const { return m_warningThreshold; }
 
-signals:
+Q_SIGNALS:
     void safetyViolation(const QString& message);
     void pressureWarning(double pressure, const QString& sensor);
     void pressureAlarm(double pressure, const QString& sensor);
@@ -48,7 +48,7 @@ signals:
     void monitoringStopped();
     void systemHealthWarning(const QString& message);
 
-private slots:
+private Q_SLOTS:
     void performSafetyCheck();
 
 private:

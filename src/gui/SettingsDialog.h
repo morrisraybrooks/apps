@@ -43,12 +43,12 @@ public:
     explicit SettingsDialog(VacuumController* controller, QWidget *parent = nullptr);
     ~SettingsDialog();
 
-public slots:
+public Q_SLOTS:
     void loadSettings();
     void saveSettings();
     void resetToDefaults();
 
-private slots:
+private Q_SLOTS:
     void onTestHardwareClicked();
     void onExportSettingsClicked();
     void onImportSettingsClicked();

@@ -206,7 +206,6 @@ target_link_libraries(VacuumControllerLib
 # Add compiler definitions
 target_compile_definitions(VacuumControllerLib
     PRIVATE
-        QT_NO_KEYWORDS
         $<$<CONFIG:Debug>:VACUUM_DEBUG_MODE>
         $<$<BOOL:${RASPBERRY_PI}>:RASPBERRY_PI_BUILD>
 )

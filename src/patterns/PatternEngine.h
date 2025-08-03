@@ -114,10 +114,10 @@ public:
     bool createCustomPattern(const QString& name, const QList<PatternStep>& steps);
     bool savePattern(const QString& patternName, const QString& filePath);
 
-public slots:
+public Q_SLOTS:
     void setPatternParameters(const QJsonObject& parameters);
 
-signals:
+Q_SIGNALS:
     void patternStarted(const QString& patternName);
     void patternStopped();
     void patternPaused();
@@ -129,7 +129,7 @@ signals:
     void progressUpdated(double progress);
     void pressureTargetChanged(double targetPressure);
 
-private slots:
+private Q_SLOTS:
     void executeNextStep();
     void onStepTimer();
     void onSafetyCheck();

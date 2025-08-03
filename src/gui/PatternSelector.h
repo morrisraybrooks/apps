@@ -80,19 +80,19 @@ public:
     QJsonObject getCurrentParameters() const;
     void setPatternParameters(const QString& patternName, const QJsonObject& parameters);
 
-public slots:
+public Q_SLOTS:
     void selectPattern(const QString& patternName);
     void selectCategory(const QString& category);
     void resetToDefaults();
 
-signals:
+Q_SIGNALS:
     void patternSelected(const QString& patternName);
     void parametersChanged(const QString& patternName, const QJsonObject& parameters);
     void previewRequested(const QString& patternName);
     void patternCreated(const QString& patternName);
     void patternModified(const QString& patternName);
 
-private slots:
+private Q_SLOTS:
     void onPatternButtonClicked(QAbstractButton* button);
     void onCategoryChanged();
     void onParameterChanged();

@@ -88,18 +88,18 @@ public:
     bool exportToCSV(const QString& filePath) const;
     bool exportChart(const QString& filePath) const;
 
-public slots:
+public Q_SLOTS:
     void pauseUpdates(bool pause);
     void resetZoom();
     void zoomIn();
     void zoomOut();
 
-signals:
+Q_SIGNALS:
     void dataPointAdded(const PressureDataPoint& point);
     void thresholdViolation(const QString& type, double value);
     void chartClicked(const QPointF& point);
 
-private slots:
+private Q_SLOTS:
     void updateChart();
     void onTimeRangeChanged();
     void onResetZoomClicked();

@@ -78,12 +78,12 @@ public:
     void setAntiDetachmentThreshold(double threshold);
     double getAntiDetachmentThreshold() const { return m_antiDetachmentThreshold; }
 
-public slots:
+public Q_SLOTS:
     void updateSensorReadings();
     void handleEmergencyStop();
     void handleSystemError(const QString& error);
 
-signals:
+Q_SIGNALS:
     void systemStateChanged(SystemState newState);
     void pressureUpdated(double avlPressure, double tankPressure);
     void emergencyStopTriggered();
@@ -92,7 +92,7 @@ signals:
     void patternStarted(const QString& patternName);
     void patternStopped();
 
-private slots:
+private Q_SLOTS:
     void onUpdateTimer();
 
 private:

@@ -45,7 +45,7 @@ protected:
     void changeEvent(QEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
 
-private slots:
+private Q_SLOTS:
     void onSystemStateChanged(VacuumController::SystemState state);
     void onPressureUpdated(double avlPressure, double tankPressure);
     void onEmergencyStopTriggered();

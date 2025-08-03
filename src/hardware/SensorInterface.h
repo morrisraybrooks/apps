@@ -60,12 +60,12 @@ public:
     int getAVLErrorCount() const { return m_avlErrorCount; }
     int getTankErrorCount() const { return m_tankErrorCount; }
 
-signals:
+Q_SIGNALS:
     void sensorError(const QString& sensor, const QString& error);
     void sensorRecovered(const QString& sensor);
     void pressureUpdated(double avlPressure, double tankPressure);
 
-private slots:
+private Q_SLOTS:
     void updateReadings();
 
 private:

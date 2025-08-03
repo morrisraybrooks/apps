@@ -109,20 +109,20 @@ public:
     void compressOldLogs();
     void cleanupOldLogs(int daysToKeep = 30);
 
-public slots:
+public Q_SLOTS:
     void onPressureUpdated(double avlPressure, double tankPressure);
     void onPatternStarted(const QString& patternName);
     void onPatternStopped();
     void onSafetyEvent(const QString& event);
     void onUserAction(const QString& action);
 
-signals:
+Q_SIGNALS:
     void loggingStarted();
     void loggingStopped();
     void logFileRotated(const QString& newFileName);
     void logError(const QString& error);
 
-private slots:
+private Q_SLOTS:
     void performPeriodicLogging();
     void checkLogRotation();
 

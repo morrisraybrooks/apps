@@ -20,7 +20,7 @@ PatternSelector::PatternSelector(VacuumController* controller, QWidget *parent)
     , m_controller(controller)
     , m_mainLayout(new QVBoxLayout(this))
     , m_patternButtonGroup(new QButtonGroup(this))
-    , m_configFilePath("config/patterns.json")
+    , m_configFilePath("../config/patterns.json")
 {
     qDebug() << "PatternSelector constructor called.";
     setupUI();
