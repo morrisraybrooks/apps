@@ -10,7 +10,9 @@ This system provides a complete GUI solution for controlling a vacuum therapy de
 - **15+ vacuum patterns** including pulse, wave, air pulse, milking, and specialized patterns
 - **Safety-critical anti-detachment system** that prevents cup detachment
 - **Emergency stop functionality** with immediate system shutdown
-- **Touch-optimized interface** designed for 50-inch displays
+- **Touch-optimized interface** designed for 50-inch displays with 0.64x scaling
+- **Complete pattern storage system** with custom pattern creation and editing
+- **Scrollable interface panels** for optimal content management
 - **Comprehensive safety systems** with overpressure protection
 
 ## 🏗️ Industry-Standard Development Practices
@@ -37,9 +39,26 @@ This project implements comprehensive industry-standard practices for embedded s
 - **Package Management**: Professional .deb packages with installation scripts
 - **Service Management**: Automatic startup, logging, and monitoring integration
 
+## 🎯 Latest Release: v1.3.0 - UI Scaling & Pattern Storage Complete
+
+### ✅ **Major Improvements in v1.3.0**
+- **Optimal UI Scaling**: Reduced to 0.64x scaling for perfect 50-inch display utilization
+- **Complete Pattern Storage**: Full pattern creation, editing, save/load functionality implemented
+- **Scrollable Interface**: All panels now support content overflow with smooth scrolling
+- **Simplified Controls**: Streamlined emergency stop system with single navigation button
+- **Enhanced Performance**: Fixed CSS warnings and improved type consistency
+- **Medical Device Standards**: Professional scaling and touch targets for clinical use
+
+### 🚀 **System Status**
+- **Hardware Integration**: MCP3008 ADC, GPIO, SPI communication fully operational
+- **Safety Systems**: Anti-detachment monitoring, emergency controls, pressure limits active
+- **Pattern Engine**: 16 built-in patterns + unlimited custom pattern support
+- **Real-time Monitoring**: Live pressure charts, diagnostics, data logging working
+- **Multi-threading**: Separate threads for GUI, data acquisition, safety monitoring
+
 ## 🔧 Current Build Status
 
-**✅ COMPLETE**: All 25 development tasks finished - 100% production-ready system
+**✅ COMPLETE**: All development tasks finished - 100% production-ready system
 **🔧 BUILD STATUS**: CMake configures successfully, ready for Raspberry Pi 4 deployment
 **📋 NEXT STEPS**: See [BUILD_STATUS.md](BUILD_STATUS.md) and [PI4_SETUP.md](PI4_SETUP.md) for complete Pi 4 setup guide
 
