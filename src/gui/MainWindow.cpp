@@ -2,7 +2,7 @@
 #include "PressureMonitor.h"
 #include "PatternSelector.h"
 #include "SafetyPanel.h"
-#include "SettingsDialog.h"
+#include "SettingsPanel.h"
 #include "SystemDiagnosticsPanel.h"
 #include "styles/ModernMedicalStyle.h"
 #include "../VacuumController.h"
@@ -130,7 +130,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
         showSafetyPanel();
         break;
     case Qt::Key_F3:
-        showSettingsDialog();
+        showSettingsPanel();
         break;
     case Qt::Key_F4:
         showDiagnosticsPanel();
@@ -297,10 +297,16 @@ void MainWindow::showSafetyPanel()
     }
 }
 
-void MainWindow::showSettingsDialog()
+void MainWindow::showSettingsPanel()
 {
-    if (m_settingsDialog) {
-        m_settingsDialog->exec();
+    if (m_settingsPanelWidget) {
+        m_stackedWidget->setCurrentWidget(m_settingsPanelWidget.get());
+
+        // Update navigation buttons
+        m_mainPanelButton->setStyleSheet("");
+        m_safetyPanelButton->setStyleSheet("");
+        m_settingsButton->setStyleSheet("background-color: #2196F3; color: white;");
+        m_diagnosticsButton->setStyleSheet("");
     }
 }
 
@@ -456,7 +462,7 @@ void MainWindow::setupUI()
     m_pressureMonitor = std::make_unique<PressureMonitor>(m_controller);
     m_patternSelector = std::make_unique<PatternSelector>(m_controller, this);
     m_safetyPanelWidget = std::make_unique<SafetyPanel>(m_controller);
-    m_settingsDialog = std::make_unique<SettingsDialog>(m_controller, this);
+    m_settingsPanelWidget = std::make_unique<SettingsPanel>(m_controller, this);
     m_diagnosticsPanelWidget = std::make_unique<SystemDiagnosticsPanel>(m_controller);
 
     // Setup navigation bar
@@ -529,6 +535,18 @@ void MainWindow::setupMainPanel()
         QVBoxLayout* safetyLayout = new QVBoxLayout(safetyPanel);
         safetyLayout->addWidget(safetyLabel);
         m_stackedWidget->addWidget(safetyPanel);
+    }
+
+    if (m_settingsPanelWidget) {
+        m_stackedWidget->addWidget(m_settingsPanelWidget.get());
+    } else {
+        QWidget* settingsPanel = new QWidget;
+        QLabel* settingsLabel = new QLabel("SETTINGS PANEL - Error");
+        settingsLabel->setAlignment(Qt::AlignCenter);
+        settingsLabel->setStyleSheet("font-size: 24pt; color: #f44336;");
+        QVBoxLayout* settingsLayout = new QVBoxLayout(settingsPanel);
+        settingsLayout->addWidget(settingsLabel);
+        m_stackedWidget->addWidget(settingsPanel);
     }
 
     if (m_diagnosticsPanelWidget) {
@@ -748,7 +766,7 @@ void MainWindow::connectSignals()
     // Connect navigation buttons
     connect(m_mainPanelButton, &QPushButton::clicked, this, &MainWindow::showMainPanel);
     connect(m_safetyPanelButton, &QPushButton::clicked, this, &MainWindow::showSafetyPanel);
-    connect(m_settingsButton, &QPushButton::clicked, this, &MainWindow::showSettingsDialog);
+    connect(m_settingsButton, &QPushButton::clicked, this, &MainWindow::showSettingsPanel);
     connect(m_diagnosticsButton, &QPushButton::clicked, this, &MainWindow::showDiagnosticsPanel);
     connect(m_shutdownButton, &QPushButton::clicked, this, &MainWindow::close);
 

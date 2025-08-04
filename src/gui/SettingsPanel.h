@@ -1,7 +1,7 @@
-#ifndef SETTINGSDIALOG_H
-#define SETTINGSDIALOG_H
+#ifndef SETTINGSPANEL_H
+#define SETTINGSPANEL_H
 
-#include <QDialog>
+#include <QWidget>
 #include <QTabWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -25,9 +25,9 @@ class TouchButton;
 class CalibrationInterface;
 
 /**
- * @brief Comprehensive settings and calibration dialog
- * 
- * This dialog provides access to all system configuration options:
+ * @brief Comprehensive settings and calibration panel
+ *
+ * This panel provides access to all system configuration options:
  * - Safety parameters and limits
  * - Sensor calibration and validation
  * - Hardware configuration
@@ -35,13 +35,13 @@ class CalibrationInterface;
  * - System diagnostics and maintenance
  * - Data logging and export settings
  */
-class SettingsDialog : public QDialog
+class SettingsPanel : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit SettingsDialog(VacuumController* controller, QWidget *parent = nullptr);
-    ~SettingsDialog();
+    explicit SettingsPanel(VacuumController* controller, QWidget *parent = nullptr);
+    ~SettingsPanel();
 
 public Q_SLOTS:
     void loadSettings();
@@ -54,8 +54,6 @@ private Q_SLOTS:
     void onImportSettingsClicked();
     void onFactoryResetClicked();
     void onApplyClicked();
-    void onCancelClicked();
-    void onOkClicked();
     
 
 private:
@@ -80,8 +78,6 @@ private:
     
     // Buttons
     TouchButton* m_applyButton;
-    TouchButton* m_cancelButton;
-    TouchButton* m_okButton;
     TouchButton* m_resetButton;
     
     // Safety Settings Tab
@@ -165,4 +161,4 @@ private:
     static const int DEFAULT_SENSOR_TIMEOUT_MS;
 };
 
-#endif // SETTINGSDIALOG_H
+#endif // SETTINGSPANEL_H

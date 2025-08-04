@@ -98,7 +98,7 @@ set(SOURCES
     src/gui/PressureMonitor.cpp
     src/gui/PatternSelector.cpp
     src/gui/SafetyPanel.cpp
-    src/gui/SettingsDialog.cpp
+    src/gui/SettingsPanel.cpp
     src/gui/CustomPatternDialog.cpp
     src/gui/SystemDiagnosticsPanel.cpp
     src/gui/CalibrationInterface.cpp
@@ -140,7 +140,7 @@ set(HEADERS
     src/gui/PressureMonitor.h
     src/gui/PatternSelector.h
     src/gui/SafetyPanel.h
-    src/gui/SettingsDialog.h
+    src/gui/SettingsPanel.h
     src/gui/components/PressureGauge.h
     src/gui/components/PressureChart.h
     src/gui/components/TouchButton.h

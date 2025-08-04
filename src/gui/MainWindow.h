@@ -17,7 +17,7 @@
 class PressureMonitor;
 class PatternSelector;
 class SafetyPanel;
-class SettingsDialog;
+class SettingsPanel;
 class SystemDiagnosticsPanel;
 
 /**
@@ -55,7 +55,7 @@ private Q_SLOTS:
     // Navigation
     void showMainPanel();
     void showSafetyPanel();
-    void showSettingsDialog();
+    void showSettingsPanel();
     void showDiagnosticsPanel();
     
     // Control actions
@@ -116,7 +116,7 @@ private:
     std::unique_ptr<PressureMonitor> m_pressureMonitor;
     std::unique_ptr<PatternSelector> m_patternSelector;
     std::unique_ptr<SafetyPanel> m_safetyPanelWidget;
-    std::unique_ptr<SettingsDialog> m_settingsDialog;
+    std::unique_ptr<SettingsPanel> m_settingsPanelWidget;
     std::unique_ptr<SystemDiagnosticsPanel> m_diagnosticsPanelWidget;
     
     // Control buttons

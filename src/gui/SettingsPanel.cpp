@@ -1,4 +1,4 @@
-#include "SettingsDialog.h"
+#include "SettingsPanel.h"
 #include "components/TouchButton.h"
 #include "CalibrationInterface.h"
 #include "../VacuumController.h"
@@ -11,33 +11,29 @@
 #include <QApplication>
 
 // Constants
-const QString SettingsDialog::SETTINGS_FILE_PATH = "config/settings.json";
-const double SettingsDialog::DEFAULT_MAX_PRESSURE = 100.0;
-const double SettingsDialog::DEFAULT_WARNING_THRESHOLD = 80.0;
-const double SettingsDialog::DEFAULT_ANTI_DETACHMENT_THRESHOLD = 50.0;
-const int SettingsDialog::DEFAULT_SENSOR_TIMEOUT_MS = 1000;
+const QString SettingsPanel::SETTINGS_FILE_PATH = "config/settings.json";
+const double SettingsPanel::DEFAULT_MAX_PRESSURE = 100.0;
+const double SettingsPanel::DEFAULT_WARNING_THRESHOLD = 80.0;
+const double SettingsPanel::DEFAULT_ANTI_DETACHMENT_THRESHOLD = 50.0;
+const int SettingsPanel::DEFAULT_SENSOR_TIMEOUT_MS = 1000;
 
-SettingsDialog::SettingsDialog(VacuumController* controller, QWidget *parent)
-    : QDialog(parent)
+SettingsPanel::SettingsPanel(VacuumController* controller, QWidget *parent)
+    : QWidget(parent)
     , m_controller(controller)
     , m_tabWidget(new QTabWidget(this))
     , m_mainLayout(new QVBoxLayout(this))
     , m_calibrationInProgress(false)
 {
-    setWindowTitle("System Settings & Calibration");
-    setMinimumSize(800, 600);
-    setModal(true);
-    
     setupUI();
     connectSignals();
     loadSettings();
 }
 
-SettingsDialog::~SettingsDialog()
+SettingsPanel::~SettingsPanel()
 {
 }
 
-void SettingsDialog::setupUI()
+void SettingsPanel::setupUI()
 {
     m_mainLayout->setSpacing(10);
     m_mainLayout->setContentsMargins(15, 15, 15, 15);
@@ -56,32 +52,22 @@ void SettingsDialog::setupUI()
     // Create button layout
     m_buttonLayout = new QHBoxLayout();
     
-    m_applyButton = new TouchButton("Apply");
+    m_applyButton = new TouchButton("Apply Settings");
     m_applyButton->setButtonType(TouchButton::Primary);
-    m_applyButton->setMinimumSize(100, 50);
-    
-    m_cancelButton = new TouchButton("Cancel");
-    m_cancelButton->setButtonType(TouchButton::Normal);
-    m_cancelButton->setMinimumSize(100, 50);
-    
-    m_okButton = new TouchButton("OK");
-    m_okButton->setButtonType(TouchButton::Success);
-    m_okButton->setMinimumSize(100, 50);
-    
+    m_applyButton->setMinimumSize(150, 50);
+
     m_resetButton = new TouchButton("Reset to Defaults");
     m_resetButton->setButtonType(TouchButton::Warning);
     m_resetButton->setMinimumSize(150, 50);
-    
+
     m_buttonLayout->addWidget(m_resetButton);
     m_buttonLayout->addStretch();
     m_buttonLayout->addWidget(m_applyButton);
-    m_buttonLayout->addWidget(m_cancelButton);
-    m_buttonLayout->addWidget(m_okButton);
     
     m_mainLayout->addLayout(m_buttonLayout);
 }
 
-void SettingsDialog::setupSafetyTab()
+void SettingsPanel::setupSafetyTab()
 {
     m_safetyTab = new QWidget();
     m_tabWidget->addTab(m_safetyTab, "Safety");
@@ -151,13 +137,13 @@ void SettingsDialog::setupSafetyTab()
     safetyLayout->addStretch();
 }
 
-void SettingsDialog::setupCalibrationTab()
+void SettingsPanel::setupCalibrationTab()
 {
     m_calibrationInterface = new CalibrationInterface(m_controller, this);
     m_tabWidget->addTab(m_calibrationInterface, "Calibration");
 }
 
-void SettingsDialog::setupHardwareTab()
+void SettingsPanel::setupHardwareTab()
 {
     m_hardwareTab = new QWidget();
     m_tabWidget->addTab(m_hardwareTab, "Hardware");
@@ -238,7 +224,7 @@ void SettingsDialog::setupHardwareTab()
     hardwareLayout->addStretch();
 }
 
-void SettingsDialog::setupDisplayTab()
+void SettingsPanel::setupDisplayTab()
 {
     m_displayTab = new QWidget();
     m_tabWidget->addTab(m_displayTab, "Display");
@@ -301,7 +287,7 @@ void SettingsDialog::setupDisplayTab()
     displayLayout->addStretch();
 }
 
-void SettingsDialog::setupDiagnosticsTab()
+void SettingsPanel::setupDiagnosticsTab()
 {
     m_diagnosticsTab = new QWidget();
     m_tabWidget->addTab(m_diagnosticsTab, "Diagnostics");
@@ -359,7 +345,7 @@ void SettingsDialog::setupDiagnosticsTab()
     diagnosticsLayout->addStretch();
 }
 
-void SettingsDialog::setupMaintenanceTab()
+void SettingsPanel::setupMaintenanceTab()
 {
     m_maintenanceTab = new QWidget();
     m_tabWidget->addTab(m_maintenanceTab, "Maintenance");
@@ -435,24 +421,22 @@ void SettingsDialog::setupMaintenanceTab()
     maintenanceLayout->addStretch();
 }
 
-void SettingsDialog::connectSignals()
+void SettingsPanel::connectSignals()
 {
     // Button connections
-    connect(m_applyButton, &TouchButton::clicked, this, &SettingsDialog::onApplyClicked);
-    connect(m_cancelButton, &TouchButton::clicked, this, &SettingsDialog::onCancelClicked);
-    connect(m_okButton, &TouchButton::clicked, this, &SettingsDialog::onOkClicked);
-    connect(m_resetButton, &TouchButton::clicked, this, &SettingsDialog::resetToDefaults);
+    connect(m_applyButton, &TouchButton::clicked, this, &SettingsPanel::onApplyClicked);
+    connect(m_resetButton, &TouchButton::clicked, this, &SettingsPanel::resetToDefaults);
     
     // Hardware connections
-    connect(m_testHardwareButton, &TouchButton::clicked, this, &SettingsDialog::onTestHardwareClicked);
+    connect(m_testHardwareButton, &TouchButton::clicked, this, &SettingsPanel::onTestHardwareClicked);
     
     // Maintenance connections
-    connect(m_exportSettingsButton, &TouchButton::clicked, this, &SettingsDialog::onExportSettingsClicked);
-    connect(m_importSettingsButton, &TouchButton::clicked, this, &SettingsDialog::onImportSettingsClicked);
-    connect(m_factoryResetButton, &TouchButton::clicked, this, &SettingsDialog::onFactoryResetClicked);
+    connect(m_exportSettingsButton, &TouchButton::clicked, this, &SettingsPanel::onExportSettingsClicked);
+    connect(m_importSettingsButton, &TouchButton::clicked, this, &SettingsPanel::onImportSettingsClicked);
+    connect(m_factoryResetButton, &TouchButton::clicked, this, &SettingsPanel::onFactoryResetClicked);
 }
 
-void SettingsDialog::loadSettings()
+void SettingsPanel::loadSettings()
 {
     QFile file(SETTINGS_FILE_PATH);
     if (file.open(QIODevice::ReadOnly)) {
@@ -472,7 +456,7 @@ void SettingsDialog::loadSettings()
     }
 }
 
-void SettingsDialog::saveSettings()
+void SettingsPanel::saveSettings()
 {
     // Update settings object with current UI values
     QJsonObject safetySettings;
@@ -498,7 +482,7 @@ void SettingsDialog::saveSettings()
     }
 }
 
-void SettingsDialog::resetToDefaults()
+void SettingsPanel::resetToDefaults()
 {
     QMessageBox::StandardButton reply = QMessageBox::question(this,
         "Reset to Defaults",
@@ -524,12 +508,12 @@ void SettingsDialog::resetToDefaults()
     }
 }
 
-void SettingsDialog::onTestHardwareClicked()
+void SettingsPanel::onTestHardwareClicked()
 {
     // performHardwareTest();
 }
 
-bool SettingsDialog::validateSettings()
+bool SettingsPanel::validateSettings()
 {
     // Validate pressure settings
     if (m_warningThresholdSpin->value() >= m_maxPressureSpin->value()) {
@@ -547,29 +531,16 @@ bool SettingsDialog::validateSettings()
     return true;
 }
 
-void SettingsDialog::onApplyClicked()
+void SettingsPanel::onApplyClicked()
 {
     if (validateSettings()) {
         saveSettings();
     }
 }
 
-void SettingsDialog::onCancelClicked()
-{
-    // Restore original settings
-    m_currentSettings = m_originalSettings;
-    reject();
-}
 
-void SettingsDialog::onOkClicked()
-{
-    if (validateSettings()) {
-        saveSettings();
-        accept();
-    }
-}
 
-void SettingsDialog::onExportSettingsClicked()
+void SettingsPanel::onExportSettingsClicked()
 {
     QString fileName = QFileDialog::getSaveFileName(this,
         "Export Settings",
@@ -589,7 +560,7 @@ void SettingsDialog::onExportSettingsClicked()
     }
 }
 
-void SettingsDialog::onImportSettingsClicked()
+void SettingsPanel::onImportSettingsClicked()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
         "Import Settings",
@@ -615,7 +586,7 @@ void SettingsDialog::onImportSettingsClicked()
     }
 }
 
-void SettingsDialog::onFactoryResetClicked()
+void SettingsPanel::onFactoryResetClicked()
 {
     QMessageBox::StandardButton reply = QMessageBox::question(this,
         "Factory Reset",
