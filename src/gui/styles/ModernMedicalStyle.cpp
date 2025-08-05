@@ -10,23 +10,23 @@
 double ModernMedicalStyle::s_scaleFactor = 1.0;
 bool ModernMedicalStyle::s_initialized = false;
 
-// Color definitions - Medical Device Optimized
-const QColor ModernMedicalStyle::Colors::PRIMARY_BLUE(25, 118, 210);           // #1976D2
-const QColor ModernMedicalStyle::Colors::PRIMARY_BLUE_LIGHT(66, 165, 245);     // #42A5F5
+// Color definitions - Medical Device Optimized with High Contrast
+const QColor ModernMedicalStyle::Colors::PRIMARY_BLUE(21, 101, 192);           // #1565C0 - Darker for better contrast
+const QColor ModernMedicalStyle::Colors::PRIMARY_BLUE_LIGHT(25, 118, 210);     // #1976D2 - Original primary as light
 const QColor ModernMedicalStyle::Colors::PRIMARY_BLUE_DARK(13, 71, 161);       // #0D47A1
 
-const QColor ModernMedicalStyle::Colors::MEDICAL_GREEN(46, 125, 50);           // #2E7D32
-const QColor ModernMedicalStyle::Colors::MEDICAL_ORANGE(245, 124, 0);          // #F57C00
-const QColor ModernMedicalStyle::Colors::MEDICAL_RED(198, 40, 40);             // #C62828
-const QColor ModernMedicalStyle::Colors::MEDICAL_PURPLE(106, 27, 154);         // #6A1B9A
+const QColor ModernMedicalStyle::Colors::MEDICAL_GREEN(27, 94, 32);            // #1B5E20 - Darker for better contrast
+const QColor ModernMedicalStyle::Colors::MEDICAL_ORANGE(230, 81, 0);           // #E65100 - Darker for better contrast
+const QColor ModernMedicalStyle::Colors::MEDICAL_RED(183, 28, 28);             // #B71C1C - Darker for better contrast
+const QColor ModernMedicalStyle::Colors::MEDICAL_PURPLE(74, 20, 140);          // #4A148C - Darker for better contrast
 
 const QColor ModernMedicalStyle::Colors::BACKGROUND_LIGHT(250, 250, 250);      // #FAFAFA
 const QColor ModernMedicalStyle::Colors::BACKGROUND_MEDIUM(245, 245, 245);     // #F5F5F5
 const QColor ModernMedicalStyle::Colors::BACKGROUND_DARK(238, 238, 238);       // #EEEEEE
 
 const QColor ModernMedicalStyle::Colors::TEXT_PRIMARY(33, 33, 33);             // #212121
-const QColor ModernMedicalStyle::Colors::TEXT_SECONDARY(117, 117, 117);        // #757575
-const QColor ModernMedicalStyle::Colors::TEXT_DISABLED(189, 189, 189);         // #BDBDBD
+const QColor ModernMedicalStyle::Colors::TEXT_SECONDARY(97, 97, 97);           // #616161 - Darker for better contrast
+const QColor ModernMedicalStyle::Colors::TEXT_DISABLED(158, 158, 158);         // #9E9E9E - Darker for better contrast
 const QColor ModernMedicalStyle::Colors::TEXT_ON_PRIMARY(255, 255, 255);       // #FFFFFF
 
 const QColor ModernMedicalStyle::Colors::BORDER_LIGHT(224, 224, 224);          // #E0E0E0
@@ -451,4 +451,130 @@ QString ModernMedicalStyle::getEmergencyButtonStyle()
      .arg(adjustColorForContrast(Colors::MEDICAL_RED, 1.1).name())
      .arg(adjustColorForContrast(Colors::MEDICAL_RED, 0.9).name())
      .arg(adjustColorForContrast(Colors::MEDICAL_RED, 0.8).name());
+}
+
+QString ModernMedicalStyle::getInputFieldStyle()
+{
+    return QString(
+        "QLineEdit, QTextEdit, QPlainTextEdit {"
+        "    font-size: %1pt;"
+        "    padding: %2px;"
+        "    border: %3px solid %4;"
+        "    border-radius: %5px;"
+        "    background-color: %6;"
+        "    color: %7;"
+        "    font-family: %8;"
+        "}"
+        "QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {"
+        "    border-color: %9;"
+        "}"
+        "QLineEdit:disabled, QTextEdit:disabled, QPlainTextEdit:disabled {"
+        "    background-color: %10;"
+        "    color: %11;"
+        "    border-color: %12;"
+        "}"
+    ).arg(Typography::getBody())
+     .arg(scalePixelValue(Spacing::getMedium()))
+     .arg(scalePixelValue(2))
+     .arg(Colors::BORDER_MEDIUM.name())
+     .arg(scalePixelValue(Spacing::getSmallRadius()))
+     .arg(Colors::BACKGROUND_LIGHT.name())
+     .arg(Colors::TEXT_PRIMARY.name())
+     .arg(Typography::PRIMARY_FONT)
+     .arg(Colors::PRIMARY_BLUE.name())
+     .arg(Colors::BACKGROUND_DARK.name())
+     .arg(Colors::TEXT_DISABLED.name())
+     .arg(Colors::BORDER_LIGHT.name());
+}
+
+QString ModernMedicalStyle::getListWidgetStyle()
+{
+    return QString(
+        "QListWidget {"
+        "    font-size: %1pt;"
+        "    border: %2px solid %3;"
+        "    border-radius: %4px;"
+        "    background-color: %5;"
+        "    color: %6;"
+        "    font-family: %7;"
+        "    alternate-background-color: %8;"
+        "}"
+        "QListWidget::item {"
+        "    padding: %9px;"
+        "    border-bottom: 1px solid %10;"
+        "    min-height: %11px;"
+        "}"
+        "QListWidget::item:selected {"
+        "    background-color: %12;"
+        "    color: %13;"
+        "}"
+        "QListWidget::item:hover {"
+        "    background-color: %14;"
+        "}"
+    ).arg(Typography::getBody())
+     .arg(scalePixelValue(2))
+     .arg(Colors::BORDER_MEDIUM.name())
+     .arg(scalePixelValue(Spacing::getSmallRadius()))
+     .arg(Colors::BACKGROUND_LIGHT.name())
+     .arg(Colors::TEXT_PRIMARY.name())
+     .arg(Typography::PRIMARY_FONT)
+     .arg(Colors::BACKGROUND_MEDIUM.name())
+     .arg(scalePixelValue(Spacing::getMedium()))
+     .arg(Colors::BORDER_LIGHT.name())
+     .arg(scalePixelValue(Spacing::getMinTouchTarget()))
+     .arg(Colors::PRIMARY_BLUE.name())
+     .arg(Colors::TEXT_ON_PRIMARY.name())
+     .arg(Colors::PRIMARY_BLUE_LIGHT.name());
+}
+
+QString ModernMedicalStyle::getTabWidgetStyle()
+{
+    return QString(
+        "QTabWidget::pane {"
+        "    border: %1px solid %2;"
+        "    border-radius: %3px;"
+        "    background-color: %4;"
+        "    top: -1px;"
+        "}"
+        "QTabBar::tab {"
+        "    font-size: %5pt;"
+        "    font-family: %6;"
+        "    padding: %7px %8px;"
+        "    margin-right: %9px;"
+        "    background-color: %10;"
+        "    color: %11;"
+        "    border: %12px solid %13;"
+        "    border-bottom: none;"
+        "    border-top-left-radius: %14px;"
+        "    border-top-right-radius: %15px;"
+        "    min-width: %16px;"
+        "}"
+        "QTabBar::tab:selected {"
+        "    background-color: %17;"
+        "    color: %18;"
+        "    border-color: %19;"
+        "}"
+        "QTabBar::tab:hover:!selected {"
+        "    background-color: %20;"
+        "}"
+    ).arg(scalePixelValue(2))
+     .arg(Colors::BORDER_MEDIUM.name())
+     .arg(scalePixelValue(Spacing::getSmallRadius()))
+     .arg(Colors::BACKGROUND_LIGHT.name())
+     .arg(Typography::getButton())
+     .arg(Typography::PRIMARY_FONT)
+     .arg(scalePixelValue(Spacing::getMedium()))
+     .arg(scalePixelValue(Spacing::getLarge()))
+     .arg(scalePixelValue(2))
+     .arg(Colors::BACKGROUND_MEDIUM.name())
+     .arg(Colors::TEXT_PRIMARY.name())
+     .arg(scalePixelValue(1))
+     .arg(Colors::BORDER_MEDIUM.name())
+     .arg(scalePixelValue(Spacing::getSmallRadius()))
+     .arg(scalePixelValue(Spacing::getSmallRadius()))
+     .arg(scalePixelValue(80))
+     .arg(Colors::PRIMARY_BLUE.name())
+     .arg(Colors::TEXT_ON_PRIMARY.name())
+     .arg(Colors::PRIMARY_BLUE.name())
+     .arg(Colors::PRIMARY_BLUE_LIGHT.name());
 }

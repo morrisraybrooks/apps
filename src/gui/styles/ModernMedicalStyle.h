@@ -145,6 +145,9 @@ public:
     static QString getComboBoxStyle();
     static QString getSpinBoxStyle();
     static QString getTableStyle();
+    static QString getInputFieldStyle();
+    static QString getListWidgetStyle();
+    static QString getTabWidgetStyle();
     
     // Medical device specific styles
     static QString getPressureDisplayStyle();

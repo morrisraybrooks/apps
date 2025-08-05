@@ -1,7 +1,8 @@
-#include "CustomPatternDialog.h"
+#include "CustomPatternEditor.h"
 #include "../VacuumController.h"
 #include "../patterns/PatternDefinitions.h"
 #include "components/TouchButton.h"
+#include "styles/ModernMedicalStyle.h"
 #include <QDebug>
 #include <QMessageBox>
 #include <QFileDialog>
@@ -11,9 +12,10 @@
 #include <QDir>
 #include <QHeaderView>
 #include <QApplication>
+#include <QScreen>
 
-CustomPatternDialog::CustomPatternDialog(VacuumController* controller, QWidget *parent)
-    : QDialog(parent)
+CustomPatternEditor::CustomPatternEditor(VacuumController* controller, QWidget *parent)
+    : QWidget(parent)
     , m_controller(controller)
     , m_mainLayout(nullptr)
     , m_tabWidget(nullptr)
@@ -51,9 +53,9 @@ CustomPatternDialog::CustomPatternDialog(VacuumController* controller, QWidget *
     , m_currentTab(0)
     , m_patternModified(false)
 {
-    setWindowTitle("Custom Pattern Editor");
-    setModal(true);
-    resize(1000, 700);
+    // Set up as a full-screen widget for embedded use
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    setMinimumSize(ModernMedicalStyle::scaleValue(800), ModernMedicalStyle::scaleValue(600));
     
     setupUI();
     connectSignals();
@@ -61,14 +63,14 @@ CustomPatternDialog::CustomPatternDialog(VacuumController* controller, QWidget *
     
     initializeDefaultPattern();
     
-    qDebug() << "CustomPatternDialog created";
+    qDebug() << "CustomPatternEditor created";
 }
 
-CustomPatternDialog::~CustomPatternDialog()
+CustomPatternEditor::~CustomPatternEditor()
 {
 }
 
-void CustomPatternDialog::setupUI()
+void CustomPatternEditor::setupUI()
 {
     m_mainLayout = new QVBoxLayout(this);
     m_mainLayout->setSpacing(SPACING_NORMAL);
@@ -91,23 +93,32 @@ void CustomPatternDialog::setupUI()
     
     QHBoxLayout* buttonLayout = new QHBoxLayout();
     
+    TouchButton* backButton = new TouchButton("← Back to Patterns");
+    backButton->setButtonType(TouchButton::Normal);
+    backButton->setMinimumSize(ModernMedicalStyle::scaleValue(BUTTON_MIN_WIDTH), ModernMedicalStyle::scaleValue(BUTTON_MIN_HEIGHT));
+
     m_saveButton = new TouchButton("Save Pattern");
     m_saveButton->setButtonType(TouchButton::Primary);
-    m_saveButton->setMinimumSize(BUTTON_MIN_WIDTH, BUTTON_MIN_HEIGHT);
-    
-    m_cancelButton = new TouchButton("Cancel");
-    m_cancelButton->setButtonType(TouchButton::Normal);
-    m_cancelButton->setMinimumSize(BUTTON_MIN_WIDTH, BUTTON_MIN_HEIGHT);
-    
+    m_saveButton->setMinimumSize(ModernMedicalStyle::scaleValue(BUTTON_MIN_WIDTH), ModernMedicalStyle::scaleValue(BUTTON_MIN_HEIGHT));
+
+    TouchButton* resetButton = new TouchButton("Reset");
+    resetButton->setButtonType(TouchButton::Warning);
+    resetButton->setMinimumSize(ModernMedicalStyle::scaleValue(BUTTON_MIN_WIDTH), ModernMedicalStyle::scaleValue(BUTTON_MIN_HEIGHT));
+
+    buttonLayout->addWidget(backButton);
     buttonLayout->addStretch();
+    buttonLayout->addWidget(resetButton);
     buttonLayout->addWidget(m_saveButton);
-    buttonLayout->addWidget(m_cancelButton);
+
+    // Connect the new buttons
+    connect(backButton, &TouchButton::clicked, this, &CustomPatternEditor::onBackClicked);
+    connect(resetButton, &TouchButton::clicked, this, &CustomPatternEditor::onResetClicked);
     
     m_mainLayout->addWidget(m_tabWidget);
     m_mainLayout->addLayout(buttonLayout);
 }
 
-void CustomPatternDialog::setupBasicInfoTab()
+void CustomPatternEditor::setupBasicInfoTab()
 {
     m_basicInfoTab = new QWidget();
     QVBoxLayout* layout = new QVBoxLayout(m_basicInfoTab);
@@ -164,7 +175,7 @@ void CustomPatternDialog::setupBasicInfoTab()
     layout->addStretch();
 }
 
-void CustomPatternDialog::setupStepEditorTab()
+void CustomPatternEditor::setupStepEditorTab()
 {
     m_stepEditorTab = new QWidget();
     QHBoxLayout* layout = new QHBoxLayout(m_stepEditorTab);
@@ -173,7 +184,7 @@ void CustomPatternDialog::setupStepEditorTab()
     QVBoxLayout* leftLayout = new QVBoxLayout();
     
     QLabel* stepsLabel = new QLabel("Pattern Steps:");
-    stepsLabel->setStyleSheet("font-weight: bold; font-size: 14pt;");
+    stepsLabel->setStyleSheet(ModernMedicalStyle::getLabelStyle("subtitle"));
     
     m_stepsList = new QListWidget();
     m_stepsList->setMinimumHeight(300);
@@ -253,25 +264,25 @@ void CustomPatternDialog::setupStepEditorTab()
     layout->addLayout(rightLayout, 1);
 }
 
-void CustomPatternDialog::setupVisualDesignerTab()
+void CustomPatternEditor::setupVisualDesignerTab()
 {
     m_visualDesignerTab = new QWidget();
     QVBoxLayout* layout = new QVBoxLayout(m_visualDesignerTab);
 
     QLabel* designerLabel = new QLabel("Visual Pattern Designer");
     designerLabel->setAlignment(Qt::AlignCenter);
-    designerLabel->setStyleSheet("font-size: 18pt; font-weight: bold; color: #666; padding: 50px;");
+    designerLabel->setStyleSheet(ModernMedicalStyle::getLabelStyle("display-title"));
 
     QLabel* comingSoonLabel = new QLabel("Graphical pattern design interface coming soon...\nUse the Step Editor tab to create patterns.");
     comingSoonLabel->setAlignment(Qt::AlignCenter);
-    comingSoonLabel->setStyleSheet("font-size: 12pt; color: #888;");
+    comingSoonLabel->setStyleSheet(ModernMedicalStyle::getLabelStyle("secondary"));
 
     layout->addWidget(designerLabel);
     layout->addWidget(comingSoonLabel);
     layout->addStretch();
 }
 
-void CustomPatternDialog::setupPreviewTab()
+void CustomPatternEditor::setupPreviewTab()
 {
     m_previewTab = new QWidget();
     QVBoxLayout* layout = new QVBoxLayout(m_previewTab);
@@ -293,8 +304,14 @@ void CustomPatternDialog::setupPreviewTab()
 
     m_previewChart = new QLabel("Pattern Preview Chart");
     m_previewChart->setAlignment(Qt::AlignCenter);
-    m_previewChart->setStyleSheet("border: 2px dashed #ccc; background-color: #f9f9f9; font-size: 14pt; color: #666;");
-    m_previewChart->setMinimumHeight(300);
+    m_previewChart->setStyleSheet(
+        ModernMedicalStyle::getLabelStyle("secondary") +
+        QString("border: 2px dashed %1; background-color: %2; padding: %3px;")
+            .arg(ModernMedicalStyle::Colors::BORDER_MEDIUM.name())
+            .arg(ModernMedicalStyle::Colors::BACKGROUND_LIGHT.name())
+            .arg(ModernMedicalStyle::scaleValue(20))
+    );
+    m_previewChart->setMinimumHeight(ModernMedicalStyle::scaleValue(300));
 
     QGroupBox* summaryGroup = new QGroupBox("Pattern Summary");
     QFormLayout* summaryLayout = new QFormLayout(summaryGroup);
@@ -314,7 +331,7 @@ void CustomPatternDialog::setupPreviewTab()
     layout->addWidget(summaryGroup);
 }
 
-void CustomPatternDialog::setupAdvancedTab()
+void CustomPatternEditor::setupAdvancedTab()
 {
     m_advancedTab = new QWidget();
     QVBoxLayout* layout = new QVBoxLayout(m_advancedTab);
@@ -359,7 +376,7 @@ void CustomPatternDialog::setupAdvancedTab()
 
     TouchButton* validateButton = new TouchButton("Validate Pattern");
     validateButton->setMinimumSize(BUTTON_MIN_WIDTH, BUTTON_MIN_HEIGHT);
-    connect(validateButton, &TouchButton::clicked, this, &CustomPatternDialog::validatePattern);
+    connect(validateButton, &TouchButton::clicked, this, &CustomPatternEditor::validatePattern);
 
     validationLayout->addWidget(m_validationResults);
     validationLayout->addWidget(validateButton);
@@ -394,66 +411,59 @@ void CustomPatternDialog::setupAdvancedTab()
     layout->addStretch();
 }
 
-void CustomPatternDialog::connectSignals()
+void CustomPatternEditor::connectSignals()
 {
-    connect(m_tabWidget, &QTabWidget::currentChanged, this, &CustomPatternDialog::onTabChanged);
+    connect(m_tabWidget, &QTabWidget::currentChanged, this, &CustomPatternEditor::onTabChanged);
 
-    connect(m_patternNameEdit, &QLineEdit::textChanged, this, &CustomPatternDialog::onPatternNameChanged);
+    connect(m_patternNameEdit, &QLineEdit::textChanged, this, &CustomPatternEditor::onPatternNameChanged);
     connect(m_patternTypeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &CustomPatternDialog::onPatternTypeChanged);
-    connect(m_patternDescriptionEdit, &QTextEdit::textChanged, this, &CustomPatternDialog::onParameterChanged);
+            this, &CustomPatternEditor::onPatternTypeChanged);
+    connect(m_patternDescriptionEdit, &QTextEdit::textChanged, this, &CustomPatternEditor::onParameterChanged);
     connect(m_basePressureSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &CustomPatternDialog::onParameterChanged);
+            this, &CustomPatternEditor::onParameterChanged);
     connect(m_speedSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &CustomPatternDialog::onParameterChanged);
+            this, &CustomPatternEditor::onParameterChanged);
     connect(m_intensitySpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &CustomPatternDialog::onParameterChanged);
+            this, &CustomPatternEditor::onParameterChanged);
 
-    connect(m_stepsList, &QListWidget::currentRowChanged, this, &CustomPatternDialog::onStepSelectionChanged);
-    connect(m_addStepButton, &TouchButton::clicked, this, &CustomPatternDialog::onStepAdded);
-    connect(m_removeStepButton, &TouchButton::clicked, this, &CustomPatternDialog::onStepRemoved);
-    connect(m_moveUpButton, &TouchButton::clicked, this, &CustomPatternDialog::moveStepUp);
-    connect(m_moveDownButton, &TouchButton::clicked, this, &CustomPatternDialog::moveStepDown);
-    connect(m_duplicateStepButton, &TouchButton::clicked, this, &CustomPatternDialog::duplicateStep);
-    connect(m_clearStepsButton, &TouchButton::clicked, this, &CustomPatternDialog::clearAllSteps);
+    connect(m_stepsList, &QListWidget::currentRowChanged, this, &CustomPatternEditor::onStepSelectionChanged);
+    connect(m_addStepButton, &TouchButton::clicked, this, &CustomPatternEditor::onStepAdded);
+    connect(m_removeStepButton, &TouchButton::clicked, this, &CustomPatternEditor::onStepRemoved);
+    connect(m_moveUpButton, &TouchButton::clicked, this, &CustomPatternEditor::moveStepUp);
+    connect(m_moveDownButton, &TouchButton::clicked, this, &CustomPatternEditor::moveStepDown);
+    connect(m_duplicateStepButton, &TouchButton::clicked, this, &CustomPatternEditor::duplicateStep);
+    connect(m_clearStepsButton, &TouchButton::clicked, this, &CustomPatternEditor::clearAllSteps);
 
     connect(m_stepPressureSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &CustomPatternDialog::onStepModified);
+            this, &CustomPatternEditor::onStepModified);
     connect(m_stepDurationSpin, QOverload<int>::of(&QSpinBox::valueChanged),
-            this, &CustomPatternDialog::onStepModified);
+            this, &CustomPatternEditor::onStepModified);
     connect(m_stepActionCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &CustomPatternDialog::onStepModified);
-    connect(m_stepDescriptionEdit, &QLineEdit::textChanged, this, &CustomPatternDialog::onStepModified);
+            this, &CustomPatternEditor::onStepModified);
+    connect(m_stepDescriptionEdit, &QLineEdit::textChanged, this, &CustomPatternEditor::onStepModified);
 
-    connect(m_previewButton, &TouchButton::clicked, this, &CustomPatternDialog::onPreviewClicked);
-    connect(m_testButton, &TouchButton::clicked, this, &CustomPatternDialog::onTestClicked);
+    connect(m_previewButton, &TouchButton::clicked, this, &CustomPatternEditor::onPreviewClicked);
+    connect(m_testButton, &TouchButton::clicked, this, &CustomPatternEditor::onTestClicked);
 
-    connect(m_loadTemplateButton, &TouchButton::clicked, this, &CustomPatternDialog::onLoadTemplateClicked);
-    connect(m_exportButton, &TouchButton::clicked, this, &CustomPatternDialog::exportPattern);
-    connect(m_importButton, &TouchButton::clicked, this, &CustomPatternDialog::importPattern);
+    connect(m_loadTemplateButton, &TouchButton::clicked, this, &CustomPatternEditor::onLoadTemplateClicked);
+    connect(m_exportButton, &TouchButton::clicked, this, &CustomPatternEditor::exportPattern);
+    connect(m_importButton, &TouchButton::clicked, this, &CustomPatternEditor::importPattern);
 
-    connect(m_saveButton, &TouchButton::clicked, this, &CustomPatternDialog::onSaveClicked);
-    connect(m_cancelButton, &TouchButton::clicked, this, &QDialog::reject);
+    connect(m_saveButton, &TouchButton::clicked, this, &CustomPatternEditor::onSaveClicked);
 }
 
-void CustomPatternDialog::applyTouchOptimizedStyles()
+void CustomPatternEditor::applyTouchOptimizedStyles()
 {
+    // Use ModernMedicalStyle system instead of hardcoded CSS
     setStyleSheet(
-        "QGroupBox { font-size: 14pt; font-weight: bold; padding-top: 15px; margin-top: 10px; }"
-        "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px 0 5px; }"
-        "QLineEdit, QTextEdit { font-size: 12pt; padding: 8px; border: 2px solid #ddd; border-radius: 5px; }"
-        "QComboBox { font-size: 12pt; padding: 8px; border: 2px solid #ddd; border-radius: 5px; }"
-        "QSpinBox, QDoubleSpinBox { font-size: 12pt; padding: 8px; border: 2px solid #ddd; border-radius: 5px; }"
-        "QListWidget { font-size: 11pt; border: 2px solid #ddd; border-radius: 5px; }"
-        "QListWidget::item { padding: 8px; border-bottom: 1px solid #eee; }"
-        "QListWidget::item:selected { background-color: #2196F3; color: white; }"
-        "QTabWidget::pane { border: 2px solid #ddd; border-radius: 5px; }"
-        "QTabBar::tab { font-size: 12pt; padding: 10px 20px; margin-right: 2px; }"
-        "QTabBar::tab:selected { background-color: #2196F3; color: white; }"
+        ModernMedicalStyle::getGroupBoxStyle() +
+        ModernMedicalStyle::getInputFieldStyle() +
+        ModernMedicalStyle::getListWidgetStyle() +
+        ModernMedicalStyle::getTabWidgetStyle()
     );
 }
 
-void CustomPatternDialog::initializeDefaultPattern()
+void CustomPatternEditor::initializeDefaultPattern()
 {
     m_patternNameEdit->setText("New Custom Pattern");
     m_patternTypeCombo->setCurrentText("Custom");
@@ -468,7 +478,7 @@ void CustomPatternDialog::initializeDefaultPattern()
     updatePreview();
 }
 
-void CustomPatternDialog::addDefaultStep()
+void CustomPatternEditor::addDefaultStep()
 {
     PatternStep step;
     step.pressurePercent = DEFAULT_PRESSURE;
@@ -480,7 +490,7 @@ void CustomPatternDialog::addDefaultStep()
     updateStepList();
 }
 
-void CustomPatternDialog::loadPattern(const QString& patternName)
+void CustomPatternEditor::loadPattern(const QString& patternName)
 {
     qDebug() << "Loading pattern:" << patternName;
 
@@ -544,7 +554,7 @@ void CustomPatternDialog::loadPattern(const QString& patternName)
                                "The pattern may have been deleted or is not available.").arg(patternName));
 }
 
-void CustomPatternDialog::createNewPattern()
+void CustomPatternEditor::createNewPattern()
 {
     qDebug() << "Creating new pattern";
 
@@ -556,7 +566,7 @@ void CustomPatternDialog::createNewPattern()
     m_patternModified = true;
 }
 
-QJsonObject CustomPatternDialog::getPatternData() const
+QJsonObject CustomPatternEditor::getPatternData() const
 {
     QJsonObject data;
     data["name"] = m_patternNameEdit->text();
@@ -580,7 +590,7 @@ QJsonObject CustomPatternDialog::getPatternData() const
     return data;
 }
 
-void CustomPatternDialog::setPatternData(const QJsonObject& data)
+void CustomPatternEditor::setPatternData(const QJsonObject& data)
 {
     // Set basic pattern information
     m_patternNameEdit->setText(data["name"].toString());
@@ -629,7 +639,7 @@ void CustomPatternDialog::setPatternData(const QJsonObject& data)
     qDebug() << "Pattern data loaded into dialog:" << data["name"].toString();
 }
 
-void CustomPatternDialog::onTabChanged(int index)
+void CustomPatternEditor::onTabChanged(int index)
 {
     m_currentTab = index;
 
@@ -638,12 +648,12 @@ void CustomPatternDialog::onTabChanged(int index)
     }
 }
 
-void CustomPatternDialog::onPatternNameChanged()
+void CustomPatternEditor::onPatternNameChanged()
 {
     m_patternModified = true;
 }
 
-void CustomPatternDialog::onPatternTypeChanged()
+void CustomPatternEditor::onPatternTypeChanged()
 {
     m_patternModified = true;
 
@@ -656,13 +666,13 @@ void CustomPatternDialog::onPatternTypeChanged()
     }
 }
 
-void CustomPatternDialog::onParameterChanged()
+void CustomPatternEditor::onParameterChanged()
 {
     m_patternModified = true;
     updatePreview();
 }
 
-void CustomPatternDialog::onStepSelectionChanged(int row)
+void CustomPatternEditor::onStepSelectionChanged(int row)
 {
     if (row >= 0 && row < m_patternSteps.size()) {
         const PatternStep& step = m_patternSteps[row];
@@ -680,17 +690,17 @@ void CustomPatternDialog::onStepSelectionChanged(int row)
     }
 }
 
-void CustomPatternDialog::onStepAdded()
+void CustomPatternEditor::onStepAdded()
 {
     addPatternStep();
 }
 
-void CustomPatternDialog::onStepRemoved()
+void CustomPatternEditor::onStepRemoved()
 {
     removePatternStep();
 }
 
-void CustomPatternDialog::onStepModified()
+void CustomPatternEditor::onStepModified()
 {
     int currentRow = m_stepsList->currentRow();
     if (currentRow >= 0 && currentRow < m_patternSteps.size()) {
@@ -710,12 +720,12 @@ void CustomPatternDialog::onStepModified()
     }
 }
 
-void CustomPatternDialog::onPreviewClicked()
+void CustomPatternEditor::onPreviewClicked()
 {
     updatePreview();
 }
 
-void CustomPatternDialog::onTestClicked()
+void CustomPatternEditor::onTestClicked()
 {
     if (!validatePatternData()) {
         QMessageBox::warning(this, "Invalid Pattern",
@@ -738,7 +748,7 @@ void CustomPatternDialog::onTestClicked()
     }
 }
 
-void CustomPatternDialog::onSaveClicked()
+void CustomPatternEditor::onSaveClicked()
 {
     if (!validatePatternData()) {
         QMessageBox::warning(this, "Invalid Pattern",
@@ -746,16 +756,18 @@ void CustomPatternDialog::onSaveClicked()
         return;
     }
 
-    savePattern();
+    if (savePattern()) {
+        emit backToPatternSelector();
+    }
 }
 
-void CustomPatternDialog::onLoadTemplateClicked()
+void CustomPatternEditor::onLoadTemplateClicked()
 {
     QString templateName = m_templateCombo->currentText();
     loadTemplate(templateName);
 }
 
-void CustomPatternDialog::addPatternStep()
+void CustomPatternEditor::addPatternStep()
 {
     PatternStep newStep;
     newStep.pressurePercent = m_stepPressureSpin->value();
@@ -777,7 +789,7 @@ void CustomPatternDialog::addPatternStep()
     updatePreview();
 }
 
-void CustomPatternDialog::removePatternStep()
+void CustomPatternEditor::removePatternStep()
 {
     int currentRow = m_stepsList->currentRow();
     if (currentRow >= 0 && currentRow < m_patternSteps.size()) {
@@ -795,7 +807,7 @@ void CustomPatternDialog::removePatternStep()
     }
 }
 
-void CustomPatternDialog::moveStepUp()
+void CustomPatternEditor::moveStepUp()
 {
     int currentRow = m_stepsList->currentRow();
     if (currentRow > 0 && currentRow < m_patternSteps.size()) {
@@ -808,7 +820,7 @@ void CustomPatternDialog::moveStepUp()
     }
 }
 
-void CustomPatternDialog::moveStepDown()
+void CustomPatternEditor::moveStepDown()
 {
     int currentRow = m_stepsList->currentRow();
     if (currentRow >= 0 && currentRow < m_patternSteps.size() - 1) {
@@ -821,7 +833,7 @@ void CustomPatternDialog::moveStepDown()
     }
 }
 
-void CustomPatternDialog::duplicateStep()
+void CustomPatternEditor::duplicateStep()
 {
     int currentRow = m_stepsList->currentRow();
     if (currentRow >= 0 && currentRow < m_patternSteps.size()) {
@@ -837,7 +849,7 @@ void CustomPatternDialog::duplicateStep()
     }
 }
 
-void CustomPatternDialog::clearAllSteps()
+void CustomPatternEditor::clearAllSteps()
 {
     QMessageBox::StandardButton reply = QMessageBox::question(this,
         "Clear All Steps",
@@ -854,7 +866,7 @@ void CustomPatternDialog::clearAllSteps()
     }
 }
 
-void CustomPatternDialog::loadTemplate(const QString& templateName)
+void CustomPatternEditor::loadTemplate(const QString& templateName)
 {
     qDebug() << "Loading template:" << templateName;
 
@@ -934,7 +946,7 @@ void CustomPatternDialog::loadTemplate(const QString& templateName)
                            QString("Template '%1' has been loaded successfully.").arg(templateName));
 }
 
-void CustomPatternDialog::exportPattern()
+void CustomPatternEditor::exportPattern()
 {
     QString fileName = QFileDialog::getSaveFileName(this,
         "Export Pattern",
@@ -959,7 +971,7 @@ void CustomPatternDialog::exportPattern()
     }
 }
 
-void CustomPatternDialog::importPattern()
+void CustomPatternEditor::importPattern()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
         "Import Pattern",
@@ -1011,7 +1023,7 @@ void CustomPatternDialog::importPattern()
     }
 }
 
-bool CustomPatternDialog::validatePatternData()
+bool CustomPatternEditor::validatePatternData()
 {
     QStringList errors;
 
@@ -1039,7 +1051,7 @@ bool CustomPatternDialog::validatePatternData()
 
     if (errors.isEmpty()) {
         m_validationResults->setPlainText("✓ Pattern validation passed successfully.");
-        m_validationResults->setStyleSheet("color: green;");
+        m_validationResults->setStyleSheet(QString("color: %1;").arg(ModernMedicalStyle::Colors::MEDICAL_GREEN.name()));
         return true;
     } else {
         QString errorText = "✗ Pattern validation failed:\n\n";
@@ -1047,17 +1059,17 @@ bool CustomPatternDialog::validatePatternData()
             errorText += "• " + error + "\n";
         }
         m_validationResults->setPlainText(errorText);
-        m_validationResults->setStyleSheet("color: red;");
+        m_validationResults->setStyleSheet(QString("color: %1;").arg(ModernMedicalStyle::Colors::MEDICAL_RED.name()));
         return false;
     }
 }
 
-void CustomPatternDialog::validatePattern()
+void CustomPatternEditor::validatePattern()
 {
     validatePatternData();
 }
 
-bool CustomPatternDialog::savePattern()
+bool CustomPatternEditor::savePattern()
 {
     QJsonObject patternData = getPatternData();
     QString patternName = patternData["name"].toString();
@@ -1066,11 +1078,10 @@ bool CustomPatternDialog::savePattern()
         emit patternCreated(patternName, patternData);
     }
 
-    accept();
     return true;
 }
 
-void CustomPatternDialog::updatePreview()
+void CustomPatternEditor::updatePreview()
 {
     int totalDuration = 0;
     double totalPressure = 0.0;
@@ -1102,7 +1113,7 @@ void CustomPatternDialog::updatePreview()
     m_previewChart->setText(chartText);
 }
 
-void CustomPatternDialog::updateStepList()
+void CustomPatternEditor::updateStepList()
 {
     m_stepsList->clear();
 
@@ -1122,7 +1133,7 @@ void CustomPatternDialog::updateStepList()
     }
 }
 
-QJsonObject CustomPatternDialog::stepToJson(const PatternStep& step) const
+QJsonObject CustomPatternEditor::stepToJson(const PatternStep& step) const
 {
     QJsonObject stepObj;
     stepObj["pressure_percent"] = step.pressurePercent;
@@ -1134,7 +1145,7 @@ QJsonObject CustomPatternDialog::stepToJson(const PatternStep& step) const
     return stepObj;
 }
 
-CustomPatternDialog::PatternStep CustomPatternDialog::jsonToStep(const QJsonObject& json) const
+CustomPatternEditor::PatternStep CustomPatternEditor::jsonToStep(const QJsonObject& json) const
 {
     PatternStep step;
     step.pressurePercent = json["pressure_percent"].toDouble();
@@ -1146,50 +1157,62 @@ CustomPatternDialog::PatternStep CustomPatternDialog::jsonToStep(const QJsonObje
     return step;
 }
 
-void CustomPatternDialog::onOkClicked() {
-    savePattern();
+
+
+void CustomPatternEditor::onBackClicked() {
+    emit backToPatternSelector();
 }
 
-void CustomPatternDialog::onCancelClicked() {
-    reject();
+void CustomPatternEditor::onResetClicked() {
+    resetEditor();
 }
 
-void CustomPatternDialog::onApplyClicked() {
-    savePattern();
-}
-
-void CustomPatternDialog::onResetPattern() {
+void CustomPatternEditor::onResetPattern() {
     initializeDefaultPattern();
 }
 
-void CustomPatternDialog::onTemplateSelected() {
+void CustomPatternEditor::onTemplateSelected() {
     loadTemplate(m_templateCombo->currentText());
 }
 
-void CustomPatternDialog::onImportPattern() {
+void CustomPatternEditor::onImportPattern() {
     importPattern();
 }
 
-void CustomPatternDialog::onExportPattern() {
+void CustomPatternEditor::onExportPattern() {
     exportPattern();
 }
 
-void CustomPatternDialog::previewPattern() {
+void CustomPatternEditor::previewPattern() {
     updatePreview();
 }
 
-void CustomPatternDialog::stopPreview() {
+void CustomPatternEditor::stopPreview() {
     // stop preview
 }
 
-void CustomPatternDialog::testPattern() {
+void CustomPatternEditor::testPattern() {
     onTestClicked();
 }
 
-void CustomPatternDialog::onStepSelected() {
+void CustomPatternEditor::showEditor() {
+    show();
+    resetEditor();
+}
+
+void CustomPatternEditor::hideEditor() {
+    hide();
+    emit editorClosed();
+}
+
+void CustomPatternEditor::resetEditor() {
+    initializeDefaultPattern();
+}
+
+void CustomPatternEditor::onStepSelected() {
     onStepSelectionChanged(m_stepsList->currentRow());
 }
 
-void CustomPatternDialog::onPreviewTimer() {
+void CustomPatternEditor::onPreviewTimer() {
     // preview timer
 }

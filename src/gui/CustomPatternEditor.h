@@ -1,7 +1,7 @@
-#ifndef CUSTOMPATTERNDIALOG_H
-#define CUSTOMPATTERNDIALOG_H
+#ifndef CUSTOMPATTERNEDITOR_H
+#define CUSTOMPATTERNEDITOR_H
 
-#include <QDialog>
+#include <QWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGridLayout>
@@ -29,7 +29,7 @@ class VacuumController;
 class TouchButton;
 class PatternEngine;
 
-class CustomPatternDialog : public QDialog
+class CustomPatternEditor : public QWidget
 {
     Q_OBJECT
 
@@ -46,18 +46,23 @@ public:
             : pressurePercent(pressure), durationMs(duration), action(act), description(desc) {}
     };
 
-    explicit CustomPatternDialog(VacuumController* controller, QWidget *parent = nullptr);
-    ~CustomPatternDialog();
+    explicit CustomPatternEditor(VacuumController* controller, QWidget *parent = nullptr);
+    ~CustomPatternEditor();
 
     void loadPattern(const QString& patternName);
     void createNewPattern();
     bool savePattern();
     bool savePatternAs();
-    
+
     QJsonObject getPatternData() const;
     void setPatternData(const QJsonObject& data);
     QList<PatternStep> getPatternSteps() const;
     void setPatternSteps(const QList<PatternStep>& steps);
+
+    // Editor control methods
+    void showEditor();
+    void hideEditor();
+    void resetEditor();
 
 public Q_SLOTS:
     void previewPattern();
@@ -68,6 +73,8 @@ public Q_SLOTS:
 Q_SIGNALS:
     void patternCreated(const QString& patternName, const QJsonObject& patternData);
     void patternModified(const QString& patternName, const QJsonObject& patternData);
+    void editorClosed();
+    void backToPatternSelector();
 
 private Q_SLOTS:
     void onPatternTypeChanged();
@@ -80,16 +87,15 @@ private Q_SLOTS:
     void onImportPattern();
     void onExportPattern();
     void onResetPattern();
-    void onApplyClicked();
-    void onCancelClicked();
-    void onOkClicked();
+    void onSaveClicked();
+    void onBackClicked();
+    void onResetClicked();
     void onTabChanged(int index);
     void onPatternNameChanged();
     void onParameterChanged();
     void onStepSelectionChanged(int row);
     void onPreviewClicked();
     void onTestClicked();
-    void onSaveClicked();
     void onLoadTemplateClicked();
 
 private:
@@ -254,4 +260,4 @@ private:
     static const int BUTTON_MIN_HEIGHT = 40;
 };
 
-#endif // CUSTOMPATTERNDIALOG_H
+#endif // CUSTOMPATTERNEDITOR_H

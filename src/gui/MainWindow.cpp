@@ -4,6 +4,7 @@
 #include "SafetyPanel.h"
 #include "SettingsPanel.h"
 #include "SystemDiagnosticsPanel.h"
+#include "CustomPatternEditor.h"
 #include "styles/ModernMedicalStyle.h"
 #include "../VacuumController.h"
 
@@ -314,12 +315,50 @@ void MainWindow::showDiagnosticsPanel()
 {
     if (m_stackedWidget && m_diagnosticsPanelWidget) {
         m_stackedWidget->setCurrentWidget(m_diagnosticsPanelWidget.get());
-        
+
         // Update navigation buttons
         m_mainPanelButton->setStyleSheet("");
         m_safetyPanelButton->setStyleSheet("");
         m_settingsButton->setStyleSheet("");
         m_diagnosticsButton->setStyleSheet("background-color: #2196F3; color: white;");
+    }
+}
+
+void MainWindow::showPatternEditor()
+{
+    if (m_stackedWidget && m_customPatternEditor) {
+        m_stackedWidget->setCurrentWidget(m_customPatternEditor.get());
+
+        // Clear all navigation button highlights (pattern editor is not in main nav)
+        m_mainPanelButton->setStyleSheet("");
+        m_safetyPanelButton->setStyleSheet("");
+        m_settingsButton->setStyleSheet("");
+        m_diagnosticsButton->setStyleSheet("");
+
+        // Show the editor for creating a new pattern
+        m_customPatternEditor->createNewPattern();
+        m_customPatternEditor->showEditor();
+    }
+}
+
+void MainWindow::showPatternEditor(const QString& patternName)
+{
+    if (m_stackedWidget && m_customPatternEditor) {
+        m_stackedWidget->setCurrentWidget(m_customPatternEditor.get());
+
+        // Clear all navigation button highlights (pattern editor is not in main nav)
+        m_mainPanelButton->setStyleSheet("");
+        m_safetyPanelButton->setStyleSheet("");
+        m_settingsButton->setStyleSheet("");
+        m_diagnosticsButton->setStyleSheet("");
+
+        // Show the editor with the specified pattern for editing
+        if (!patternName.isEmpty()) {
+            m_customPatternEditor->loadPattern(patternName);
+        } else {
+            m_customPatternEditor->createNewPattern();
+        }
+        m_customPatternEditor->showEditor();
     }
 }
 
@@ -464,6 +503,7 @@ void MainWindow::setupUI()
     m_safetyPanelWidget = std::make_unique<SafetyPanel>(m_controller);
     m_settingsPanelWidget = std::make_unique<SettingsPanel>(m_controller, this);
     m_diagnosticsPanelWidget = std::make_unique<SystemDiagnosticsPanel>(m_controller);
+    m_customPatternEditor = std::make_unique<CustomPatternEditor>(m_controller, this);
 
     // Setup navigation bar
     setupNavigationBar();
@@ -559,6 +599,11 @@ void MainWindow::setupMainPanel()
         QVBoxLayout* diagLayout = new QVBoxLayout(diagnosticsPanel);
         diagLayout->addWidget(diagLabel);
         m_stackedWidget->addWidget(diagnosticsPanel);
+    }
+
+    // Add custom pattern editor
+    if (m_customPatternEditor) {
+        m_stackedWidget->addWidget(m_customPatternEditor.get());
     }
 }
 
@@ -776,6 +821,28 @@ void MainWindow::connectSignals()
 
     // Connect navigation emergency shutdown button
     connect(m_shutdownButton, &QPushButton::clicked, this, &MainWindow::onEmergencyStopClicked);
+
+    // Connect custom pattern editor signals
+    if (m_customPatternEditor) {
+        connect(m_customPatternEditor.get(), &CustomPatternEditor::backToPatternSelector,
+                this, &MainWindow::showMainPanel);
+        connect(m_customPatternEditor.get(), &CustomPatternEditor::editorClosed,
+                this, &MainWindow::showMainPanel);
+
+        // Connect pattern creation/modification signals to pattern selector
+        if (m_patternSelector) {
+            connect(m_customPatternEditor.get(), &CustomPatternEditor::patternCreated,
+                    m_patternSelector.get(), &PatternSelector::onPatternCreated);
+            connect(m_customPatternEditor.get(), &CustomPatternEditor::patternModified,
+                    m_patternSelector.get(), &PatternSelector::onPatternModified);
+        }
+    }
+
+    // Connect pattern selector signals
+    if (m_patternSelector) {
+        connect(m_patternSelector.get(), &PatternSelector::patternEditorRequested,
+                this, QOverload<const QString&>::of(&MainWindow::showPatternEditor));
+    }
 }
 
 void MainWindow::applyLargeDisplayStyles()

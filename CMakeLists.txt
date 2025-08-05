@@ -8,6 +8,8 @@ project(VacuumController
     LANGUAGES CXX
 )
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Build configuration
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -66,7 +68,8 @@ endif()
 find_package(Qt5 REQUIRED COMPONENTS Core Widgets Charts)
 find_package(PkgConfig REQUIRED)
 
-# System dependencies
+# System dependencies - prioritize /usr/local for libgpiod v2.x
+set(ENV{PKG_CONFIG_PATH} "/usr/local/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
 pkg_check_modules(GPIOD REQUIRED libgpiod)
 
 # Enable Qt MOC, UIC, and RCC
@@ -99,7 +102,7 @@ set(SOURCES
     src/gui/PatternSelector.cpp
     src/gui/SafetyPanel.cpp
     src/gui/SettingsPanel.cpp
-    src/gui/CustomPatternDialog.cpp
+    src/gui/CustomPatternEditor.cpp
     src/gui/SystemDiagnosticsPanel.cpp
     src/gui/CalibrationInterface.cpp
     src/gui/components/PressureGauge.cpp
@@ -204,6 +207,10 @@ target_link_libraries(VacuumControllerLib
         pthread
         ${GPIOD_LIBRARIES}
 )
+
+# Add library directories for libgpiod v2.x
+target_link_directories(VacuumControllerLib PRIVATE /usr/local/lib)
+target_include_directories(VacuumControllerLib PRIVATE /usr/local/include)
 
 # Add compiler definitions
 target_compile_definitions(VacuumControllerLib

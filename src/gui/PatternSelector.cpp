@@ -1,7 +1,6 @@
 
 #include "PatternSelector.h"
 #include "components/TouchButton.h"
-#include "CustomPatternDialog.h"
 #include "styles/ModernMedicalStyle.h"
 #include "../VacuumController.h"
 #include <QDebug>
@@ -618,34 +617,8 @@ void PatternSelector::onCustomizeClicked()
         return;
     }
 
-    // Create and show custom pattern dialog
-    CustomPatternDialog* dialog = new CustomPatternDialog(m_controller, this);
-
-    // If a pattern is selected, load it for editing
-    if (!m_selectedPattern.isEmpty()) {
-        dialog->loadPattern(m_selectedPattern);
-    }
-
-    // Connect signals to handle pattern creation/modification
-    connect(dialog, &CustomPatternDialog::patternCreated,
-            this, &PatternSelector::onPatternCreated);
-    connect(dialog, &CustomPatternDialog::patternModified,
-            this, &PatternSelector::onPatternModified);
-
-    // Show dialog
-    if (dialog->exec() == QDialog::Accepted) {
-        // Pattern was saved successfully
-        // Reload patterns to include any new/modified patterns
-        loadPatterns();
-
-        // If a new pattern was created, select it
-        QString newPatternName = dialog->getPatternData()["name"].toString();
-        if (!newPatternName.isEmpty() && m_patterns.contains(newPatternName)) {
-            selectPattern(newPatternName);
-        }
-    }
-
-    dialog->deleteLater();
+    // Request the pattern editor to be shown with the selected pattern
+    emit patternEditorRequested(m_selectedPattern);
 }
 
 void PatternSelector::onCreateNewPatternClicked()
@@ -655,30 +628,8 @@ void PatternSelector::onCreateNewPatternClicked()
         return;
     }
 
-    // Create and show custom pattern dialog for new pattern creation
-    CustomPatternDialog* dialog = new CustomPatternDialog(m_controller, this);
-
-    // Start with a fresh new pattern
-    dialog->createNewPattern();
-
-    // Connect signals to handle pattern creation
-    connect(dialog, &CustomPatternDialog::patternCreated,
-            this, &PatternSelector::onPatternCreated);
-
-    // Show dialog
-    if (dialog->exec() == QDialog::Accepted) {
-        // Pattern was created successfully
-        // Reload patterns to include the new pattern
-        loadPatterns();
-
-        // Select the new pattern
-        QString newPatternName = dialog->getPatternData()["name"].toString();
-        if (!newPatternName.isEmpty() && m_patterns.contains(newPatternName)) {
-            selectPattern(newPatternName);
-        }
-    }
-
-    dialog->deleteLater();
+    // Request the pattern editor to be shown for creating a new pattern
+    emit patternEditorRequested(); // Empty string means create new pattern
 }
 
 void PatternSelector::onPatternCreated(const QString& patternName, const QJsonObject& patternData)

@@ -84,6 +84,8 @@ public Q_SLOTS:
     void selectPattern(const QString& patternName);
     void selectCategory(const QString& category);
     void resetToDefaults();
+    void onPatternCreated(const QString& patternName, const QJsonObject& patternData);
+    void onPatternModified(const QString& patternName, const QJsonObject& patternData);
 
 Q_SIGNALS:
     void patternSelected(const QString& patternName);
@@ -91,6 +93,7 @@ Q_SIGNALS:
     void previewRequested(const QString& patternName);
     void patternCreated(const QString& patternName);
     void patternModified(const QString& patternName);
+    void patternEditorRequested(const QString& patternName = QString());
 
 private Q_SLOTS:
     void onPatternButtonClicked(QAbstractButton* button);
@@ -99,8 +102,6 @@ private Q_SLOTS:
     void onPreviewClicked();
     void onCustomizeClicked();
     void onCreateNewPatternClicked();
-    void onPatternCreated(const QString& patternName, const QJsonObject& patternData);
-    void onPatternModified(const QString& patternName, const QJsonObject& patternData);
 
 private:
     void setupUI();

@@ -19,6 +19,7 @@ class PatternSelector;
 class SafetyPanel;
 class SettingsPanel;
 class SystemDiagnosticsPanel;
+class CustomPatternEditor;
 
 /**
  * @brief Main window for the vacuum controller GUI
@@ -57,6 +58,8 @@ private Q_SLOTS:
     void showSafetyPanel();
     void showSettingsPanel();
     void showDiagnosticsPanel();
+    void showPatternEditor();
+    void showPatternEditor(const QString& patternName);
     
     // Control actions
     void onStartStopClicked();
@@ -118,6 +121,7 @@ private:
     std::unique_ptr<SafetyPanel> m_safetyPanelWidget;
     std::unique_ptr<SettingsPanel> m_settingsPanelWidget;
     std::unique_ptr<SystemDiagnosticsPanel> m_diagnosticsPanelWidget;
+    std::unique_ptr<CustomPatternEditor> m_customPatternEditor;
     
     // Control buttons
     QPushButton* m_startStopButton;
