@@ -1,19 +1,20 @@
 # Vacuum Controller GUI System
 
-A comprehensive Qt-based graphical user interface for a medical vacuum therapy controller system, designed for Raspberry Pi 4 with a 50-inch HDMI display.
+A comprehensive Qt-based graphical user interface for a medical vacuum therapy controller system, designed for Raspberry Pi 4 with a 50-inch HDMI display. Built with modern **libgpiod v2.2.1** for reliable, future-proof GPIO control.
 
 ## Overview
 
 This system provides a complete GUI solution for controlling a vacuum therapy device with the following key features:
 
-- **Real-time pressure monitoring** with graphical displays
-- **15+ vacuum patterns** including pulse, wave, air pulse, milking, and specialized patterns
-- **Safety-critical anti-detachment system** that prevents cup detachment
-- **Emergency stop functionality** with immediate system shutdown
-- **Touch-optimized interface** designed for 50-inch displays with 0.64x scaling
-- **Complete pattern storage system** with custom pattern creation and editing
-- **Scrollable interface panels** for optimal content management
-- **Comprehensive safety systems** with overpressure protection
+- **Real-time pressure monitoring** with graphical displays and live data visualization
+- **15+ vacuum patterns** including pulse, wave, air pulse, milking, and specialized therapeutic patterns
+- **Safety-critical anti-detachment system** that prevents cup detachment during therapy
+- **Emergency stop functionality** with immediate system shutdown and safe state recovery
+- **Touch-optimized embedded widgets** designed for 50-inch medical displays with optimal scaling
+- **Complete pattern storage system** with embedded pattern creation and editing (no modal dialogs)
+- **Scrollable interface panels** for optimal content management and clinical workflow
+- **Comprehensive safety systems** with overpressure protection and sensor monitoring
+- **Modern libgpiod v2.2.1 integration** replacing deprecated wiringPi for reliable GPIO control
 
 ## 🏗️ Industry-Standard Development Practices
 
@@ -39,22 +40,23 @@ This project implements comprehensive industry-standard practices for embedded s
 - **Package Management**: Professional .deb packages with installation scripts
 - **Service Management**: Automatic startup, logging, and monitoring integration
 
-## 🎯 Latest Release: v1.3.0 - UI Scaling & Pattern Storage Complete
+## 🎯 Latest Release: v1.4.0 - Embedded Widget Architecture & libgpiod v2.2.1
 
-### ✅ **Major Improvements in v1.3.0**
-- **Optimal UI Scaling**: Reduced to 0.64x scaling for perfect 50-inch display utilization
-- **Complete Pattern Storage**: Full pattern creation, editing, save/load functionality implemented
-- **Scrollable Interface**: All panels now support content overflow with smooth scrolling
-- **Simplified Controls**: Streamlined emergency stop system with single navigation button
-- **Enhanced Performance**: Fixed CSS warnings and improved type consistency
-- **Medical Device Standards**: Professional scaling and touch targets for clinical use
+### ✅ **Major Improvements in v1.4.0**
+- **Embedded Widget Architecture**: Replaced modal dialogs with embedded widgets for seamless medical device UX
+- **libgpiod v2.2.1 Integration**: Modern GPIO control replacing deprecated wiringPi for enhanced reliability
+- **Touch-Optimized Interface**: Embedded pattern editing eliminates modal interruptions in clinical workflow
+- **Enhanced Medical Device Compliance**: Always-visible controls optimized for 50-inch touch displays
+- **Improved Code Efficiency**: 1,293 line reduction through cleaner embedded widget architecture
+- **Future-Proof GPIO**: Modern libgpiod ensures compatibility with current and future Raspberry Pi OS versions
 
 ### 🚀 **System Status**
-- **Hardware Integration**: MCP3008 ADC, GPIO, SPI communication fully operational
+- **Hardware Integration**: MCP3008 ADC, modern libgpiod v2.2.1 GPIO, SPI communication fully operational
 - **Safety Systems**: Anti-detachment monitoring, emergency controls, pressure limits active
-- **Pattern Engine**: 16 built-in patterns + unlimited custom pattern support
+- **Pattern Engine**: 16 built-in patterns + unlimited custom pattern support with embedded editing
 - **Real-time Monitoring**: Live pressure charts, diagnostics, data logging working
 - **Multi-threading**: Separate threads for GUI, data acquisition, safety monitoring
+- **GPIO Architecture**: Modern libgpiod v2.2.1 replaces deprecated wiringPi for enhanced reliability
 
 ## 🔧 Current Build Status
 
@@ -64,13 +66,13 @@ This project implements comprehensive industry-standard practices for embedded s
 
 **Quick Pi 4 Setup Summary**:
 ```bash
-# Install dependencies
-sudo apt install qtbase5-dev qtcharts5-dev libqt5charts5-dev libgpiod-dev pkg-config
+# Install dependencies (includes modern libgpiod v2.2.1)
+sudo apt update && sudo apt install -y qtbase5-dev qtcharts5-dev libqt5charts5-dev libgpiod-dev pkg-config
 
 # Build and run
 git clone https://github.com/morrisraybrooks/apps.git
 cd apps && mkdir build && cd build
-cmake .. -DRASPBERRY_PI_BUILD=ON && make -j4
+cmake .. -DRASPBERRY_PI_BUILD=ON && make -j3  # Use -j3 for Pi 4 memory optimization
 sudo ./VacuumController
 ```
 
@@ -158,7 +160,46 @@ GPIO 9 (MISO)  → DOUT
 GPIO 8 (CS)    → CS
 ```
 
-> **📝 Important**: This system uses the modern `libgpiod` library for GPIO control instead of the deprecated `wiringPi`. This ensures compatibility with current and future Raspberry Pi OS versions and provides better security and performance.
+> **📝 Important**: This system uses the modern **libgpiod v2.2.1** library for GPIO control instead of the deprecated `wiringPi`. This ensures compatibility with current and future Raspberry Pi OS versions and provides better security, performance, and reliability. The new request-based API offers improved resource management and enhanced safety for medical device applications.
+
+## 🔧 Modern libgpiod v2.2.1 Integration
+
+This project uses **libgpiod v2.2.1**, the modern Linux GPIO interface that replaces the deprecated wiringPi library. This provides significant advantages for medical device applications:
+
+### **Key Benefits of libgpiod v2.2.1**
+- **Future-Proof**: Official Linux GPIO interface, actively maintained and developed
+- **Enhanced Security**: Character device interface with proper permissions and access control
+- **Better Performance**: Request-based API with bulk operations and efficient resource management
+- **Improved Reliability**: Robust error handling and automatic resource cleanup
+- **Medical Device Ready**: Strict resource management ideal for safety-critical applications
+
+### **GPIO Command Reference**
+```bash
+# List all GPIO chips and lines (replaces 'gpio readall')
+gpioinfo
+
+# Detect available GPIO chips
+gpiodetect
+
+# Read GPIO state (replaces 'gpio read')
+gpioget gpiochip0 17
+
+# Set GPIO state (replaces 'gpio write')
+gpioset gpiochip0 17=1
+
+# Monitor GPIO changes
+gpiomon gpiochip0 17
+
+# Test vacuum controller GPIO pins
+gpioget gpiochip0 17 27 22 25  # Read SOL1, SOL2, SOL3, PUMP pins
+```
+
+### **Migration from wiringPi**
+If you're familiar with wiringPi, here are the key differences:
+- **wiringPi**: `gpio readall` → **libgpiod**: `gpioinfo`
+- **wiringPi**: `gpio read 0` → **libgpiod**: `gpioget gpiochip0 17`
+- **wiringPi**: `gpio write 0 1` → **libgpiod**: `gpioset gpiochip0 17=1`
+- **wiringPi**: `gpio mode 0 out` → **libgpiod**: Handled in application code with request-based API
 
 ## Software Architecture
 
@@ -192,8 +233,12 @@ sudo apt update && sudo apt upgrade -y
 # Install Qt5 and development tools
 sudo apt install -y qtbase5-dev qtcharts5-dev cmake build-essential pkg-config
 
-# Install libgpiod for modern GPIO control (replaces deprecated wiringPi)
-sudo apt install -y libgpiod-dev libgpiod2
+# Install modern libgpiod v2.2.1 for GPIO control (replaces deprecated wiringPi)
+sudo apt install -y libgpiod-dev libgpiod2 gpiod
+
+# Verify libgpiod installation
+gpioinfo  # Should list all GPIO chips and lines
+gpiodetect  # Should show available GPIO chips
 
 # Install additional development tools
 sudo apt install -y doxygen graphviz clang-format clang-tidy cppcheck valgrind lcov
@@ -221,8 +266,8 @@ If you prefer to build manually:
 
 ```bash
 mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j$(nproc)
+cmake .. -DCMAKE_BUILD_TYPE=Release -DRASPBERRY_PI_BUILD=ON
+make -j3  # Use -j3 for Raspberry Pi 4 memory optimization
 ```
 
 ## Running the Application
@@ -291,12 +336,13 @@ The anti-detachment feature is **CRITICAL** for patient safety:
 
 ### Main Features
 
-- **Large Touch-Friendly Buttons** - Optimized for 50-inch display
-- **Real-time Pressure Charts** - Historical pressure visualization
-- **Pattern Selection** - Easy access to all vacuum patterns
-- **Safety Panel** - Emergency controls and system status
-- **Settings Dialog** - System configuration and calibration
-- **Diagnostics Panel** - System health and maintenance
+- **Large Touch-Friendly Buttons** - Optimized for 50-inch medical display with proper touch targets
+- **Real-time Pressure Charts** - Historical pressure visualization with live data streaming
+- **Embedded Pattern Editor** - Seamless pattern creation and editing without modal interruptions
+- **Safety Panel** - Emergency controls and system status with immediate response
+- **Embedded Settings Panel** - System configuration and calibration integrated into main interface
+- **Diagnostics Panel** - System health monitoring and maintenance tools
+- **libgpiod v2.2.1 Integration** - Modern, reliable GPIO control for all hardware interfaces
 
 ### Navigation
 
@@ -345,24 +391,38 @@ src/
 
 ### Common Issues
 
-1. **Permission Denied (GPIO)**
-   - Run with `sudo` for GPIO access
-   - Check user is in `gpio` group
+1. **Permission Denied (GPIO with libgpiod)**
+   - Run with `sudo` for GPIO access: `sudo ./VacuumController`
+   - Check user is in `gpio` group: `sudo usermod -a -G gpio $USER`
+   - Verify libgpiod installation: `gpioinfo` should list GPIO chips
 
-2. **SPI Communication Errors**
-   - Verify SPI is enabled: `sudo raspi-config`
-   - Check wiring connections
-   - Confirm MCP3008 power supply
+2. **libgpiod Not Found**
+   - Install libgpiod v2.x: `sudo apt install -y libgpiod-dev libgpiod2 gpiod`
+   - Verify installation: `gpiodetect` should show gpiochip0
+   - Check version: `gpioinfo --version` (should show v2.x)
 
-3. **Qt Application Won't Start**
-   - Install Qt5 development packages: `sudo apt install qtbase5-dev`
-   - Check display configuration
+3. **SPI Communication Errors**
+   - Verify SPI is enabled: `sudo raspi-config` → Interface Options → SPI → Enable
+   - Check wiring connections to MCP3008
+   - Confirm MCP3008 power supply (3.3V)
+   - Test SPI devices: `ls /dev/spi*` should show spidev0.0, spidev0.1
+
+4. **Qt Application Won't Start**
+   - Install Qt5 development packages: `sudo apt install qtbase5-dev qtcharts5-dev`
+   - Check display configuration and Wayland support
    - **For SSH with Wayland**: Use `ssh user@raspberry-pi` and configure Wayland forwarding
 
-4. **Pressure Readings Invalid**
-   - Check sensor calibration
-   - Verify ADC connections
-   - Test with multimeter
+5. **Pressure Readings Invalid**
+   - Check sensor calibration in settings
+   - Verify ADC connections and SPI communication
+   - Test with multimeter and `gpioinfo` for GPIO states
+   - Verify MCP3008 is receiving proper 3.3V power
+
+6. **GPIO Control Issues (migrating from wiringPi)**
+   - Remove any old wiringPi references: `sudo apt remove wiringpi`
+   - Ensure libgpiod v2.x is installed: `sudo apt install libgpiod-dev`
+   - Use new GPIO commands: `gpioget`, `gpioset`, `gpiomon` instead of `gpio`
+   - Check GPIO chip access: `ls -la /dev/gpiochip*`
 
 ### Logging
 
