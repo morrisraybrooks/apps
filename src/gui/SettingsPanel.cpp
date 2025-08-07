@@ -17,6 +17,13 @@ const double SettingsPanel::DEFAULT_WARNING_THRESHOLD = 80.0;
 const double SettingsPanel::DEFAULT_ANTI_DETACHMENT_THRESHOLD = 50.0;
 const int SettingsPanel::DEFAULT_SENSOR_TIMEOUT_MS = 1000;
 
+// Anti-detachment constants (matching AntiDetachmentMonitor defaults)
+const double SettingsPanel::DEFAULT_ANTI_DETACHMENT_WARNING_THRESHOLD = 60.0;  // 60 mmHg
+const double SettingsPanel::DEFAULT_ANTI_DETACHMENT_HYSTERESIS = 5.0;          // 5 mmHg
+const int SettingsPanel::DEFAULT_ANTI_DETACHMENT_RESPONSE_DELAY_MS = 100;      // 100 ms
+const double SettingsPanel::DEFAULT_ANTI_DETACHMENT_MAX_VACUUM_INCREASE = 20.0; // 20%
+const int SettingsPanel::DEFAULT_ANTI_DETACHMENT_MONITORING_RATE_HZ = 100;     // 100 Hz
+
 SettingsPanel::SettingsPanel(VacuumController* controller, QWidget *parent)
     : QWidget(parent)
     , m_controller(controller)
@@ -130,10 +137,67 @@ void SettingsPanel::setupSafetyTab()
     m_sensorTimeoutSpin->setValue(DEFAULT_SENSOR_TIMEOUT_MS);
     
     sensorForm->addRow("Sensor Timeout:", m_sensorTimeoutSpin);
-    
+
+    // Anti-detachment Advanced Settings Group
+    QGroupBox* antiDetachmentGroup = new QGroupBox("Anti-detachment Advanced Settings");
+    antiDetachmentGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QFormLayout* antiDetachmentForm = new QFormLayout(antiDetachmentGroup);
+
+    // Enable/disable anti-detachment system
+    m_antiDetachmentEnabledCheck = new QCheckBox("Anti-detachment System Enabled");
+    m_antiDetachmentEnabledCheck->setChecked(true);
+    m_antiDetachmentEnabledCheck->setToolTip("Enable or disable the anti-detachment monitoring system");
+
+    // Warning threshold (separate from main detachment threshold)
+    m_antiDetachmentWarningThresholdSpin = new QDoubleSpinBox();
+    m_antiDetachmentWarningThresholdSpin->setRange(30.0, 100.0);
+    m_antiDetachmentWarningThresholdSpin->setSuffix(" mmHg");
+    m_antiDetachmentWarningThresholdSpin->setDecimals(1);
+    m_antiDetachmentWarningThresholdSpin->setValue(DEFAULT_ANTI_DETACHMENT_WARNING_THRESHOLD);
+    m_antiDetachmentWarningThresholdSpin->setToolTip("Pressure threshold for anti-detachment warnings (should be higher than detachment threshold)");
+
+    // Hysteresis to prevent oscillation
+    m_antiDetachmentHysteresisSpin = new QDoubleSpinBox();
+    m_antiDetachmentHysteresisSpin->setRange(1.0, 20.0);
+    m_antiDetachmentHysteresisSpin->setSuffix(" mmHg");
+    m_antiDetachmentHysteresisSpin->setDecimals(1);
+    m_antiDetachmentHysteresisSpin->setValue(DEFAULT_ANTI_DETACHMENT_HYSTERESIS);
+    m_antiDetachmentHysteresisSpin->setToolTip("Hysteresis value to prevent oscillation between states");
+
+    // Response delay
+    m_antiDetachmentResponseDelaySpin = new QSpinBox();
+    m_antiDetachmentResponseDelaySpin->setRange(0, 1000);
+    m_antiDetachmentResponseDelaySpin->setSuffix(" ms");
+    m_antiDetachmentResponseDelaySpin->setValue(DEFAULT_ANTI_DETACHMENT_RESPONSE_DELAY_MS);
+    m_antiDetachmentResponseDelaySpin->setToolTip("Delay before anti-detachment response activation (0-1000ms)");
+
+    // Maximum vacuum increase
+    m_antiDetachmentMaxVacuumIncreaseSpin = new QDoubleSpinBox();
+    m_antiDetachmentMaxVacuumIncreaseSpin->setRange(5.0, 50.0);
+    m_antiDetachmentMaxVacuumIncreaseSpin->setSuffix(" %");
+    m_antiDetachmentMaxVacuumIncreaseSpin->setDecimals(1);
+    m_antiDetachmentMaxVacuumIncreaseSpin->setValue(DEFAULT_ANTI_DETACHMENT_MAX_VACUUM_INCREASE);
+    m_antiDetachmentMaxVacuumIncreaseSpin->setToolTip("Maximum vacuum increase allowed during anti-detachment response");
+
+    // Monitoring rate
+    m_antiDetachmentMonitoringRateSpin = new QSpinBox();
+    m_antiDetachmentMonitoringRateSpin->setRange(10, 200);
+    m_antiDetachmentMonitoringRateSpin->setSuffix(" Hz");
+    m_antiDetachmentMonitoringRateSpin->setValue(DEFAULT_ANTI_DETACHMENT_MONITORING_RATE_HZ);
+    m_antiDetachmentMonitoringRateSpin->setToolTip("Monitoring frequency for anti-detachment system (10-200 Hz)");
+
+    // Add controls to form
+    antiDetachmentForm->addRow(m_antiDetachmentEnabledCheck);
+    antiDetachmentForm->addRow("Warning Threshold:", m_antiDetachmentWarningThresholdSpin);
+    antiDetachmentForm->addRow("Hysteresis:", m_antiDetachmentHysteresisSpin);
+    antiDetachmentForm->addRow("Response Delay:", m_antiDetachmentResponseDelaySpin);
+    antiDetachmentForm->addRow("Max Vacuum Increase:", m_antiDetachmentMaxVacuumIncreaseSpin);
+    antiDetachmentForm->addRow("Monitoring Rate:", m_antiDetachmentMonitoringRateSpin);
+
     safetyLayout->addWidget(pressureGroup);
     safetyLayout->addWidget(featuresGroup);
     safetyLayout->addWidget(sensorGroup);
+    safetyLayout->addWidget(antiDetachmentGroup);
     safetyLayout->addStretch();
 }
 
@@ -451,7 +515,20 @@ void SettingsPanel::loadSettings()
         m_warningThresholdSpin->setValue(safetySettings["warning_threshold_mmhg"].toDouble(DEFAULT_WARNING_THRESHOLD));
         m_antiDetachmentSpin->setValue(safetySettings["anti_detachment_threshold_mmhg"].toDouble(DEFAULT_ANTI_DETACHMENT_THRESHOLD));
         m_sensorTimeoutSpin->setValue(safetySettings["sensor_timeout_ms"].toInt(DEFAULT_SENSOR_TIMEOUT_MS));
-        
+
+        // Load anti-detachment advanced settings
+        m_antiDetachmentEnabledCheck->setChecked(safetySettings["anti_detachment_enabled"].toBool(true));
+        m_antiDetachmentWarningThresholdSpin->setValue(safetySettings["anti_detachment_warning_threshold_mmhg"].toDouble(DEFAULT_ANTI_DETACHMENT_WARNING_THRESHOLD));
+        m_antiDetachmentHysteresisSpin->setValue(safetySettings["anti_detachment_hysteresis_mmhg"].toDouble(DEFAULT_ANTI_DETACHMENT_HYSTERESIS));
+        m_antiDetachmentResponseDelaySpin->setValue(safetySettings["anti_detachment_response_delay_ms"].toInt(DEFAULT_ANTI_DETACHMENT_RESPONSE_DELAY_MS));
+        m_antiDetachmentMaxVacuumIncreaseSpin->setValue(safetySettings["anti_detachment_max_vacuum_increase_percent"].toDouble(DEFAULT_ANTI_DETACHMENT_MAX_VACUUM_INCREASE));
+        m_antiDetachmentMonitoringRateSpin->setValue(safetySettings["anti_detachment_monitoring_rate_hz"].toInt(DEFAULT_ANTI_DETACHMENT_MONITORING_RATE_HZ));
+
+        // Load safety feature checkboxes
+        m_emergencyStopCheck->setChecked(safetySettings["emergency_stop_enabled"].toBool(true));
+        m_overpressureProtectionCheck->setChecked(safetySettings["overpressure_protection_enabled"].toBool(true));
+        m_autoShutdownCheck->setChecked(safetySettings["auto_shutdown_on_error"].toBool(true));
+
         // Load other settings...
     }
 }
@@ -467,6 +544,14 @@ void SettingsPanel::saveSettings()
     safetySettings["emergency_stop_enabled"] = m_emergencyStopCheck->isChecked();
     safetySettings["overpressure_protection_enabled"] = m_overpressureProtectionCheck->isChecked();
     safetySettings["auto_shutdown_on_error"] = m_autoShutdownCheck->isChecked();
+
+    // Save anti-detachment advanced settings
+    safetySettings["anti_detachment_enabled"] = m_antiDetachmentEnabledCheck->isChecked();
+    safetySettings["anti_detachment_warning_threshold_mmhg"] = m_antiDetachmentWarningThresholdSpin->value();
+    safetySettings["anti_detachment_hysteresis_mmhg"] = m_antiDetachmentHysteresisSpin->value();
+    safetySettings["anti_detachment_response_delay_ms"] = m_antiDetachmentResponseDelaySpin->value();
+    safetySettings["anti_detachment_max_vacuum_increase_percent"] = m_antiDetachmentMaxVacuumIncreaseSpin->value();
+    safetySettings["anti_detachment_monitoring_rate_hz"] = m_antiDetachmentMonitoringRateSpin->value();
     
     m_currentSettings["safety_settings"] = safetySettings;
     
@@ -497,11 +582,19 @@ void SettingsPanel::resetToDefaults()
         m_warningThresholdSpin->setValue(DEFAULT_WARNING_THRESHOLD);
         m_antiDetachmentSpin->setValue(DEFAULT_ANTI_DETACHMENT_THRESHOLD);
         m_sensorTimeoutSpin->setValue(DEFAULT_SENSOR_TIMEOUT_MS);
-        
+
         m_emergencyStopCheck->setChecked(true);
         m_overpressureProtectionCheck->setChecked(true);
         m_autoShutdownCheck->setChecked(true);
-        
+
+        // Reset anti-detachment advanced settings
+        m_antiDetachmentEnabledCheck->setChecked(true);
+        m_antiDetachmentWarningThresholdSpin->setValue(DEFAULT_ANTI_DETACHMENT_WARNING_THRESHOLD);
+        m_antiDetachmentHysteresisSpin->setValue(DEFAULT_ANTI_DETACHMENT_HYSTERESIS);
+        m_antiDetachmentResponseDelaySpin->setValue(DEFAULT_ANTI_DETACHMENT_RESPONSE_DELAY_MS);
+        m_antiDetachmentMaxVacuumIncreaseSpin->setValue(DEFAULT_ANTI_DETACHMENT_MAX_VACUUM_INCREASE);
+        m_antiDetachmentMonitoringRateSpin->setValue(DEFAULT_ANTI_DETACHMENT_MONITORING_RATE_HZ);
+
         // Reset other tabs...
         
         QMessageBox::information(this, "Reset Complete", "All settings have been reset to default values.");
@@ -523,11 +616,36 @@ bool SettingsPanel::validateSettings()
     }
     
     if (m_antiDetachmentSpin->value() >= m_warningThresholdSpin->value()) {
-        QMessageBox::warning(this, "Invalid Settings", 
+        QMessageBox::warning(this, "Invalid Settings",
                            "Anti-detachment threshold must be less than warning threshold.");
         return false;
     }
-    
+
+    // Validate anti-detachment advanced settings
+    if (m_antiDetachmentWarningThresholdSpin->value() <= m_antiDetachmentSpin->value()) {
+        QMessageBox::warning(this, "Invalid Settings",
+                           "Anti-detachment warning threshold must be higher than detachment threshold.");
+        return false;
+    }
+
+    if (m_antiDetachmentHysteresisSpin->value() >= m_antiDetachmentSpin->value()) {
+        QMessageBox::warning(this, "Invalid Settings",
+                           "Hysteresis value must be less than detachment threshold.");
+        return false;
+    }
+
+    if (m_antiDetachmentMaxVacuumIncreaseSpin->value() > 50.0) {
+        QMessageBox::warning(this, "Invalid Settings",
+                           "Maximum vacuum increase should not exceed 50% for safety.");
+        return false;
+    }
+
+    if (m_antiDetachmentMonitoringRateSpin->value() < 10) {
+        QMessageBox::warning(this, "Invalid Settings",
+                           "Monitoring rate should be at least 10 Hz for effective detection.");
+        return false;
+    }
+
     return true;
 }
 

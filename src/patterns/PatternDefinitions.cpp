@@ -28,6 +28,7 @@ void PatternDefinitions::initializePatterns()
     createMilkingPatterns();
     createConstantPatterns();
     createSpecialPatterns();
+    createTherapeuticPatterns();
     
     qDebug() << "Initialized" << m_patterns.size() << "vacuum patterns";
 }
@@ -420,9 +421,263 @@ void PatternDefinitions::createMilkingPatterns()
 
 void PatternDefinitions::createConstantPatterns()
 {
-    // Slow Constant Orgasm Pattern
+    // Single Cycle Automated Orgasm Pattern
+    PatternInfo singleOrgasm;
+    singleOrgasm.name = "Single Automated Orgasm";
+    singleOrgasm.type = "Automated Orgasm";
+    singleOrgasm.description = "Complete 5-minute arousal-to-climax cycle with 4 physiological phases";
+    singleOrgasm.basePressure = 75.0;
+    singleOrgasm.speed = 1.0;
+    singleOrgasm.intensity = 75.0;
+
+    // Phase 1: Initial Sensitivity (0-30 seconds) - Gentle ramp-up
+    PatternStep phase1;
+    phase1.pressurePercent = 35.0;  // Start very gentle
+    phase1.durationMs = 10000;      // 10 seconds gentle start
+    phase1.action = "gentle_ramp";
+    phase1.description = "Phase 1: Initial sensitivity - gentle start";
+    phase1.parameters["ramp_to"] = 55.0;  // Ramp to moderate level
+    phase1.parameters["anti_detachment_priority"] = true;
+    singleOrgasm.steps.append(phase1);
+
+    PatternStep phase1b;
+    phase1b.pressurePercent = 55.0;  // Moderate level
+    phase1b.durationMs = 20000;      // 20 seconds to complete 30-second phase
+    phase1b.action = "steady_moderate";
+    phase1b.description = "Phase 1b: Settling into moderate stimulation";
+    phase1b.parameters["variation"] = 5.0;
+    phase1b.parameters["variation_period"] = 3000;
+    singleOrgasm.steps.append(phase1b);
+
+    // Phase 2: Adaptation Period (30 seconds - 2 minutes) - Consistent moderate
+    PatternStep phase2;
+    phase2.pressurePercent = 60.0;
+    phase2.durationMs = 90000;       // 90 seconds (1.5 minutes)
+    phase2.action = "adaptation_steady";
+    phase2.description = "Phase 2: Adaptation - consistent moderate intensity";
+    phase2.parameters["variation"] = 8.0;
+    phase2.parameters["variation_period"] = 4000;
+    phase2.parameters["maintain_seal"] = true;
+    singleOrgasm.steps.append(phase2);
+
+    // Phase 3: Arousal Build-up (2-4 minutes) - Gradual intensity increase
+    PatternStep phase3a;
+    phase3a.pressurePercent = 60.0;
+    phase3a.durationMs = 60000;      // 60 seconds gradual ramp
+    phase3a.action = "arousal_buildup";
+    phase3a.description = "Phase 3a: Early arousal buildup";
+    phase3a.parameters["ramp_to"] = 75.0;
+    phase3a.parameters["variation"] = 10.0;
+    phase3a.parameters["variation_period"] = 2500;
+    singleOrgasm.steps.append(phase3a);
+
+    PatternStep phase3b;
+    phase3b.pressurePercent = 75.0;
+    phase3b.durationMs = 60000;      // 60 seconds continued buildup
+    phase3b.action = "arousal_intensify";
+    phase3b.description = "Phase 3b: Intensifying arousal";
+    phase3b.parameters["ramp_to"] = 85.0;
+    phase3b.parameters["variation"] = 12.0;
+    phase3b.parameters["variation_period"] = 2000;
+    phase3b.parameters["enhanced_anti_detachment"] = true;
+    singleOrgasm.steps.append(phase3b);
+
+    // Phase 4: Pre-climax Tension (4-5 minutes) - Maintain precise stimulation
+    PatternStep phase4;
+    phase4.pressurePercent = 85.0;
+    phase4.durationMs = 60000;       // 60 seconds climax phase
+    phase4.action = "climax_maintain";
+    phase4.description = "Phase 4: Pre-climax tension - precise stimulation";
+    phase4.parameters["variation"] = 8.0;
+    phase4.parameters["variation_period"] = 1500;
+    phase4.parameters["maximum_anti_detachment"] = true;
+    phase4.parameters["climax_mode"] = true;
+    singleOrgasm.steps.append(phase4);
+
+    m_patterns["Single Automated Orgasm"] = singleOrgasm;
+
+    // Triple Cycle Automated Orgasm Pattern
+    PatternInfo tripleOrgasm;
+    tripleOrgasm.name = "Triple Automated Orgasm";
+    tripleOrgasm.type = "Multi-Cycle Orgasm";
+    tripleOrgasm.description = "Three consecutive 5-minute orgasm cycles with recovery periods";
+    tripleOrgasm.basePressure = 75.0;
+    tripleOrgasm.speed = 1.0;
+    tripleOrgasm.intensity = 75.0;
+
+    // Cycle 1: Full intensity progression
+    for (const auto& step : singleOrgasm.steps) {
+        PatternStep cycle1Step = step;
+        cycle1Step.description = "Cycle 1: " + step.description;
+        tripleOrgasm.steps.append(cycle1Step);
+    }
+
+    // Recovery Period 1: Gentle cooldown
+    PatternStep recovery1;
+    recovery1.pressurePercent = 30.0;
+    recovery1.durationMs = 45000;    // 45 seconds recovery
+    recovery1.action = "post_climax_recovery";
+    recovery1.description = "Recovery 1: Post-climax sensitivity reduction";
+    recovery1.parameters["variation"] = 5.0;
+    recovery1.parameters["variation_period"] = 5000;
+    recovery1.parameters["gentle_mode"] = true;
+    tripleOrgasm.steps.append(recovery1);
+
+    // Cycle 2: Slightly reduced initial sensitivity
+    for (const auto& step : singleOrgasm.steps) {
+        PatternStep cycle2Step = step;
+        cycle2Step.description = "Cycle 2: " + step.description;
+        // Reduce initial sensitivity for second cycle
+        if (cycle2Step.action == "gentle_ramp") {
+            cycle2Step.pressurePercent = 40.0;  // Start slightly higher
+            cycle2Step.parameters["ramp_to"] = 60.0;
+        }
+        tripleOrgasm.steps.append(cycle2Step);
+    }
+
+    // Recovery Period 2: Longer cooldown
+    PatternStep recovery2;
+    recovery2.pressurePercent = 25.0;
+    recovery2.durationMs = 60000;    // 60 seconds recovery
+    recovery2.action = "post_climax_recovery";
+    recovery2.description = "Recovery 2: Extended post-climax recovery";
+    recovery2.parameters["variation"] = 3.0;
+    recovery2.parameters["variation_period"] = 6000;
+    recovery2.parameters["gentle_mode"] = true;
+    tripleOrgasm.steps.append(recovery2);
+
+    // Cycle 3: Adapted progression for final climax
+    for (const auto& step : singleOrgasm.steps) {
+        PatternStep cycle3Step = step;
+        cycle3Step.description = "Cycle 3: " + step.description;
+        // Further adapt for third cycle
+        if (cycle3Step.action == "gentle_ramp") {
+            cycle3Step.pressurePercent = 45.0;  // Start higher still
+            cycle3Step.parameters["ramp_to"] = 65.0;
+        } else if (cycle3Step.action == "climax_maintain") {
+            cycle3Step.durationMs = 75000;  // Longer final climax phase
+        }
+        tripleOrgasm.steps.append(cycle3Step);
+    }
+
+    // Final cooldown
+    PatternStep finalCooldown;
+    finalCooldown.pressurePercent = 20.0;
+    finalCooldown.durationMs = 90000;  // 90 seconds final recovery
+    finalCooldown.action = "final_recovery";
+    finalCooldown.description = "Final cooldown: Complete session recovery";
+    finalCooldown.parameters["variation"] = 2.0;
+    finalCooldown.parameters["variation_period"] = 8000;
+    finalCooldown.parameters["gentle_mode"] = true;
+    tripleOrgasm.steps.append(finalCooldown);
+
+    m_patterns["Triple Automated Orgasm"] = tripleOrgasm;
+
+    // Continuous Orgasm Marathon Pattern - Endless cycling
+    PatternInfo continuousOrgasm;
+    continuousOrgasm.name = "Continuous Orgasm Marathon";
+    continuousOrgasm.type = "Continuous Orgasm";
+    continuousOrgasm.description = "Endless orgasm cycles - runs continuously until manually stopped";
+    continuousOrgasm.basePressure = 75.0;
+    continuousOrgasm.speed = 1.0;
+    continuousOrgasm.intensity = 75.0;
+
+    // Create a repeating cycle pattern that loops indefinitely
+    // Each cycle is optimized for continuous operation with shorter recovery periods
+
+    // Phase 1: Quick Sensitivity Check (0-15 seconds) - Shortened for continuous operation
+    PatternStep continuousPhase1;
+    continuousPhase1.pressurePercent = 40.0;  // Start slightly higher for continuous mode
+    continuousPhase1.durationMs = 5000;       // 5 seconds quick start
+    continuousPhase1.action = "continuous_gentle_ramp";
+    continuousPhase1.description = "Continuous Phase 1: Quick sensitivity adaptation";
+    continuousPhase1.parameters["ramp_to"] = 60.0;
+    continuousPhase1.parameters["continuous_mode"] = true;
+    continuousOrgasm.steps.append(continuousPhase1);
+
+    PatternStep continuousPhase1b;
+    continuousPhase1b.pressurePercent = 60.0;
+    continuousPhase1b.durationMs = 10000;     // 10 seconds settling
+    continuousPhase1b.action = "continuous_steady_moderate";
+    continuousPhase1b.description = "Continuous Phase 1b: Quick settling";
+    continuousPhase1b.parameters["variation"] = 6.0;
+    continuousPhase1b.parameters["variation_period"] = 2500;
+    continuousOrgasm.steps.append(continuousPhase1b);
+
+    // Phase 2: Shortened Adaptation (15-45 seconds) - Reduced for continuous flow
+    PatternStep continuousPhase2;
+    continuousPhase2.pressurePercent = 65.0;  // Higher base for continuous mode
+    continuousPhase2.durationMs = 30000;      // 30 seconds (half of single cycle)
+    continuousPhase2.action = "continuous_adaptation";
+    continuousPhase2.description = "Continuous Phase 2: Rapid adaptation";
+    continuousPhase2.parameters["variation"] = 10.0;
+    continuousPhase2.parameters["variation_period"] = 3000;
+    continuousPhase2.parameters["maintain_seal"] = true;
+    continuousOrgasm.steps.append(continuousPhase2);
+
+    // Phase 3: Accelerated Buildup (45 seconds - 2 minutes) - Faster progression
+    PatternStep continuousPhase3a;
+    continuousPhase3a.pressurePercent = 65.0;
+    continuousPhase3a.durationMs = 30000;     // 30 seconds rapid ramp
+    continuousPhase3a.action = "continuous_arousal_buildup";
+    continuousPhase3a.description = "Continuous Phase 3a: Accelerated arousal buildup";
+    continuousPhase3a.parameters["ramp_to"] = 80.0;
+    continuousPhase3a.parameters["variation"] = 12.0;
+    continuousPhase3a.parameters["variation_period"] = 2000;
+    continuousOrgasm.steps.append(continuousPhase3a);
+
+    PatternStep continuousPhase3b;
+    continuousPhase3b.pressurePercent = 80.0;
+    continuousPhase3b.durationMs = 45000;     // 45 seconds intensification
+    continuousPhase3b.action = "continuous_arousal_intensify";
+    continuousPhase3b.description = "Continuous Phase 3b: Rapid intensification";
+    continuousPhase3b.parameters["ramp_to"] = 88.0;
+    continuousPhase3b.parameters["variation"] = 15.0;
+    continuousPhase3b.parameters["variation_period"] = 1500;
+    continuousPhase3b.parameters["enhanced_anti_detachment"] = true;
+    continuousOrgasm.steps.append(continuousPhase3b);
+
+    // Phase 4: Extended Climax (2-3.5 minutes) - Longer climax for continuous pleasure
+    PatternStep continuousPhase4;
+    continuousPhase4.pressurePercent = 88.0;
+    continuousPhase4.durationMs = 90000;      // 90 seconds extended climax
+    continuousPhase4.action = "continuous_climax_maintain";
+    continuousPhase4.description = "Continuous Phase 4: Extended climax maintenance";
+    continuousPhase4.parameters["variation"] = 10.0;
+    continuousPhase4.parameters["variation_period"] = 1200;
+    continuousPhase4.parameters["maximum_anti_detachment"] = true;
+    continuousPhase4.parameters["continuous_climax_mode"] = true;
+    continuousOrgasm.steps.append(continuousPhase4);
+
+    // Brief Recovery/Transition (3.5-4 minutes) - Minimal recovery for continuous flow
+    PatternStep continuousRecovery;
+    continuousRecovery.pressurePercent = 45.0;  // Higher than normal recovery
+    continuousRecovery.durationMs = 30000;      // 30 seconds brief recovery
+    continuousRecovery.action = "continuous_brief_recovery";
+    continuousRecovery.description = "Continuous Recovery: Brief transition for next cycle";
+    continuousRecovery.parameters["variation"] = 8.0;
+    continuousRecovery.parameters["variation_period"] = 4000;
+    continuousRecovery.parameters["prepare_next_cycle"] = true;
+    continuousOrgasm.steps.append(continuousRecovery);
+
+    // Mark this pattern as repeating/looping
+    continuousOrgasm.parameters["infinite_loop"] = true;
+    continuousOrgasm.parameters["cycle_duration_minutes"] = 4.0;  // 4-minute cycles
+    continuousOrgasm.parameters["auto_repeat"] = true;
+
+    m_patterns["Continuous Orgasm Marathon"] = continuousOrgasm;
+
+    // Legacy patterns for compatibility
+    createLegacyConstantPatterns();
+}
+
+void PatternDefinitions::createLegacyConstantPatterns()
+{
+    // Keep original constant patterns for backward compatibility
+
+    // Slow Constant Orgasm Pattern (Legacy)
     PatternInfo slowConstantOrgasm;
-    slowConstantOrgasm.name = "Slow Constant Orgasm";
+    slowConstantOrgasm.name = "Slow Constant Orgasm (Legacy)";
     slowConstantOrgasm.type = "Constant Orgasm";
     slowConstantOrgasm.description = "70% base pressure with ±15% variation over 3 seconds, designed for sustained pleasure";
     slowConstantOrgasm.basePressure = 70.0;
@@ -439,11 +694,11 @@ void PatternDefinitions::createConstantPatterns()
     constantStep.parameters["orgasm_mode"] = true;
 
     slowConstantOrgasm.steps.append(constantStep);
-    m_patterns["Slow Constant Orgasm"] = slowConstantOrgasm;
-    
-    // Medium Constant Orgasm Pattern
+    m_patterns["Slow Constant Orgasm (Legacy)"] = slowConstantOrgasm;
+
+    // Medium Constant Orgasm Pattern (Legacy)
     PatternInfo mediumConstantOrgasm;
-    mediumConstantOrgasm.name = "Medium Constant Orgasm";
+    mediumConstantOrgasm.name = "Medium Constant Orgasm (Legacy)";
     mediumConstantOrgasm.type = "Constant Orgasm";
     mediumConstantOrgasm.description = "75% base pressure with ±10% variation over 2 seconds, designed for sustained pleasure";
     mediumConstantOrgasm.basePressure = 75.0;
@@ -459,11 +714,11 @@ void PatternDefinitions::createConstantPatterns()
     constantStep.parameters["orgasm_mode"] = true;
 
     mediumConstantOrgasm.steps.append(constantStep);
-    m_patterns["Medium Constant Orgasm"] = mediumConstantOrgasm;
-    
-    // Fast Constant Orgasm Pattern
+    m_patterns["Medium Constant Orgasm (Legacy)"] = mediumConstantOrgasm;
+
+    // Fast Constant Orgasm Pattern (Legacy)
     PatternInfo fastConstantOrgasm;
-    fastConstantOrgasm.name = "Fast Constant Orgasm";
+    fastConstantOrgasm.name = "Fast Constant Orgasm (Legacy)";
     fastConstantOrgasm.type = "Constant Orgasm";
     fastConstantOrgasm.description = "80% base pressure with ±5% variation over 1 second, designed for sustained pleasure";
     fastConstantOrgasm.basePressure = 80.0;
@@ -479,7 +734,7 @@ void PatternDefinitions::createConstantPatterns()
     constantStep.parameters["orgasm_mode"] = true;
 
     fastConstantOrgasm.steps.append(constantStep);
-    m_patterns["Fast Constant Orgasm"] = fastConstantOrgasm;
+    m_patterns["Fast Constant Orgasm (Legacy)"] = fastConstantOrgasm;
 }
 
 void PatternDefinitions::createSpecialPatterns()
@@ -522,6 +777,86 @@ void PatternDefinitions::createSpecialPatterns()
     }
     
     m_patterns["Edging"] = edging;
+}
+
+void PatternDefinitions::createTherapeuticPatterns()
+{
+    // Therapeutic Blood Flow Pattern
+    PatternInfo therapeuticFlow;
+    therapeuticFlow.name = "Therapeutic Blood Flow";
+    therapeuticFlow.type = "Therapeutic";
+    therapeuticFlow.description = "Optimized for blood circulation and tissue engorgement across entire vulvar area";
+    therapeuticFlow.basePressure = 25.0;
+    therapeuticFlow.speed = 1.0;
+    therapeuticFlow.intensity = 75.0;
+    therapeuticFlow.category = "Therapeutic";
+
+    // Warmup phase
+    for (int i = 0; i < 5; ++i) {
+        PatternStep warmupStep;
+        warmupStep.pressurePercent = 15.0 + (10.0 * i / 4.0); // 15% to 25%
+        warmupStep.durationMs = 2000;
+        warmupStep.action = "therapeutic_warmup";
+        warmupStep.description = QString("Warmup phase %1").arg(i + 1);
+        therapeuticFlow.steps.append(warmupStep);
+
+        PatternStep baselineStep;
+        baselineStep.pressurePercent = 15.0;
+        baselineStep.durationMs = 1000;
+        baselineStep.action = "maintain_baseline";
+        baselineStep.description = "Baseline maintenance";
+        therapeuticFlow.steps.append(baselineStep);
+    }
+
+    // Main therapeutic phase
+    for (int i = 0; i < 20; ++i) {
+        PatternStep mainStep;
+        mainStep.pressurePercent = 35.0;
+        mainStep.durationMs = 1500;
+        mainStep.action = "therapeutic_main";
+        mainStep.description = "Therapeutic pressure";
+        therapeuticFlow.steps.append(mainStep);
+
+        PatternStep baselineStep;
+        baselineStep.pressurePercent = 20.0;
+        baselineStep.durationMs = 750;
+        baselineStep.action = "maintain_baseline";
+        baselineStep.description = "Baseline maintenance";
+        therapeuticFlow.steps.append(baselineStep);
+    }
+
+    m_patterns["Therapeutic Blood Flow"] = therapeuticFlow;
+
+    // Enhanced Air Pulse for Single Chamber
+    PatternInfo enhancedAirPulse;
+    enhancedAirPulse.name = "Enhanced Single Chamber Air Pulse";
+    enhancedAirPulse.type = "Enhanced Air Pulse";
+    enhancedAirPulse.description = "High-frequency air pulse optimized for single-chamber uniform pressure distribution";
+    enhancedAirPulse.basePressure = 28.0;
+    enhancedAirPulse.speed = 1.0;
+    enhancedAirPulse.intensity = 85.0;
+    enhancedAirPulse.category = "Air Pulse";
+
+    // Progressive intensity air pulse
+    for (int i = 0; i < 30; ++i) {
+        double intensityMultiplier = 0.5 + (0.5 * std::min(1.0, static_cast<double>(i) / 15.0));
+
+        PatternStep pulseStep;
+        pulseStep.pressurePercent = 28.0 + (17.0 * intensityMultiplier); // 28-45 mmHg range
+        pulseStep.durationMs = 40;
+        pulseStep.action = "therapeutic_suction";
+        pulseStep.description = QString("Air pulse %1").arg(i + 1);
+        enhancedAirPulse.steps.append(pulseStep);
+
+        PatternStep baselineStep;
+        baselineStep.pressurePercent = 25.0;
+        baselineStep.durationMs = 85;
+        baselineStep.action = "maintain_baseline";
+        baselineStep.description = "Baseline maintenance";
+        enhancedAirPulse.steps.append(baselineStep);
+    }
+
+    m_patterns["Enhanced Single Chamber Air Pulse"] = enhancedAirPulse;
 }
 
 bool PatternDefinitions::validatePulsePattern(const QJsonObject& params) const

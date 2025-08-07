@@ -93,10 +93,12 @@ private:
     void initializeDefaultPatterns();
     void createPulsePatterns();
     void createConstantPatterns();
+    void createLegacyConstantPatterns();
     void createSpecialPatterns();
     void createAirPulsePatterns();
     void createMilkingPatterns();
     void createWavePatterns();
+    void createTherapeuticPatterns();
     bool validatePulsePattern(const QJsonObject& params) const;
     bool validateWavePattern(const QJsonObject& params) const;
     bool validateAirPulsePattern(const QJsonObject& params) const;

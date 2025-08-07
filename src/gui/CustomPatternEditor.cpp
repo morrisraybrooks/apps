@@ -13,6 +13,14 @@
 #include <QHeaderView>
 #include <QApplication>
 #include <QScreen>
+#include <QRandomGenerator>
+#include <QScrollArea>
+#include <QGraphicsView>
+#include <QGraphicsScene>
+#include <QtWidgets/QGraphicsTextItem>
+#include <QtGui/QPainterPath>
+#include <cmath>
+#include <QtCore/qmath.h>
 
 CustomPatternEditor::CustomPatternEditor(VacuumController* controller, QWidget *parent)
     : QWidget(parent)
@@ -84,12 +92,14 @@ void CustomPatternEditor::setupUI()
     setupVisualDesignerTab();
     setupPreviewTab();
     setupAdvancedTab();
-    
+    setupEdgingTab();
+
     m_tabWidget->addTab(m_basicInfoTab, "Basic Info");
     m_tabWidget->addTab(m_stepEditorTab, "Step Editor");
     m_tabWidget->addTab(m_visualDesignerTab, "Visual Designer");
     m_tabWidget->addTab(m_previewTab, "Preview");
     m_tabWidget->addTab(m_advancedTab, "Advanced");
+    m_tabWidget->addTab(m_edgingTab, "Edging Controls");
     
     QHBoxLayout* buttonLayout = new QHBoxLayout();
     
@@ -411,6 +421,360 @@ void CustomPatternEditor::setupAdvancedTab()
     layout->addStretch();
 }
 
+void CustomPatternEditor::setupEdgingTab()
+{
+    m_edgingTab = new QWidget();
+    QVBoxLayout* layout = new QVBoxLayout(m_edgingTab);
+    layout->setSpacing(SPACING_NORMAL);
+
+    // Create scroll area for edging controls
+    QScrollArea* scrollArea = new QScrollArea();
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+    QWidget* scrollWidget = new QWidget();
+    QVBoxLayout* scrollLayout = new QVBoxLayout(scrollWidget);
+    scrollLayout->setSpacing(SPACING_NORMAL);
+
+    // Build-up Controls Group
+    m_buildupGroup = new QGroupBox("Build-up Phase");
+    QGridLayout* buildupLayout = new QGridLayout(m_buildupGroup);
+
+    // Build-up intensity
+    buildupLayout->addWidget(new QLabel("Build-up Intensity:"), 0, 0);
+    m_buildupIntensitySlider = new QSlider(Qt::Horizontal);
+    m_buildupIntensitySlider->setRange(10, 95);
+    m_buildupIntensitySlider->setValue(70);
+    m_buildupIntensitySlider->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    m_buildupIntensitySpin = new QDoubleSpinBox();
+    m_buildupIntensitySpin->setRange(10.0, 95.0);
+    m_buildupIntensitySpin->setValue(70.0);
+    m_buildupIntensitySpin->setSuffix("%");
+    m_buildupIntensitySpin->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    buildupLayout->addWidget(m_buildupIntensitySlider, 0, 1);
+    buildupLayout->addWidget(m_buildupIntensitySpin, 0, 2);
+
+    // Build-up duration
+    buildupLayout->addWidget(new QLabel("Build-up Duration:"), 1, 0);
+    m_buildupDurationSlider = new QSlider(Qt::Horizontal);
+    m_buildupDurationSlider->setRange(5000, 60000);
+    m_buildupDurationSlider->setValue(15000);
+    m_buildupDurationSlider->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    m_buildupDurationSpin = new QSpinBox();
+    m_buildupDurationSpin->setRange(5000, 60000);
+    m_buildupDurationSpin->setValue(15000);
+    m_buildupDurationSpin->setSuffix(" ms");
+    m_buildupDurationSpin->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    buildupLayout->addWidget(m_buildupDurationSlider, 1, 1);
+    buildupLayout->addWidget(m_buildupDurationSpin, 1, 2);
+
+    // Build-up curve type
+    buildupLayout->addWidget(new QLabel("Build-up Curve:"), 2, 0);
+    m_buildupCurveCombo = new QComboBox();
+    m_buildupCurveCombo->addItems({"Linear", "Exponential", "Logarithmic", "S-Curve", "Custom"});
+    m_buildupCurveCombo->setCurrentText("Exponential");
+    m_buildupCurveCombo->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    buildupLayout->addWidget(m_buildupCurveCombo, 2, 1, 1, 2);
+
+    // Gradual buildup option
+    m_gradualBuildupCheck = new QCheckBox("Gradual Step-wise Build-up");
+    m_gradualBuildupCheck->setChecked(true);
+    buildupLayout->addWidget(m_gradualBuildupCheck, 3, 0, 1, 3);
+
+    // Build-up steps
+    buildupLayout->addWidget(new QLabel("Build-up Steps:"), 4, 0);
+    m_buildupStepsSlider = new QSlider(Qt::Horizontal);
+    m_buildupStepsSlider->setRange(3, 20);
+    m_buildupStepsSlider->setValue(8);
+    m_buildupStepsSlider->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    m_buildupStepsSpin = new QSpinBox();
+    m_buildupStepsSpin->setRange(3, 20);
+    m_buildupStepsSpin->setValue(8);
+    m_buildupStepsSpin->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    buildupLayout->addWidget(m_buildupStepsSlider, 4, 1);
+    buildupLayout->addWidget(m_buildupStepsSpin, 4, 2);
+
+    scrollLayout->addWidget(m_buildupGroup);
+
+    // Peak/Hold Controls Group
+    m_peakGroup = new QGroupBox("Peak/Hold Phase");
+    QGridLayout* peakLayout = new QGridLayout(m_peakGroup);
+
+    // Peak intensity
+    peakLayout->addWidget(new QLabel("Peak Intensity:"), 0, 0);
+    m_peakIntensitySlider = new QSlider(Qt::Horizontal);
+    m_peakIntensitySlider->setRange(70, 100);
+    m_peakIntensitySlider->setValue(85);
+    m_peakIntensitySlider->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    m_peakIntensitySpin = new QDoubleSpinBox();
+    m_peakIntensitySpin->setRange(70.0, 100.0);
+    m_peakIntensitySpin->setValue(85.0);
+    m_peakIntensitySpin->setSuffix("%");
+    m_peakIntensitySpin->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    peakLayout->addWidget(m_peakIntensitySlider, 0, 1);
+    peakLayout->addWidget(m_peakIntensitySpin, 0, 2);
+
+    // Hold duration
+    peakLayout->addWidget(new QLabel("Hold Duration:"), 1, 0);
+    m_holdDurationSlider = new QSlider(Qt::Horizontal);
+    m_holdDurationSlider->setRange(1000, 10000);
+    m_holdDurationSlider->setValue(3000);
+    m_holdDurationSlider->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    m_holdDurationSpin = new QSpinBox();
+    m_holdDurationSpin->setRange(1000, 10000);
+    m_holdDurationSpin->setValue(3000);
+    m_holdDurationSpin->setSuffix(" ms");
+    m_holdDurationSpin->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    peakLayout->addWidget(m_holdDurationSlider, 1, 1);
+    peakLayout->addWidget(m_holdDurationSpin, 1, 2);
+
+    // Variable peak option
+    m_variablePeakCheck = new QCheckBox("Variable Peak Intensity");
+    m_variablePeakCheck->setChecked(false);
+    peakLayout->addWidget(m_variablePeakCheck, 2, 0, 1, 3);
+
+    // Peak variation
+    peakLayout->addWidget(new QLabel("Peak Variation:"), 3, 0);
+    m_peakVariationSlider = new QSlider(Qt::Horizontal);
+    m_peakVariationSlider->setRange(0, 20);
+    m_peakVariationSlider->setValue(5);
+    m_peakVariationSlider->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    m_peakVariationSlider->setEnabled(false);
+    m_peakVariationSpin = new QDoubleSpinBox();
+    m_peakVariationSpin->setRange(0.0, 20.0);
+    m_peakVariationSpin->setValue(5.0);
+    m_peakVariationSpin->setSuffix("%");
+    m_peakVariationSpin->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    m_peakVariationSpin->setEnabled(false);
+    peakLayout->addWidget(m_peakVariationSlider, 3, 1);
+    peakLayout->addWidget(m_peakVariationSpin, 3, 2);
+
+    scrollLayout->addWidget(m_peakGroup);
+
+    // Cooldown/Release Controls Group
+    m_cooldownGroup = new QGroupBox("Cooldown/Release Phase");
+    QGridLayout* cooldownLayout = new QGridLayout(m_cooldownGroup);
+
+    // Cooldown duration
+    cooldownLayout->addWidget(new QLabel("Cooldown Duration:"), 0, 0);
+    m_cooldownDurationSlider = new QSlider(Qt::Horizontal);
+    m_cooldownDurationSlider->setRange(2000, 15000);
+    m_cooldownDurationSlider->setValue(5000);
+    m_cooldownDurationSlider->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    m_cooldownDurationSpin = new QSpinBox();
+    m_cooldownDurationSpin->setRange(2000, 15000);
+    m_cooldownDurationSpin->setValue(5000);
+    m_cooldownDurationSpin->setSuffix(" ms");
+    m_cooldownDurationSpin->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    cooldownLayout->addWidget(m_cooldownDurationSlider, 0, 1);
+    cooldownLayout->addWidget(m_cooldownDurationSpin, 0, 2);
+
+    // Cooldown curve type
+    cooldownLayout->addWidget(new QLabel("Cooldown Curve:"), 1, 0);
+    m_cooldownCurveCombo = new QComboBox();
+    m_cooldownCurveCombo->addItems({"Linear", "Exponential", "Logarithmic", "Immediate"});
+    m_cooldownCurveCombo->setCurrentText("Exponential");
+    m_cooldownCurveCombo->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    cooldownLayout->addWidget(m_cooldownCurveCombo, 1, 1, 1, 2);
+
+    // Complete cooldown option
+    m_completeCooldownCheck = new QCheckBox("Complete Release to Zero");
+    m_completeCooldownCheck->setChecked(true);
+    cooldownLayout->addWidget(m_completeCooldownCheck, 2, 0, 1, 3);
+
+    // Cooldown minimum intensity
+    cooldownLayout->addWidget(new QLabel("Cooldown Min Intensity:"), 3, 0);
+    m_cooldownIntensitySlider = new QSlider(Qt::Horizontal);
+    m_cooldownIntensitySlider->setRange(0, 30);
+    m_cooldownIntensitySlider->setValue(10);
+    m_cooldownIntensitySlider->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    m_cooldownIntensitySlider->setEnabled(false);
+    m_cooldownIntensitySpin = new QDoubleSpinBox();
+    m_cooldownIntensitySpin->setRange(0.0, 30.0);
+    m_cooldownIntensitySpin->setValue(10.0);
+    m_cooldownIntensitySpin->setSuffix("%");
+    m_cooldownIntensitySpin->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    m_cooldownIntensitySpin->setEnabled(false);
+    cooldownLayout->addWidget(m_cooldownIntensitySlider, 3, 1);
+    cooldownLayout->addWidget(m_cooldownIntensitySpin, 3, 2);
+
+    scrollLayout->addWidget(m_cooldownGroup);
+
+    // Cycle Controls Group
+    m_cycleGroup = new QGroupBox("Cycle Configuration");
+    QGridLayout* cycleLayout = new QGridLayout(m_cycleGroup);
+
+    // Number of edge cycles
+    cycleLayout->addWidget(new QLabel("Edge Cycles:"), 0, 0);
+    m_edgeCyclesSpin = new QSpinBox();
+    m_edgeCyclesSpin->setRange(1, 20);
+    m_edgeCyclesSpin->setValue(3);
+    m_edgeCyclesSpin->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    cycleLayout->addWidget(m_edgeCyclesSpin, 0, 1);
+
+    // Infinite cycles option
+    m_infiniteCyclesCheck = new QCheckBox("Infinite Cycles (Manual Stop)");
+    m_infiniteCyclesCheck->setChecked(false);
+    cycleLayout->addWidget(m_infiniteCyclesCheck, 0, 2);
+
+    // Cycle delay
+    cycleLayout->addWidget(new QLabel("Delay Between Cycles:"), 1, 0);
+    m_cycleDelaySlider = new QSlider(Qt::Horizontal);
+    m_cycleDelaySlider->setRange(1000, 30000);
+    m_cycleDelaySlider->setValue(5000);
+    m_cycleDelaySlider->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    m_cycleDelaySpin = new QSpinBox();
+    m_cycleDelaySpin->setRange(1000, 30000);
+    m_cycleDelaySpin->setValue(5000);
+    m_cycleDelaySpin->setSuffix(" ms");
+    m_cycleDelaySpin->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    cycleLayout->addWidget(m_cycleDelaySlider, 1, 1);
+    cycleLayout->addWidget(m_cycleDelaySpin, 1, 2);
+
+    // Increasing intensity option
+    m_increasingIntensityCheck = new QCheckBox("Increasing Intensity Each Cycle");
+    m_increasingIntensityCheck->setChecked(false);
+    cycleLayout->addWidget(m_increasingIntensityCheck, 2, 0, 1, 3);
+
+    // Intensity increment
+    cycleLayout->addWidget(new QLabel("Intensity Increment:"), 3, 0);
+    m_intensityIncrementSlider = new QSlider(Qt::Horizontal);
+    m_intensityIncrementSlider->setRange(1, 10);
+    m_intensityIncrementSlider->setValue(3);
+    m_intensityIncrementSlider->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    m_intensityIncrementSlider->setEnabled(false);
+    m_intensityIncrementSpin = new QDoubleSpinBox();
+    m_intensityIncrementSpin->setRange(1.0, 10.0);
+    m_intensityIncrementSpin->setValue(3.0);
+    m_intensityIncrementSpin->setSuffix("%");
+    m_intensityIncrementSpin->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    m_intensityIncrementSpin->setEnabled(false);
+    cycleLayout->addWidget(m_intensityIncrementSlider, 3, 1);
+    cycleLayout->addWidget(m_intensityIncrementSpin, 3, 2);
+
+    scrollLayout->addWidget(m_cycleGroup);
+
+    // Sensitivity/Auto-detection Controls Group
+    m_sensitivityGroup = new QGroupBox("Sensitivity & Auto-Detection");
+    QGridLayout* sensitivityLayout = new QGridLayout(m_sensitivityGroup);
+
+    // Auto edge detection
+    m_autoEdgeDetectionCheck = new QCheckBox("Enable Automatic Edge Detection");
+    m_autoEdgeDetectionCheck->setChecked(false);
+    sensitivityLayout->addWidget(m_autoEdgeDetectionCheck, 0, 0, 1, 3);
+
+    // Sensitivity threshold
+    sensitivityLayout->addWidget(new QLabel("Sensitivity Threshold:"), 1, 0);
+    m_sensitivityThresholdSlider = new QSlider(Qt::Horizontal);
+    m_sensitivityThresholdSlider->setRange(60, 95);
+    m_sensitivityThresholdSlider->setValue(80);
+    m_sensitivityThresholdSlider->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    m_sensitivityThresholdSlider->setEnabled(false);
+    m_sensitivityThresholdSpin = new QDoubleSpinBox();
+    m_sensitivityThresholdSpin->setRange(60.0, 95.0);
+    m_sensitivityThresholdSpin->setValue(80.0);
+    m_sensitivityThresholdSpin->setSuffix("%");
+    m_sensitivityThresholdSpin->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    m_sensitivityThresholdSpin->setEnabled(false);
+    sensitivityLayout->addWidget(m_sensitivityThresholdSlider, 1, 1);
+    sensitivityLayout->addWidget(m_sensitivityThresholdSpin, 1, 2);
+
+    // Detection window
+    sensitivityLayout->addWidget(new QLabel("Detection Window:"), 2, 0);
+    m_detectionWindowSlider = new QSlider(Qt::Horizontal);
+    m_detectionWindowSlider->setRange(500, 5000);
+    m_detectionWindowSlider->setValue(2000);
+    m_detectionWindowSlider->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    m_detectionWindowSlider->setEnabled(false);
+    m_detectionWindowSpin = new QSpinBox();
+    m_detectionWindowSpin->setRange(500, 5000);
+    m_detectionWindowSpin->setValue(2000);
+    m_detectionWindowSpin->setSuffix(" ms");
+    m_detectionWindowSpin->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    m_detectionWindowSpin->setEnabled(false);
+    sensitivityLayout->addWidget(m_detectionWindowSlider, 2, 1);
+    sensitivityLayout->addWidget(m_detectionWindowSpin, 2, 2);
+
+    // Adaptive sensitivity
+    m_adaptiveSensitivityCheck = new QCheckBox("Adaptive Sensitivity Learning");
+    m_adaptiveSensitivityCheck->setChecked(false);
+    m_adaptiveSensitivityCheck->setEnabled(false);
+    sensitivityLayout->addWidget(m_adaptiveSensitivityCheck, 3, 0, 1, 3);
+
+    // Response time
+    sensitivityLayout->addWidget(new QLabel("Response Time:"), 4, 0);
+    m_responseTimeSlider = new QSlider(Qt::Horizontal);
+    m_responseTimeSlider->setRange(100, 2000);
+    m_responseTimeSlider->setValue(500);
+    m_responseTimeSlider->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    m_responseTimeSlider->setEnabled(false);
+    m_responseTimeSpin = new QSpinBox();
+    m_responseTimeSpin->setRange(100, 2000);
+    m_responseTimeSpin->setValue(500);
+    m_responseTimeSpin->setSuffix(" ms");
+    m_responseTimeSpin->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    m_responseTimeSpin->setEnabled(false);
+    sensitivityLayout->addWidget(m_responseTimeSlider, 4, 1);
+    sensitivityLayout->addWidget(m_responseTimeSpin, 4, 2);
+
+    scrollLayout->addWidget(m_sensitivityGroup);
+
+    // Intensity Curve Controls Group
+    m_intensityCurveGroup = new QGroupBox("Intensity Curve Configuration");
+    QGridLayout* curveLayout = new QGridLayout(m_intensityCurveGroup);
+
+    // Curve type
+    curveLayout->addWidget(new QLabel("Curve Type:"), 0, 0);
+    m_intensityCurveTypeCombo = new QComboBox();
+    m_intensityCurveTypeCombo->addItems({"Linear", "Exponential", "Logarithmic", "S-Curve", "Sine Wave", "Custom"});
+    m_intensityCurveTypeCombo->setCurrentText("Exponential");
+    m_intensityCurveTypeCombo->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    curveLayout->addWidget(m_intensityCurveTypeCombo, 0, 1, 1, 2);
+
+    // Curve exponent
+    curveLayout->addWidget(new QLabel("Curve Exponent:"), 1, 0);
+    m_curveExponentSlider = new QSlider(Qt::Horizontal);
+    m_curveExponentSlider->setRange(50, 300);
+    m_curveExponentSlider->setValue(150);
+    m_curveExponentSlider->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    m_curveExponentSpin = new QDoubleSpinBox();
+    m_curveExponentSpin->setRange(0.5, 3.0);
+    m_curveExponentSpin->setValue(1.5);
+    m_curveExponentSpin->setDecimals(2);
+    m_curveExponentSpin->setMinimumHeight(BUTTON_MIN_HEIGHT);
+    curveLayout->addWidget(m_curveExponentSlider, 1, 1);
+    curveLayout->addWidget(m_curveExponentSpin, 1, 2);
+
+    // Custom curve option
+    m_customCurveCheck = new QCheckBox("Custom Curve Editor");
+    m_customCurveCheck->setChecked(false);
+    curveLayout->addWidget(m_customCurveCheck, 2, 0, 1, 3);
+
+    // Curve preview
+    m_curvePreviewView = new QGraphicsView();
+    m_curvePreviewView->setMinimumHeight(150);
+    m_curvePreviewView->setMaximumHeight(200);
+    m_curvePreviewScene = new QGraphicsScene();
+    m_curvePreviewView->setScene(m_curvePreviewScene);
+    curveLayout->addWidget(m_curvePreviewView, 3, 0, 1, 3);
+
+    // Curve control buttons
+    QHBoxLayout* curveButtonLayout = new QHBoxLayout();
+    m_resetCurveButton = new TouchButton("Reset Curve");
+    m_previewCurveButton = new TouchButton("Preview Curve");
+    curveButtonLayout->addWidget(m_resetCurveButton);
+    curveButtonLayout->addWidget(m_previewCurveButton);
+    curveButtonLayout->addStretch();
+    curveLayout->addLayout(curveButtonLayout, 4, 0, 1, 3);
+
+    scrollLayout->addWidget(m_intensityCurveGroup);
+    scrollLayout->addStretch();
+
+    scrollArea->setWidget(scrollWidget);
+    layout->addWidget(scrollArea);
+}
+
 void CustomPatternEditor::connectSignals()
 {
     connect(m_tabWidget, &QTabWidget::currentChanged, this, &CustomPatternEditor::onTabChanged);
@@ -450,6 +814,105 @@ void CustomPatternEditor::connectSignals()
     connect(m_importButton, &TouchButton::clicked, this, &CustomPatternEditor::importPattern);
 
     connect(m_saveButton, &TouchButton::clicked, this, &CustomPatternEditor::onSaveClicked);
+
+    // Connect edging control signals
+    if (m_buildupIntensitySlider) {
+        connect(m_buildupIntensitySlider, &QSlider::valueChanged, this, &CustomPatternEditor::onBuildupParameterChanged);
+        connect(m_buildupIntensitySpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &CustomPatternEditor::onBuildupParameterChanged);
+        connect(m_buildupDurationSlider, &QSlider::valueChanged, this, &CustomPatternEditor::onBuildupParameterChanged);
+        connect(m_buildupDurationSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, &CustomPatternEditor::onBuildupParameterChanged);
+        connect(m_buildupCurveCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CustomPatternEditor::onBuildupParameterChanged);
+        connect(m_gradualBuildupCheck, &QCheckBox::toggled, this, &CustomPatternEditor::onBuildupParameterChanged);
+        connect(m_buildupStepsSlider, &QSlider::valueChanged, this, &CustomPatternEditor::onBuildupParameterChanged);
+        connect(m_buildupStepsSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, &CustomPatternEditor::onBuildupParameterChanged);
+
+        connect(m_peakIntensitySlider, &QSlider::valueChanged, this, &CustomPatternEditor::onPeakParameterChanged);
+        connect(m_peakIntensitySpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &CustomPatternEditor::onPeakParameterChanged);
+        connect(m_holdDurationSlider, &QSlider::valueChanged, this, &CustomPatternEditor::onPeakParameterChanged);
+        connect(m_holdDurationSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, &CustomPatternEditor::onPeakParameterChanged);
+        connect(m_variablePeakCheck, &QCheckBox::toggled, this, &CustomPatternEditor::onPeakParameterChanged);
+        connect(m_peakVariationSlider, &QSlider::valueChanged, this, &CustomPatternEditor::onPeakParameterChanged);
+        connect(m_peakVariationSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &CustomPatternEditor::onPeakParameterChanged);
+
+        connect(m_cooldownDurationSlider, &QSlider::valueChanged, this, &CustomPatternEditor::onCooldownParameterChanged);
+        connect(m_cooldownDurationSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, &CustomPatternEditor::onCooldownParameterChanged);
+        connect(m_cooldownCurveCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CustomPatternEditor::onCooldownParameterChanged);
+        connect(m_completeCooldownCheck, &QCheckBox::toggled, this, &CustomPatternEditor::onCooldownParameterChanged);
+        connect(m_cooldownIntensitySlider, &QSlider::valueChanged, this, &CustomPatternEditor::onCooldownParameterChanged);
+        connect(m_cooldownIntensitySpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &CustomPatternEditor::onCooldownParameterChanged);
+
+        connect(m_edgeCyclesSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, &CustomPatternEditor::onCycleParameterChanged);
+        connect(m_infiniteCyclesCheck, &QCheckBox::toggled, this, &CustomPatternEditor::onCycleParameterChanged);
+        connect(m_cycleDelaySlider, &QSlider::valueChanged, this, &CustomPatternEditor::onCycleParameterChanged);
+        connect(m_cycleDelaySpin, QOverload<int>::of(&QSpinBox::valueChanged), this, &CustomPatternEditor::onCycleParameterChanged);
+        connect(m_increasingIntensityCheck, &QCheckBox::toggled, this, &CustomPatternEditor::onCycleParameterChanged);
+        connect(m_intensityIncrementSlider, &QSlider::valueChanged, this, &CustomPatternEditor::onCycleParameterChanged);
+        connect(m_intensityIncrementSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &CustomPatternEditor::onCycleParameterChanged);
+
+        connect(m_autoEdgeDetectionCheck, &QCheckBox::toggled, this, &CustomPatternEditor::onAutoDetectionToggled);
+        connect(m_sensitivityThresholdSlider, &QSlider::valueChanged, this, &CustomPatternEditor::onSensitivityParameterChanged);
+        connect(m_sensitivityThresholdSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &CustomPatternEditor::onSensitivityParameterChanged);
+        connect(m_detectionWindowSlider, &QSlider::valueChanged, this, &CustomPatternEditor::onSensitivityParameterChanged);
+        connect(m_detectionWindowSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, &CustomPatternEditor::onSensitivityParameterChanged);
+        connect(m_adaptiveSensitivityCheck, &QCheckBox::toggled, this, &CustomPatternEditor::onSensitivityParameterChanged);
+        connect(m_responseTimeSlider, &QSlider::valueChanged, this, &CustomPatternEditor::onSensitivityParameterChanged);
+        connect(m_responseTimeSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, &CustomPatternEditor::onSensitivityParameterChanged);
+
+        connect(m_intensityCurveTypeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CustomPatternEditor::onIntensityCurveChanged);
+        connect(m_curveExponentSlider, &QSlider::valueChanged, this, &CustomPatternEditor::onIntensityCurveChanged);
+        connect(m_curveExponentSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &CustomPatternEditor::onIntensityCurveChanged);
+        connect(m_customCurveCheck, &QCheckBox::toggled, this, &CustomPatternEditor::onIntensityCurveChanged);
+        connect(m_resetCurveButton, &TouchButton::clicked, this, &CustomPatternEditor::onResetCurveClicked);
+        connect(m_previewCurveButton, &TouchButton::clicked, this, &CustomPatternEditor::onCurvePreviewClicked);
+
+        // Connect slider-spinbox synchronization
+        connect(m_buildupIntensitySlider, &QSlider::valueChanged, [this](int value) {
+            m_buildupIntensitySpin->setValue(value);
+        });
+        connect(m_buildupIntensitySpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this](double value) {
+            m_buildupIntensitySlider->setValue(static_cast<int>(value));
+        });
+
+        // Add similar connections for other slider-spinbox pairs
+        connect(m_buildupDurationSlider, &QSlider::valueChanged, [this](int value) {
+            m_buildupDurationSpin->setValue(value);
+        });
+        connect(m_buildupDurationSpin, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+            m_buildupDurationSlider->setValue(value);
+        });
+
+        connect(m_buildupStepsSlider, &QSlider::valueChanged, [this](int value) {
+            m_buildupStepsSpin->setValue(value);
+        });
+        connect(m_buildupStepsSpin, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+            m_buildupStepsSlider->setValue(value);
+        });
+
+        // Enable/disable controls based on checkboxes
+        connect(m_variablePeakCheck, &QCheckBox::toggled, [this](bool enabled) {
+            m_peakVariationSlider->setEnabled(enabled);
+            m_peakVariationSpin->setEnabled(enabled);
+        });
+
+        connect(m_completeCooldownCheck, &QCheckBox::toggled, [this](bool enabled) {
+            m_cooldownIntensitySlider->setEnabled(!enabled);
+            m_cooldownIntensitySpin->setEnabled(!enabled);
+        });
+
+        connect(m_infiniteCyclesCheck, &QCheckBox::toggled, [this](bool enabled) {
+            m_edgeCyclesSpin->setEnabled(!enabled);
+        });
+
+        connect(m_increasingIntensityCheck, &QCheckBox::toggled, [this](bool enabled) {
+            m_intensityIncrementSlider->setEnabled(enabled);
+            m_intensityIncrementSpin->setEnabled(enabled);
+        });
+
+        connect(m_gradualBuildupCheck, &QCheckBox::toggled, [this](bool enabled) {
+            m_buildupStepsSlider->setEnabled(enabled);
+            m_buildupStepsSpin->setEnabled(enabled);
+        });
+    }
 }
 
 void CustomPatternEditor::applyTouchOptimizedStyles()
@@ -587,6 +1050,12 @@ QJsonObject CustomPatternEditor::getPatternData() const
     data["auto_start"] = m_autoStartCheck->isChecked();
     data["priority"] = m_priorityCombo->currentText();
 
+    // Add edging parameters if this is an edging pattern
+    QString patternType = m_patternTypeCombo->currentText();
+    if (patternType == "Edging" || patternType == "Custom") {
+        data["edging_parameters"] = getEdgingParameters();
+    }
+
     return data;
 }
 
@@ -632,9 +1101,15 @@ void CustomPatternEditor::setPatternData(const QJsonObject& data)
         m_patternSteps.append(step);
     }
 
+    // Load edging parameters if available
+    if (data.contains("edging_parameters")) {
+        setEdgingParameters(data["edging_parameters"].toObject());
+    }
+
     // Update UI
     updateStepList();
     updatePreview();
+    updateEdgingControls();
 
     qDebug() << "Pattern data loaded into dialog:" << data["name"].toString();
 }
@@ -663,7 +1138,16 @@ void CustomPatternEditor::onPatternTypeChanged()
         m_stepDurationSpin->setValue(5000);
     } else if (type == "Pulsed") {
         m_stepDurationSpin->setValue(1000);
+    } else if (type == "Edging" || type == "Custom") {
+        // Enable edging controls and generate default edging pattern
+        updateEdgingControls();
+        if (type == "Edging") {
+            generateEdgingSteps();
+        }
     }
+
+    // Update edging tab availability
+    updateEdgingControls();
 }
 
 void CustomPatternEditor::onParameterChanged()
@@ -1215,4 +1699,616 @@ void CustomPatternEditor::onStepSelected() {
 
 void CustomPatternEditor::onPreviewTimer() {
     // preview timer
+}
+
+// Edging pattern control slot implementations
+void CustomPatternEditor::onEdgingParameterChanged()
+{
+    m_patternModified = true;
+    generateEdgingSteps();
+    updatePreview();
+}
+
+void CustomPatternEditor::onBuildupParameterChanged()
+{
+    m_patternModified = true;
+    syncEdgingSliders();
+    generateEdgingSteps();
+    updatePreview();
+}
+
+void CustomPatternEditor::onPeakParameterChanged()
+{
+    m_patternModified = true;
+    syncEdgingSliders();
+    generateEdgingSteps();
+    updatePreview();
+}
+
+void CustomPatternEditor::onCooldownParameterChanged()
+{
+    m_patternModified = true;
+    syncEdgingSliders();
+    generateEdgingSteps();
+    updatePreview();
+}
+
+void CustomPatternEditor::onCycleParameterChanged()
+{
+    m_patternModified = true;
+    generateEdgingSteps();
+    updatePreview();
+}
+
+void CustomPatternEditor::onSensitivityParameterChanged()
+{
+    m_patternModified = true;
+    validateEdgingParameters();
+}
+
+void CustomPatternEditor::onIntensityCurveChanged()
+{
+    m_patternModified = true;
+    previewIntensityCurve();
+    generateEdgingSteps();
+    updatePreview();
+}
+
+void CustomPatternEditor::onCurvePreviewClicked()
+{
+    previewIntensityCurve();
+}
+
+void CustomPatternEditor::onResetCurveClicked()
+{
+    resetEdgingToDefaults();
+    previewIntensityCurve();
+    generateEdgingSteps();
+    updatePreview();
+}
+
+void CustomPatternEditor::onAutoDetectionToggled(bool enabled)
+{
+    enableEdgingControls(enabled);
+    m_patternModified = true;
+}
+
+// Edging pattern helper method implementations
+void CustomPatternEditor::updateEdgingControls()
+{
+    if (!m_buildupIntensitySlider) return;
+
+    // Update controls based on current pattern type
+    bool isEdgingPattern = (m_patternTypeCombo->currentText() == "Edging" ||
+                           m_patternTypeCombo->currentText() == "Custom");
+
+    m_edgingTab->setEnabled(isEdgingPattern);
+
+    if (isEdgingPattern) {
+        syncEdgingSliders();
+        previewIntensityCurve();
+    }
+}
+
+void CustomPatternEditor::syncEdgingSliders()
+{
+    if (!m_buildupIntensitySlider) return;
+
+    // Sync all slider-spinbox pairs without triggering signals
+    m_buildupIntensitySlider->blockSignals(true);
+    m_buildupIntensitySpin->blockSignals(true);
+    m_buildupIntensitySlider->setValue(static_cast<int>(m_buildupIntensitySpin->value()));
+    m_buildupIntensitySpin->setValue(m_buildupIntensitySlider->value());
+    m_buildupIntensitySlider->blockSignals(false);
+    m_buildupIntensitySpin->blockSignals(false);
+
+    // Sync other pairs similarly
+    m_buildupDurationSlider->blockSignals(true);
+    m_buildupDurationSpin->blockSignals(true);
+    m_buildupDurationSlider->setValue(m_buildupDurationSpin->value());
+    m_buildupDurationSpin->setValue(m_buildupDurationSlider->value());
+    m_buildupDurationSlider->blockSignals(false);
+    m_buildupDurationSpin->blockSignals(false);
+
+    // Continue for other slider-spinbox pairs...
+    m_peakIntensitySlider->blockSignals(true);
+    m_peakIntensitySpin->blockSignals(true);
+    m_peakIntensitySlider->setValue(static_cast<int>(m_peakIntensitySpin->value()));
+    m_peakIntensitySpin->setValue(m_peakIntensitySlider->value());
+    m_peakIntensitySlider->blockSignals(false);
+    m_peakIntensitySpin->blockSignals(false);
+
+    m_holdDurationSlider->blockSignals(true);
+    m_holdDurationSpin->blockSignals(true);
+    m_holdDurationSlider->setValue(m_holdDurationSpin->value());
+    m_holdDurationSpin->setValue(m_holdDurationSlider->value());
+    m_holdDurationSlider->blockSignals(false);
+    m_holdDurationSpin->blockSignals(false);
+
+    m_cooldownDurationSlider->blockSignals(true);
+    m_cooldownDurationSpin->blockSignals(true);
+    m_cooldownDurationSlider->setValue(m_cooldownDurationSpin->value());
+    m_cooldownDurationSpin->setValue(m_cooldownDurationSlider->value());
+    m_cooldownDurationSlider->blockSignals(false);
+    m_cooldownDurationSpin->blockSignals(false);
+
+    // Update curve exponent
+    m_curveExponentSlider->blockSignals(true);
+    m_curveExponentSpin->blockSignals(true);
+    m_curveExponentSlider->setValue(static_cast<int>(m_curveExponentSpin->value() * 100));
+    m_curveExponentSpin->setValue(m_curveExponentSlider->value() / 100.0);
+    m_curveExponentSlider->blockSignals(false);
+    m_curveExponentSpin->blockSignals(false);
+}
+
+void CustomPatternEditor::generateEdgingSteps()
+{
+    if (!m_buildupIntensitySlider) return;
+
+    // Clear existing steps
+    m_patternSteps.clear();
+
+    // Get parameters from controls
+    double buildupIntensity = m_buildupIntensitySpin->value();
+    int buildupDuration = m_buildupDurationSpin->value();
+    QString buildupCurve = m_buildupCurveCombo->currentText();
+    bool gradualBuildup = m_gradualBuildupCheck->isChecked();
+    int buildupSteps = m_buildupStepsSpin->value();
+
+    double peakIntensity = m_peakIntensitySpin->value();
+    int holdDuration = m_holdDurationSpin->value();
+    bool variablePeak = m_variablePeakCheck->isChecked();
+    double peakVariation = m_peakVariationSpin->value();
+
+    int cooldownDuration = m_cooldownDurationSpin->value();
+    QString cooldownCurve = m_cooldownCurveCombo->currentText();
+    bool completeCooldown = m_completeCooldownCheck->isChecked();
+    double cooldownIntensity = m_cooldownIntensitySpin->value();
+
+    int edgeCycles = m_infiniteCyclesCheck->isChecked() ? 1 : m_edgeCyclesSpin->value();
+    int cycleDelay = m_cycleDelaySpin->value();
+    bool increasingIntensity = m_increasingIntensityCheck->isChecked();
+    double intensityIncrement = m_intensityIncrementSpin->value();
+
+    QString curveType = m_intensityCurveTypeCombo->currentText();
+    double curveExponent = m_curveExponentSpin->value();
+
+    // Generate steps for each cycle
+    for (int cycle = 0; cycle < edgeCycles; ++cycle) {
+        double cycleIntensityMultiplier = 1.0;
+        if (increasingIntensity && cycle > 0) {
+            cycleIntensityMultiplier = 1.0 + (cycle * intensityIncrement / 100.0);
+        }
+
+        // Build-up phase
+        if (gradualBuildup) {
+            // Create gradual build-up steps
+            for (int step = 0; step < buildupSteps; ++step) {
+                double progress = static_cast<double>(step) / (buildupSteps - 1);
+                double intensity = calculateIntensityCurve(progress, buildupCurve, curveExponent) * buildupIntensity * cycleIntensityMultiplier;
+                int stepDuration = buildupDuration / buildupSteps;
+
+                PatternStep buildupStep;
+                buildupStep.pressurePercent = qMin(intensity, 100.0);
+                buildupStep.durationMs = stepDuration;
+                buildupStep.action = "vacuum";
+                buildupStep.description = QString("Build-up Step %1/%2 (Cycle %3)").arg(step + 1).arg(buildupSteps).arg(cycle + 1);
+
+                // Add edging-specific parameters
+                QJsonObject params;
+                params["phase"] = "buildup";
+                params["cycle"] = cycle + 1;
+                params["step"] = step + 1;
+                params["total_steps"] = buildupSteps;
+                params["curve_type"] = buildupCurve;
+                params["target_intensity"] = buildupIntensity;
+                buildupStep.parameters = params;
+
+                m_patternSteps.append(buildupStep);
+            }
+        } else {
+            // Single build-up step
+            PatternStep buildupStep;
+            buildupStep.pressurePercent = qMin(buildupIntensity * cycleIntensityMultiplier, 100.0);
+            buildupStep.durationMs = buildupDuration;
+            buildupStep.action = "vacuum";
+            buildupStep.description = QString("Build-up Phase (Cycle %1)").arg(cycle + 1);
+
+            QJsonObject params;
+            params["phase"] = "buildup";
+            params["cycle"] = cycle + 1;
+            params["curve_type"] = buildupCurve;
+            params["target_intensity"] = buildupIntensity;
+            buildupStep.parameters = params;
+
+            m_patternSteps.append(buildupStep);
+        }
+
+        // Peak/Hold phase
+        double actualPeakIntensity = peakIntensity * cycleIntensityMultiplier;
+        if (variablePeak) {
+            // Add some variation to peak intensity
+            double variation = (QRandomGenerator::global()->bounded(200) - 100) / 100.0 * peakVariation;
+            actualPeakIntensity += actualPeakIntensity * variation / 100.0;
+        }
+
+        PatternStep peakStep;
+        peakStep.pressurePercent = qMin(actualPeakIntensity, 100.0);
+        peakStep.durationMs = holdDuration;
+        peakStep.action = "hold";
+        peakStep.description = QString("Peak Hold (Cycle %1)").arg(cycle + 1);
+
+        QJsonObject peakParams;
+        peakParams["phase"] = "peak";
+        peakParams["cycle"] = cycle + 1;
+        peakParams["variable_peak"] = variablePeak;
+        peakParams["peak_variation"] = peakVariation;
+        peakParams["target_intensity"] = peakIntensity;
+        peakStep.parameters = peakParams;
+
+        m_patternSteps.append(peakStep);
+
+        // Cooldown/Release phase
+        double finalIntensity = completeCooldown ? 0.0 : cooldownIntensity;
+
+        PatternStep cooldownStep;
+        cooldownStep.pressurePercent = finalIntensity;
+        cooldownStep.durationMs = cooldownDuration;
+        cooldownStep.action = completeCooldown ? "release" : "vacuum";
+        cooldownStep.description = QString("Cooldown Phase (Cycle %1)").arg(cycle + 1);
+
+        QJsonObject cooldownParams;
+        cooldownParams["phase"] = "cooldown";
+        cooldownParams["cycle"] = cycle + 1;
+        cooldownParams["curve_type"] = cooldownCurve;
+        cooldownParams["complete_release"] = completeCooldown;
+        cooldownParams["final_intensity"] = finalIntensity;
+        cooldownStep.parameters = cooldownParams;
+
+        m_patternSteps.append(cooldownStep);
+
+        // Add delay between cycles (except for last cycle)
+        if (cycle < edgeCycles - 1 && cycleDelay > 0) {
+            PatternStep delayStep;
+            delayStep.pressurePercent = finalIntensity;
+            delayStep.durationMs = cycleDelay;
+            delayStep.action = "hold";
+            delayStep.description = QString("Cycle Delay %1->%2").arg(cycle + 1).arg(cycle + 2);
+
+            QJsonObject delayParams;
+            delayParams["phase"] = "delay";
+            delayParams["from_cycle"] = cycle + 1;
+            delayParams["to_cycle"] = cycle + 2;
+            delayStep.parameters = delayParams;
+
+            m_patternSteps.append(delayStep);
+        }
+    }
+
+    // Update the step list display
+    updateStepList();
+}
+
+void CustomPatternEditor::previewIntensityCurve()
+{
+    if (!m_curvePreviewScene) return;
+
+    m_curvePreviewScene->clear();
+
+    QString curveType = m_intensityCurveTypeCombo->currentText();
+    double exponent = m_curveExponentSpin->value();
+
+    // Draw curve preview
+    QPen curvePen(QColor(0, 120, 215), 2);
+    QPen gridPen(QColor(200, 200, 200), 1);
+
+    // Set scene rect
+    QRectF sceneRect(0, 0, 300, 150);
+    m_curvePreviewScene->setSceneRect(sceneRect);
+
+    // Draw grid
+    for (int i = 0; i <= 10; ++i) {
+        double x = i * 30;
+        m_curvePreviewScene->addLine(x, 0, x, 150, gridPen);
+
+        double y = i * 15;
+        m_curvePreviewScene->addLine(0, y, 300, y, gridPen);
+    }
+
+    // Draw curve
+    QPainterPath curvePath;
+    curvePath.moveTo(0, 150);
+
+    for (int x = 0; x <= 300; ++x) {
+        double progress = static_cast<double>(x) / 300.0;
+        double intensity = calculateIntensityCurve(progress, curveType, exponent);
+        double y = 150 - (intensity * 150);
+
+        if (x == 0) {
+            curvePath.moveTo(x, y);
+        } else {
+            curvePath.lineTo(x, y);
+        }
+    }
+
+    m_curvePreviewScene->addPath(curvePath, curvePen);
+
+    // Add labels
+    QFont labelFont("Arial", 8);
+    m_curvePreviewScene->addText("0%", labelFont)->setPos(-15, 135);
+    m_curvePreviewScene->addText("100%", labelFont)->setPos(-25, -5);
+    m_curvePreviewScene->addText("Time →", labelFont)->setPos(250, 160);
+    m_curvePreviewScene->addText("Intensity ↑", labelFont)->setPos(-50, 70);
+}
+
+void CustomPatternEditor::validateEdgingParameters()
+{
+    if (!m_buildupIntensitySlider) return;
+
+    QStringList warnings;
+    QStringList errors;
+
+    // Validate build-up parameters
+    if (m_buildupIntensitySpin->value() >= m_peakIntensitySpin->value()) {
+        warnings << "Build-up intensity should be lower than peak intensity";
+    }
+
+    if (m_buildupDurationSpin->value() < 3000) {
+        warnings << "Build-up duration may be too short for effective edging";
+    }
+
+    // Validate peak parameters
+    if (m_peakIntensitySpin->value() > 95) {
+        warnings << "Peak intensity above 95% may be too intense";
+    }
+
+    if (m_holdDurationSpin->value() < 1000) {
+        warnings << "Hold duration may be too short";
+    }
+
+    // Validate cooldown parameters
+    if (m_cooldownDurationSpin->value() < 2000) {
+        warnings << "Cooldown duration may be too short for recovery";
+    }
+
+    // Validate cycle parameters
+    if (!m_infiniteCyclesCheck->isChecked() && m_edgeCyclesSpin->value() > 10) {
+        warnings << "High number of cycles may be exhausting";
+    }
+
+    // Validate sensitivity parameters
+    if (m_autoEdgeDetectionCheck->isChecked()) {
+        if (m_sensitivityThresholdSpin->value() < 70) {
+            warnings << "Low sensitivity threshold may trigger false edges";
+        }
+
+        if (m_responseTimeSpin->value() < 200) {
+            errors << "Response time too fast - may cause instability";
+        }
+    }
+
+    // Update validation display
+    QString validationText;
+    if (!errors.isEmpty()) {
+        validationText += "ERRORS:\n" + errors.join("\n") + "\n\n";
+    }
+    if (!warnings.isEmpty()) {
+        validationText += "WARNINGS:\n" + warnings.join("\n");
+    }
+    if (errors.isEmpty() && warnings.isEmpty()) {
+        validationText = "Edging parameters are valid.";
+    }
+
+    if (m_validationResults) {
+        m_validationResults->setPlainText(validationText);
+        if (!errors.isEmpty()) {
+            m_validationResults->setStyleSheet("color: red;");
+        } else if (!warnings.isEmpty()) {
+            m_validationResults->setStyleSheet("color: orange;");
+        } else {
+            m_validationResults->setStyleSheet("color: green;");
+        }
+    }
+}
+
+QJsonObject CustomPatternEditor::getEdgingParameters() const
+{
+    QJsonObject params;
+
+    if (!m_buildupIntensitySlider) return params;
+
+    // Build-up parameters
+    QJsonObject buildupParams;
+    buildupParams["intensity"] = m_buildupIntensitySpin->value();
+    buildupParams["duration"] = m_buildupDurationSpin->value();
+    buildupParams["curve_type"] = m_buildupCurveCombo->currentText();
+    buildupParams["gradual"] = m_gradualBuildupCheck->isChecked();
+    buildupParams["steps"] = m_buildupStepsSpin->value();
+    params["buildup"] = buildupParams;
+
+    // Peak parameters
+    QJsonObject peakParams;
+    peakParams["intensity"] = m_peakIntensitySpin->value();
+    peakParams["hold_duration"] = m_holdDurationSpin->value();
+    peakParams["variable"] = m_variablePeakCheck->isChecked();
+    peakParams["variation"] = m_peakVariationSpin->value();
+    params["peak"] = peakParams;
+
+    // Cooldown parameters
+    QJsonObject cooldownParams;
+    cooldownParams["duration"] = m_cooldownDurationSpin->value();
+    cooldownParams["curve_type"] = m_cooldownCurveCombo->currentText();
+    cooldownParams["complete_release"] = m_completeCooldownCheck->isChecked();
+    cooldownParams["min_intensity"] = m_cooldownIntensitySpin->value();
+    params["cooldown"] = cooldownParams;
+
+    // Cycle parameters
+    QJsonObject cycleParams;
+    cycleParams["count"] = m_edgeCyclesSpin->value();
+    cycleParams["infinite"] = m_infiniteCyclesCheck->isChecked();
+    cycleParams["delay"] = m_cycleDelaySpin->value();
+    cycleParams["increasing_intensity"] = m_increasingIntensityCheck->isChecked();
+    cycleParams["intensity_increment"] = m_intensityIncrementSpin->value();
+    params["cycles"] = cycleParams;
+
+    // Sensitivity parameters
+    QJsonObject sensitivityParams;
+    sensitivityParams["auto_detection"] = m_autoEdgeDetectionCheck->isChecked();
+    sensitivityParams["threshold"] = m_sensitivityThresholdSpin->value();
+    sensitivityParams["detection_window"] = m_detectionWindowSpin->value();
+    sensitivityParams["adaptive"] = m_adaptiveSensitivityCheck->isChecked();
+    sensitivityParams["response_time"] = m_responseTimeSpin->value();
+    params["sensitivity"] = sensitivityParams;
+
+    // Intensity curve parameters
+    QJsonObject curveParams;
+    curveParams["type"] = m_intensityCurveTypeCombo->currentText();
+    curveParams["exponent"] = m_curveExponentSpin->value();
+    curveParams["custom"] = m_customCurveCheck->isChecked();
+    params["intensity_curve"] = curveParams;
+
+    return params;
+}
+
+void CustomPatternEditor::setEdgingParameters(const QJsonObject& params)
+{
+    if (!m_buildupIntensitySlider) return;
+
+    // Build-up parameters
+    if (params.contains("buildup")) {
+        QJsonObject buildupParams = params["buildup"].toObject();
+        m_buildupIntensitySpin->setValue(buildupParams["intensity"].toDouble(70.0));
+        m_buildupDurationSpin->setValue(buildupParams["duration"].toInt(15000));
+        m_buildupCurveCombo->setCurrentText(buildupParams["curve_type"].toString("Exponential"));
+        m_gradualBuildupCheck->setChecked(buildupParams["gradual"].toBool(true));
+        m_buildupStepsSpin->setValue(buildupParams["steps"].toInt(8));
+    }
+
+    // Peak parameters
+    if (params.contains("peak")) {
+        QJsonObject peakParams = params["peak"].toObject();
+        m_peakIntensitySpin->setValue(peakParams["intensity"].toDouble(85.0));
+        m_holdDurationSpin->setValue(peakParams["hold_duration"].toInt(3000));
+        m_variablePeakCheck->setChecked(peakParams["variable"].toBool(false));
+        m_peakVariationSpin->setValue(peakParams["variation"].toDouble(5.0));
+    }
+
+    // Cooldown parameters
+    if (params.contains("cooldown")) {
+        QJsonObject cooldownParams = params["cooldown"].toObject();
+        m_cooldownDurationSpin->setValue(cooldownParams["duration"].toInt(5000));
+        m_cooldownCurveCombo->setCurrentText(cooldownParams["curve_type"].toString("Exponential"));
+        m_completeCooldownCheck->setChecked(cooldownParams["complete_release"].toBool(true));
+        m_cooldownIntensitySpin->setValue(cooldownParams["min_intensity"].toDouble(10.0));
+    }
+
+    // Cycle parameters
+    if (params.contains("cycles")) {
+        QJsonObject cycleParams = params["cycles"].toObject();
+        m_edgeCyclesSpin->setValue(cycleParams["count"].toInt(3));
+        m_infiniteCyclesCheck->setChecked(cycleParams["infinite"].toBool(false));
+        m_cycleDelaySpin->setValue(cycleParams["delay"].toInt(5000));
+        m_increasingIntensityCheck->setChecked(cycleParams["increasing_intensity"].toBool(false));
+        m_intensityIncrementSpin->setValue(cycleParams["intensity_increment"].toDouble(3.0));
+    }
+
+    // Sensitivity parameters
+    if (params.contains("sensitivity")) {
+        QJsonObject sensitivityParams = params["sensitivity"].toObject();
+        m_autoEdgeDetectionCheck->setChecked(sensitivityParams["auto_detection"].toBool(false));
+        m_sensitivityThresholdSpin->setValue(sensitivityParams["threshold"].toDouble(80.0));
+        m_detectionWindowSpin->setValue(sensitivityParams["detection_window"].toInt(2000));
+        m_adaptiveSensitivityCheck->setChecked(sensitivityParams["adaptive"].toBool(false));
+        m_responseTimeSpin->setValue(sensitivityParams["response_time"].toInt(500));
+    }
+
+    // Intensity curve parameters
+    if (params.contains("intensity_curve")) {
+        QJsonObject curveParams = params["intensity_curve"].toObject();
+        m_intensityCurveTypeCombo->setCurrentText(curveParams["type"].toString("Exponential"));
+        m_curveExponentSpin->setValue(curveParams["exponent"].toDouble(1.5));
+        m_customCurveCheck->setChecked(curveParams["custom"].toBool(false));
+    }
+
+    // Update UI
+    syncEdgingSliders();
+    previewIntensityCurve();
+}
+
+void CustomPatternEditor::resetEdgingToDefaults()
+{
+    if (!m_buildupIntensitySlider) return;
+
+    // Reset to default values
+    m_buildupIntensitySpin->setValue(70.0);
+    m_buildupDurationSpin->setValue(15000);
+    m_buildupCurveCombo->setCurrentText("Exponential");
+    m_gradualBuildupCheck->setChecked(true);
+    m_buildupStepsSpin->setValue(8);
+
+    m_peakIntensitySpin->setValue(85.0);
+    m_holdDurationSpin->setValue(3000);
+    m_variablePeakCheck->setChecked(false);
+    m_peakVariationSpin->setValue(5.0);
+
+    m_cooldownDurationSpin->setValue(5000);
+    m_cooldownCurveCombo->setCurrentText("Exponential");
+    m_completeCooldownCheck->setChecked(true);
+    m_cooldownIntensitySpin->setValue(10.0);
+
+    m_edgeCyclesSpin->setValue(3);
+    m_infiniteCyclesCheck->setChecked(false);
+    m_cycleDelaySpin->setValue(5000);
+    m_increasingIntensityCheck->setChecked(false);
+    m_intensityIncrementSpin->setValue(3.0);
+
+    m_autoEdgeDetectionCheck->setChecked(false);
+    m_sensitivityThresholdSpin->setValue(80.0);
+    m_detectionWindowSpin->setValue(2000);
+    m_adaptiveSensitivityCheck->setChecked(false);
+    m_responseTimeSpin->setValue(500);
+
+    m_intensityCurveTypeCombo->setCurrentText("Exponential");
+    m_curveExponentSpin->setValue(1.5);
+    m_customCurveCheck->setChecked(false);
+
+    syncEdgingSliders();
+    previewIntensityCurve();
+}
+
+void CustomPatternEditor::enableEdgingControls(bool enabled)
+{
+    if (!m_buildupIntensitySlider) return;
+
+    // Enable/disable sensitivity controls based on auto-detection
+    m_sensitivityThresholdSlider->setEnabled(enabled);
+    m_sensitivityThresholdSpin->setEnabled(enabled);
+    m_detectionWindowSlider->setEnabled(enabled);
+    m_detectionWindowSpin->setEnabled(enabled);
+    m_adaptiveSensitivityCheck->setEnabled(enabled);
+    m_responseTimeSlider->setEnabled(enabled);
+    m_responseTimeSpin->setEnabled(enabled);
+}
+
+double CustomPatternEditor::calculateIntensityCurve(double progress, const QString& curveType, double exponent) const
+{
+    // Clamp progress to [0, 1]
+    progress = qBound(0.0, progress, 1.0);
+
+    if (curveType == "Linear") {
+        return progress;
+    } else if (curveType == "Exponential") {
+        return std::pow(progress, exponent);
+    } else if (curveType == "Logarithmic") {
+        return std::log(1.0 + progress * (std::exp(exponent) - 1.0)) / exponent;
+    } else if (curveType == "S-Curve") {
+        // Sigmoid curve
+        double x = (progress - 0.5) * 6.0; // Scale to [-3, 3]
+        return 1.0 / (1.0 + std::exp(-x * exponent));
+    } else if (curveType == "Sine Wave") {
+        return std::sin(progress * M_PI / 2.0);
+    } else {
+        // Default to linear
+        return progress;
+    }
 }

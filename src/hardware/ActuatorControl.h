@@ -4,10 +4,10 @@
 #include <QObject>
 #include <QMutex>
 #include <QTimer>
+#include <memory>
 
-// Forward declaration for libgpiod v2.x
-struct gpiod_chip;
-struct gpiod_line_request;
+// libgpiod v2.x C++ API
+#include <gpiod.hpp>
 
 /**
  * @brief Control interface for vacuum system actuators
@@ -95,19 +95,15 @@ private:
     QTimer* m_pwmTimer;
     int m_pwmFrequency;
 
-    // GPIO control using libgpiod v2.x
-    struct gpiod_chip* m_gpioChip;
-    struct gpiod_line_request* m_sol1Request;
-    struct gpiod_line_request* m_sol2Request;
-    struct gpiod_line_request* m_sol3Request;
-    struct gpiod_line_request* m_pumpEnableRequest;
-    struct gpiod_line_request* m_pumpPwmRequest;
+    // GPIO control using libgpiod v2.x C++ API
+    std::unique_ptr<gpiod::chip> m_gpioChip;
+    std::unique_ptr<gpiod::line_request> m_outputRequest;
 
     // Error tracking
     QString m_lastError;
     
     // GPIO pin definitions (as per specification)
-    static const int GPIO_SOL1 = 23;         // AVL (Applied Vacuum Line) - Changed from 17 to 23 to avoid EBUSY error
+    static const int GPIO_SOL1 = 17;         // AVL (Applied Vacuum Line)
     static const int GPIO_SOL2 = 27;         // AVL vent valve
     static const int GPIO_SOL3 = 22;         // Tank vent valve
     static const int GPIO_PUMP_ENABLE = 25;  // L293D Enable pin

@@ -67,7 +67,13 @@
         "max_pressure_mmhg": 100,
         "overpressure_protection_enabled": true,
         "sensor_timeout_ms": 1000,
-        "warning_threshold_mmhg": 80
+        "warning_threshold_mmhg": 80,
+        "anti_detachment_enabled": true,
+        "anti_detachment_warning_threshold_mmhg": 60,
+        "anti_detachment_hysteresis_mmhg": 5,
+        "anti_detachment_response_delay_ms": 100,
+        "anti_detachment_max_vacuum_increase_percent": 20,
+        "anti_detachment_monitoring_rate_hz": 100
     },
     "sensor_calibration": {
         "avl_sensor": {

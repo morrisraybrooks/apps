@@ -71,6 +71,7 @@ find_package(PkgConfig REQUIRED)
 # System dependencies - prioritize /usr/local for libgpiod v2.x
 set(ENV{PKG_CONFIG_PATH} "/usr/local/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
 pkg_check_modules(GPIOD REQUIRED libgpiod)
+pkg_check_modules(GPIODCXX REQUIRED libgpiodcxx)
 
 # Enable Qt MOC, UIC, and RCC
 set(CMAKE_AUTOMOC ON)
@@ -206,6 +207,7 @@ target_link_libraries(VacuumControllerLib
     PRIVATE
         pthread
         ${GPIOD_LIBRARIES}
+        ${GPIODCXX_LIBRARIES}
 )
 
 # Add library directories for libgpiod v2.x

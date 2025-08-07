@@ -98,6 +98,18 @@ private Q_SLOTS:
     void onTestClicked();
     void onLoadTemplateClicked();
 
+    // Edging pattern control slots
+    void onEdgingParameterChanged();
+    void onBuildupParameterChanged();
+    void onPeakParameterChanged();
+    void onCooldownParameterChanged();
+    void onCycleParameterChanged();
+    void onSensitivityParameterChanged();
+    void onIntensityCurveChanged();
+    void onCurvePreviewClicked();
+    void onResetCurveClicked();
+    void onAutoDetectionToggled(bool enabled);
+
 private:
     void setupUI();
     void setupBasicInfoTab();
@@ -105,6 +117,7 @@ private:
     void setupVisualDesignerTab();
     void setupPreviewTab();
     void setupAdvancedTab();
+    void setupEdgingTab();
     void connectSignals();
     
     void updateStepTable();
@@ -140,6 +153,18 @@ private:
     void loadTemplate(const QString& templateName);
     void exportPattern();
     void importPattern();
+
+    // Edging pattern helper methods
+    void updateEdgingControls();
+    void syncEdgingSliders();
+    void generateEdgingSteps();
+    void previewIntensityCurve();
+    void validateEdgingParameters();
+    QJsonObject getEdgingParameters() const;
+    void setEdgingParameters(const QJsonObject& params);
+    void resetEdgingToDefaults();
+    void enableEdgingControls(bool enabled);
+    double calculateIntensityCurve(double progress, const QString& curveType, double exponent) const;
 
     VacuumController* m_controller;
     PatternEngine* m_patternEngine;
@@ -232,7 +257,73 @@ private:
     QSpinBox* m_loopCountSpin;
     QCheckBox* m_autoStartCheck;
     QComboBox* m_priorityCombo;
-    
+
+    // Enhanced Edging Pattern Controls
+    QWidget* m_edgingTab;
+    QGroupBox* m_edgingControlsGroup;
+    QGroupBox* m_buildupGroup;
+    QGroupBox* m_peakGroup;
+    QGroupBox* m_cooldownGroup;
+    QGroupBox* m_cycleGroup;
+    QGroupBox* m_sensitivityGroup;
+    QGroupBox* m_intensityCurveGroup;
+
+    // Build-up controls
+    QSlider* m_buildupIntensitySlider;
+    QDoubleSpinBox* m_buildupIntensitySpin;
+    QSlider* m_buildupDurationSlider;
+    QSpinBox* m_buildupDurationSpin;
+    QComboBox* m_buildupCurveCombo;
+    QCheckBox* m_gradualBuildupCheck;
+    QSlider* m_buildupStepsSlider;
+    QSpinBox* m_buildupStepsSpin;
+
+    // Peak/Hold controls
+    QSlider* m_peakIntensitySlider;
+    QDoubleSpinBox* m_peakIntensitySpin;
+    QSlider* m_holdDurationSlider;
+    QSpinBox* m_holdDurationSpin;
+    QCheckBox* m_variablePeakCheck;
+    QSlider* m_peakVariationSlider;
+    QDoubleSpinBox* m_peakVariationSpin;
+
+    // Cooldown/Release controls
+    QSlider* m_cooldownDurationSlider;
+    QSpinBox* m_cooldownDurationSpin;
+    QComboBox* m_cooldownCurveCombo;
+    QCheckBox* m_completeCooldownCheck;
+    QSlider* m_cooldownIntensitySlider;
+    QDoubleSpinBox* m_cooldownIntensitySpin;
+
+    // Cycle controls
+    QSpinBox* m_edgeCyclesSpin;
+    QCheckBox* m_infiniteCyclesCheck;
+    QSlider* m_cycleDelaySlider;
+    QSpinBox* m_cycleDelaySpin;
+    QCheckBox* m_increasingIntensityCheck;
+    QSlider* m_intensityIncrementSlider;
+    QDoubleSpinBox* m_intensityIncrementSpin;
+
+    // Sensitivity/Auto-detection controls
+    QCheckBox* m_autoEdgeDetectionCheck;
+    QSlider* m_sensitivityThresholdSlider;
+    QDoubleSpinBox* m_sensitivityThresholdSpin;
+    QSlider* m_detectionWindowSlider;
+    QSpinBox* m_detectionWindowSpin;
+    QCheckBox* m_adaptiveSensitivityCheck;
+    QSlider* m_responseTimeSlider;
+    QSpinBox* m_responseTimeSpin;
+
+    // Intensity curve controls
+    QComboBox* m_intensityCurveTypeCombo;
+    QSlider* m_curveExponentSlider;
+    QDoubleSpinBox* m_curveExponentSpin;
+    QCheckBox* m_customCurveCheck;
+    QGraphicsView* m_curvePreviewView;
+    QGraphicsScene* m_curvePreviewScene;
+    TouchButton* m_resetCurveButton;
+    TouchButton* m_previewCurveButton;
+
     QString m_currentPatternName;
     QList<PatternStep> m_patternSteps;
     QJsonObject m_patternMetadata;

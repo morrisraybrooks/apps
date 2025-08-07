@@ -14,6 +14,7 @@
 // Forward declarations
 class HardwareManager;
 class PatternDefinitions;
+class AntiDetachmentMonitor;
 
 /**
  * @brief Pattern execution engine for vacuum controller
@@ -54,6 +55,9 @@ public:
         AIR_PULSE,
         MILKING,
         CONSTANT,
+        AUTOMATED_ORGASM,
+        MULTI_CYCLE_ORGASM,
+        CONTINUOUS_ORGASM,
         EDGING,
         CUSTOM
     };
@@ -71,6 +75,10 @@ public:
     };
 
     explicit PatternEngine(HardwareManager* hardware, QObject *parent = nullptr);
+
+    // Anti-detachment integration
+    void setAntiDetachmentMonitor(AntiDetachmentMonitor* monitor);
+    bool isAntiDetachmentActive() const;
     ~PatternEngine();
 
     // Pattern control
@@ -126,11 +134,14 @@ Q_SIGNALS:
     void patternPaused();
     void patternResumed();
     void patternCompleted();
+    void cycleCompleted(int cycleNumber);
     void patternError(const QString& error);
     void stateChanged(PatternState newState);
     void stepChanged(int currentStep, int totalSteps);
     void progressUpdated(double progress);
     void pressureTargetChanged(double targetPressure);
+    void antiDetachmentTriggered(double avlPressure);
+    void sealIntegrityWarning(double avlPressure);
 
 private Q_SLOTS:
     void executeNextStep();
@@ -151,7 +162,10 @@ private:
     void buildAirPulsePattern(const QJsonObject& params);
     void buildMilkingPattern(const QJsonObject& params);
     void buildConstantPattern(const QJsonObject& params);
+    void buildAutomatedOrgasmPattern(const QJsonObject& params);
+    void buildContinuousOrgasmPattern(const QJsonObject& params);
     void buildEdgingPattern(const QJsonObject& params);
+    void buildTherapeuticPulsePattern(const QJsonObject& params);
     
     // Utility functions
     double applyIntensityAndOffset(double basePressure);
@@ -161,6 +175,7 @@ private:
     
     // Hardware interface
     HardwareManager* m_hardware;
+    AntiDetachmentMonitor* m_antiDetachmentMonitor;
     
     // Pattern execution state
     PatternState m_state;
@@ -177,6 +192,8 @@ private:
     QTimer* m_stepTimer;
     QTimer* m_safetyTimer;
     bool m_emergencyStop;
+    bool m_infiniteLoop;
+    int m_completedCycles;
     
     // Real-time adjustments
     double m_intensity;          // 0-100%

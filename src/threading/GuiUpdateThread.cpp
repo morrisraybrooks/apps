@@ -54,9 +54,17 @@ void GuiUpdateThread::startThread()
 
 void GuiUpdateThread::stopThread()
 {
-    QMutexLocker locker(&m_controlMutex);
-    m_stopRequested = true;
-    m_pauseCondition.wakeAll();
+    {
+        QMutexLocker locker(&m_controlMutex);
+        m_stopRequested = true;
+        m_updating = false;
+        m_pauseCondition.wakeAll();
+    }
+
+    // Exit the event loop if running
+    if (isRunning()) {
+        quit();
+    }
 }
 
 

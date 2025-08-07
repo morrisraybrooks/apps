@@ -109,6 +109,7 @@ private:
     void setupPatternGrid();
     void setupParameterPanel();
     void setupPreviewPanel();
+    QString findPatternsConfigFile();
     
     void loadPatternsFromConfig();
     void populateCategorySelector();

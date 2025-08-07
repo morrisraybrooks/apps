@@ -75,19 +75,27 @@ void DataAcquisitionThread::stopAcquisition()
     {
         QMutexLocker locker(&m_controlMutex);
         if (!m_acquiring) return;
-        
+
         m_stopRequested = true;
         m_acquiring = false;
         m_pauseCondition.wakeAll();
     }
-    
+
+    // Stop the timer first to prevent new acquisitions
+    if (m_acquisitionTimer) {
+        m_acquisitionTimer->stop();
+    }
+
+    // Exit the event loop to stop the thread
+    quit();
+
     // Wait for thread to finish
     if (!wait(3000)) {
         qWarning() << "Data acquisition thread did not stop gracefully, terminating";
         terminate();
         wait(1000);
     }
-    
+
     qDebug() << "Data acquisition stopped";
     emit threadStopped();
 }

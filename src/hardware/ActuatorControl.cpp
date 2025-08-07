@@ -21,12 +21,6 @@ ActuatorControl::ActuatorControl(QObject *parent)
     , m_sol2State(false)
     , m_sol3State(false)
     , m_pwmTimer(new QTimer(this))
-    , m_gpioChip(nullptr)
-    , m_sol1Request(nullptr)
-    , m_sol2Request(nullptr)
-    , m_sol3Request(nullptr)
-    , m_pumpEnableRequest(nullptr)
-    , m_pumpPwmRequest(nullptr)
 {
     // Set up PWM update timer
     m_pwmTimer->setInterval(20);  // 50Hz PWM update
@@ -82,33 +76,9 @@ void ActuatorControl::shutdown()
     // Safe shutdown all actuators
     safeShutdownAll();
 
-    // Release GPIO line requests (libgpiod v2.x)
-    if (m_sol1Request) {
-        gpiod_line_request_release(m_sol1Request);
-        m_sol1Request = nullptr;
-    }
-    if (m_sol2Request) {
-        gpiod_line_request_release(m_sol2Request);
-        m_sol2Request = nullptr;
-    }
-    if (m_sol3Request) {
-        gpiod_line_request_release(m_sol3Request);
-        m_sol3Request = nullptr;
-    }
-    if (m_pumpEnableRequest) {
-        gpiod_line_request_release(m_pumpEnableRequest);
-        m_pumpEnableRequest = nullptr;
-    }
-    if (m_pumpPwmRequest) {
-        gpiod_line_request_release(m_pumpPwmRequest);
-        m_pumpPwmRequest = nullptr;
-    }
-
-    // Close GPIO chip
-    if (m_gpioChip) {
-        gpiod_chip_close(m_gpioChip);
-        m_gpioChip = nullptr;
-    }
+    // Release GPIO resources using RAII (automatic cleanup)
+    m_outputRequest.reset();
+    m_gpioChip.reset();
 
     m_initialized = false;
     qDebug() << "Actuator Control shutdown complete";
@@ -289,16 +259,18 @@ bool ActuatorControl::performSelfTest()
 
 void ActuatorControl::updatePWM()
 {
-    if (m_initialized && m_pumpEnabled && !m_emergencyStop && m_pumpPwmRequest) {
+    if (m_initialized && m_pumpEnabled && !m_emergencyStop && m_outputRequest) {
         // Simple software PWM: toggle GPIO based on PWM value
         // This is a basic implementation - for production, consider hardware PWM
         static int pwmCounter = 0;
         pwmCounter = (pwmCounter + 1) % PWM_RANGE;
 
         bool pwmState = (pwmCounter < m_pwmValue);
-        if (m_pumpPwmRequest) {
-            enum gpiod_line_value value = pwmState ? GPIOD_LINE_VALUE_ACTIVE : GPIOD_LINE_VALUE_INACTIVE;
-            gpiod_line_request_set_value(m_pumpPwmRequest, GPIO_PUMP_PWM, value);
+        try {
+            gpiod::line::value value = pwmState ? gpiod::line::value::ACTIVE : gpiod::line::value::INACTIVE;
+            m_outputRequest->set_value(GPIO_PUMP_PWM, value);
+        } catch (const std::exception& e) {
+            qWarning() << "PWM update failed:" << e.what();
         }
     }
 }
@@ -306,59 +278,32 @@ void ActuatorControl::updatePWM()
 bool ActuatorControl::initializeGPIO()
 {
     try {
-        // Open GPIO chip (usually gpiochip0 on Raspberry Pi) - libgpiod v2.x
-        m_gpioChip = gpiod_chip_open("/dev/gpiochip0");
-        if (!m_gpioChip) {
-            throw std::runtime_error("Failed to open GPIO chip");
-        }
+        qDebug() << "Initializing GPIO using libgpiod v2.x C++ API...";
 
-        // Create individual requests for each line (libgpiod v2.x approach)
-        // Helper function to create a single line request
-        auto createLineRequest = [this](unsigned int offset, const char* consumer) -> struct gpiod_line_request* {
-            struct gpiod_request_config *req_cfg = gpiod_request_config_new();
-            if (!req_cfg) return nullptr;
+        // Open GPIO chip (usually gpiochip0 on Raspberry Pi)
+        m_gpioChip = std::make_unique<gpiod::chip>("/dev/gpiochip0");
 
-            gpiod_request_config_set_consumer(req_cfg, consumer);
+        qDebug() << "GPIO chip opened:" << QString::fromStdString(m_gpioChip->get_info().name());
+        qDebug() << "Number of lines:" << m_gpioChip->get_info().num_lines();
 
-            struct gpiod_line_settings *settings = gpiod_line_settings_new();
-            if (!settings) {
-                gpiod_request_config_free(req_cfg);
-                return nullptr;
-            }
+        // Create line request for all output pins using the modern C++ API
+        auto request_builder = m_gpioChip->prepare_request();
+        request_builder.set_consumer("VacuumController");
 
-            gpiod_line_settings_set_direction(settings, GPIOD_LINE_DIRECTION_OUTPUT);
-            gpiod_line_settings_set_output_value(settings, GPIOD_LINE_VALUE_INACTIVE);
+        // Configure all GPIO pins as outputs with inactive initial state
+        std::vector<gpiod::line::offset> offsets = {GPIO_SOL1, GPIO_SOL2, GPIO_SOL3, GPIO_PUMP_ENABLE, GPIO_PUMP_PWM};
 
-            struct gpiod_line_config *line_cfg = gpiod_line_config_new();
-            if (!line_cfg) {
-                gpiod_line_settings_free(settings);
-                gpiod_request_config_free(req_cfg);
-                return nullptr;
-            }
+        gpiod::line_settings settings;
+        settings.set_direction(gpiod::line::direction::OUTPUT)
+                .set_output_value(gpiod::line::value::INACTIVE);
 
-            gpiod_line_config_add_line_settings(line_cfg, &offset, 1, settings);
+        request_builder.add_line_settings(offsets, settings);
 
-            struct gpiod_line_request *request = gpiod_chip_request_lines(m_gpioChip, req_cfg, line_cfg);
+        // Create the request
+        m_outputRequest = std::make_unique<gpiod::line_request>(request_builder.do_request());
 
-            gpiod_line_config_free(line_cfg);
-            gpiod_line_settings_free(settings);
-            gpiod_request_config_free(req_cfg);
-
-            return request;
-        };
-
-        // Create requests for each GPIO line
-        m_sol1Request = createLineRequest(GPIO_SOL1, "VacuumController-SOL1");
-        m_sol2Request = createLineRequest(GPIO_SOL2, "VacuumController-SOL2");
-        m_sol3Request = createLineRequest(GPIO_SOL3, "VacuumController-SOL3");
-        m_pumpEnableRequest = createLineRequest(GPIO_PUMP_ENABLE, "VacuumController-PumpEnable");
-        m_pumpPwmRequest = createLineRequest(GPIO_PUMP_PWM, "VacuumController-PumpPWM");
-
-        if (!m_sol1Request || !m_sol2Request || !m_sol3Request || !m_pumpEnableRequest || !m_pumpPwmRequest) {
-            throw std::runtime_error("Failed to create individual line requests");
-        }
-
-        qDebug() << "GPIO pins initialized using libgpiod v2.2.1";
+        qDebug() << "GPIO pins initialized using libgpiod v2.x C++ API";
+        qDebug() << "Configured pins:" << GPIO_SOL1 << GPIO_SOL2 << GPIO_SOL3 << GPIO_PUMP_ENABLE << GPIO_PUMP_PWM;
         return true;
 
     } catch (const std::exception& e) {
@@ -386,49 +331,38 @@ bool ActuatorControl::initializePWM()
 
 void ActuatorControl::setGPIOOutput(int pin, bool state)
 {
-    struct gpiod_line_request* request = nullptr;
-
-    // Map pin number to GPIO line request (libgpiod v2.x)
-    switch (pin) {
-        case GPIO_SOL1: request = m_sol1Request; break;
-        case GPIO_SOL2: request = m_sol2Request; break;
-        case GPIO_SOL3: request = m_sol3Request; break;
-        case GPIO_PUMP_ENABLE: request = m_pumpEnableRequest; break;
-        case GPIO_PUMP_PWM: request = m_pumpPwmRequest; break;
-        default:
-            qWarning() << "Unknown GPIO pin:" << pin;
-            return;
+    if (!m_outputRequest) {
+        qWarning() << "GPIO not initialized";
+        return;
     }
 
-    if (request) {
-        enum gpiod_line_value value = state ? GPIOD_LINE_VALUE_ACTIVE : GPIOD_LINE_VALUE_INACTIVE;
-        if (gpiod_line_request_set_value(request, pin, value) < 0) {
-            qWarning() << "Failed to set GPIO pin" << pin << "to" << state;
-        }
+    try {
+        gpiod::line::value value = state ? gpiod::line::value::ACTIVE : gpiod::line::value::INACTIVE;
+        m_outputRequest->set_value(pin, value);
+
+        // Debug output for verification
+        qDebug() << "GPIO pin" << pin << "set to" << (state ? "HIGH" : "LOW");
+
+    } catch (const std::exception& e) {
+        qWarning() << "Failed to set GPIO pin" << pin << "to" << state << ":" << e.what();
     }
 }
 
 bool ActuatorControl::getGPIOState(int pin)
 {
-    struct gpiod_line_request* request = nullptr;
-
-    // Map pin number to GPIO line request (libgpiod v2.x)
-    switch (pin) {
-        case GPIO_SOL1: request = m_sol1Request; break;
-        case GPIO_SOL2: request = m_sol2Request; break;
-        case GPIO_SOL3: request = m_sol3Request; break;
-        case GPIO_PUMP_ENABLE: request = m_pumpEnableRequest; break;
-        case GPIO_PUMP_PWM: request = m_pumpPwmRequest; break;
-        default:
-            qWarning() << "Unknown GPIO pin:" << pin;
-            return false;
+    if (!m_outputRequest) {
+        qWarning() << "GPIO not initialized";
+        return false;
     }
 
-    if (request) {
-        enum gpiod_line_value value = gpiod_line_request_get_value(request, pin);
-        return value == GPIOD_LINE_VALUE_ACTIVE;
+    try {
+        gpiod::line::value value = m_outputRequest->get_value(pin);
+        return value == gpiod::line::value::ACTIVE;
+
+    } catch (const std::exception& e) {
+        qWarning() << "Failed to read GPIO pin" << pin << ":" << e.what();
+        return false;
     }
-    return false;
 }
 
 void ActuatorControl::safeShutdownAll()

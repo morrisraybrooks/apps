@@ -20,7 +20,7 @@ PatternSelector::PatternSelector(VacuumController* controller, QWidget *parent)
     , m_controller(controller)
     , m_mainLayout(new QVBoxLayout(this))
     , m_patternButtonGroup(new QButtonGroup(this))
-    , m_configFilePath("../config/patterns.json")
+    , m_configFilePath(findPatternsConfigFile())
 {
     qDebug() << "PatternSelector constructor called.";
     setupUI();
@@ -237,6 +237,32 @@ void PatternSelector::loadPatterns()
     populatePatternGrid();
 }
 
+QString PatternSelector::findPatternsConfigFile()
+{
+    // Try multiple locations for patterns.json
+    QStringList searchPaths = {
+        // Current working directory (for development)
+        "./patterns.json",
+        // Relative to executable (for development)
+        "../config/patterns.json",
+        // System installation path
+        "/usr/local/share/vacuum-controller/patterns.json",
+        // User data directory
+        QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/patterns.json"
+    };
+
+    for (const QString& path : searchPaths) {
+        QFileInfo fileInfo(path);
+        if (fileInfo.exists() && fileInfo.isReadable()) {
+            qDebug() << "Found patterns config file at:" << path;
+            return path;
+        }
+    }
+
+    qWarning() << "Could not find patterns.json in any of the search paths";
+    return "../config/patterns.json"; // Fallback to original path
+}
+
 void PatternSelector::loadPatternsFromConfig()
 {
     qDebug() << "loadPatternsFromConfig called. Config file path:" << m_configFilePath;
@@ -258,8 +284,9 @@ void PatternSelector::loadPatternsFromConfig()
     QJsonObject vacuumPatterns = root["vacuum_patterns"].toObject();
     
     // Load patterns from each category
-    QStringList categoryKeys = {"pulse_patterns", "wave_patterns", "air_pulse_patterns", 
-                               "milking_patterns", "constant_patterns", "special_patterns"};
+    QStringList categoryKeys = {"pulse_patterns", "wave_patterns", "air_pulse_patterns",
+                               "milking_patterns", "automated_orgasm_patterns",
+                               "constant_patterns", "special_patterns"};
     
     for (const QString& categoryKey : categoryKeys) {
         QJsonArray patterns = vacuumPatterns[categoryKey].toArray();

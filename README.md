@@ -7,7 +7,8 @@ A comprehensive Qt-based graphical user interface for a medical vacuum therapy c
 This system provides a complete GUI solution for controlling a vacuum therapy device with the following key features:
 
 - **Real-time pressure monitoring** with graphical displays and live data visualization
-- **15+ vacuum patterns** including pulse, wave, air pulse, milking, and specialized therapeutic patterns
+- **19+ vacuum patterns** including pulse, wave, air pulse, milking, automated orgasm cycles, and specialized therapeutic patterns
+- **Automated Orgasm Patterns** with physiological progression cycles for complete arousal-to-climax sequences
 - **Safety-critical anti-detachment system** that prevents cup detachment during therapy
 - **Emergency stop functionality** with immediate system shutdown and safe state recovery
 - **Touch-optimized embedded widgets** designed for 50-inch medical displays with optimal scaling
@@ -15,6 +16,7 @@ This system provides a complete GUI solution for controlling a vacuum therapy de
 - **Scrollable interface panels** for optimal content management and clinical workflow
 - **Comprehensive safety systems** with overpressure protection and sensor monitoring
 - **Modern libgpiod v2.2.1 integration** replacing deprecated wiringPi for reliable GPIO control
+- **Graceful shutdown** with proper thread cleanup and hardware safety state
 
 ## 🏗️ Industry-Standard Development Practices
 
@@ -40,23 +42,62 @@ This project implements comprehensive industry-standard practices for embedded s
 - **Package Management**: Professional .deb packages with installation scripts
 - **Service Management**: Automatic startup, logging, and monitoring integration
 
-## 🎯 Latest Release: v1.4.0 - Embedded Widget Architecture & libgpiod v2.2.1
+## 🎯 Latest Release: v1.5.0 - Automated Orgasm Patterns & Production Installation
 
-### ✅ **Major Improvements in v1.4.0**
+### ✅ **Major Improvements in v1.5.0**
+- **Automated Orgasm Patterns**: Complete physiological arousal-to-climax cycles with intelligent progression
+- **Continuous Orgasm Marathon**: Infinite cycling pattern for extended sessions with optimized 4-minute cycles
+- **Production Installation**: Full system installation with proper library paths and configuration management
+- **Graceful Shutdown**: Fixed thread cleanup for clean application exit without manual termination
+- **Enhanced Pattern Loading**: Intelligent config file discovery for both development and production environments
+- **System Integration**: Professional launcher script with hardware access and Wayland display support
+- **Thread Safety**: Improved data acquisition and GUI update thread management with proper cleanup
+
+### ✅ **Previous Major Improvements (v1.4.0)**
 - **Embedded Widget Architecture**: Replaced modal dialogs with embedded widgets for seamless medical device UX
 - **libgpiod v2.2.1 Integration**: Modern GPIO control replacing deprecated wiringPi for enhanced reliability
 - **Touch-Optimized Interface**: Embedded pattern editing eliminates modal interruptions in clinical workflow
 - **Enhanced Medical Device Compliance**: Always-visible controls optimized for 50-inch touch displays
-- **Improved Code Efficiency**: 1,293 line reduction through cleaner embedded widget architecture
 - **Future-Proof GPIO**: Modern libgpiod ensures compatibility with current and future Raspberry Pi OS versions
 
 ### 🚀 **System Status**
 - **Hardware Integration**: MCP3008 ADC, modern libgpiod v2.2.1 GPIO, SPI communication fully operational
 - **Safety Systems**: Anti-detachment monitoring, emergency controls, pressure limits active
-- **Pattern Engine**: 16 built-in patterns + unlimited custom pattern support with embedded editing
+- **Pattern Engine**: 19 built-in patterns + unlimited custom pattern support with embedded editing
+- **Automated Orgasm Patterns**: Complete physiological cycles with intelligent progression
 - **Real-time Monitoring**: Live pressure charts, diagnostics, data logging working
-- **Multi-threading**: Separate threads for GUI, data acquisition, safety monitoring
+- **Multi-threading**: Separate threads for GUI, data acquisition, safety monitoring with graceful shutdown
 - **GPIO Architecture**: Modern libgpiod v2.2.1 replaces deprecated wiringPi for enhanced reliability
+
+## 🌟 Automated Orgasm Patterns
+
+The vacuum controller now includes advanced **Automated Orgasm Patterns** that provide complete physiological arousal-to-climax cycles:
+
+### **Available Automated Patterns**
+1. **Single Automated Orgasm** (5 minutes)
+   - Complete arousal-to-climax cycle with physiological progression
+   - Intelligent intensity ramping based on natural response patterns
+   - Automatic climax detection and post-orgasm recovery phase
+
+2. **Triple Automated Orgasm** (18 minutes)
+   - Three complete orgasm cycles with recovery periods
+   - Progressive intensity increase across cycles
+   - Optimized timing for multiple climax experiences
+
+3. **Continuous Orgasm Marathon** (Infinite)
+   - **Endless cycling pattern** for extended sessions
+   - Optimized 4-minute cycles with enhanced anti-detachment monitoring
+   - Runs continuously until manually stopped
+   - Perfect for extended pleasure sessions
+
+### **Key Features**
+- **Physiological Progression**: Patterns follow natural arousal curves
+- **Intelligent Timing**: Based on real physiological response data
+- **Safety Integration**: Enhanced monitoring during automated cycles
+- **One-Click Activation**: Simple touch interface for complete automation
+- **Customizable Parameters**: Adjust intensity, timing, and sensitivity thresholds
+
+See [docs/AUTOMATED_ORGASM_PATTERNS.md](docs/AUTOMATED_ORGASM_PATTERNS.md) for detailed technical specifications.
 
 ## 🔧 Current Build Status
 
@@ -64,16 +105,40 @@ This project implements comprehensive industry-standard practices for embedded s
 **🔧 BUILD STATUS**: CMake configures successfully, ready for Raspberry Pi 4 deployment
 **📋 NEXT STEPS**: See [BUILD_STATUS.md](BUILD_STATUS.md) and [PI4_SETUP.md](PI4_SETUP.md) for complete Pi 4 setup guide
 
-**Quick Pi 4 Setup Summary**:
+## 🚀 Production Installation (Recommended)
+
+### **System Installation**
 ```bash
 # Install dependencies (includes modern libgpiod v2.2.1)
 sudo apt update && sudo apt install -y qtbase5-dev qtcharts5-dev libqt5charts5-dev libgpiod-dev pkg-config
 
-# Build and run
+# Clone and build
 git clone https://github.com/morrisraybrooks/apps.git
 cd apps && mkdir build && cd build
 cmake .. -DRASPBERRY_PI_BUILD=ON && make -j3  # Use -j3 for Pi 4 memory optimization
-sudo ./VacuumController
+
+# Install system-wide
+sudo make install
+sudo ldconfig  # Update library cache
+
+# Run from anywhere
+vacuum-controller-launcher
+```
+
+### **Installation Locations**
+- **Executable**: `/usr/local/bin/VacuumController`
+- **Launcher**: `/usr/local/bin/vacuum-controller-launcher`
+- **Config Files**: `/usr/local/share/vacuum-controller/`
+- **Libraries**: `/usr/local/lib/libVacuumControllerLib.so`
+- **Documentation**: `/usr/local/share/doc/VacuumController/`
+
+### **Development Mode (Alternative)**
+```bash
+# For development/testing without system installation
+git clone https://github.com/morrisraybrooks/apps.git
+cd apps && mkdir build && cd build
+cmake .. -DRASPBERRY_PI_BUILD=ON && make -j3
+sudo ./VacuumController  # Run from build directory
 ```
 
 ## 🚀 Quick Start for Developers

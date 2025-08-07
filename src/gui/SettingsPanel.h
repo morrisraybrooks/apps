@@ -89,6 +89,14 @@ private:
     QCheckBox* m_emergencyStopCheck;
     QCheckBox* m_overpressureProtectionCheck;
     QCheckBox* m_autoShutdownCheck;
+
+    // Anti-detachment Advanced Settings
+    QDoubleSpinBox* m_antiDetachmentWarningThresholdSpin;
+    QDoubleSpinBox* m_antiDetachmentHysteresisSpin;
+    QSpinBox* m_antiDetachmentResponseDelaySpin;
+    QDoubleSpinBox* m_antiDetachmentMaxVacuumIncreaseSpin;
+    QSpinBox* m_antiDetachmentMonitoringRateSpin;
+    QCheckBox* m_antiDetachmentEnabledCheck;
     
     // Calibration Tab
     CalibrationInterface* m_calibrationInterface;
@@ -159,6 +167,13 @@ private:
     static const double DEFAULT_WARNING_THRESHOLD;
     static const double DEFAULT_ANTI_DETACHMENT_THRESHOLD;
     static const int DEFAULT_SENSOR_TIMEOUT_MS;
+
+    // Anti-detachment constants
+    static const double DEFAULT_ANTI_DETACHMENT_WARNING_THRESHOLD;
+    static const double DEFAULT_ANTI_DETACHMENT_HYSTERESIS;
+    static const int DEFAULT_ANTI_DETACHMENT_RESPONSE_DELAY_MS;
+    static const double DEFAULT_ANTI_DETACHMENT_MAX_VACUUM_INCREASE;
+    static const int DEFAULT_ANTI_DETACHMENT_MONITORING_RATE_HZ;
 };
 
 #endif // SETTINGSPANEL_H
