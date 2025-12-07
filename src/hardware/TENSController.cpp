@@ -278,6 +278,24 @@ void TENSController::emergencyStop()
     emit stimulationStopped();
 }
 
+void TENSController::pulse(int durationMs)
+{
+    // Start stimulation for a fixed duration, then stop
+    if (durationMs <= 0 || durationMs > 5000) {
+        qWarning() << "Invalid pulse duration:" << durationMs << "ms (max 5000ms)";
+        return;
+    }
+
+    start();
+
+    // Use a single-shot timer to stop after duration
+    QTimer::singleShot(durationMs, this, [this]() {
+        stop();
+    });
+
+    qDebug() << "TENS pulse started for" << durationMs << "ms";
+}
+
 // Presets based on clinical research
 void TENSController::setPresetWarmup()
 {

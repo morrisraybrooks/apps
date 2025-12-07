@@ -88,6 +88,7 @@ public:
     void start();
     void stop();
     void emergencyStop();
+    void pulse(int durationMs);  // Single pulse/burst for specified duration
     bool isRunning() const { return m_running; }
 
     // Presets based on research

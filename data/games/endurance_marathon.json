@@ -1,0 +1,80 @@
+{
+    "id": "marathon_30min",
+    "name": "Endurance Marathon",
+    "description": "Survive 30 minutes of continuous stimulation. Orgasms are allowed but each one adds 5 minutes.",
+    "type": "STIMULATION_MARATHON",
+    "difficulty": 3,
+    "subscription_tier": "basic",
+    "unlocked_by": "denial_15min",
+    "unlocks": ["marathon_60min"],
+    
+    "objectives": {
+        "primary": {
+            "type": "duration",
+            "target": 1800,
+            "time_limit_seconds": 3600,
+            "points": 250,
+            "mandatory": true
+        },
+        "bonus": [
+            {
+                "type": "no_orgasm",
+                "points": 150
+            },
+            {
+                "type": "avg_arousal_above",
+                "threshold": 0.75,
+                "points": 50
+            }
+        ]
+    },
+    
+    "fail_conditions": [
+        {
+            "type": "safeword",
+            "immediate_fail": true
+        }
+    ],
+    
+    "stimulation": {
+        "pattern": "marathon_waves",
+        "initial_intensity": 0.4,
+        "max_intensity": 0.85,
+        "edge_threshold": 0.85,
+        "orgasm_threshold": 0.95,
+        "recovery_threshold": 0.4,
+        "tens_enabled": false,
+        "tens_amplitude": 0.0
+    },
+    
+    "scoring": {
+        "base_points": 200,
+        "per_objective_bonus": 25,
+        "time_bonus_per_second": 0.1,
+        "xp_on_win": 300,
+        "xp_on_loss": 30,
+        "streak_multiplier_max": 2.0
+    },
+    
+    "consequences": {
+        "on_win": {
+            "type": "reward",
+            "action": "unlock_game",
+            "target_id": "marathon_60min",
+            "tier": "basic"
+        },
+        "on_fail": {
+            "type": "punishment",
+            "action": "denial_extension",
+            "duration_seconds": 300,
+            "tier": "basic"
+        }
+    },
+    
+    "game_specific": {
+        "orgasm_time_penalty_seconds": 300,
+        "intensity_ramp_interval_seconds": 300,
+        "intensity_ramp_amount": 0.05
+    }
+}
+

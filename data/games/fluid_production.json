@@ -1,0 +1,73 @@
+{
+    "id": "fluid_10ml",
+    "name": "Fountain Challenge",
+    "description": "Produce 10 mL of fluid within 20 minutes. Let your body respond naturally.",
+    "type": "FLUID_PRODUCTION",
+    "difficulty": 2,
+    "subscription_tier": "basic",
+    "unlocked_by": null,
+    "unlocks": ["fluid_25ml"],
+    
+    "objectives": {
+        "primary": {
+            "type": "fluid_volume",
+            "target": 10.0,
+            "time_limit_seconds": 1200,
+            "points": 150,
+            "mandatory": true
+        },
+        "bonus": [
+            {
+                "type": "fluid_above",
+                "target": 15.0,
+                "points": 50
+            },
+            {
+                "type": "orgasm_burst",
+                "points": 75
+            }
+        ]
+    },
+    
+    "fail_conditions": [
+        {
+            "type": "timeout",
+            "immediate_fail": true
+        }
+    ],
+    
+    "stimulation": {
+        "pattern": "deep_pulse",
+        "initial_intensity": 0.5,
+        "max_intensity": 0.85,
+        "edge_threshold": 0.85,
+        "orgasm_threshold": 0.95,
+        "recovery_threshold": 0.4,
+        "tens_enabled": false,
+        "tens_amplitude": 0.0
+    },
+    
+    "scoring": {
+        "base_points": 100,
+        "per_objective_bonus": 15,
+        "time_bonus_per_second": 1.0,
+        "xp_on_win": 150,
+        "xp_on_loss": 15,
+        "streak_multiplier_max": 2.0
+    },
+    
+    "consequences": {
+        "on_win": {
+            "type": "reward",
+            "action": "unlock_game",
+            "target_id": "fluid_25ml",
+            "tier": "basic"
+        },
+        "on_fail": {
+            "type": "punishment",
+            "action": "pattern_switch",
+            "tier": "basic"
+        }
+    }
+}
+

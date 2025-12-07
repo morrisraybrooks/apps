@@ -1,0 +1,82 @@
+{
+    "id": "denial_15min",
+    "name": "Denial Challenge",
+    "description": "Maintain arousal above 70% for 15 minutes without orgasm. Test your control.",
+    "type": "DENIAL_MAINTENANCE",
+    "difficulty": 2,
+    "subscription_tier": "basic",
+    "unlocked_by": "edge_count_5",
+    "unlocks": ["denial_30min"],
+    
+    "objectives": {
+        "primary": {
+            "type": "denial_duration",
+            "target": 900,
+            "threshold": 0.7,
+            "time_limit_seconds": 900,
+            "points": 200,
+            "mandatory": true
+        },
+        "bonus": [
+            {
+                "type": "avg_arousal_above",
+                "threshold": 0.8,
+                "points": 50
+            },
+            {
+                "type": "peak_arousal_above",
+                "threshold": 0.9,
+                "points": 30
+            }
+        ]
+    },
+    
+    "fail_conditions": [
+        {
+            "type": "orgasm",
+            "immediate_fail": true
+        },
+        {
+            "type": "arousal_drop",
+            "threshold": 0.5,
+            "immediate_fail": false
+        }
+    ],
+    
+    "stimulation": {
+        "pattern": "building_waves",
+        "initial_intensity": 0.5,
+        "max_intensity": 0.8,
+        "edge_threshold": 0.85,
+        "orgasm_threshold": 0.95,
+        "recovery_threshold": 0.6,
+        "tens_enabled": false,
+        "tens_amplitude": 0.0
+    },
+    
+    "scoring": {
+        "base_points": 150,
+        "per_objective_bonus": 30,
+        "time_bonus_per_second": 0.0,
+        "xp_on_win": 200,
+        "xp_on_loss": 20,
+        "streak_multiplier_max": 2.0
+    },
+    
+    "consequences": {
+        "on_win": {
+            "type": "reward",
+            "action": "unlock_game",
+            "target_id": "denial_30min",
+            "tier": "basic"
+        },
+        "on_fail": {
+            "type": "punishment",
+            "action": "intensity_increase",
+            "intensity_boost": 0.2,
+            "duration_seconds": 30,
+            "tier": "basic"
+        }
+    }
+}
+

@@ -1,0 +1,85 @@
+{
+    "id": "shock_roulette",
+    "name": "Shock Roulette",
+    "description": "Edge 10 times. Each edge has a 30% chance of triggering a TENS shock. Premium only.",
+    "type": "SHOCK_ROULETTE",
+    "difficulty": 3,
+    "subscription_tier": "premium",
+    "unlocked_by": "edge_count_10",
+    "unlocks": ["punishment_endurance"],
+    
+    "objectives": {
+        "primary": {
+            "type": "edge_count",
+            "target": 10,
+            "time_limit_seconds": 1800,
+            "points": 300,
+            "mandatory": true
+        },
+        "bonus": [
+            {
+                "type": "no_safeword",
+                "points": 100
+            },
+            {
+                "type": "all_shocks_endured",
+                "points": 75
+            }
+        ]
+    },
+    
+    "fail_conditions": [
+        {
+            "type": "orgasm",
+            "immediate_fail": true
+        },
+        {
+            "type": "safeword",
+            "immediate_fail": true
+        }
+    ],
+    
+    "stimulation": {
+        "pattern": "intense_climb",
+        "initial_intensity": 0.5,
+        "max_intensity": 0.9,
+        "edge_threshold": 0.85,
+        "orgasm_threshold": 0.95,
+        "recovery_threshold": 0.5,
+        "tens_enabled": true,
+        "tens_amplitude": 0.5
+    },
+    
+    "scoring": {
+        "base_points": 200,
+        "per_objective_bonus": 30,
+        "time_bonus_per_second": 0.25,
+        "xp_on_win": 350,
+        "xp_on_loss": 35,
+        "streak_multiplier_max": 2.5
+    },
+    
+    "consequences": {
+        "on_win": {
+            "type": "reward",
+            "action": "unlock_game",
+            "target_id": "punishment_endurance",
+            "tier": "premium"
+        },
+        "on_fail": {
+            "type": "punishment",
+            "action": "tens_burst_series",
+            "intensity_boost": 0.6,
+            "duration_seconds": 3,
+            "tier": "premium"
+        }
+    },
+    
+    "game_specific": {
+        "shock_probability": 0.3,
+        "shock_intensity_min": 0.3,
+        "shock_intensity_max": 0.7,
+        "shock_duration_ms": 300
+    }
+}
+

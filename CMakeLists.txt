@@ -65,7 +65,7 @@ if(ENABLE_COVERAGE AND CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 # Find required packages
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets Charts)
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets Charts Sql)
 find_package(PkgConfig REQUIRED)
 
 # System dependencies - prioritize /usr/local for libgpiod v2.x
@@ -90,6 +90,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src/calibration)
 include_directories(${CMAKE_SOURCE_DIR}/src/error)
 include_directories(${CMAKE_SOURCE_DIR}/src/testing)
 include_directories(${CMAKE_SOURCE_DIR}/src/control)
+include_directories(${CMAKE_SOURCE_DIR}/src/game)
 
 # Source files
 set(SOURCES
@@ -138,6 +139,12 @@ set(SOURCES
     src/performance/MemoryManager.cpp
     src/gui/ParameterAdjustmentPanel.cpp
     src/reporting/DataExporter.cpp
+    src/game/GameTypes.h
+    src/game/GameDefinition.cpp
+    src/game/GameEngine.cpp
+    src/game/AchievementSystem.cpp
+    src/game/ConsequenceEngine.cpp
+    src/game/ProgressTracker.cpp
 )
 
 # Header files
@@ -179,6 +186,12 @@ set(HEADERS
     src/performance/MemoryManager.h
     src/gui/ParameterAdjustmentPanel.h
     src/reporting/DataExporter.h
+    src/game/GameTypes.h
+    src/game/GameDefinition.h
+    src/game/GameEngine.h
+    src/game/AchievementSystem.h
+    src/game/ConsequenceEngine.h
+    src/game/ProgressTracker.h
 )
 
 # Create shared library for better testing and modularity
@@ -210,6 +223,7 @@ target_include_directories(VacuumControllerLib
         ${CMAKE_CURRENT_SOURCE_DIR}/src/performance
         ${CMAKE_CURRENT_SOURCE_DIR}/src/reporting
         ${CMAKE_CURRENT_SOURCE_DIR}/src/control
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/game
 )
 
 # Link libraries to the shared library
@@ -218,6 +232,7 @@ target_link_libraries(VacuumControllerLib
         Qt5::Core
         Qt5::Widgets
         Qt5::Charts
+        Qt5::Sql
     PRIVATE
         pthread
         ${GPIOD_LIBRARIES}
@@ -296,6 +311,12 @@ install(FILES
     config/patterns.json
     config/settings.json
     DESTINATION ${CMAKE_INSTALL_DATADIR}/vacuum-controller
+)
+
+# Install game definition files
+install(DIRECTORY data/games/
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/vacuum-controller/games
+    FILES_MATCHING PATTERN "*.json"
 )
 
 # Install documentation

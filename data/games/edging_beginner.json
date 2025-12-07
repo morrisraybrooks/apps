@@ -1,0 +1,74 @@
+{
+    "id": "edge_count_5",
+    "name": "Edge Apprentice",
+    "description": "Reach the edge 5 times without going over. A perfect introduction to edging games.",
+    "type": "EDGE_COUNT",
+    "difficulty": 1,
+    "subscription_tier": "basic",
+    "unlocked_by": null,
+    "unlocks": ["edge_count_10"],
+    
+    "objectives": {
+        "primary": {
+            "type": "edge_count",
+            "target": 5,
+            "time_limit_seconds": 600,
+            "points": 100,
+            "mandatory": true
+        },
+        "bonus": [
+            {
+                "type": "avg_arousal_above",
+                "threshold": 0.7,
+                "points": 25
+            },
+            {
+                "type": "no_backoff_pause",
+                "points": 50
+            }
+        ]
+    },
+    
+    "fail_conditions": [
+        {
+            "type": "orgasm",
+            "immediate_fail": true
+        }
+    ],
+    
+    "stimulation": {
+        "pattern": "gentle_waves",
+        "initial_intensity": 0.4,
+        "max_intensity": 0.75,
+        "edge_threshold": 0.85,
+        "orgasm_threshold": 0.95,
+        "recovery_threshold": 0.5,
+        "tens_enabled": false,
+        "tens_amplitude": 0.0
+    },
+    
+    "scoring": {
+        "base_points": 100,
+        "per_objective_bonus": 20,
+        "time_bonus_per_second": 0.5,
+        "xp_on_win": 100,
+        "xp_on_loss": 10,
+        "streak_multiplier_max": 2.0
+    },
+    
+    "consequences": {
+        "on_win": {
+            "type": "reward",
+            "action": "unlock_game",
+            "target_id": "edge_count_10",
+            "tier": "basic"
+        },
+        "on_fail": {
+            "type": "punishment",
+            "action": "denial_extension",
+            "duration_seconds": 60,
+            "tier": "basic"
+        }
+    }
+}
+
