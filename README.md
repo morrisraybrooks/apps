@@ -1,6 +1,29 @@
-# Vacuum Controller GUI System
+# V-Contour Dual-Therapy System
 
-A comprehensive Qt-based graphical user interface for a medical vacuum therapy controller system, designed for Raspberry Pi 4 with a 50-inch HDMI display. Built with modern **libgpiod v2.2.1** for reliable, future-proof GPIO control.
+A sophisticated **Automated Vacuum Stimulation Device** - an electromechanical system that applies controlled vacuum pressure to the vulva/clitoris for inducing sexual arousal and orgasm. Designed as a "hands-free" device that automatically brings a user to climax through precisely controlled vacuum patterns.
+
+Built with Qt on Raspberry Pi 4 with a 50-inch HDMI display and modern **libgpiod v2.2.1** for reliable, future-proof GPIO control.
+
+## 🔑 Critical Differentiator: Active Engorgement
+
+> **Commercial air-pulse toys (Womanizer, Satisfyer, LELO) only provide oscillating pressure waves for stimulation—they CANNOT create sustained vacuum for tissue engorgement.** They rely on natural arousal (5-15 minutes) to engorge the clitoris before/during use.
+
+**The V-Contour dual-chamber system separates these functions:**
+
+| Chamber | Valve Control | Capability |
+|---------|---------------|------------|
+| **Outer V-seal** | SOL1/SOL2 | Sustained vacuum (30-50 mmHg) for vulva/labia engorgement |
+| **Clitoral cylinder** | SOL4/SOL5 | Sustained vacuum for clitoral engorgement **OR** oscillating air-pulse (5-13 Hz) for stimulation |
+
+**This allows the V-Contour to actively induce clitoral erection/engorgement in 15-30 seconds, rather than waiting for natural arousal to occur.**
+
+### Active Engorgement Benefits:
+1. **Faster arousal**: Engorge the clitoris BEFORE beginning air-pulse stimulation
+2. **Maintained engorgement**: Sustained outer vacuum keeps tissue engorged throughout the session
+3. **Faster orgasm**: Optimal clitoral erection from the start reduces time to climax
+4. **Enhanced sensitivity**: Engorged tissue has ~8,000 nerve endings more exposed
+5. **Consistent response**: Does not rely on the user's natural arousal state
+6. **Dual-mode flexibility**: Can switch between engorgement and stimulation dynamically
 
 ## Overview
 
@@ -209,20 +232,75 @@ cd build && make docs
 - **Raspberry Pi 4 (8GB RAM)** - Main controller
 - **50-inch HDMI Display** - User interface display
 - **MCP3008 ADC** - 8-channel analog-to-digital converter
-- **2x MPX5010DP Pressure Sensors** - Differential pressure sensors
-- **3x Solenoid Valves** - Vacuum control and venting
+- **3x MPX5010DP Pressure Sensors** - Differential pressure sensors (Outer, Tank, Clitoral)
+- **5x Solenoid Valves** - Dual-chamber vacuum control and venting
 - **L293D Motor Driver** - Vacuum pump control
 - **DC Vacuum Pump** - Main vacuum source
 
-### GPIO Pin Assignments
+### Dual-Chamber Vacuum System Diagram
 ```
-GPIO 17 - SOL1 (AVL-Applied Vacuum Line)
-GPIO 27 - SOL2 (AVL-Applied Vacuum Line vent valve)
-GPIO 22 - SOL3 (Tank vent valve)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    DUAL-CHAMBER VACUUM SYSTEM                               │
+│                                                                             │
+│   ┌─────────┐    ┌─────────┐                                                │
+│   │ DC Pump │───►│  TANK   │◄─── Sensor 2 (Tank)                            │
+│   │ (PWM)   │    │         │                                                │
+│   └─────────┘    └────┬────┘                                                │
+│                       │                                                     │
+│              ┌────────┴────────┐                                            │
+│              │                 │                                            │
+│          [SOL3]            ┌───┴───┐                                        │
+│          Tank              │       │                                        │
+│          Vent          [SOL1]   [SOL4]                                      │
+│              ▼         Outer    Clitoral                                    │
+│          ┌─────┐           │       │                                        │
+│          │ ATM │           ▼       ▼                                        │
+│          └─────┘   ┌───────────────────────┐                                │
+│                    │     V-CONTOUR CUP     │                                │
+│                    │   OUTER V-CHAMBER   ◄─┼─── Sensor 1 (AVL)              │
+│                    │  ┌─────────────────┐  │                                │
+│                    │  │   ┌─────────┐   │  │                                │
+│                    │  │   │CLITORAL │◄──┼──┼─── Sensor 3 (Clitoral)         │
+│                    │  │   │CYLINDER │   │  │                                │
+│                    │  │   └┬───────┬┘   │  │       ┌─────┐                  │
+│                    │  │    │ OPEN  │    │  │   ┌───│ ATM │                  │
+│                    │  │    │CHANNEL│    │  │   │   └─────┘                  │
+│                    │  │    │       │    │  │ [SOL5]                         │
+│                    │  │    │       │    │  │ Clitoral                       │
+│                    │  │    │       │    │  │ Vent                           │
+│                    │  │    │       │    │  │   │                            │
+│                    │  └────┤       ├────┘◄─┼───┘                            │
+│                    │       │       │       │                                │
+│                    └───────┘       └───────┘                                │
+│                        ▲                                                    │
+│                        │   ┌─────┐                                          │
+│                    [SOL2]──│ ATM │                                          │
+│                    Outer   └─────┘                                          │
+│                    Vent                                                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### GPIO Pin Assignments (Dual-Chamber)
+```
+GPIO 17 - SOL1 (Outer V-seal vacuum)
+GPIO 27 - SOL2 (Outer V-seal vent)
+GPIO 22 - SOL3 (Tank vent - safety)
+GPIO 23 - SOL4 (Clitoral cylinder vacuum)      ← NEW
+GPIO 24 - SOL5 (Clitoral cylinder vent)        ← NEW
 GPIO 25 - Pump enable (L293D)
 GPIO 18 - Pump PWM control
 GPIO 21 - Emergency stop button (optional)
 ```
+
+### Pressure Specifications by Chamber
+
+| Parameter | Outer V-Seal Chamber | Clitoral Cylinder |
+|-----------|---------------------|-------------------|
+| **Purpose** | Attachment + engorgement | Air-pulse stimulation |
+| **Operating Range** | 30-60 mmHg | 20-75 mmHg |
+| **Attachment Threshold** | 35 mmHg minimum | N/A |
+| **Maximum Safe Limit** | 75 mmHg | 80 mmHg |
+| **Typical Operating** | 40-55 mmHg (constant) | 30-70 mmHg (pulsing 5-13 Hz) |
 
 ### SPI Connections (MCP3008)
 ```
@@ -231,6 +309,13 @@ GPIO 10 (MOSI) → DIN
 GPIO 9 (MISO)  → DOUT
 GPIO 8 (CS)    → CS
 ```
+
+### ADC Channel Assignments
+| Sensor | ADC Channel | Purpose | Update Rate |
+|--------|-------------|---------|-------------|
+| AVL (Outer) | CH0 | V-seal pressure, anti-detachment | 50 Hz |
+| Tank | CH1 | Reservoir monitoring | 50 Hz |
+| Clitoral | CH2 | Clitoral cylinder pressure | 100 Hz |
 
 > **📝 Important**: This system uses the modern **libgpiod v2.2.1** library for GPIO control instead of the deprecated `wiringPi`. This ensures compatibility with current and future Raspberry Pi OS versions and provides better security, performance, and reliability. The new request-based API offers improved resource management and enhanced safety for medical device applications.
 
