@@ -2,6 +2,8 @@
 
 A sophisticated **Automated Vacuum Stimulation Device** - an electromechanical system that applies controlled vacuum pressure to the vulva/clitoris for inducing sexual arousal and orgasm. Designed as a "hands-free" device that automatically brings a user to climax through precisely controlled vacuum patterns.
 
+For a complete and detailed explanation of the system, please see the [detailed explanation](explanation.md).
+
 Built with Qt on Raspberry Pi 4 with a 50-inch HDMI display and modern **libgpiod v2.2.1** for reliable, future-proof GPIO control.
 
 ## 🔑 Critical Differentiator: Active Engorgement
