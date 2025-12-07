@@ -4,6 +4,7 @@
 #include "../game/GameTypes.h"
 #include "../game/ProgressTracker.h"
 #include "../network/MultiUserController.h"
+#include "../licensing/LicenseManager.h"
 #include <QWidget>
 #include <QLabel>
 #include <QProgressBar>
@@ -13,6 +14,7 @@
 #include <QLineEdit>
 #include <QGroupBox>
 #include <QTimer>
+#include <QComboBox>
 
 /**
  * @brief GUI panel for points economy and multi-user control
@@ -31,8 +33,11 @@ class PrivilegePanel : public QWidget
 public:
     explicit PrivilegePanel(ProgressTracker* progressTracker,
                             MultiUserController* multiUserController,
+                            LicenseManager* licenseManager = nullptr,
                             QWidget* parent = nullptr);
     ~PrivilegePanel();
+
+    void setLicenseManager(LicenseManager* manager);
 
 public Q_SLOTS:
     void updateDisplay();
@@ -41,6 +46,8 @@ public Q_SLOTS:
     void onPeerConnected(const QString& peerId, const QString& displayName);
     void onPeerDisconnected(const QString& peerId);
     void onConsentChanged(const QString& partnerId, ConsentStatus status);
+    void onLicenseChanged(const LicenseInfo& info);
+    void onPurchaseComplete(const QString& productId, int pointsAwarded);
 
 private Q_SLOTS:
     void onTransferClicked();
@@ -51,6 +58,10 @@ private Q_SLOTS:
     void onCreateRoomClicked();
     void onEmergencyStopClicked();
     void onSafeWordChanged();
+    void onActivateLicenseClicked();
+    void onRequestTrialClicked();
+    void onBuyPointsClicked();
+    void onUpgradeSubscriptionClicked();
 
 private:
     void setupUi();
@@ -58,11 +69,15 @@ private:
     void updateTierDisplay();
     void updatePairedUsersList();
     void updateRoomsList();
+    void updateLicenseDisplay();
+    void setupLicenseSection();
     QString tierColorStyle(PrivilegeTier tier) const;
     QString consentStatusText(ConsentStatus status) const;
+    QString subscriptionTierText(SubscriptionTier tier) const;
 
     ProgressTracker* m_progressTracker;
     MultiUserController* m_multiUserController;
+    LicenseManager* m_licenseManager;
 
     // Points display
     QLabel* m_pointsLabel;
@@ -100,8 +115,20 @@ private:
     QLineEdit* m_safeWordEdit;
     QPushButton* m_emergencyStopButton;
 
+    // License/Subscription
+    QGroupBox* m_licenseGroup;
+    QLabel* m_subscriptionLabel;
+    QLabel* m_licenseStatusLabel;
+    QLabel* m_expirationLabel;
+    QLineEdit* m_licenseKeyEdit;
+    QPushButton* m_activateButton;
+    QPushButton* m_requestTrialButton;
+    QComboBox* m_pointBundleCombo;
+    QPushButton* m_buyPointsButton;
+    QComboBox* m_subscriptionCombo;
+    QPushButton* m_upgradeButton;
+
     QTimer* m_updateTimer;
 };
 
 #endif // PRIVILEGEPANEL_H
-

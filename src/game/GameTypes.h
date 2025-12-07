@@ -75,13 +75,43 @@ enum class GameResult {
 Q_DECLARE_METATYPE(GameResult)
 
 /**
- * @brief Subscription tiers for content access
+ * @brief Subscription tiers for content access and monetization
  */
 enum class SubscriptionTier {
-    BASIC,                // Free tier
-    PREMIUM               // "Intense Stimulation" subscription
+    FREE,                 // Free tier - basic features only
+    BASIC,                // Paid basic tier - standard features
+    STANDARD,             // Standard subscription - most features
+    PREMIUM,              // Premium subscription - all features
+    LIFETIME              // One-time purchase - permanent premium
 };
 Q_DECLARE_METATYPE(SubscriptionTier)
+
+/**
+ * @brief License key types for different purchase options
+ */
+enum class LicenseType {
+    TRIAL,                // 7-day trial key
+    MONTHLY,              // Monthly subscription
+    YEARLY,               // Yearly subscription (discounted)
+    LIFETIME,             // One-time permanent license
+    POINT_BUNDLE,         // Consumable point purchase
+    FEATURE_UNLOCK        // Specific feature unlock
+};
+Q_DECLARE_METATYPE(LicenseType)
+
+/**
+ * @brief License validation status
+ */
+enum class LicenseStatus {
+    VALID,                // License is active and valid
+    EXPIRED,              // License has expired
+    INVALID,              // License key is invalid
+    REVOKED,              // License was revoked
+    EXCEEDED,             // Device limit exceeded
+    PENDING,              // Awaiting validation
+    OFFLINE               // Cannot validate (offline mode)
+};
+Q_DECLARE_METATYPE(LicenseStatus)
 
 /**
  * @brief Privilege tiers based on points accumulation

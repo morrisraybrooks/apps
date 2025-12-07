@@ -101,6 +101,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src/testing)
 include_directories(${CMAKE_SOURCE_DIR}/src/control)
 include_directories(${CMAKE_SOURCE_DIR}/src/game)
 include_directories(${CMAKE_SOURCE_DIR}/src/network)
+include_directories(${CMAKE_SOURCE_DIR}/src/licensing)
 
 # Source files
 set(SOURCES
@@ -161,6 +162,8 @@ set(SOURCES
     src/game/ProgressTracker.cpp
     src/network/MultiUserController.cpp
     src/gui/PrivilegePanel.cpp
+    src/licensing/LicenseManager.cpp
+    src/licensing/LicenseServer.cpp
 )
 
 # Header files
@@ -214,6 +217,8 @@ set(HEADERS
     src/game/ProgressTracker.h
     src/network/MultiUserController.h
     src/gui/PrivilegePanel.h
+    src/licensing/LicenseManager.h
+    src/licensing/LicenseServer.h
 )
 
 # Create shared library for better testing and modularity

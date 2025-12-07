@@ -3,14 +3,17 @@
 #include <QHBoxLayout>
 #include <QGridLayout>
 #include <QMessageBox>
+#include <QInputDialog>
 #include <QFont>
 
 PrivilegePanel::PrivilegePanel(ProgressTracker* progressTracker,
                                MultiUserController* multiUserController,
+                               LicenseManager* licenseManager,
                                QWidget* parent)
     : QWidget(parent)
     , m_progressTracker(progressTracker)
     , m_multiUserController(multiUserController)
+    , m_licenseManager(licenseManager)
     , m_updateTimer(new QTimer(this))
 {
     setupUi();
@@ -18,6 +21,20 @@ PrivilegePanel::PrivilegePanel(ProgressTracker* progressTracker,
     updateDisplay();
 
     m_updateTimer->start(5000);  // Update every 5 seconds
+}
+
+void PrivilegePanel::setLicenseManager(LicenseManager* manager)
+{
+    m_licenseManager = manager;
+    if (m_licenseManager) {
+        connect(m_licenseManager, &LicenseManager::licenseActivated,
+                this, &PrivilegePanel::onLicenseChanged);
+        connect(m_licenseManager, &LicenseManager::licenseValidated,
+                this, [this](LicenseStatus) { updateLicenseDisplay(); });
+        connect(m_licenseManager, &LicenseManager::pointsPurchased,
+                this, &PrivilegePanel::onPurchaseComplete);
+        updateLicenseDisplay();
+    }
 }
 
 PrivilegePanel::~PrivilegePanel()
@@ -167,7 +184,83 @@ void PrivilegePanel::setupUi()
     safetyLayout->addWidget(m_emergencyStopButton);
 
     mainLayout->addWidget(m_safetyGroup);
+
+    // =========================================================================
+    // License and Subscription Section
+    // =========================================================================
+    setupLicenseSection();
+    mainLayout->addWidget(m_licenseGroup);
+
     mainLayout->addStretch();
+}
+
+void PrivilegePanel::setupLicenseSection()
+{
+    m_licenseGroup = new QGroupBox("Subscription & License", this);
+    QGridLayout* licenseLayout = new QGridLayout(m_licenseGroup);
+
+    // Subscription status
+    m_subscriptionLabel = new QLabel("FREE", this);
+    QFont subFont = m_subscriptionLabel->font();
+    subFont.setPointSize(12);
+    subFont.setBold(true);
+    m_subscriptionLabel->setFont(subFont);
+    m_subscriptionLabel->setStyleSheet("color: #888888;");
+
+    m_licenseStatusLabel = new QLabel("Not Licensed", this);
+    m_expirationLabel = new QLabel("", this);
+
+    // License key input
+    m_licenseKeyEdit = new QLineEdit(this);
+    m_licenseKeyEdit->setPlaceholderText("XXXX-XXXX-XXXX-XXXX");
+    m_licenseKeyEdit->setMaxLength(19);
+
+    m_activateButton = new QPushButton("Activate", this);
+    m_requestTrialButton = new QPushButton("Start 7-Day Trial", this);
+    m_requestTrialButton->setStyleSheet("QPushButton { background-color: #4CAF50; color: white; }");
+
+    // Point bundles
+    m_pointBundleCombo = new QComboBox(this);
+    m_pointBundleCombo->addItem("Starter - 100 pts ($0.99)", "starter_100");
+    m_pointBundleCombo->addItem("Basic - 550 pts ($3.99)", "basic_500");
+    m_pointBundleCombo->addItem("Standard - 1,800 pts ($9.99)", "standard_1500");
+    m_pointBundleCombo->addItem("Premium - 6,500 pts ($24.99)", "premium_5000");
+    m_pointBundleCombo->addItem("Mega - 22,500 pts ($49.99)", "mega_15000");
+    m_pointBundleCombo->addItem("Ultimate - 87,500 pts ($99.99)", "ultimate_50000");
+
+    m_buyPointsButton = new QPushButton("Buy Points", this);
+    m_buyPointsButton->setStyleSheet("QPushButton { background-color: #2196F3; color: white; }");
+
+    // Subscription upgrades
+    m_subscriptionCombo = new QComboBox(this);
+    m_subscriptionCombo->addItem("Basic Monthly - $4.99/mo", "basic_monthly");
+    m_subscriptionCombo->addItem("Standard Monthly - $9.99/mo", "standard_monthly");
+    m_subscriptionCombo->addItem("Premium Monthly - $19.99/mo", "premium_monthly");
+    m_subscriptionCombo->addItem("Standard Yearly - $95.88/yr (Save 20%)", "standard_yearly");
+    m_subscriptionCombo->addItem("Premium Yearly - $179.88/yr (Save 25%)", "premium_yearly");
+    m_subscriptionCombo->addItem("Lifetime Premium - $299.99", "lifetime");
+
+    m_upgradeButton = new QPushButton("Upgrade", this);
+    m_upgradeButton->setStyleSheet("QPushButton { background-color: #FF9800; color: white; }");
+
+    // Layout
+    licenseLayout->addWidget(new QLabel("Status:"), 0, 0);
+    licenseLayout->addWidget(m_subscriptionLabel, 0, 1);
+    licenseLayout->addWidget(m_licenseStatusLabel, 0, 2);
+    licenseLayout->addWidget(m_expirationLabel, 1, 0, 1, 3);
+
+    licenseLayout->addWidget(new QLabel("License Key:"), 2, 0);
+    licenseLayout->addWidget(m_licenseKeyEdit, 2, 1);
+    licenseLayout->addWidget(m_activateButton, 2, 2);
+    licenseLayout->addWidget(m_requestTrialButton, 3, 1, 1, 2);
+
+    licenseLayout->addWidget(new QLabel("Buy Points:"), 4, 0);
+    licenseLayout->addWidget(m_pointBundleCombo, 4, 1);
+    licenseLayout->addWidget(m_buyPointsButton, 4, 2);
+
+    licenseLayout->addWidget(new QLabel("Subscribe:"), 5, 0);
+    licenseLayout->addWidget(m_subscriptionCombo, 5, 1);
+    licenseLayout->addWidget(m_upgradeButton, 5, 2);
 }
 
 void PrivilegePanel::setupConnections()
@@ -202,6 +295,16 @@ void PrivilegePanel::setupConnections()
     connect(m_safeWordEdit, &QLineEdit::editingFinished,
             this, &PrivilegePanel::onSafeWordChanged);
 
+    // License button connections
+    connect(m_activateButton, &QPushButton::clicked,
+            this, &PrivilegePanel::onActivateLicenseClicked);
+    connect(m_requestTrialButton, &QPushButton::clicked,
+            this, &PrivilegePanel::onRequestTrialClicked);
+    connect(m_buyPointsButton, &QPushButton::clicked,
+            this, &PrivilegePanel::onBuyPointsClicked);
+    connect(m_upgradeButton, &QPushButton::clicked,
+            this, &PrivilegePanel::onUpgradeSubscriptionClicked);
+
     // Update timer
     connect(m_updateTimer, &QTimer::timeout, this, &PrivilegePanel::updateDisplay);
 }
@@ -219,6 +322,9 @@ void PrivilegePanel::updateDisplay()
 
     // Update rooms
     updateRoomsList();
+
+    // Update license
+    updateLicenseDisplay();
 
     // Enable/disable features based on tier
     PrivilegeTier tier = m_progressTracker->privilegeTier();
@@ -494,5 +600,195 @@ void PrivilegePanel::onSafeWordChanged()
         m_progressTracker->setSafeWord(safeWord);
         m_safeWordEdit->clear();
         m_safeWordEdit->setPlaceholderText("Safe word set ✓");
+    }
+}
+
+// ============================================================================
+// License and Purchase Slots
+// ============================================================================
+
+void PrivilegePanel::onActivateLicenseClicked()
+{
+    if (!m_licenseManager) return;
+
+    QString key = m_licenseKeyEdit->text().trimmed();
+    if (key.isEmpty()) {
+        QMessageBox::warning(this, "Activation Error", "Please enter a license key.");
+        return;
+    }
+
+    if (m_licenseManager->activateLicense(key)) {
+        m_activateButton->setEnabled(false);
+        m_activateButton->setText("Activating...");
+    }
+}
+
+void PrivilegePanel::onRequestTrialClicked()
+{
+    if (!m_licenseManager) return;
+
+    // For trial, we'll need an email - show simple dialog
+    QString email = QInputDialog::getText(this, "Start Trial",
+        "Enter your email address to start a 7-day free trial:");
+
+    if (!email.isEmpty() && email.contains("@")) {
+        // Request trial through license server
+        m_licenseManager->activateLicense("TRIAL-" + email.left(4).toUpper());
+        m_requestTrialButton->setEnabled(false);
+        m_requestTrialButton->setText("Trial Requested...");
+    }
+}
+
+void PrivilegePanel::onBuyPointsClicked()
+{
+    if (!m_licenseManager) return;
+
+    QString bundleId = m_pointBundleCombo->currentData().toString();
+    if (bundleId.isEmpty()) return;
+
+    // This would normally open a payment dialog or redirect to payment processor
+    int ret = QMessageBox::question(this, "Purchase Points",
+        QString("Purchase %1?\n\nThis will open a payment window.")
+            .arg(m_pointBundleCombo->currentText()),
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (ret == QMessageBox::Yes) {
+        m_licenseManager->purchasePointBundle(bundleId);
+    }
+}
+
+void PrivilegePanel::onUpgradeSubscriptionClicked()
+{
+    if (!m_licenseManager) return;
+
+    QString planId = m_subscriptionCombo->currentData().toString();
+    if (planId.isEmpty()) return;
+
+    int ret = QMessageBox::question(this, "Upgrade Subscription",
+        QString("Upgrade to %1?\n\nThis will open a payment window.")
+            .arg(m_subscriptionCombo->currentText()),
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (ret == QMessageBox::Yes) {
+        m_licenseManager->upgradePlan(planId);
+    }
+}
+
+void PrivilegePanel::onLicenseChanged(const LicenseInfo& info)
+{
+    Q_UNUSED(info)
+    updateLicenseDisplay();
+
+    // Re-enable buttons
+    m_activateButton->setEnabled(true);
+    m_activateButton->setText("Activate");
+    m_requestTrialButton->setEnabled(true);
+    m_requestTrialButton->setText("Start 7-Day Trial");
+
+    // Notify user
+    if (info.isValid()) {
+        QMessageBox::information(this, "License Activated",
+            QString("Your %1 subscription is now active!")
+                .arg(subscriptionTierText(info.tier)));
+    }
+}
+
+void PrivilegePanel::onPurchaseComplete(const QString& productId, int pointsAwarded)
+{
+    QMessageBox::information(this, "Purchase Complete",
+        QString("Purchase successful! %1 points have been added to your account.")
+            .arg(pointsAwarded));
+
+    // Add points to progress tracker
+    m_progressTracker->addPoints(pointsAwarded, PointTransactionType::TRANSFER_IN,
+                                 QString("Purchased: %1").arg(productId));
+
+    updateDisplay();
+}
+
+void PrivilegePanel::updateLicenseDisplay()
+{
+    if (!m_licenseManager) {
+        m_subscriptionLabel->setText("FREE");
+        m_licenseStatusLabel->setText("(No license manager)");
+        return;
+    }
+
+    LicenseInfo info = m_licenseManager->licenseInfo();
+
+    // Update subscription tier display
+    m_subscriptionLabel->setText(subscriptionTierText(info.tier).toUpper());
+
+    // Color code by tier
+    QString tierColor;
+    switch (info.tier) {
+        case SubscriptionTier::LIFETIME:
+            tierColor = "#9C27B0";  // Purple
+            break;
+        case SubscriptionTier::PREMIUM:
+            tierColor = "#FF9800";  // Orange
+            break;
+        case SubscriptionTier::STANDARD:
+            tierColor = "#2196F3";  // Blue
+            break;
+        case SubscriptionTier::BASIC:
+            tierColor = "#4CAF50";  // Green
+            break;
+        default:
+            tierColor = "#888888";  // Gray
+    }
+    m_subscriptionLabel->setStyleSheet(QString("color: %1;").arg(tierColor));
+
+    // Status label
+    switch (info.status) {
+        case LicenseStatus::VALID:
+            m_licenseStatusLabel->setText("✓ Active");
+            m_licenseStatusLabel->setStyleSheet("color: #4CAF50;");
+            break;
+        case LicenseStatus::EXPIRED:
+            m_licenseStatusLabel->setText("✗ Expired");
+            m_licenseStatusLabel->setStyleSheet("color: #F44336;");
+            break;
+        case LicenseStatus::PENDING:
+            m_licenseStatusLabel->setText("⋯ Validating");
+            m_licenseStatusLabel->setStyleSheet("color: #FF9800;");
+            break;
+        default:
+            m_licenseStatusLabel->setText("Not Licensed");
+            m_licenseStatusLabel->setStyleSheet("color: #888888;");
+    }
+
+    // Expiration
+    int days = info.daysRemaining();
+    if (days < 0) {
+        m_expirationLabel->setText("Lifetime license - never expires");
+    } else if (days == 0) {
+        m_expirationLabel->setText("Expires today!");
+        m_expirationLabel->setStyleSheet("color: #F44336;");
+    } else if (days <= 7) {
+        m_expirationLabel->setText(QString("Expires in %1 days").arg(days));
+        m_expirationLabel->setStyleSheet("color: #FF9800;");
+    } else if (info.expiresAt.isValid()) {
+        m_expirationLabel->setText(QString("Expires: %1")
+            .arg(info.expiresAt.toString("MMM dd, yyyy")));
+        m_expirationLabel->setStyleSheet("");
+    } else {
+        m_expirationLabel->setText("");
+    }
+
+    // Hide/show trial button based on status
+    m_requestTrialButton->setVisible(!info.isValid());
+    m_licenseKeyEdit->setVisible(!info.isValid());
+    m_activateButton->setVisible(!info.isValid());
+}
+
+QString PrivilegePanel::subscriptionTierText(SubscriptionTier tier) const
+{
+    switch (tier) {
+        case SubscriptionTier::LIFETIME: return "Lifetime";
+        case SubscriptionTier::PREMIUM: return "Premium";
+        case SubscriptionTier::STANDARD: return "Standard";
+        case SubscriptionTier::BASIC: return "Basic";
+        default: return "Free";
     }
 }
