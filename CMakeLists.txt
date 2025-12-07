@@ -89,6 +89,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src/threading)
 include_directories(${CMAKE_SOURCE_DIR}/src/calibration)
 include_directories(${CMAKE_SOURCE_DIR}/src/error)
 include_directories(${CMAKE_SOURCE_DIR}/src/testing)
+include_directories(${CMAKE_SOURCE_DIR}/src/control)
 
 # Source files
 set(SOURCES
@@ -100,6 +101,7 @@ set(SOURCES
     src/hardware/MCP3008.cpp
     src/hardware/ClitoralOscillator.cpp
     src/hardware/TENSController.cpp
+    src/control/OrgasmControlAlgorithm.cpp
     src/gui/MainWindow.cpp
     src/gui/PressureMonitor.cpp
     src/gui/PatternSelector.cpp
@@ -144,6 +146,7 @@ set(HEADERS
     src/hardware/MCP3008.h
     src/hardware/ClitoralOscillator.h
     src/hardware/TENSController.h
+    src/control/OrgasmControlAlgorithm.h
     src/gui/MainWindow.h
     src/gui/PressureMonitor.h
     src/gui/PatternSelector.h
@@ -200,6 +203,7 @@ target_include_directories(VacuumControllerLib
         ${CMAKE_CURRENT_SOURCE_DIR}/src/logging
         ${CMAKE_CURRENT_SOURCE_DIR}/src/performance
         ${CMAKE_CURRENT_SOURCE_DIR}/src/reporting
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/control
 )
 
 # Link libraries to the shared library
