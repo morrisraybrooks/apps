@@ -1,0 +1,380 @@
+--- a/src/performance/MemoryManager.cpp
++++ b/src/performance/MemoryManager.cpp
+@@ -10,9 +10,7 @@
+ 
+ MemoryManager::MemoryManager(QObject *parent)
+     : QObject(parent)
+-    , m_memoryLimit(1024 * 1024 * 1024) // 1GB default
+-    , m_currentUsage(0)
+-    , m_peakUsage(0)
++    , m_memoryLimit(DEFAULT_MEMORY_LIMIT)
+     , m_autoCleanupEnabled(true)
+     , m_autoCleanupInterval(60000) // 1 minute
+     , m_fragmentationThreshold(0.3) // 30%
+@@ -24,7 +22,7 @@
+ 
+ MemoryManager::~MemoryManager()
+ {
+-    cleanup();
++    
+ }
+ 
+ void MemoryManager::initializeMemoryManager()
+@@ -46,15 +44,6 @@
+     qDebug() << "MemoryManager initialized with limit:" << (m_memoryLimit / (1024*1024)) << "MB";
+ }
+ 
+-void MemoryManager::cleanup()
+-{
+-    m_cleanupTimer->stop();
+-    m_cacheCleanupTimer->stop();
+-    
+-    // Clear all caches
+-    clearCache();
+-    
+-    qDebug() << "MemoryManager cleanup completed";
+-}
+-
+ qint64 MemoryManager::getTotalMemoryUsage() const
+ {
+     QMutexLocker locker(&m_statsMutex);
+@@ -128,13 +117,13 @@
+     }
+     
+     // Check memory limit
+-    if (m_currentUsage + size > m_memoryLimit) {
++    if (m_stats.currentUsage + size > m_memoryLimit) {
+         qWarning() << "Cannot create buffer - would exceed memory limit";
+-        emit memoryLimitExceeded(m_currentUsage + size, m_memoryLimit);
++        emit memoryLimitExceeded(m_stats.currentUsage + size, m_memoryLimit);
+         return QSharedPointer<QByteArray>();
+     }
+     
+     // Create buffer
+-    QSharedPointer<QByteArray> buffer = QSharedPointer<QByteArray>::create(size, 0);
++    QSharedPointer<QByteArray> buffer = QSharedPointer<QByteArray>::create(size, Qt::Uninitialized);
+     m_buffers[name] = buffer;
+     
+     // Update memory tracking
+@@ -170,73 +159,12 @@
+     return m_buffers.value(name, QSharedPointer<QByteArray>());
+ }
+ 
+-QStringList MemoryManager::getBufferNames() const
+-{
+-    QMutexLocker locker(&m_mutex);
+-    return m_buffers.keys();
+-}
+-
+-void MemoryManager::cacheValue(const QString& key, const QVariant& value, int ttlSeconds)
+-{
+-    QMutexLocker locker(&m_mutex);
+-    
+-    CacheItem item(value, ttlSeconds);
+-    m_cache[key] = item;
+-    
+-    // Update memory tracking
+-    trackAllocation(item.size);
+-    
+-    qDebug() << "Cached value:" << key << "TTL:" << ttlSeconds << "seconds";
+-}
+-
+-QVariant MemoryManager::getCachedValue(const QString& key)
+-{
+-    QMutexLocker locker(&m_mutex);
+-    
+-    if (!m_cache.contains(key)) {
+-        return QVariant();
+-    }
+-    
+-    CacheItem& item = m_cache[key];
+-    
+-    // Check if expired
+-    if (item.isExpired()) {
+-        qint64 size = item.size;
+-        m_cache.remove(key);
+-        trackDeallocation(size);
+-        emit cacheItemExpired(key);
+-        return QVariant();
+-    }
+-    
+-    // Update access count
+-    item.accessCount++;
+-    
+-    return item.value;
+-}
+-
+-void MemoryManager::removeCachedValue(const QString& key)
+-{
+-    QMutexLocker locker(&m_mutex);
+-    
+-    if (m_cache.contains(key)) {
+-        qint64 size = m_cache[key].size;
+-        m_cache.remove(key);
+-        trackDeallocation(size);
+-        qDebug() << "Removed cached value:" << key;
+-    }
+-}
+-
+ void MemoryManager::clearCache()
+ {
+-    QMutexLocker locker(&m_mutex);
++    QMutexLocker locker(&m_cacheMutex);
+     
+     qint64 totalSize = 0;
+-    for (const auto& item : m_cache) {
++    for (const auto& item : std::as_const(m_cache)) {
+         totalSize += item.size;
+     }
+     
+@@ -246,28 +174,22 @@
+     qDebug() << "Cache cleared, freed:" << totalSize << "bytes";
+ }
+ 
+-QStringList MemoryManager::getCacheKeys() const
+-{
+-    QMutexLocker locker(&m_mutex);
+-    return m_cache.keys();
+-}
+-
+ void MemoryManager::performCleanup()
+ {
+     qDebug() << "Performing memory cleanup...";
+     
+-    qint64 initialUsage = m_currentUsage;
++    qint64 initialUsage = m_stats.currentUsage;
+     
+     // Clean expired cache items
+     cleanupExpiredCacheItems();
+     
+     // Clean unused buffers
+     cleanupUnusedBuffers();
+-    
++
+     // Optimize memory if needed
+-    if (getUsagePercentage() > 80.0) {
++    if (getFragmentationRatio() > m_fragmentationThreshold) {
+         optimizeMemory();
+     }
+     
+-    qint64 freedBytes = initialUsage - m_currentUsage;
++    qint64 freedBytes = initialUsage - m_stats.currentUsage;
+     if (freedBytes > 0) {
+         emit memoryOptimized(freedBytes);
+         qDebug() << "Memory cleanup completed, freed:" << freedBytes << "bytes";
+@@ -278,28 +200,28 @@
+ {
+     updateMemoryStats();
+     
+-    double usagePercent = getUsagePercentage();
++    double usagePercent = getTotalMemoryUsage() / (double)m_memoryLimit * 100.0;
+     
+     if (usagePercent > 90.0) {
+         qWarning() << "High memory usage:" << usagePercent << "%";
+         performCleanup();
+     }
+     
+-    if (isMemoryLimitExceeded()) {
+-        emit memoryLimitExceeded(m_currentUsage, m_memoryLimit);
++    if (m_stats.currentUsage > m_memoryLimit) {
++        emit memoryLimitExceeded(m_stats.currentUsage, m_memoryLimit);
+     }
+ }
+ 
+ void MemoryManager::optimizeBuffers()
+ {
+-    QMutexLocker locker(&m_mutex);
++    QMutexLocker locker(&m_bufferMutex);
+     
+     // Remove buffers that are only referenced by us
+     QStringList buffersToRemove;
+     
+-    for (auto it = m_buffers.begin(); it != m_buffers.end(); ++it) {
+-        if (it.value().use_count() == 1) {
++    for (auto it = m_buffers.constBegin(); it != m_buffers.constEnd(); ++it) {
++        // A use_count of 1 means only the MemoryManager holds a reference.
++        if (it.value().use_count() <= 1) {
+             buffersToRemove.append(it.key());
+         }
+     }
+@@ -320,20 +242,23 @@
+ 
+ void MemoryManager::trackAllocation(qint64 size)
+ {
+-    m_currentUsage += size;
++    QMutexLocker locker(&m_statsMutex);
++    m_stats.currentUsage += size;
++    m_stats.totalAllocated += size;
++    m_stats.activeAllocations++;
+     updatePeakUsage();
+ }
+ 
+ void MemoryManager::trackDeallocation(qint64 size)
+ {
+-    m_currentUsage = qMax(0LL, m_currentUsage - size);
++    QMutexLocker locker(&m_statsMutex);
++    m_stats.currentUsage = qMax(0LL, m_stats.currentUsage - size);
++    m_stats.totalFreed += size;
++    m_stats.activeAllocations--;
+ }
+ 
+ void MemoryManager::updatePeakUsage()
+ {
+-    if (m_currentUsage > m_peakUsage) {
+-        m_peakUsage = m_currentUsage;
+-    }
++    m_stats.peakUsage = qMax(m_stats.peakUsage, m_stats.currentUsage);
+ }
+ 
+ void MemoryManager::updateMemoryStats()
+@@ -348,7 +273,7 @@
+         QStringList lines = output.split('
+');
+         
+         for (const QString& line : lines) {
+-            if (line.startsWith("MemAvailable:")) {
++            if (line.startsWith("MemTotal:")) { // Using MemTotal for limit calculation
+                 QStringList parts = line.split(QRegExp("\s+"));
+                 if (parts.size() >= 2) {
+                     qint64 availableKB = parts[1].toLongLong();
+@@ -363,12 +288,12 @@
+ 
+ void MemoryManager::cleanupExpiredCacheItems()
+ {
+-    QMutexLocker locker(&m_mutex);
++    QMutexLocker locker(&m_cacheMutex);
+     
+     QStringList expiredKeys;
+     qint64 totalFreed = 0;
+     
+-    for (auto it = m_cache.begin(); it != m_cache.end(); ++it) {
++    for (auto it = m_cache.begin(); it != m_cache.end();) {
+         if (it.value().isExpired()) {
+             expiredKeys.append(it.key());
+             totalFreed += it.value().size;
+@@ -389,22 +314,19 @@
+ {
+     QMutexLocker locker(&m_bufferMutex);
+     
+-    QStringList unusedBuffers;
+-    
+-    for (auto it = m_buffers.begin(); it != m_buffers.end(); ++it) {
+-        if (it.value().use_count() == 1) {
+-            unusedBuffers.append(it.key());
+-        }
+-    }
+-    
+-    for (const QString& name : unusedBuffers) {
+-        QByteArray* buffer = m_buffers[name];
+-        qint64 size = buffer->size();
+-        delete buffer;
+-        m_buffers.remove(name);
+-        trackDeallocation(size);
+-        emit bufferReleased(name);
+-    }
++    QStringList unusedBuffers; 
++    for (auto it = m_buffers.begin(); it != m_buffers.end();) {
++        if (it.value().use_count() <= 1) {
++            unusedBuffers.append(it.key());
++            trackDeallocation(it.value()->size());
++            emit bufferReleased(it.key());
++            it = m_buffers.erase(it);
++        } else {
++            ++it;
++        }
++    }
++
+     
+     if (!unusedBuffers.isEmpty()) {
+         qDebug() << "Cleaned up" << unusedBuffers.size() << "unused buffers";
+--- a/src/performance/MemoryManager.h
++++ b/src/performance/MemoryManager.h
+@@ -1,15 +1,16 @@
+ #ifndef MEMORYMANAGER_H
+ #define MEMORYMANAGER_H
+ 
+-#include <QObject>
+-#include <QTimer>
+-#include <QMutex>
+-#include <QMap>
+-#include <QQueue>
+-#include <QSharedPointer>
+-#include <QWeakPointer>
+-#include <QVariant>
+-#include <QDateTime>
+-#include <QDebug>
++#include <QObject> // Base class for QObject model
++#include <QTimer> // For timed cleanup operations
++#include <QMutex> // For thread-safe access to shared resources
++#include <QMap> // For storing named buffers and cache items
++#include <QQueue> // For memory pooling
++#include <QSharedPointer> // For smart pointer management of buffers
++#include <QWeakPointer> // To avoid circular references
++#include <QVariant> // For storing cached values of different types
++#include <QDateTime> // For cache item timestamps and expiration
++#include <QDebug> // For logging and debugging output
++#include <QRegularExpression> // For parsing memory information
+ 
+ /**
+  * @brief Advanced memory management and optimization system
+@@ -112,13 +113,13 @@
+     }
+     
+     // Buffer management
+-    QSharedPointer<QByteArray> createBuffer(const QString& name, qint64 initialSize, bool autoResize = true);
++    QSharedPointer<QByteArray> createBuffer(const QString& name, qint64 size, bool autoResize = true);
+     void releaseBuffer(const QString& name);
+-    QSharedPointer<QByteArray> getBuffer(const QString& name);
++    QSharedPointer<QByteArray> getBuffer(const QString& name) const;
+     
+     // Cache management
+-    void setCacheItem(const QString& key, const QVariant& value, int ttlSeconds = 3600);
+-    QVariant getCacheItem(const QString& key);
++    void cacheValue(const QString& key, const QVariant& value, int ttlSeconds = 3600);
++    QVariant getCachedValue(const QString& key);
+     void removeCacheItem(const QString& key);
+     void clearCache();
+     void setCacheMaxSize(qint64 maxSize);
+@@ -126,7 +127,7 @@
+     // Memory monitoring
+     MemoryStats getMemoryStats() const;
+     QMap<QString, BufferInfo> getBufferInfo() const;
+-    qint64 getTotalMemoryUsage() const;
++    qint64 getCurrentUsage() const;
+     qint64 getAvailableMemory() const;
+     double getFragmentationRatio() const;
+     
+@@ -162,7 +163,6 @@
+ private:
+     void initializeMemoryManager();
+     void setupCleanupTimers();
+-    void updateMemoryStats();
+     void cleanupExpiredCacheItems();
+     void cleanupUnusedBuffers();
+     void checkMemoryLimits();
+@@ -171,6 +171,7 @@
+     void trackAllocation(qint64 size);
+     void trackDeallocation(qint64 size);
+     void updatePeakUsage();
++    void updateMemoryStats();
+     
+ public:
+     // Cache management
+@@ -198,7 +199,7 @@
+     QMutex m_poolMutex;
+     
+     // Buffer management
+-    QMap<QString, QSharedPointer<QByteArray>> m_buffers;
++    QMap<QString, QSharedPointer<QByteArray>> m_buffers; // Changed to QSharedPointer
+     QMap<QString, BufferInfo> m_bufferInfo;
+     QMutex m_bufferMutex;
+     
+@@ -223,7 +224,7 @@
+     static const qint64 DEFAULT_MEMORY_LIMIT = 1024 * 1024 * 1024; // 1GB
+     static const int DEFAULT_CLEANUP_INTERVAL = 60000;             // 1 minute
+     static const int DEFAULT_CACHE_CLEANUP_INTERVAL = 300000;      // 5 minutes
+-    static constexpr double DEFAULT_FRAGMENTATION_THRESHOLD = 0.3;     // 30%
++    static constexpr double DEFAULT_FRAGMENTATION_THRESHOLD = 0.3; // 30%
+     static const qint64 DEFAULT_CACHE_MAX_SIZE = 100 * 1024 * 1024; // 100MB
+     static const int DEFAULT_CACHE_TTL = 3600;                     // 1 hour
+ };

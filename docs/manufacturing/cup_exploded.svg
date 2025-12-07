@@ -1,0 +1,214 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1000" font-family="DejaVu Sans,Arial" stroke="#222" fill="none" stroke-width="1">
+  <defs>
+    <pattern id="shell-hatch" patternUnits="userSpaceOnUse" width="4" height="4">
+      <path d="M0,4 L4,0" stroke="#666" stroke-width="0.5"/>
+    </pattern>
+    <pattern id="silicone-dots" patternUnits="userSpaceOnUse" width="8" height="8">
+      <circle cx="4" cy="4" r="1" fill="#999"/>
+    </pattern>
+    <linearGradient id="shell-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f0f0"/>
+      <stop offset="100%" style="stop-color:#d0d0d0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="1400" height="1000" fill="#fff"/>
+
+  <!-- Title -->
+  <text x="700" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">VACUUM CUP - EXPLODED ASSEMBLY</text>
+  <text x="700" y="50" text-anchor="middle" font-size="12" fill="#666">Medical Device Component Assembly</text>
+
+  <!-- Assembly direction arrow -->
+  <defs>
+    <marker id="assembly-arrow" markerWidth="12" markerHeight="8" refX="10" refY="4" orient="auto">
+      <polygon points="0 0, 12 4, 0 8" fill="#ff6600" stroke="#ff6600"/>
+    </marker>
+  </defs>
+  <line x1="100" y1="150" x2="100" y2="750" stroke="#ff6600" stroke-width="3" marker-end="url(#assembly-arrow)"/>
+  <text x="85" y="450" text-anchor="middle" font-size="12" font-weight="bold" fill="#ff6600" transform="rotate(-90, 85, 450)">ASSEMBLY</text>
+
+  <!-- COMPONENT 1: Main Shell -->
+  <g id="main-shell">
+    <!-- Shell body - 3D perspective -->
+    <ellipse cx="400" cy="150" rx="80" ry="50" stroke="#222" stroke-width="2" fill="url(#shell-gradient)"/>
+    <path d="M 320 150 Q 320 120 400 110 Q 480 120 480 150 L 480 180 Q 480 190 470 190 L 330 190 Q 320 190 320 180 Z"
+          stroke="#222" stroke-width="2" fill="url(#shell-hatch)"/>
+
+    <!-- Port holes -->
+    <circle cx="470" cy="150" r="8" stroke="#222" stroke-width="2" fill="#fff"/>
+    <circle cx="350" cy="170" r="6" stroke="#222" stroke-width="1" fill="#fff"/>
+    <circle cx="420" cy="150" r="3" stroke="#222" stroke-width="1" fill="#222"/>
+
+    <!-- Callout balloon -->
+    <circle cx="550" cy="120" r="15" stroke="#222" stroke-width="1" fill="#fff"/>
+    <text x="550" y="125" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">1</text>
+    <line x1="535" y1="130" x2="480" y2="150" stroke="#222" stroke-width="1"/>
+
+    <!-- Component label -->
+    <text x="600" y="120" font-size="14" font-weight="bold" fill="#000">MAIN SHELL</text>
+    <text x="600" y="135" font-size="11" fill="#000">Material: PC/Tritan</text>
+    <text x="600" y="148" font-size="11" fill="#000">Wall thickness: 2.0 ±0.2mm</text>
+    <text x="600" y="161" font-size="11" fill="#000">Inner cavity: 22×14mm oval</text>
+    <text x="600" y="174" font-size="11" fill="#000">Dome depth: 14 ±0.3mm</text>
+  </g>
+
+  <!-- COMPONENT 2: Seal Lip -->
+  <g id="seal-lip">
+    <!-- Seal ring - flexible appearance -->
+    <ellipse cx="400" cy="300" rx="90" ry="55" stroke="#666" stroke-width="3" fill="url(#silicone-dots)" opacity="0.7"/>
+    <ellipse cx="400" cy="300" rx="70" ry="40" stroke="#666" stroke-width="1" fill="none" stroke-dasharray="2,2"/>
+
+    <!-- Callout balloon -->
+    <circle cx="550" cy="270" r="15" stroke="#222" stroke-width="1" fill="#fff"/>
+    <text x="550" y="275" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">2</text>
+    <line x1="535" y1="280" x2="490" y2="300" stroke="#222" stroke-width="1"/>
+
+    <!-- Component label -->
+    <text x="600" y="270" font-size="14" font-weight="bold" fill="#000">SEAL LIP</text>
+    <text x="600" y="285" font-size="11" fill="#000">Material: Platinum-cured Silicone</text>
+    <text x="600" y="298" font-size="11" fill="#000">Hardness: Shore A 10-15</text>
+    <text x="600" y="311" font-size="11" fill="#000">Width: 6.0 ±0.5mm</text>
+    <text x="600" y="324" font-size="11" fill="#000">Contact angle: 12° ±2°</text>
+    <text x="600" y="337" font-size="11" fill="#000">Biocompatible (ISO 10993)</text>
+  </g>
+
+  <!-- COMPONENT 3: Diaphragm (Optional) -->
+  <g id="diaphragm">
+    <!-- Thin membrane -->
+    <ellipse cx="400" cy="450" rx="35" ry="25" stroke="#999" stroke-width="1" fill="#f0f0f0" opacity="0.8"/>
+    <circle cx="400" cy="450" r="20" stroke="#999" stroke-width="1" fill="none" stroke-dasharray="1,1"/>
+
+    <!-- Callout balloon -->
+    <circle cx="550" cy="420" r="15" stroke="#222" stroke-width="1" fill="#fff"/>
+    <text x="550" y="425" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">3</text>
+    <line x1="535" y1="430" x2="435" y2="450" stroke="#222" stroke-width="1"/>
+
+    <!-- Component label -->
+    <text x="600" y="420" font-size="14" font-weight="bold" fill="#000">DIAPHRAGM (Optional)</text>
+    <text x="600" y="435" font-size="11" fill="#000">Material: Medical Silicone</text>
+    <text x="600" y="448" font-size="11" fill="#000">Hardness: Shore A 30-40</text>
+    <text x="600" y="461" font-size="11" fill="#000">Thickness: 0.4-0.6mm</text>
+    <text x="600" y="474" font-size="11" fill="#000">Diameter: 10mm clear</text>
+    <text x="600" y="487" font-size="11" fill="#000">Dual-chamber separation</text>
+  </g>
+
+  <!-- COMPONENT 4: Primary Luer Insert -->
+  <g id="primary-insert">
+    <!-- Luer connector -->
+    <rect x="300" y="580" width="30" height="15" stroke="#222" stroke-width="2" fill="#e0e0e0"/>
+    <polygon points="330,580 345,587.5 330,595" stroke="#222" stroke-width="1" fill="#fff"/>
+    <circle cx="350" cy="587.5" r="8" stroke="#222" stroke-width="1" fill="none"/>
+
+    <!-- Callout balloon -->
+    <circle cx="250" cy="570" r="15" stroke="#222" stroke-width="1" fill="#fff"/>
+    <text x="250" y="575" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">4</text>
+    <line x1="265" y1="575" x2="300" y2="587" stroke="#222" stroke-width="1"/>
+
+    <!-- Component label -->
+    <text x="150" y="570" font-size="14" font-weight="bold" fill="#000">PRIMARY LUER INSERT</text>
+    <text x="150" y="585" font-size="11" fill="#000">P/N: 0-0-1</text>
+    <text x="150" y="598" font-size="11" fill="#000">Type: Female Luer-lock</text>
+    <text x="150" y="611" font-size="11" fill="#000">Standard: ISO 80369-7</text>
+    <text x="150" y="624" font-size="11" fill="#000">ID: 3.9mm min (tapered)</text>
+    <text x="150" y="637" font-size="11" fill="#000">Connection: SOL1/SOL2</text>
+  </g>
+
+  <!-- COMPONENT 5: Auxiliary Luer Insert -->
+  <g id="aux-insert">
+    <!-- Smaller Luer connector -->
+    <rect x="500" y="580" width="25" height="12" stroke="#666" stroke-width="1" fill="#f0f0f0"/>
+    <polygon points="525,580 535,586 525,592" stroke="#666" stroke-width="1" fill="#fff"/>
+    <circle cx="540" cy="586" r="6" stroke="#666" stroke-width="1" fill="none"/>
+
+    <!-- Callout balloon -->
+    <circle cx="580" cy="570" r="15" stroke="#222" stroke-width="1" fill="#fff"/>
+    <text x="580" y="575" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">5</text>
+    <line x1="565" y1="575" x2="540" y2="586" stroke="#222" stroke-width="1"/>
+
+    <!-- Component label -->
+    <text x="600" y="570" font-size="14" font-weight="bold" fill="#000">AUX LUER INSERT</text>
+    <text x="600" y="585" font-size="11" fill="#666">P/N: 0-0-1 (Optional)</text>
+    <text x="600" y="598" font-size="11" fill="#666">Type: Female Luer-lock</text>
+    <text x="600" y="611" font-size="11" fill="#666">ID: 3.0mm nominal</text>
+    <text x="600" y="624" font-size="11" fill="#666">Connection: SOL3 (future use)</text>
+    <text x="600" y="637" font-size="11" fill="#666">Status: Not used in current firmware</text>
+  </g>
+
+  <!-- COMPONENT 6: AVL Sensor Tap -->
+  <g id="avl-tap">
+    <!-- Micro tube -->
+    <rect x="380" y="720" width="40" height="4" stroke="#0066cc" stroke-width="1" fill="#cce6ff"/>
+    <circle cx="375" cy="722" r="2" stroke="#0066cc" stroke-width="1" fill="#0066cc"/>
+
+    <!-- Callout balloon -->
+    <circle cx="320" cy="710" r="15" stroke="#222" stroke-width="1" fill="#fff"/>
+    <text x="320" y="715" text-anchor="middle" font-size="14" font-weight="bold" fill="#000">6</text>
+    <line x1="335" y1="715" x2="375" y2="722" stroke="#222" stroke-width="1"/>
+
+    <!-- Component label -->
+    <text x="150" y="710" font-size="14" font-weight="bold" fill="#0066cc">AVL SENSOR TAP</text>
+    <text x="150" y="725" font-size="11" fill="#0066cc">ID: 2.0mm micro-lumen</text>
+    <text x="150" y="738" font-size="11" fill="#0066cc">Position: 6mm from primary port</text>
+    <text x="150" y="751" font-size="11" fill="#0066cc">Function: Applied Vacuum Level monitoring</text>
+    <text x="150" y="764" font-size="11" fill="#0066cc">Connection: MCP3008 ADC Channel 0</text>
+    <text x="150" y="777" font-size="11" fill="#0066cc">Anti-detachment system sensor</text>
+  </g>
+
+  <!-- ASSEMBLY NOTES -->
+  <g id="assembly-notes">
+    <rect x="800" y="650" width="550" height="300" stroke="#222" stroke-width="1" fill="#f8f8f8"/>
+    <text x="810" y="675" font-size="16" font-weight="bold" fill="#000">ASSEMBLY INSTRUCTIONS</text>
+
+    <text x="810" y="700" font-size="12" font-weight="bold" fill="#000">1. Shell Preparation:</text>
+    <text x="820" y="715" font-size="11" fill="#000">• Clean all surfaces with IPA</text>
+    <text x="820" y="728" font-size="11" fill="#000">• Inspect for cracks or defects</text>
+    <text x="820" y="741" font-size="11" fill="#000">• Verify port hole dimensions</text>
+
+    <text x="810" y="760" font-size="12" font-weight="bold" fill="#000">2. Insert Installation:</text>
+    <text x="820" y="775" font-size="11" fill="#000">• Press-fit Luer inserts into shell ports</text>
+    <text x="820" y="788" font-size="11" fill="#000">• Ensure flush mounting with shell surface</text>
+    <text x="820" y="801" font-size="11" fill="#000">• Apply medical-grade thread locker if threaded</text>
+
+    <text x="810" y="820" font-size="12" font-weight="bold" fill="#000">3. Diaphragm Installation (if used):</text>
+    <text x="820" y="835" font-size="11" fill="#000">• Center diaphragm in chamber cavity</text>
+    <text x="820" y="848" font-size="11" fill="#000">• Ensure no wrinkles or air bubbles</text>
+    <text x="820" y="861" font-size="11" fill="#000">• Verify 10mm clear diameter</text>
+
+    <text x="810" y="880" font-size="12" font-weight="bold" fill="#000">4. Seal Lip Assembly:</text>
+    <text x="820" y="895" font-size="11" fill="#000">• Stretch seal lip over shell rim</text>
+    <text x="820" y="908" font-size="11" fill="#000">• Ensure uniform contact angle (12°)</text>
+    <text x="820" y="921" font-size="11" fill="#000">• Check for proper skin contact surface</text>
+
+    <text x="810" y="940" font-size="12" font-weight="bold" fill="#ff0000">⚠ CRITICAL NOTES:</text>
+    <text x="820" y="955" font-size="11" fill="#ff0000">• All components must be biocompatible</text>
+    <text x="820" y="968" font-size="11" fill="#ff0000">• Pressure test to -80 kPa before use</text>
+  </g>
+
+  <!-- CONNECTION MAPPING -->
+  <g id="connection-map">
+    <rect x="150" y="800" width="600" height="150" stroke="#0066cc" stroke-width="2" fill="#f0f8ff"/>
+    <text x="160" y="825" font-size="14" font-weight="bold" fill="#0066cc">VACUUM CONTROLLER CONNECTION MAPPING</text>
+
+    <!-- Connection table -->
+    <text x="160" y="850" font-size="12" font-weight="bold" fill="#000">CUP PORT → CONTROLLER → FUNCTION</text>
+    <line x1="160" y1="855" x2="740" y2="855" stroke="#222" stroke-width="1"/>
+
+    <text x="160" y="875" font-size="11" fill="#000">Primary (P1) → SOL1 → Apply Vacuum (-40 kPa continuous)</text>
+    <text x="160" y="890" font-size="11" fill="#000">Primary (P1) → SOL2 → Vent/Release (atmospheric pressure)</text>
+    <text x="160" y="905" font-size="11" fill="#0066cc">AVL Tap → MCP3008 Ch0 → Applied Vacuum Level monitoring</text>
+    <text x="160" y="920" font-size="11" fill="#666">Aux (P2) → SOL3 → Reserved for future use</text>
+
+    <text x="160" y="940" font-size="10" font-style="italic" fill="#666">Anti-detachment: AVL pressure rise triggers SOL1 activation to maintain seal</text>
+  </g>
+
+  <!-- Drawing information -->
+  <rect x="1100" y="50" width="280" height="100" stroke="#222" stroke-width="1" fill="#fff"/>
+  <text x="1110" y="70" font-size="12" font-weight="bold" fill="#000">EXPLODED ASSEMBLY</text>
+  <text x="1110" y="85" font-size="10" fill="#000">Drawing: VCU-002</text>
+  <text x="1110" y="100" font-size="10" fill="#000">Scale: 1:1</text>
+  <text x="1110" y="115" font-size="10" fill="#000">Rev: A</text>
+  <text x="1110" y="130" font-size="10" fill="#000">Date: 2025-01-10</text>
+  <text x="1110" y="145" font-size="10" fill="#000">Sheet: 1 of 1</text>
+
+</svg>

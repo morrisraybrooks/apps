@@ -1,0 +1,32 @@
+#!/bin/bash
+# prerm script for vacuum-controller
+# This script runs before package removal
+
+set -e
+
+case "$1" in
+    remove|upgrade|deconfigure)
+        # Stop and disable systemd service if it exists
+        if [ -d /run/systemd/system ]; then
+            if systemctl is-active --quiet vacuum-controller.service; then
+                systemctl stop vacuum-controller.service
+            fi
+            if systemctl is-enabled --quiet vacuum-controller.service; then
+                systemctl disable vacuum-controller.service
+            fi
+        fi
+
+        # Kill any running vacuum controller processes
+        pkill -f VacuumController || true
+        ;;
+
+    failed-upgrade)
+        ;;
+
+    *)
+        echo "prerm called with unknown argument \`$1'" >&2
+        exit 1
+        ;;
+esac
+
+exit 0

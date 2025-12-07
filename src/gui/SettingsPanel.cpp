@@ -1,0 +1,727 @@
+#include "SettingsPanel.h"
+#include "components/TouchButton.h"
+#include "CalibrationInterface.h"
+#include "../VacuumController.h"
+#include <QDebug>
+#include <QMessageBox>
+#include <QFileDialog>
+#include <QJsonDocument>
+#include <QFile>
+#include <QDateTime>
+#include <QApplication>
+
+// Constants
+const QString SettingsPanel::SETTINGS_FILE_PATH = "config/settings.json";
+const double SettingsPanel::DEFAULT_MAX_PRESSURE = 100.0;
+const double SettingsPanel::DEFAULT_WARNING_THRESHOLD = 80.0;
+const double SettingsPanel::DEFAULT_ANTI_DETACHMENT_THRESHOLD = 50.0;
+const int SettingsPanel::DEFAULT_SENSOR_TIMEOUT_MS = 1000;
+
+// Anti-detachment constants (matching AntiDetachmentMonitor defaults)
+const double SettingsPanel::DEFAULT_ANTI_DETACHMENT_WARNING_THRESHOLD = 60.0;  // 60 mmHg
+const double SettingsPanel::DEFAULT_ANTI_DETACHMENT_HYSTERESIS = 5.0;          // 5 mmHg
+const int SettingsPanel::DEFAULT_ANTI_DETACHMENT_RESPONSE_DELAY_MS = 100;      // 100 ms
+const double SettingsPanel::DEFAULT_ANTI_DETACHMENT_MAX_VACUUM_INCREASE = 20.0; // 20%
+const int SettingsPanel::DEFAULT_ANTI_DETACHMENT_MONITORING_RATE_HZ = 100;     // 100 Hz
+
+SettingsPanel::SettingsPanel(VacuumController* controller, QWidget *parent)
+    : QWidget(parent)
+    , m_controller(controller)
+    , m_tabWidget(new QTabWidget(this))
+    , m_mainLayout(new QVBoxLayout(this))
+    , m_calibrationInProgress(false)
+{
+    setupUI();
+    connectSignals();
+    loadSettings();
+}
+
+SettingsPanel::~SettingsPanel()
+{
+}
+
+void SettingsPanel::setupUI()
+{
+    m_mainLayout->setSpacing(10);
+    m_mainLayout->setContentsMargins(15, 15, 15, 15);
+    
+    // Create tabs
+    setupSafetyTab();
+    setupCalibrationTab();
+    setupHardwareTab();
+    setupDisplayTab();
+    setupDiagnosticsTab();
+    setupMaintenanceTab();
+    
+    // Add tab widget
+    m_mainLayout->addWidget(m_tabWidget);
+    
+    // Create button layout
+    m_buttonLayout = new QHBoxLayout();
+    
+    m_applyButton = new TouchButton("Apply Settings");
+    m_applyButton->setButtonType(TouchButton::Primary);
+    m_applyButton->setMinimumSize(150, 50);
+
+    m_resetButton = new TouchButton("Reset to Defaults");
+    m_resetButton->setButtonType(TouchButton::Warning);
+    m_resetButton->setMinimumSize(150, 50);
+
+    m_buttonLayout->addWidget(m_resetButton);
+    m_buttonLayout->addStretch();
+    m_buttonLayout->addWidget(m_applyButton);
+    
+    m_mainLayout->addLayout(m_buttonLayout);
+}
+
+void SettingsPanel::setupSafetyTab()
+{
+    m_safetyTab = new QWidget();
+    m_tabWidget->addTab(m_safetyTab, "Safety");
+    
+    QVBoxLayout* safetyLayout = new QVBoxLayout(m_safetyTab);
+    
+    // Pressure Limits Group
+    QGroupBox* pressureGroup = new QGroupBox("Pressure Limits");
+    pressureGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QFormLayout* pressureForm = new QFormLayout(pressureGroup);
+    
+    m_maxPressureSpin = new QDoubleSpinBox();
+    m_maxPressureSpin->setRange(50.0, 150.0);
+    m_maxPressureSpin->setSuffix(" mmHg");
+    m_maxPressureSpin->setDecimals(1);
+    m_maxPressureSpin->setValue(DEFAULT_MAX_PRESSURE);
+    
+    m_warningThresholdSpin = new QDoubleSpinBox();
+    m_warningThresholdSpin->setRange(30.0, 120.0);
+    m_warningThresholdSpin->setSuffix(" mmHg");
+    m_warningThresholdSpin->setDecimals(1);
+    m_warningThresholdSpin->setValue(DEFAULT_WARNING_THRESHOLD);
+    
+    m_antiDetachmentSpin = new QDoubleSpinBox();
+    m_antiDetachmentSpin->setRange(20.0, 80.0);
+    m_antiDetachmentSpin->setSuffix(" mmHg");
+    m_antiDetachmentSpin->setDecimals(1);
+    m_antiDetachmentSpin->setValue(DEFAULT_ANTI_DETACHMENT_THRESHOLD);
+    
+    pressureForm->addRow("Maximum Pressure:", m_maxPressureSpin);
+    pressureForm->addRow("Warning Threshold:", m_warningThresholdSpin);
+    pressureForm->addRow("Anti-detachment Threshold:", m_antiDetachmentSpin);
+    
+    // Safety Features Group
+    QGroupBox* featuresGroup = new QGroupBox("Safety Features");
+    featuresGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QVBoxLayout* featuresLayout = new QVBoxLayout(featuresGroup);
+    
+    m_emergencyStopCheck = new QCheckBox("Emergency Stop Enabled");
+    m_emergencyStopCheck->setChecked(true);
+    
+    m_overpressureProtectionCheck = new QCheckBox("Overpressure Protection");
+    m_overpressureProtectionCheck->setChecked(true);
+    
+    m_autoShutdownCheck = new QCheckBox("Auto Shutdown on Error");
+    m_autoShutdownCheck->setChecked(true);
+    
+    featuresLayout->addWidget(m_emergencyStopCheck);
+    featuresLayout->addWidget(m_overpressureProtectionCheck);
+    featuresLayout->addWidget(m_autoShutdownCheck);
+    
+    // Sensor Settings Group
+    QGroupBox* sensorGroup = new QGroupBox("Sensor Settings");
+    sensorGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QFormLayout* sensorForm = new QFormLayout(sensorGroup);
+    
+    m_sensorTimeoutSpin = new QSpinBox();
+    m_sensorTimeoutSpin->setRange(100, 5000);
+    m_sensorTimeoutSpin->setSuffix(" ms");
+    m_sensorTimeoutSpin->setValue(DEFAULT_SENSOR_TIMEOUT_MS);
+    
+    sensorForm->addRow("Sensor Timeout:", m_sensorTimeoutSpin);
+
+    // Anti-detachment Advanced Settings Group
+    QGroupBox* antiDetachmentGroup = new QGroupBox("Anti-detachment Advanced Settings");
+    antiDetachmentGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QFormLayout* antiDetachmentForm = new QFormLayout(antiDetachmentGroup);
+
+    // Enable/disable anti-detachment system
+    m_antiDetachmentEnabledCheck = new QCheckBox("Anti-detachment System Enabled");
+    m_antiDetachmentEnabledCheck->setChecked(true);
+    m_antiDetachmentEnabledCheck->setToolTip("Enable or disable the anti-detachment monitoring system");
+
+    // Warning threshold (separate from main detachment threshold)
+    m_antiDetachmentWarningThresholdSpin = new QDoubleSpinBox();
+    m_antiDetachmentWarningThresholdSpin->setRange(30.0, 100.0);
+    m_antiDetachmentWarningThresholdSpin->setSuffix(" mmHg");
+    m_antiDetachmentWarningThresholdSpin->setDecimals(1);
+    m_antiDetachmentWarningThresholdSpin->setValue(DEFAULT_ANTI_DETACHMENT_WARNING_THRESHOLD);
+    m_antiDetachmentWarningThresholdSpin->setToolTip("Pressure threshold for anti-detachment warnings (should be higher than detachment threshold)");
+
+    // Hysteresis to prevent oscillation
+    m_antiDetachmentHysteresisSpin = new QDoubleSpinBox();
+    m_antiDetachmentHysteresisSpin->setRange(1.0, 20.0);
+    m_antiDetachmentHysteresisSpin->setSuffix(" mmHg");
+    m_antiDetachmentHysteresisSpin->setDecimals(1);
+    m_antiDetachmentHysteresisSpin->setValue(DEFAULT_ANTI_DETACHMENT_HYSTERESIS);
+    m_antiDetachmentHysteresisSpin->setToolTip("Hysteresis value to prevent oscillation between states");
+
+    // Response delay
+    m_antiDetachmentResponseDelaySpin = new QSpinBox();
+    m_antiDetachmentResponseDelaySpin->setRange(0, 1000);
+    m_antiDetachmentResponseDelaySpin->setSuffix(" ms");
+    m_antiDetachmentResponseDelaySpin->setValue(DEFAULT_ANTI_DETACHMENT_RESPONSE_DELAY_MS);
+    m_antiDetachmentResponseDelaySpin->setToolTip("Delay before anti-detachment response activation (0-1000ms)");
+
+    // Maximum vacuum increase
+    m_antiDetachmentMaxVacuumIncreaseSpin = new QDoubleSpinBox();
+    m_antiDetachmentMaxVacuumIncreaseSpin->setRange(5.0, 50.0);
+    m_antiDetachmentMaxVacuumIncreaseSpin->setSuffix(" %");
+    m_antiDetachmentMaxVacuumIncreaseSpin->setDecimals(1);
+    m_antiDetachmentMaxVacuumIncreaseSpin->setValue(DEFAULT_ANTI_DETACHMENT_MAX_VACUUM_INCREASE);
+    m_antiDetachmentMaxVacuumIncreaseSpin->setToolTip("Maximum vacuum increase allowed during anti-detachment response");
+
+    // Monitoring rate
+    m_antiDetachmentMonitoringRateSpin = new QSpinBox();
+    m_antiDetachmentMonitoringRateSpin->setRange(10, 200);
+    m_antiDetachmentMonitoringRateSpin->setSuffix(" Hz");
+    m_antiDetachmentMonitoringRateSpin->setValue(DEFAULT_ANTI_DETACHMENT_MONITORING_RATE_HZ);
+    m_antiDetachmentMonitoringRateSpin->setToolTip("Monitoring frequency for anti-detachment system (10-200 Hz)");
+
+    // Add controls to form
+    antiDetachmentForm->addRow(m_antiDetachmentEnabledCheck);
+    antiDetachmentForm->addRow("Warning Threshold:", m_antiDetachmentWarningThresholdSpin);
+    antiDetachmentForm->addRow("Hysteresis:", m_antiDetachmentHysteresisSpin);
+    antiDetachmentForm->addRow("Response Delay:", m_antiDetachmentResponseDelaySpin);
+    antiDetachmentForm->addRow("Max Vacuum Increase:", m_antiDetachmentMaxVacuumIncreaseSpin);
+    antiDetachmentForm->addRow("Monitoring Rate:", m_antiDetachmentMonitoringRateSpin);
+
+    safetyLayout->addWidget(pressureGroup);
+    safetyLayout->addWidget(featuresGroup);
+    safetyLayout->addWidget(sensorGroup);
+    safetyLayout->addWidget(antiDetachmentGroup);
+    safetyLayout->addStretch();
+}
+
+void SettingsPanel::setupCalibrationTab()
+{
+    m_calibrationInterface = new CalibrationInterface(m_controller, this);
+    m_tabWidget->addTab(m_calibrationInterface, "Calibration");
+}
+
+void SettingsPanel::setupHardwareTab()
+{
+    m_hardwareTab = new QWidget();
+    m_tabWidget->addTab(m_hardwareTab, "Hardware");
+    
+    QVBoxLayout* hardwareLayout = new QVBoxLayout(m_hardwareTab);
+    
+    // GPIO Configuration Group
+    QGroupBox* gpioGroup = new QGroupBox("GPIO Pin Configuration");
+    gpioGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QFormLayout* gpioForm = new QFormLayout(gpioGroup);
+    
+    m_sol1PinSpin = new QSpinBox();
+    m_sol1PinSpin->setRange(1, 40);
+    m_sol1PinSpin->setValue(17);
+    
+    m_sol2PinSpin = new QSpinBox();
+    m_sol2PinSpin->setRange(1, 40);
+    m_sol2PinSpin->setValue(27);
+    
+    m_sol3PinSpin = new QSpinBox();
+    m_sol3PinSpin->setRange(1, 40);
+    m_sol3PinSpin->setValue(22);
+    
+    m_pumpEnablePinSpin = new QSpinBox();
+    m_pumpEnablePinSpin->setRange(1, 40);
+    m_pumpEnablePinSpin->setValue(25);
+    
+    m_pumpPwmPinSpin = new QSpinBox();
+    m_pumpPwmPinSpin->setRange(1, 40);
+    m_pumpPwmPinSpin->setValue(18);
+    
+    m_emergencyButtonPinSpin = new QSpinBox();
+    m_emergencyButtonPinSpin->setRange(1, 40);
+    m_emergencyButtonPinSpin->setValue(21);
+    
+    gpioForm->addRow("SOL1 (AVL):", m_sol1PinSpin);
+    gpioForm->addRow("SOL2 (AVL Vent):", m_sol2PinSpin);
+    gpioForm->addRow("SOL3 (Tank Vent):", m_sol3PinSpin);
+    gpioForm->addRow("Pump Enable:", m_pumpEnablePinSpin);
+    gpioForm->addRow("Pump PWM:", m_pumpPwmPinSpin);
+    gpioForm->addRow("Emergency Button:", m_emergencyButtonPinSpin);
+    
+    // SPI Configuration Group
+    QGroupBox* spiGroup = new QGroupBox("SPI Configuration");
+    spiGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QFormLayout* spiForm = new QFormLayout(spiGroup);
+    
+    m_spiChannelSpin = new QSpinBox();
+    m_spiChannelSpin->setRange(0, 1);
+    m_spiChannelSpin->setValue(0);
+    
+    m_spiSpeedSpin = new QSpinBox();
+    m_spiSpeedSpin->setRange(100000, 10000000);
+    m_spiSpeedSpin->setValue(1000000);
+    m_spiSpeedSpin->setSuffix(" Hz");
+    
+    spiForm->addRow("SPI Channel:", m_spiChannelSpin);
+    spiForm->addRow("SPI Speed:", m_spiSpeedSpin);
+    
+    // Hardware Test Group
+    QGroupBox* testGroup = new QGroupBox("Hardware Testing");
+    testGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QVBoxLayout* testLayout = new QVBoxLayout(testGroup);
+    
+    m_testHardwareButton = new TouchButton("Test Hardware");
+    m_testHardwareButton->setButtonType(TouchButton::Primary);
+    m_testHardwareButton->setMinimumSize(150, 50);
+    
+    m_hardwareTestStatus = new QLabel("Not tested");
+    m_hardwareTestStatus->setStyleSheet("color: #666;");
+    
+    testLayout->addWidget(m_testHardwareButton);
+    testLayout->addWidget(m_hardwareTestStatus);
+    
+    hardwareLayout->addWidget(gpioGroup);
+    hardwareLayout->addWidget(spiGroup);
+    hardwareLayout->addWidget(testGroup);
+    hardwareLayout->addStretch();
+}
+
+void SettingsPanel::setupDisplayTab()
+{
+    m_displayTab = new QWidget();
+    m_tabWidget->addTab(m_displayTab, "Display");
+    
+    QVBoxLayout* displayLayout = new QVBoxLayout(m_displayTab);
+    
+    // Display Settings Group
+    QGroupBox* displayGroup = new QGroupBox("Display Settings");
+    displayGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QFormLayout* displayForm = new QFormLayout(displayGroup);
+    
+    m_fullscreenCheck = new QCheckBox("Fullscreen Mode");
+    m_fullscreenCheck->setChecked(true);
+    
+    m_screenWidthSpin = new QSpinBox();
+    m_screenWidthSpin->setRange(800, 4096);
+    m_screenWidthSpin->setValue(1920);
+    
+    m_screenHeightSpin = new QSpinBox();
+    m_screenHeightSpin->setRange(600, 2160);
+    m_screenHeightSpin->setValue(1080);
+    
+    m_touchEnabledCheck = new QCheckBox("Touch Interface");
+    m_touchEnabledCheck->setChecked(true);
+    
+    displayForm->addRow("", m_fullscreenCheck);
+    displayForm->addRow("Screen Width:", m_screenWidthSpin);
+    displayForm->addRow("Screen Height:", m_screenHeightSpin);
+    displayForm->addRow("", m_touchEnabledCheck);
+    
+    // Font Settings Group
+    QGroupBox* fontGroup = new QGroupBox("Font Settings");
+    fontGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QFormLayout* fontForm = new QFormLayout(fontGroup);
+    
+    m_fontSizeNormalSpin = new QSpinBox();
+    m_fontSizeNormalSpin->setRange(8, 32);
+    m_fontSizeNormalSpin->setValue(16);
+    
+    m_fontSizeLargeSpin = new QSpinBox();
+    m_fontSizeLargeSpin->setRange(12, 48);
+    m_fontSizeLargeSpin->setValue(20);
+    
+    fontForm->addRow("Normal Font Size:", m_fontSizeNormalSpin);
+    fontForm->addRow("Large Font Size:", m_fontSizeLargeSpin);
+    
+    // Theme Settings Group
+    QGroupBox* themeGroup = new QGroupBox("Theme Settings");
+    themeGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QFormLayout* themeForm = new QFormLayout(themeGroup);
+    
+    m_themeCombo = new QComboBox();
+    m_themeCombo->addItems({"Light", "Dark", "High Contrast"});
+    
+    themeForm->addRow("Theme:", m_themeCombo);
+    
+    displayLayout->addWidget(displayGroup);
+    displayLayout->addWidget(fontGroup);
+    displayLayout->addWidget(themeGroup);
+    displayLayout->addStretch();
+}
+
+void SettingsPanel::setupDiagnosticsTab()
+{
+    m_diagnosticsTab = new QWidget();
+    m_tabWidget->addTab(m_diagnosticsTab, "Diagnostics");
+    
+    QVBoxLayout* diagnosticsLayout = new QVBoxLayout(m_diagnosticsTab);
+    
+    // Logging Settings Group
+    QGroupBox* loggingGroup = new QGroupBox("Logging Settings");
+    loggingGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QFormLayout* loggingForm = new QFormLayout(loggingGroup);
+    
+    m_logLevelCombo = new QComboBox();
+    m_logLevelCombo->addItems({"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"});
+    m_logLevelCombo->setCurrentText("INFO");
+    
+    m_logToFileCheck = new QCheckBox("Log to File");
+    m_logToFileCheck->setChecked(true);
+    
+    m_logFilePathEdit = new QLineEdit("/var/log/vacuum-controller.log");
+    
+    m_maxLogFileSizeSpin = new QSpinBox();
+    m_maxLogFileSizeSpin->setRange(1, 1000);
+    m_maxLogFileSizeSpin->setValue(100);
+    m_maxLogFileSizeSpin->setSuffix(" MB");
+    
+    m_logRotationCheck = new QCheckBox("Log Rotation");
+    m_logRotationCheck->setChecked(true);
+    
+    loggingForm->addRow("Log Level:", m_logLevelCombo);
+    loggingForm->addRow("", m_logToFileCheck);
+    loggingForm->addRow("Log File Path:", m_logFilePathEdit);
+    loggingForm->addRow("Max File Size:", m_maxLogFileSizeSpin);
+    loggingForm->addRow("", m_logRotationCheck);
+    
+    // Data Logging Group
+    QGroupBox* dataGroup = new QGroupBox("Data Logging");
+    dataGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QVBoxLayout* dataLayout = new QVBoxLayout(dataGroup);
+    
+    m_logPressureDataCheck = new QCheckBox("Log Pressure Data");
+    m_logPressureDataCheck->setChecked(true);
+    
+    m_logPatternExecutionCheck = new QCheckBox("Log Pattern Execution");
+    m_logPatternExecutionCheck->setChecked(true);
+    
+    m_logSafetyEventsCheck = new QCheckBox("Log Safety Events");
+    m_logSafetyEventsCheck->setChecked(true);
+    
+    dataLayout->addWidget(m_logPressureDataCheck);
+    dataLayout->addWidget(m_logPatternExecutionCheck);
+    dataLayout->addWidget(m_logSafetyEventsCheck);
+    
+    diagnosticsLayout->addWidget(loggingGroup);
+    diagnosticsLayout->addWidget(dataGroup);
+    diagnosticsLayout->addStretch();
+}
+
+void SettingsPanel::setupMaintenanceTab()
+{
+    m_maintenanceTab = new QWidget();
+    m_tabWidget->addTab(m_maintenanceTab, "Maintenance");
+    
+    QVBoxLayout* maintenanceLayout = new QVBoxLayout(m_maintenanceTab);
+    
+    // Maintenance Settings Group
+    QGroupBox* settingsGroup = new QGroupBox("Maintenance Settings");
+    settingsGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QFormLayout* settingsForm = new QFormLayout(settingsGroup);
+    
+    m_selfTestOnStartupCheck = new QCheckBox("Self-test on Startup");
+    m_selfTestOnStartupCheck->setChecked(true);
+    
+    m_periodicCalibrationDaysSpin = new QSpinBox();
+    m_periodicCalibrationDaysSpin->setRange(1, 365);
+    m_periodicCalibrationDaysSpin->setValue(30);
+    m_periodicCalibrationDaysSpin->setSuffix(" days");
+    
+    m_maintenanceReminderCheck = new QCheckBox("Maintenance Reminders");
+    m_maintenanceReminderCheck->setChecked(true);
+    
+    m_usageTrackingCheck = new QCheckBox("Usage Tracking");
+    m_usageTrackingCheck->setChecked(true);
+    
+    m_componentLifetimeTrackingCheck = new QCheckBox("Component Lifetime Tracking");
+    m_componentLifetimeTrackingCheck->setChecked(true);
+    
+    settingsForm->addRow("", m_selfTestOnStartupCheck);
+    settingsForm->addRow("Calibration Interval:", m_periodicCalibrationDaysSpin);
+    settingsForm->addRow("", m_maintenanceReminderCheck);
+    settingsForm->addRow("", m_usageTrackingCheck);
+    settingsForm->addRow("", m_componentLifetimeTrackingCheck);
+    
+    // System Information Group
+    QGroupBox* infoGroup = new QGroupBox("System Information");
+    infoGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QFormLayout* infoForm = new QFormLayout(infoGroup);
+    
+    m_systemUptimeLabel = new QLabel("0 hours");
+    m_totalOperatingHoursLabel = new QLabel("0 hours");
+    m_lastMaintenanceLabel = new QLabel("Never");
+    
+    infoForm->addRow("System Uptime:", m_systemUptimeLabel);
+    infoForm->addRow("Total Operating Hours:", m_totalOperatingHoursLabel);
+    infoForm->addRow("Last Maintenance:", m_lastMaintenanceLabel);
+    
+    // Settings Management Group
+    QGroupBox* managementGroup = new QGroupBox("Settings Management");
+    managementGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QHBoxLayout* managementLayout = new QHBoxLayout(managementGroup);
+    
+    m_exportSettingsButton = new TouchButton("Export Settings");
+    m_exportSettingsButton->setButtonType(TouchButton::Normal);
+    m_exportSettingsButton->setMinimumSize(150, 50);
+    
+    m_importSettingsButton = new TouchButton("Import Settings");
+    m_importSettingsButton->setButtonType(TouchButton::Normal);
+    m_importSettingsButton->setMinimumSize(150, 50);
+    
+    m_factoryResetButton = new TouchButton("Factory Reset");
+    m_factoryResetButton->setButtonType(TouchButton::Danger);
+    m_factoryResetButton->setMinimumSize(150, 50);
+    
+    managementLayout->addWidget(m_exportSettingsButton);
+    managementLayout->addWidget(m_importSettingsButton);
+    managementLayout->addWidget(m_factoryResetButton);
+    managementLayout->addStretch();
+    
+    maintenanceLayout->addWidget(settingsGroup);
+    maintenanceLayout->addWidget(infoGroup);
+    maintenanceLayout->addWidget(managementGroup);
+    maintenanceLayout->addStretch();
+}
+
+void SettingsPanel::connectSignals()
+{
+    // Button connections
+    connect(m_applyButton, &TouchButton::clicked, this, &SettingsPanel::onApplyClicked);
+    connect(m_resetButton, &TouchButton::clicked, this, &SettingsPanel::resetToDefaults);
+    
+    // Hardware connections
+    connect(m_testHardwareButton, &TouchButton::clicked, this, &SettingsPanel::onTestHardwareClicked);
+    
+    // Maintenance connections
+    connect(m_exportSettingsButton, &TouchButton::clicked, this, &SettingsPanel::onExportSettingsClicked);
+    connect(m_importSettingsButton, &TouchButton::clicked, this, &SettingsPanel::onImportSettingsClicked);
+    connect(m_factoryResetButton, &TouchButton::clicked, this, &SettingsPanel::onFactoryResetClicked);
+}
+
+void SettingsPanel::loadSettings()
+{
+    QFile file(SETTINGS_FILE_PATH);
+    if (file.open(QIODevice::ReadOnly)) {
+        QByteArray data = file.readAll();
+        QJsonDocument doc = QJsonDocument::fromJson(data);
+        m_currentSettings = doc.object();
+        m_originalSettings = m_currentSettings;
+        
+        // Load settings into UI controls
+        QJsonObject safetySettings = m_currentSettings["safety_settings"].toObject();
+        m_maxPressureSpin->setValue(safetySettings["max_pressure_mmhg"].toDouble(DEFAULT_MAX_PRESSURE));
+        m_warningThresholdSpin->setValue(safetySettings["warning_threshold_mmhg"].toDouble(DEFAULT_WARNING_THRESHOLD));
+        m_antiDetachmentSpin->setValue(safetySettings["anti_detachment_threshold_mmhg"].toDouble(DEFAULT_ANTI_DETACHMENT_THRESHOLD));
+        m_sensorTimeoutSpin->setValue(safetySettings["sensor_timeout_ms"].toInt(DEFAULT_SENSOR_TIMEOUT_MS));
+
+        // Load anti-detachment advanced settings
+        m_antiDetachmentEnabledCheck->setChecked(safetySettings["anti_detachment_enabled"].toBool(true));
+        m_antiDetachmentWarningThresholdSpin->setValue(safetySettings["anti_detachment_warning_threshold_mmhg"].toDouble(DEFAULT_ANTI_DETACHMENT_WARNING_THRESHOLD));
+        m_antiDetachmentHysteresisSpin->setValue(safetySettings["anti_detachment_hysteresis_mmhg"].toDouble(DEFAULT_ANTI_DETACHMENT_HYSTERESIS));
+        m_antiDetachmentResponseDelaySpin->setValue(safetySettings["anti_detachment_response_delay_ms"].toInt(DEFAULT_ANTI_DETACHMENT_RESPONSE_DELAY_MS));
+        m_antiDetachmentMaxVacuumIncreaseSpin->setValue(safetySettings["anti_detachment_max_vacuum_increase_percent"].toDouble(DEFAULT_ANTI_DETACHMENT_MAX_VACUUM_INCREASE));
+        m_antiDetachmentMonitoringRateSpin->setValue(safetySettings["anti_detachment_monitoring_rate_hz"].toInt(DEFAULT_ANTI_DETACHMENT_MONITORING_RATE_HZ));
+
+        // Load safety feature checkboxes
+        m_emergencyStopCheck->setChecked(safetySettings["emergency_stop_enabled"].toBool(true));
+        m_overpressureProtectionCheck->setChecked(safetySettings["overpressure_protection_enabled"].toBool(true));
+        m_autoShutdownCheck->setChecked(safetySettings["auto_shutdown_on_error"].toBool(true));
+
+        // Load other settings...
+    }
+}
+
+void SettingsPanel::saveSettings()
+{
+    // Update settings object with current UI values
+    QJsonObject safetySettings;
+    safetySettings["max_pressure_mmhg"] = m_maxPressureSpin->value();
+    safetySettings["warning_threshold_mmhg"] = m_warningThresholdSpin->value();
+    safetySettings["anti_detachment_threshold_mmhg"] = m_antiDetachmentSpin->value();
+    safetySettings["sensor_timeout_ms"] = m_sensorTimeoutSpin->value();
+    safetySettings["emergency_stop_enabled"] = m_emergencyStopCheck->isChecked();
+    safetySettings["overpressure_protection_enabled"] = m_overpressureProtectionCheck->isChecked();
+    safetySettings["auto_shutdown_on_error"] = m_autoShutdownCheck->isChecked();
+
+    // Save anti-detachment advanced settings
+    safetySettings["anti_detachment_enabled"] = m_antiDetachmentEnabledCheck->isChecked();
+    safetySettings["anti_detachment_warning_threshold_mmhg"] = m_antiDetachmentWarningThresholdSpin->value();
+    safetySettings["anti_detachment_hysteresis_mmhg"] = m_antiDetachmentHysteresisSpin->value();
+    safetySettings["anti_detachment_response_delay_ms"] = m_antiDetachmentResponseDelaySpin->value();
+    safetySettings["anti_detachment_max_vacuum_increase_percent"] = m_antiDetachmentMaxVacuumIncreaseSpin->value();
+    safetySettings["anti_detachment_monitoring_rate_hz"] = m_antiDetachmentMonitoringRateSpin->value();
+    
+    m_currentSettings["safety_settings"] = safetySettings;
+    
+    // Save to file
+    QFile file(SETTINGS_FILE_PATH);
+    if (file.open(QIODevice::WriteOnly)) {
+        QJsonDocument doc(m_currentSettings);
+        file.write(doc.toJson());
+        
+        QMessageBox::information(this, "Settings Saved", "Settings have been saved successfully.");
+    } else {
+        QMessageBox::warning(this, "Save Failed", "Failed to save settings to file.");
+    }
+}
+
+void SettingsPanel::resetToDefaults()
+{
+    QMessageBox::StandardButton reply = QMessageBox::question(this,
+        "Reset to Defaults",
+        "Are you sure you want to reset all settings to their default values?\n\n"
+        "This action cannot be undone.",
+        QMessageBox::Yes | QMessageBox::No,
+        QMessageBox::No);
+    
+    if (reply == QMessageBox::Yes) {
+        // Reset all controls to default values
+        m_maxPressureSpin->setValue(DEFAULT_MAX_PRESSURE);
+        m_warningThresholdSpin->setValue(DEFAULT_WARNING_THRESHOLD);
+        m_antiDetachmentSpin->setValue(DEFAULT_ANTI_DETACHMENT_THRESHOLD);
+        m_sensorTimeoutSpin->setValue(DEFAULT_SENSOR_TIMEOUT_MS);
+
+        m_emergencyStopCheck->setChecked(true);
+        m_overpressureProtectionCheck->setChecked(true);
+        m_autoShutdownCheck->setChecked(true);
+
+        // Reset anti-detachment advanced settings
+        m_antiDetachmentEnabledCheck->setChecked(true);
+        m_antiDetachmentWarningThresholdSpin->setValue(DEFAULT_ANTI_DETACHMENT_WARNING_THRESHOLD);
+        m_antiDetachmentHysteresisSpin->setValue(DEFAULT_ANTI_DETACHMENT_HYSTERESIS);
+        m_antiDetachmentResponseDelaySpin->setValue(DEFAULT_ANTI_DETACHMENT_RESPONSE_DELAY_MS);
+        m_antiDetachmentMaxVacuumIncreaseSpin->setValue(DEFAULT_ANTI_DETACHMENT_MAX_VACUUM_INCREASE);
+        m_antiDetachmentMonitoringRateSpin->setValue(DEFAULT_ANTI_DETACHMENT_MONITORING_RATE_HZ);
+
+        // Reset other tabs...
+        
+        QMessageBox::information(this, "Reset Complete", "All settings have been reset to default values.");
+    }
+}
+
+void SettingsPanel::onTestHardwareClicked()
+{
+    // performHardwareTest();
+}
+
+bool SettingsPanel::validateSettings()
+{
+    // Validate pressure settings
+    if (m_warningThresholdSpin->value() >= m_maxPressureSpin->value()) {
+        QMessageBox::warning(this, "Invalid Settings", 
+                           "Warning threshold must be less than maximum pressure.");
+        return false;
+    }
+    
+    if (m_antiDetachmentSpin->value() >= m_warningThresholdSpin->value()) {
+        QMessageBox::warning(this, "Invalid Settings",
+                           "Anti-detachment threshold must be less than warning threshold.");
+        return false;
+    }
+
+    // Validate anti-detachment advanced settings
+    if (m_antiDetachmentWarningThresholdSpin->value() <= m_antiDetachmentSpin->value()) {
+        QMessageBox::warning(this, "Invalid Settings",
+                           "Anti-detachment warning threshold must be higher than detachment threshold.");
+        return false;
+    }
+
+    if (m_antiDetachmentHysteresisSpin->value() >= m_antiDetachmentSpin->value()) {
+        QMessageBox::warning(this, "Invalid Settings",
+                           "Hysteresis value must be less than detachment threshold.");
+        return false;
+    }
+
+    if (m_antiDetachmentMaxVacuumIncreaseSpin->value() > 50.0) {
+        QMessageBox::warning(this, "Invalid Settings",
+                           "Maximum vacuum increase should not exceed 50% for safety.");
+        return false;
+    }
+
+    if (m_antiDetachmentMonitoringRateSpin->value() < 10) {
+        QMessageBox::warning(this, "Invalid Settings",
+                           "Monitoring rate should be at least 10 Hz for effective detection.");
+        return false;
+    }
+
+    return true;
+}
+
+void SettingsPanel::onApplyClicked()
+{
+    if (validateSettings()) {
+        saveSettings();
+    }
+}
+
+
+
+void SettingsPanel::onExportSettingsClicked()
+{
+    QString fileName = QFileDialog::getSaveFileName(this,
+        "Export Settings",
+        QString("vacuum_controller_settings_%1.json")
+        .arg(QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss")),
+        "JSON Files (*.json)");
+    
+    if (!fileName.isEmpty()) {
+        QFile file(fileName);
+        if (file.open(QIODevice::WriteOnly)) {
+            QJsonDocument doc(m_currentSettings);
+            file.write(doc.toJson());
+            QMessageBox::information(this, "Export Complete", "Settings exported successfully.");
+        } else {
+            QMessageBox::warning(this, "Export Failed", "Failed to export settings.");
+        }
+    }
+}
+
+void SettingsPanel::onImportSettingsClicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+        "Import Settings",
+        "",
+        "JSON Files (*.json)");
+    
+    if (!fileName.isEmpty()) {
+        QFile file(fileName);
+        if (file.open(QIODevice::ReadOnly)) {
+            QByteArray data = file.readAll();
+            QJsonDocument doc = QJsonDocument::fromJson(data);
+            
+            if (!doc.isNull()) {
+                m_currentSettings = doc.object();
+                loadSettings();
+                QMessageBox::information(this, "Import Complete", "Settings imported successfully.");
+            } else {
+                QMessageBox::warning(this, "Import Failed", "Invalid settings file format.");
+            }
+        } else {
+            QMessageBox::warning(this, "Import Failed", "Failed to read settings file.");
+        }
+    }
+}
+
+void SettingsPanel::onFactoryResetClicked()
+{
+    QMessageBox::StandardButton reply = QMessageBox::question(this,
+        "Factory Reset",
+        "WARNING: This will reset ALL settings to factory defaults and clear all calibration data.\n\n"
+        "This action cannot be undone.\n\n"
+        "Are you sure you want to proceed?",
+        QMessageBox::Yes | QMessageBox::No,
+        QMessageBox::No);
+    
+    if (reply == QMessageBox::Yes) {
+        // Perform factory reset
+        m_currentSettings = QJsonObject();  // Clear all settings
+        resetToDefaults();
+        
+        QMessageBox::information(this, "Factory Reset Complete",
+                               "All settings have been reset to factory defaults.\n\n"
+                               "Please recalibrate sensors before use.");
+    }
+}
+

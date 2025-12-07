@@ -1,0 +1,345 @@
+{
+  "vacuum_patterns": {
+    "pulse_patterns": [
+      {
+        "name": "Slow Pulse",
+        "type": "pulse",
+        "speed": "slow",
+        "pulse_duration_ms": 2000,
+        "pause_duration_ms": 3000,
+        "pressure_percent": 60,
+        "description": "Gentle pulsing pattern with long pauses"
+      },
+      {
+        "name": "Medium Pulse",
+        "type": "pulse",
+        "speed": "medium",
+        "pulse_duration_ms": 1500,
+        "pause_duration_ms": 2000,
+        "pressure_percent": 70,
+        "description": "Moderate pulsing pattern"
+      },
+      {
+        "name": "Fast Pulse",
+        "type": "pulse",
+        "speed": "fast",
+        "pulse_duration_ms": 1000,
+        "pause_duration_ms": 1000,
+        "pressure_percent": 80,
+        "description": "Quick pulsing pattern"
+      }
+    ],
+    "wave_patterns": [
+      {
+        "name": "Slow Wave Pattern",
+        "type": "wave",
+        "speed": "slow",
+        "wave_period_ms": 8000,
+        "min_pressure_percent": 30,
+        "max_pressure_percent": 70,
+        "description": "Gradual wave-like pressure changes"
+      },
+      {
+        "name": "Medium Wave Pattern",
+        "type": "wave",
+        "speed": "medium",
+        "wave_period_ms": 5000,
+        "min_pressure_percent": 40,
+        "max_pressure_percent": 80,
+        "description": "Moderate wave pattern"
+      },
+      {
+        "name": "Fast Wave Pattern",
+        "type": "wave",
+        "speed": "fast",
+        "wave_period_ms": 3000,
+        "min_pressure_percent": 50,
+        "max_pressure_percent": 85,
+        "description": "Rapid wave pattern"
+      }
+    ],
+    "air_pulse_patterns": [
+      {
+        "name": "Slow Air Pulse",
+        "type": "air_pulse",
+        "speed": "slow",
+        "pulse_duration_ms": 1500,
+        "air_release_duration_ms": 2500,
+        "pressure_percent": 65,
+        "description": "Air pulse with extended release"
+      },
+      {
+        "name": "Medium Air Pulse",
+        "type": "air_pulse",
+        "speed": "medium",
+        "pulse_duration_ms": 1200,
+        "air_release_duration_ms": 1800,
+        "pressure_percent": 75,
+        "description": "Balanced air pulse pattern"
+      },
+      {
+        "name": "Fast Air Pulse",
+        "type": "air_pulse",
+        "speed": "fast",
+        "pulse_duration_ms": 800,
+        "air_release_duration_ms": 1200,
+        "pressure_percent": 80,
+        "description": "Quick air pulse pattern"
+      }
+    ],
+    "milking_patterns": [
+      {
+        "name": "Slow Milking",
+        "type": "milking",
+        "speed": "slow",
+        "stroke_duration_ms": 3000,
+        "release_duration_ms": 2000,
+        "pressure_percent": 70,
+        "stroke_count": 5,
+        "description": "Gentle milking motion"
+      },
+      {
+        "name": "Medium Milking",
+        "type": "milking",
+        "speed": "medium",
+        "stroke_duration_ms": 2000,
+        "release_duration_ms": 1500,
+        "pressure_percent": 75,
+        "stroke_count": 7,
+        "description": "Moderate milking pattern"
+      },
+      {
+        "name": "Fast Milking",
+        "type": "milking",
+        "speed": "fast",
+        "stroke_duration_ms": 1500,
+        "release_duration_ms": 1000,
+        "pressure_percent": 80,
+        "stroke_count": 10,
+        "description": "Intense milking pattern"
+      }
+    ],
+    "automated_orgasm_patterns": [
+      {
+        "name": "Single Automated Orgasm",
+        "type": "automated_orgasm",
+        "cycles": 1,
+        "total_duration_minutes": 5,
+        "description": "Complete 5-minute arousal-to-climax cycle with 4 physiological phases",
+        "phases": {
+          "initial_sensitivity": {
+            "duration_seconds": 30,
+            "start_pressure": 35,
+            "end_pressure": 55,
+            "description": "Gentle ramp-up to avoid overwhelming initial sensitivity"
+          },
+          "adaptation": {
+            "duration_seconds": 90,
+            "pressure": 60,
+            "variation": 8,
+            "description": "Consistent moderate intensity during body adaptation"
+          },
+          "arousal_buildup": {
+            "duration_seconds": 120,
+            "start_pressure": 60,
+            "end_pressure": 85,
+            "description": "Gradually increase intensity to match building arousal"
+          },
+          "climax": {
+            "duration_seconds": 60,
+            "pressure": 85,
+            "variation": 8,
+            "description": "Maintain precise positioning and consistent stimulation"
+          }
+        }
+      },
+      {
+        "name": "Triple Automated Orgasm",
+        "type": "multi-cycle_orgasm",
+        "cycles": 3,
+        "total_duration_minutes": 18,
+        "description": "Three consecutive 5-minute orgasm cycles with recovery periods",
+        "recovery_periods": {
+          "first_recovery": 45,
+          "second_recovery": 60,
+          "final_cooldown": 90
+        },
+        "sensitivity_adaptation": {
+          "cycle_1": "Full sensitivity progression",
+          "cycle_2": "Reduced initial sensitivity, higher starting intensity",
+          "cycle_3": "Adapted progression, extended final climax"
+        }
+      },
+      {
+        "name": "Continuous Orgasm Marathon",
+        "type": "continuous_orgasm",
+        "infinite_loop": true,
+        "cycle_duration_minutes": 4,
+        "description": "Endless orgasm cycles - runs continuously until manually stopped",
+        "phases": {
+          "quick_sensitivity": {
+            "duration_seconds": 15,
+            "start_pressure": 40,
+            "end_pressure": 60,
+            "description": "Quick sensitivity adaptation for continuous operation"
+          },
+          "rapid_adaptation": {
+            "duration_seconds": 30,
+            "pressure": 65,
+            "variation": 10,
+            "description": "Rapid adaptation with higher base pressure"
+          },
+          "accelerated_buildup": {
+            "duration_seconds": 75,
+            "start_pressure": 65,
+            "end_pressure": 88,
+            "description": "Accelerated arousal buildup for continuous flow"
+          },
+          "extended_climax": {
+            "duration_seconds": 90,
+            "pressure": 88,
+            "variation": 10,
+            "description": "Extended climax phase for continuous pleasure"
+          },
+          "brief_recovery": {
+            "duration_seconds": 30,
+            "pressure": 45,
+            "description": "Brief transition period before next cycle"
+          }
+        },
+        "continuous_features": {
+          "auto_repeat": true,
+          "cycle_tracking": true,
+          "enhanced_anti_detachment": true,
+          "optimized_recovery": "Minimal recovery for continuous flow"
+        }
+      }
+    ],
+    "constant_patterns": [
+      {
+        "name": "Slow Constant Orgasm (Legacy)",
+        "type": "constant",
+        "speed": "slow",
+        "base_pressure_percent": 60,
+        "variation_percent": 10,
+        "variation_period_ms": 5000,
+        "description": "Gentle constant pressure with slow variations"
+      },
+      {
+        "name": "Medium Constant Orgasm (Legacy)",
+        "type": "constant",
+        "speed": "medium",
+        "base_pressure_percent": 70,
+        "variation_percent": 15,
+        "variation_period_ms": 3000,
+        "description": "Moderate constant pressure"
+      },
+      {
+        "name": "Fast Constant Orgasm (Legacy)",
+        "type": "constant",
+        "speed": "fast",
+        "base_pressure_percent": 80,
+        "variation_percent": 20,
+        "variation_period_ms": 2000,
+        "description": "Intense constant pressure with rapid variations"
+      }
+    ],
+    "special_patterns": [
+      {
+        "name": "Edging",
+        "type": "edging",
+        "speed": "variable",
+        "buildup_duration_ms": 15000,
+        "peak_pressure_percent": 85,
+        "release_duration_ms": 5000,
+        "hold_duration_ms": 3000,
+        "cycles": 3,
+        "description": "Advanced edging pattern with buildup and release cycles",
+        "edging_parameters": {
+          "buildup": {
+            "intensity": 70.0,
+            "duration": 15000,
+            "curve_type": "Exponential",
+            "gradual": true,
+            "steps": 8
+          },
+          "peak": {
+            "intensity": 85.0,
+            "hold_duration": 3000,
+            "variable": false,
+            "variation": 5.0
+          },
+          "cooldown": {
+            "duration": 5000,
+            "curve_type": "Exponential",
+            "complete_release": true,
+            "min_intensity": 10.0
+          },
+          "cycles": {
+            "count": 3,
+            "infinite": false,
+            "delay": 5000,
+            "increasing_intensity": false,
+            "intensity_increment": 3.0
+          },
+          "sensitivity": {
+            "auto_detection": false,
+            "threshold": 80.0,
+            "detection_window": 2000,
+            "adaptive": false,
+            "response_time": 500
+          },
+          "intensity_curve": {
+            "type": "Exponential",
+            "exponent": 1.5,
+            "custom": false
+          }
+        }
+      }
+    ]
+  },
+  "pattern_categories": [
+    {
+      "name": "Pulse Patterns",
+      "patterns": ["Slow Pulse", "Medium Pulse", "Fast Pulse"],
+      "description": "Simple on/off pulsing patterns"
+    },
+    {
+      "name": "Wave Patterns", 
+      "patterns": ["Slow Wave Pattern", "Medium Wave Pattern", "Fast Wave Pattern"],
+      "description": "Gradual pressure wave patterns"
+    },
+    {
+      "name": "Air Pulse Patterns",
+      "patterns": ["Slow Air Pulse", "Medium Air Pulse", "Fast Air Pulse"],
+      "description": "Patterns with air release phases"
+    },
+    {
+      "name": "Milking Patterns",
+      "patterns": ["Slow Milking", "Medium Milking", "Fast Milking"],
+      "description": "Rhythmic milking motion patterns"
+    },
+    {
+      "name": "Automated Orgasm Cycles",
+      "patterns": ["Single Automated Orgasm", "Triple Automated Orgasm", "Continuous Orgasm Marathon"],
+      "description": "Complete arousal-to-climax cycles with physiological phase progression"
+    },
+    {
+      "name": "Constant Patterns",
+      "patterns": ["Slow Constant Orgasm (Legacy)", "Medium Constant Orgasm (Legacy)", "Fast Constant Orgasm (Legacy)"],
+      "description": "Continuous pressure with variations (legacy patterns)"
+    },
+    {
+      "name": "Special Patterns",
+      "patterns": ["Edging"],
+      "description": "Advanced specialized patterns"
+    }
+  ],
+  "safety_limits": {
+    "max_pressure_mmhg": 75.0,
+    "max_pattern_duration_minutes": 60,
+    "min_pressure_percent": 10,
+    "max_pressure_percent": 90,
+    "emergency_stop_pressure_mmhg": 80.0
+  }
+}
