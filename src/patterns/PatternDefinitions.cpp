@@ -1033,4 +1033,98 @@ void PatternDefinitions::createDualChamberPatterns()
     m_patterns["Clitoral Intense"] = clitoralIntense;
 
     qDebug() << "Created 4 dual-chamber/clitoral patterns";
+
+    // ========================================================================
+    // TENS + Vacuum Combined Patterns (Clitoral Cup with Integrated Electrodes)
+    // ========================================================================
+
+    // TENS + Vacuum Arousal Pattern
+    PatternInfo tensArousal;
+    tensArousal.name = "TENS Arousal";
+    tensArousal.type = "tens_vacuum";
+    tensArousal.category = "TENS + Vacuum";
+    tensArousal.description = "Combined TENS (20 Hz) + vacuum oscillation for neural + mechanical arousal";
+    tensArousal.basePressure = 35.0;
+    tensArousal.intensity = 60.0;
+    tensArousal.isValid = true;
+    tensArousal.parameters["tens_enabled"] = true;
+    tensArousal.parameters["tens_frequency"] = 20.0;       // Clinical standard
+    tensArousal.parameters["tens_pulse_width"] = 400;      // μs
+    tensArousal.parameters["tens_amplitude"] = 40.0;       // % of max
+    tensArousal.parameters["tens_sync"] = "continuous";
+    tensArousal.parameters["outer_pressure"] = 35.0;
+    tensArousal.parameters["clitoral_frequency"] = 8.0;    // Air-pulse Hz
+    tensArousal.parameters["clitoral_amplitude"] = 35.0;
+    tensArousal.parameters["warmup_duration_ms"] = 60000;
+    tensArousal.parameters["buildup_duration_ms"] = 240000;
+    tensArousal.parameters["climax_duration_ms"] = 180000;
+    tensArousal.parameters["afterglow_duration_ms"] = 60000;
+    m_patterns["TENS Arousal"] = tensArousal;
+
+    // TENS + Vacuum Climax Pattern
+    PatternInfo tensClimax;
+    tensClimax.name = "TENS Climax";
+    tensClimax.type = "tens_vacuum";
+    tensClimax.category = "TENS + Vacuum";
+    tensClimax.description = "High-intensity TENS (30 Hz) synced with suction + 12 Hz oscillation for climax";
+    tensClimax.basePressure = 50.0;
+    tensClimax.intensity = 85.0;
+    tensClimax.isValid = true;
+    tensClimax.parameters["tens_enabled"] = true;
+    tensClimax.parameters["tens_frequency"] = 30.0;        // Higher for climax
+    tensClimax.parameters["tens_pulse_width"] = 300;       // μs
+    tensClimax.parameters["tens_amplitude"] = 70.0;        // % of max
+    tensClimax.parameters["tens_sync"] = "sync_suction";   // Sync with vacuum suction phase
+    tensClimax.parameters["outer_pressure"] = 50.0;
+    tensClimax.parameters["clitoral_frequency"] = 12.0;    // Higher oscillation
+    tensClimax.parameters["clitoral_amplitude"] = 50.0;
+    tensClimax.parameters["warmup_duration_ms"] = 30000;
+    tensClimax.parameters["buildup_duration_ms"] = 180000;
+    tensClimax.parameters["climax_duration_ms"] = 120000;
+    tensClimax.parameters["afterglow_duration_ms"] = 90000;
+    m_patterns["TENS Climax"] = tensClimax;
+
+    // TENS Progressive Pattern (gradual escalation)
+    PatternInfo tensProgressive;
+    tensProgressive.name = "TENS Progressive";
+    tensProgressive.type = "tens_vacuum";
+    tensProgressive.category = "TENS + Vacuum";
+    tensProgressive.description = "Gradual escalation: TENS 10→20→30 Hz, vacuum 6→10→12 Hz over 20 minutes";
+    tensProgressive.basePressure = 30.0;
+    tensProgressive.intensity = 75.0;
+    tensProgressive.isValid = true;
+    tensProgressive.parameters["tens_enabled"] = true;
+    tensProgressive.parameters["tens_start_frequency"] = 10.0;
+    tensProgressive.parameters["tens_end_frequency"] = 30.0;
+    tensProgressive.parameters["tens_pulse_width"] = 400;
+    tensProgressive.parameters["tens_start_amplitude"] = 20.0;
+    tensProgressive.parameters["tens_end_amplitude"] = 80.0;
+    tensProgressive.parameters["tens_sync"] = "continuous";
+    tensProgressive.parameters["outer_pressure"] = 40.0;
+    tensProgressive.parameters["clitoral_start_frequency"] = 6.0;
+    tensProgressive.parameters["clitoral_end_frequency"] = 12.0;
+    tensProgressive.parameters["total_duration_ms"] = 1200000;  // 20 minutes
+    m_patterns["TENS Progressive"] = tensProgressive;
+
+    // TENS Afterglow Pattern (gentle post-climax)
+    PatternInfo tensAfterglow;
+    tensAfterglow.name = "TENS Afterglow";
+    tensAfterglow.type = "tens_vacuum";
+    tensAfterglow.category = "TENS + Vacuum";
+    tensAfterglow.description = "Gentle post-climax: low TENS (10 Hz) + light vacuum for continued pleasure";
+    tensAfterglow.basePressure = 20.0;
+    tensAfterglow.intensity = 40.0;
+    tensAfterglow.isValid = true;
+    tensAfterglow.parameters["tens_enabled"] = true;
+    tensAfterglow.parameters["tens_frequency"] = 10.0;
+    tensAfterglow.parameters["tens_pulse_width"] = 500;    // Wider pulse for gentle
+    tensAfterglow.parameters["tens_amplitude"] = 15.0;     // Low amplitude
+    tensAfterglow.parameters["tens_sync"] = "continuous";
+    tensAfterglow.parameters["outer_pressure"] = 20.0;
+    tensAfterglow.parameters["clitoral_frequency"] = 5.0;  // Gentle oscillation
+    tensAfterglow.parameters["clitoral_amplitude"] = 20.0;
+    tensAfterglow.parameters["duration_ms"] = 300000;      // 5 minutes
+    m_patterns["TENS Afterglow"] = tensAfterglow;
+
+    qDebug() << "Created 4 TENS + Vacuum combined patterns";
 }

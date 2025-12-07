@@ -16,6 +16,7 @@ class HardwareManager;
 class PatternDefinitions;
 class AntiDetachmentMonitor;
 class ClitoralOscillator;
+class TENSController;
 
 /**
  * @brief Pattern execution engine for vacuum controller
@@ -64,6 +65,7 @@ public:
         EDGING,
         DUAL_CHAMBER,        // Outer chamber sustained + clitoral oscillation
         CLITORAL_ONLY,       // Clitoral oscillation only (no outer chamber)
+        TENS_VACUUM,         // Combined TENS electrodes + vacuum oscillation
         CUSTOM
     };
     Q_ENUM(PatternType)
@@ -138,6 +140,15 @@ public:
     void stopClitoralOscillation();
     bool isClitoralOscillating() const;
 
+    // TENS control (integrated clitoral cup electrodes)
+    TENSController* getTENSController() const { return m_tensController; }
+    void setTENSFrequency(double frequencyHz);        // 1-100 Hz (default 20 Hz)
+    void setTENSPulseWidth(int microseconds);         // 50-500 μs (default 400 μs)
+    void setTENSAmplitude(double percent);            // 0-100%
+    void startTENS();
+    void stopTENS();
+    bool isTENSRunning() const;
+
 public Q_SLOTS:
     void setPatternParameters(const QJsonObject& parameters);
 
@@ -161,6 +172,12 @@ Q_SIGNALS:
     void clitoralOscillationStopped();
     void clitoralPhaseChanged(int phase);
     void clitoralCycleCompleted(int cycleCount);
+
+    // TENS signals
+    void tensStarted();
+    void tensStopped();
+    void tensAmplitudeChanged(double percent);
+    void tensFaultDetected(const QString& reason);
 
 private Q_SLOTS:
     void executeNextStep();
@@ -187,6 +204,7 @@ private:
     void buildEdgingPattern(const QJsonObject& params);
     void buildDualChamberPattern(const QJsonObject& params);
     void buildClitoralOnlyPattern(const QJsonObject& params);
+    void buildTENSVacuumPattern(const QJsonObject& params);
     void buildTherapeuticPulsePattern(const QJsonObject& params);
     
     // Utility functions
@@ -199,6 +217,7 @@ private:
     HardwareManager* m_hardware;
     AntiDetachmentMonitor* m_antiDetachmentMonitor;
     ClitoralOscillator* m_clitoralOscillator;
+    TENSController* m_tensController;
     
     // Pattern execution state
     PatternState m_state;

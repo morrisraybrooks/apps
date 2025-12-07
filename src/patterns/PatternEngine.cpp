@@ -2,6 +2,7 @@
 #include "PatternDefinitions.h"
 #include "../hardware/HardwareManager.h"
 #include "../hardware/ClitoralOscillator.h"
+#include "../hardware/TENSController.h"
 #include "../safety/AntiDetachmentMonitor.h"
 #include <QDebug>
 #include <QMutexLocker>
@@ -25,6 +26,7 @@ PatternEngine::PatternEngine(HardwareManager* hardware, QObject *parent)
     , m_hardware(hardware)
     , m_antiDetachmentMonitor(nullptr)
     , m_clitoralOscillator(nullptr)
+    , m_tensController(nullptr)
     , m_state(STOPPED)
     , m_currentPatternType(PULSE)
     , m_currentStep(0)
@@ -60,10 +62,35 @@ PatternEngine::PatternEngine(HardwareManager* hardware, QObject *parent)
     connect(m_clitoralOscillator, &ClitoralOscillator::cycleCompleted,
             this, &PatternEngine::onClitoralCycleCompleted);
 
+    // Initialize TENS controller for combined electrode stimulation
+    m_tensController = new TENSController(hardware, this);
+    if (m_tensController->initialize()) {
+        connect(m_tensController, &TENSController::stimulationStarted,
+                this, &PatternEngine::tensStarted);
+        connect(m_tensController, &TENSController::stimulationStopped,
+                this, &PatternEngine::tensStopped);
+        connect(m_tensController, &TENSController::amplitudeChanged,
+                this, &PatternEngine::tensAmplitudeChanged);
+        connect(m_tensController, &TENSController::faultDetected,
+                this, &PatternEngine::tensFaultDetected);
+        // Connect oscillator phase to TENS for synchronization
+        connect(m_clitoralOscillator, &ClitoralOscillator::phaseChanged,
+                this, [this](ClitoralOscillator::Phase phase) {
+            if (m_tensController) {
+                bool isSuction = (phase == ClitoralOscillator::Phase::SUCTION ||
+                                  phase == ClitoralOscillator::Phase::HOLD);
+                m_tensController->onVacuumPhaseChanged(isSuction);
+            }
+        });
+        qDebug() << "TENS controller initialized for combined stimulation patterns";
+    } else {
+        qWarning() << "TENS controller initialization failed - TENS patterns will be unavailable";
+    }
+
     // Load default patterns
     m_patternDefinitions->loadDefaultPatterns();
 
-    qDebug() << "Pattern engine initialized with clitoral oscillator support";
+    qDebug() << "Pattern engine initialized with clitoral oscillator and TENS support";
 }
 
 PatternEngine::~PatternEngine()
@@ -152,6 +179,12 @@ void PatternEngine::stopPattern()
     if (m_clitoralOscillator && m_clitoralOscillator->isRunning()) {
         m_clitoralOscillator->stop();
         qDebug() << "Clitoral oscillator stopped with pattern";
+    }
+
+    // Stop TENS if running
+    if (m_tensController && m_tensController->isRunning()) {
+        m_tensController->stop();
+        qDebug() << "TENS stopped with pattern";
     }
 
     // Set hardware to safe state
@@ -314,6 +347,9 @@ void PatternEngine::buildPatternSteps(const QJsonObject& patternData)
     } else if (type == "clitoral_only") {
         m_currentPatternType = CLITORAL_ONLY;
         buildClitoralOnlyPattern(patternData);
+    } else if (type == "tens_vacuum") {
+        m_currentPatternType = TENS_VACUUM;
+        buildTENSVacuumPattern(patternData);
     }
 }
 
@@ -725,8 +761,9 @@ void PatternEngine::executeStep(const PatternStep& step)
             }
         }
 
-        // Handle clitoral oscillation for dual-chamber and clitoral-only patterns
-        if (m_currentPatternType == DUAL_CHAMBER || m_currentPatternType == CLITORAL_ONLY) {
+        // Handle clitoral oscillation for dual-chamber, clitoral-only, and TENS patterns
+        if (m_currentPatternType == DUAL_CHAMBER || m_currentPatternType == CLITORAL_ONLY ||
+            m_currentPatternType == TENS_VACUUM) {
             bool enableOscillation = step.parameters.value("clitoral_oscillation").toBool(false);
 
             if (enableOscillation && m_clitoralOscillator) {
@@ -747,6 +784,42 @@ void PatternEngine::executeStep(const PatternStep& step)
             }
         }
 
+        // Handle TENS stimulation for TENS+Vacuum patterns
+        if (m_currentPatternType == TENS_VACUUM && m_tensController) {
+            bool enableTENS = step.parameters.value("tens_enabled").toBool(false);
+
+            if (enableTENS) {
+                // Configure TENS from step parameters
+                double tensFreq = step.parameters.value("tens_frequency").toDouble(20.0);
+                int pulseWidth = step.parameters.value("tens_pulse_width").toInt(400);
+                double tensAmp = step.parameters.value("tens_amplitude").toDouble(40.0);
+                QString syncMode = step.parameters.value("tens_sync").toString("continuous");
+
+                m_tensController->setFrequency(tensFreq);
+                m_tensController->setPulseWidth(pulseWidth);
+                m_tensController->setAmplitude(tensAmp);
+
+                // Set phase synchronization mode
+                if (syncMode == "sync_suction") {
+                    m_tensController->setPhaseSync(TENSController::PhaseSync::SYNC_SUCTION);
+                } else if (syncMode == "sync_vent") {
+                    m_tensController->setPhaseSync(TENSController::PhaseSync::SYNC_VENT);
+                } else if (syncMode == "alternating") {
+                    m_tensController->setPhaseSync(TENSController::PhaseSync::ALTERNATING);
+                } else {
+                    m_tensController->setPhaseSync(TENSController::PhaseSync::CONTINUOUS);
+                }
+
+                if (!m_tensController->isRunning()) {
+                    m_tensController->start();
+                    qDebug() << "TENS started:" << tensFreq << "Hz," << pulseWidth << "μs," << tensAmp << "%";
+                }
+            } else if (!enableTENS && m_tensController->isRunning()) {
+                m_tensController->stop();
+                qDebug() << "TENS stopped for phase:" << step.action;
+            }
+        }
+
         // Apply pressure target (outer chamber for dual-chamber, or main chamber for others)
         applyPressureTarget(adjustedPressure);
 
@@ -763,15 +836,25 @@ void PatternEngine::executeStep(const PatternStep& step)
             }
         }
 
-        // Log phase transitions for dual-chamber patterns
-        if (m_currentPatternType == DUAL_CHAMBER || m_currentPatternType == CLITORAL_ONLY) {
+        // Log phase transitions for dual-chamber and TENS patterns
+        if (m_currentPatternType == DUAL_CHAMBER || m_currentPatternType == CLITORAL_ONLY ||
+            m_currentPatternType == TENS_VACUUM) {
             static QString lastDualAction;
             if (step.action != lastDualAction) {
                 bool oscillating = m_clitoralOscillator && m_clitoralOscillator->isRunning();
-                qDebug() << QString("Dual-Chamber Phase: %1 - Outer: %2% - Clitoral: %3")
-                            .arg(step.action)
-                            .arg(adjustedPressure, 0, 'f', 1)
-                            .arg(oscillating ? "oscillating" : "off");
+                bool tensActive = m_tensController && m_tensController->isRunning();
+                if (m_currentPatternType == TENS_VACUUM) {
+                    qDebug() << QString("TENS+Vacuum Phase: %1 - Outer: %2% - Clitoral: %3 - TENS: %4")
+                                .arg(step.action)
+                                .arg(adjustedPressure, 0, 'f', 1)
+                                .arg(oscillating ? "oscillating" : "off")
+                                .arg(tensActive ? "active" : "off");
+                } else {
+                    qDebug() << QString("Dual-Chamber Phase: %1 - Outer: %2% - Clitoral: %3")
+                                .arg(step.action)
+                                .arg(adjustedPressure, 0, 'f', 1)
+                                .arg(oscillating ? "oscillating" : "off");
+                }
                 lastDualAction = step.action;
             }
         }
@@ -1014,6 +1097,55 @@ void PatternEngine::onClitoralCycleCompleted(int cycleCount)
 }
 
 // ============================================================================
+// TENS Control Methods (Integrated Clitoral Cup Electrodes)
+// ============================================================================
+
+void PatternEngine::setTENSFrequency(double frequencyHz)
+{
+    if (m_tensController) {
+        m_tensController->setFrequency(frequencyHz);
+        qDebug() << "TENS frequency set to" << frequencyHz << "Hz";
+    }
+}
+
+void PatternEngine::setTENSPulseWidth(int microseconds)
+{
+    if (m_tensController) {
+        m_tensController->setPulseWidth(microseconds);
+        qDebug() << "TENS pulse width set to" << microseconds << "μs";
+    }
+}
+
+void PatternEngine::setTENSAmplitude(double percent)
+{
+    if (m_tensController) {
+        m_tensController->setAmplitude(percent);
+        qDebug() << "TENS amplitude set to" << percent << "%";
+    }
+}
+
+void PatternEngine::startTENS()
+{
+    if (m_tensController && !m_tensController->isRunning()) {
+        m_tensController->start();
+        qDebug() << "TENS stimulation started";
+    }
+}
+
+void PatternEngine::stopTENS()
+{
+    if (m_tensController && m_tensController->isRunning()) {
+        m_tensController->stop();
+        qDebug() << "TENS stimulation stopped";
+    }
+}
+
+bool PatternEngine::isTENSRunning() const
+{
+    return m_tensController && m_tensController->isRunning();
+}
+
+// ============================================================================
 // Dual-Chamber Pattern Builders
 // ============================================================================
 
@@ -1121,4 +1253,95 @@ void PatternEngine::buildClitoralOnlyPattern(const QJsonObject& params)
     m_patternSteps.append(afterglowStep);
 
     qDebug() << "Built clitoral-only pattern with" << m_patternSteps.size() << "phases";
+}
+
+// ============================================================================
+// TENS + Vacuum Combined Pattern Builder
+// ============================================================================
+
+void PatternEngine::buildTENSVacuumPattern(const QJsonObject& params)
+{
+    // Combined TENS + Vacuum pattern: electrical nerve stimulation + oscillating pressure
+    // Coordinates dorsal genital nerve stimulation with mechanical vacuum stimulation
+
+    m_patternSteps.clear();
+
+    // Get TENS parameters with defaults
+    double tensFrequency = params.contains("tens_frequency") ? params["tens_frequency"].toDouble() : 20.0;
+    int tensPulseWidth = params.contains("tens_pulse_width") ? params["tens_pulse_width"].toInt() : 400;
+    double tensAmplitude = params.contains("tens_amplitude") ? params["tens_amplitude"].toDouble() : 40.0;
+    QString tensSync = params.contains("tens_sync") ? params["tens_sync"].toString() : "continuous";
+
+    // Get vacuum parameters
+    double outerPressure = params.contains("outer_pressure") ? params["outer_pressure"].toDouble() : 35.0;
+    double clitoralFrequency = params.contains("clitoral_frequency") ? params["clitoral_frequency"].toDouble() : 8.0;
+    double clitoralAmplitude = params.contains("clitoral_amplitude") ? params["clitoral_amplitude"].toDouble() : 35.0;
+
+    // Get phase durations
+    int warmupMs = params.contains("warmup_duration_ms") ? params["warmup_duration_ms"].toInt() : 60000;
+    int buildupMs = params.contains("buildup_duration_ms") ? params["buildup_duration_ms"].toInt() : 180000;
+    int climaxMs = params.contains("climax_duration_ms") ? params["climax_duration_ms"].toInt() : 120000;
+    int afterglowMs = params.contains("afterglow_duration_ms") ? params["afterglow_duration_ms"].toInt() : 60000;
+
+    // Phase 1: Warmup - TENS only (neural priming before mechanical)
+    PatternStep warmupStep;
+    warmupStep.pressurePercent = 15.0;  // Light vacuum seal
+    warmupStep.durationMs = warmupMs;
+    warmupStep.action = "tens_warmup";
+    warmupStep.parameters["tens_enabled"] = true;
+    warmupStep.parameters["tens_frequency"] = 10.0;  // Low frequency warmup
+    warmupStep.parameters["tens_pulse_width"] = tensPulseWidth;
+    warmupStep.parameters["tens_amplitude"] = tensAmplitude * 0.3;  // 30% amplitude
+    warmupStep.parameters["tens_sync"] = "continuous";
+    warmupStep.parameters["clitoral_oscillation"] = false;
+    warmupStep.parameters["description"] = "Neural priming with gentle TENS";
+    m_patternSteps.append(warmupStep);
+
+    // Phase 2: Buildup - TENS + Vacuum oscillation
+    PatternStep buildupStep;
+    buildupStep.pressurePercent = outerPressure * 0.7;
+    buildupStep.durationMs = buildupMs;
+    buildupStep.action = "tens_buildup";
+    buildupStep.parameters["tens_enabled"] = true;
+    buildupStep.parameters["tens_frequency"] = tensFrequency;
+    buildupStep.parameters["tens_pulse_width"] = tensPulseWidth;
+    buildupStep.parameters["tens_amplitude"] = tensAmplitude * 0.6;
+    buildupStep.parameters["tens_sync"] = tensSync;
+    buildupStep.parameters["clitoral_oscillation"] = true;
+    buildupStep.parameters["clitoral_frequency"] = clitoralFrequency;
+    buildupStep.parameters["clitoral_amplitude"] = clitoralAmplitude * 0.7;
+    buildupStep.parameters["description"] = "Combined TENS + vacuum buildup";
+    m_patternSteps.append(buildupStep);
+
+    // Phase 3: Climax - Maximum intensity TENS + Vacuum
+    PatternStep climaxStep;
+    climaxStep.pressurePercent = outerPressure;
+    climaxStep.durationMs = climaxMs;
+    climaxStep.action = "tens_climax";
+    climaxStep.parameters["tens_enabled"] = true;
+    climaxStep.parameters["tens_frequency"] = std::min(tensFrequency * 1.5, 50.0);  // Higher freq
+    climaxStep.parameters["tens_pulse_width"] = tensPulseWidth;
+    climaxStep.parameters["tens_amplitude"] = tensAmplitude;  // Full amplitude
+    climaxStep.parameters["tens_sync"] = "sync_suction";  // Sync with suction for max effect
+    climaxStep.parameters["clitoral_oscillation"] = true;
+    climaxStep.parameters["clitoral_frequency"] = std::min(clitoralFrequency * 1.3, 13.0);
+    climaxStep.parameters["clitoral_amplitude"] = clitoralAmplitude;
+    climaxStep.parameters["description"] = "Maximum intensity TENS + vacuum climax";
+    m_patternSteps.append(climaxStep);
+
+    // Phase 4: Afterglow - Gentle TENS, no vacuum oscillation
+    PatternStep afterglowStep;
+    afterglowStep.pressurePercent = 10.0;  // Light seal
+    afterglowStep.durationMs = afterglowMs;
+    afterglowStep.action = "tens_afterglow";
+    afterglowStep.parameters["tens_enabled"] = true;
+    afterglowStep.parameters["tens_frequency"] = 10.0;  // Low frequency
+    afterglowStep.parameters["tens_pulse_width"] = 500;  // Wider pulse for gentle
+    afterglowStep.parameters["tens_amplitude"] = tensAmplitude * 0.2;
+    afterglowStep.parameters["tens_sync"] = "continuous";
+    afterglowStep.parameters["clitoral_oscillation"] = false;
+    afterglowStep.parameters["description"] = "Gentle TENS afterglow";
+    m_patternSteps.append(afterglowStep);
+
+    qDebug() << "Built TENS+Vacuum pattern with" << m_patternSteps.size() << "phases";
 }

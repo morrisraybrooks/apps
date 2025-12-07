@@ -99,6 +99,7 @@ set(SOURCES
     src/hardware/ActuatorControl.cpp
     src/hardware/MCP3008.cpp
     src/hardware/ClitoralOscillator.cpp
+    src/hardware/TENSController.cpp
     src/gui/MainWindow.cpp
     src/gui/PressureMonitor.cpp
     src/gui/PatternSelector.cpp
@@ -142,6 +143,7 @@ set(HEADERS
     src/hardware/ActuatorControl.h
     src/hardware/MCP3008.h
     src/hardware/ClitoralOscillator.h
+    src/hardware/TENSController.h
     src/gui/MainWindow.h
     src/gui/PressureMonitor.h
     src/gui/PatternSelector.h

@@ -2,6 +2,7 @@
 #include "SensorInterface.h"
 #include "ActuatorControl.h"
 #include "MCP3008.h"
+#include "TENSController.h"
 
 #include <QDebug>
 #include <QMutexLocker>
@@ -72,7 +73,20 @@ bool HardwareManager::initialize()
                 this, &HardwareManager::handleSensorError);
         connect(m_actuatorControl.get(), &ActuatorControl::actuatorError,
                 this, &HardwareManager::handleActuatorError);
-        
+
+        // Create and initialize TENS controller (integrated into clitoral cup)
+        m_tensController = std::make_unique<TENSController>(this);
+        if (!m_tensController->initialize()) {
+            qWarning() << "TENS Controller initialization failed - continuing without TENS";
+            // Note: TENS is optional, don't fail initialization if it's not available
+        } else {
+            connect(m_tensController.get(), &TENSController::faultDetected,
+                    this, [this](const QString& reason) {
+                emit hardwareError(QString("TENS fault: %1").arg(reason));
+            });
+            qDebug() << "TENS Controller initialized for clitoral cup electrodes";
+        }
+
         // Perform hardware validation
         if (!validateHardware()) {
             throw std::runtime_error("Hardware validation failed");
@@ -100,6 +114,9 @@ void HardwareManager::shutdown()
     safeShutdown();
     
     // Shutdown subsystems
+    if (m_tensController) {
+        m_tensController->shutdown();
+    }
     if (m_actuatorControl) {
         m_actuatorControl->shutdown();
     }
@@ -109,8 +126,9 @@ void HardwareManager::shutdown()
     if (m_adc) {
         m_adc->shutdown();
     }
-    
+
     // Reset subsystems
+    m_tensController.reset();
     m_actuatorControl.reset();
     m_sensorInterface.reset();
     m_adc.reset();
@@ -254,21 +272,26 @@ void HardwareManager::setSOL5(bool open)
 void HardwareManager::emergencyStop()
 {
     QMutexLocker locker(&m_stateMutex);
-    
+
     qWarning() << "HARDWARE EMERGENCY STOP ACTIVATED";
-    
+
     m_emergencyStop = true;
-    
+
+    // Immediately stop TENS (electrical safety first!)
+    if (m_tensController) {
+        m_tensController->emergencyStop();
+    }
+
     // Immediately stop all actuators
     if (m_actuatorControl) {
         m_actuatorControl->emergencyStop();
     }
-    
+
     // Update local state
     m_pumpEnabled = false;
     m_pumpSpeed = 0.0;
     // Note: Valves may remain in their current state for safety
-    
+
     emit hardwareError("Emergency stop activated");
 }
 
@@ -457,4 +480,58 @@ void HardwareManager::resetHardwareSimulation()
         m_simulatedFailures.clear();
         qDebug() << "Hardware simulation reset";
     }
+}
+
+// TENS Control Methods (integrated with clitoral cup electrodes)
+
+void HardwareManager::setTENSEnabled(bool enabled)
+{
+    QMutexLocker locker(&m_stateMutex);
+
+    if (!m_tensController) {
+        qWarning() << "TENS Controller not available";
+        return;
+    }
+
+    if (m_emergencyStop && enabled) {
+        qWarning() << "Cannot enable TENS: Emergency stop active";
+        return;
+    }
+
+    if (enabled) {
+        m_tensController->start();
+    } else {
+        m_tensController->stop();
+    }
+}
+
+void HardwareManager::setTENSFrequency(double hz)
+{
+    if (m_tensController) {
+        m_tensController->setFrequency(hz);
+    }
+}
+
+void HardwareManager::setTENSPulseWidth(int microseconds)
+{
+    if (m_tensController) {
+        m_tensController->setPulseWidth(microseconds);
+    }
+}
+
+void HardwareManager::setTENSAmplitude(double percent)
+{
+    if (m_tensController) {
+        m_tensController->setAmplitude(percent);
+    }
+}
+
+bool HardwareManager::isTENSRunning() const
+{
+    return m_tensController && m_tensController->isRunning();
+}
+
+bool HardwareManager::isTENSFault() const
+{
+    return m_tensController && m_tensController->isFaultDetected();
 }

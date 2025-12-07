@@ -9,6 +9,7 @@
 class SensorInterface;
 class ActuatorControl;
 class MCP3008;
+class TENSController;
 
 /**
  * @brief Hardware abstraction layer for the vacuum controller
@@ -59,10 +60,20 @@ public:
 
     SensorInterface* getSensorInterface() const { return m_sensorInterface.get(); }
     ActuatorControl* getActuatorControl() const { return m_actuatorControl.get(); }
-    
+    TENSController* getTENSController() const { return m_tensController.get(); }
+
+    // TENS control (integrated with clitoral cup electrodes)
+    void setTENSEnabled(bool enabled);
+    void setTENSFrequency(double hz);
+    void setTENSPulseWidth(int microseconds);
+    void setTENSAmplitude(double percent);
+    bool isTENSRunning() const;
+    bool isTENSFault() const;
+
     // Emergency controls
     void emergencyStop();
     bool resetEmergencyStop();
+    bool isEmergencyStop() const { return m_emergencyStop; }
     
     // Hardware diagnostics
     bool performSelfTest();
@@ -96,6 +107,7 @@ private:
     std::unique_ptr<SensorInterface> m_sensorInterface;
     std::unique_ptr<ActuatorControl> m_actuatorControl;
     std::unique_ptr<MCP3008> m_adc;
+    std::unique_ptr<TENSController> m_tensController;
     
     // System state
     bool m_initialized;
@@ -145,6 +157,12 @@ private:
     static const int ADC_CHANNEL_AVL = 0;       // Channel 0: Outer V-seal chamber sensor
     static const int ADC_CHANNEL_TANK = 1;      // Channel 1: Tank vacuum sensor
     static const int ADC_CHANNEL_CLITORAL = 2;  // Channel 2: Clitoral cylinder sensor
+
+    // TENS GPIO pin definitions (integrated into clitoral cup)
+    static const int GPIO_TENS_ENABLE = 5;   // Master enable for TENS output
+    static const int GPIO_TENS_PHASE = 6;    // Polarity control (H=positive, L=negative)
+    static const int GPIO_TENS_PWM = 12;     // Amplitude PWM (hardware PWM1)
+    static const int GPIO_TENS_FAULT = 16;   // Fault input from driver
 };
 
 #endif // HARDWAREMANAGER_H
