@@ -265,8 +265,7 @@ Designed for 50-inch medical touch displays:
 |-----------|--------------|
 | **Platform** | Raspberry Pi 4 (8GB RAM) |
 | **Display** | 50-inch HDMI touch display |
-| **Framework** | Qt 6.2+ with C++17 |
-| **GPIO Library** | libgpiod v2.2.1 |
+| **Framework** | Qt 5 |
 | **ADC** | MCP3008 (10-bit, 8-channel) |
 | **Pressure Sensors** | 2× MPX5010DP (0-75 mmHg) |
 | **Pump Control** | PWM via L293D driver |
