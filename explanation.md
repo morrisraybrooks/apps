@@ -357,7 +357,7 @@ The V-Contour is a purpose-built vacuum interface engineered for the female vulv
 │  • Open Channel: Fluid drainage + accessory access                │
 │  • Clitoral Cylinder: Independent air-pulse stimulation           │
 └───────────────────────────────────────────────────────────────────┘
-```─
+```
 ### 1.3 Dual-Chamber Architecture
 
 The V-Contour utilizes two independent vacuum zones:
