@@ -11,6 +11,8 @@
 class OrgasmControlAlgorithm;
 class TENSController;
 class HardwareManager;
+class ClitoralOscillator;
+class QSoundEffect;
 
 /**
  * @brief Safety limits for consequence actions
@@ -84,6 +86,18 @@ public:
     void emergencyStop();
     bool isPaused() const { return m_paused; }
     
+    // Audio/Haptic configuration
+    void setAudioEnabled(bool enabled) { m_audioEnabled = enabled; }
+    void setHapticEnabled(bool enabled) { m_hapticEnabled = enabled; }
+    void setAudioVolume(double volume) { m_audioVolume = qBound(0.0, volume, 1.0); }
+    void setAudioPath(const QString& path) { m_audioPath = path; }
+    bool isAudioEnabled() const { return m_audioEnabled; }
+    bool isHapticEnabled() const { return m_hapticEnabled; }
+
+    // Progressive warning state
+    void resetWarningEscalation();
+    int warningEscalationLevel() const { return m_warningEscalationLevel; }
+
     // Statistics
     int punishmentsThisSession() const { return m_punishmentsThisSession; }
     int rewardsThisSession() const { return m_rewardsThisSession; }
@@ -96,6 +110,9 @@ Q_SIGNALS:
     void consequenceQueued(int queuePosition);
     void consequenceExecuted(ConsequenceAction action);
     void cooldownActive(int remainingMs);
+    void audioWarningPlayed(const QString& soundFile);
+    void hapticFeedbackTriggered(double intensity, int durationMs);
+    void warningEscalated(int level);
 
 private Q_SLOTS:
     void processQueue();
@@ -104,16 +121,22 @@ private Q_SLOTS:
 private:
     bool canExecute(ConsequenceAction action) const;
     bool isPremiumAction(ConsequenceAction action) const;
-    void executeReward(ConsequenceAction action, double intensity, 
+    void executeReward(ConsequenceAction action, double intensity,
                        int durationMs, const QString& targetId);
-    void executePunishment(ConsequenceAction action, double intensity, 
+    void executePunishment(ConsequenceAction action, double intensity,
                            int durationMs, const QString& targetId);
     QString actionDescription(ConsequenceAction action) const;
+
+    // Audio/Haptic helpers
+    void playAudioWarning(const QString& soundFile);
+    void triggerHapticPulse(double intensity, int durationMs, int pulseCount = 1);
+    void executeProgressiveWarning();
     
     // Hardware
     HardwareManager* m_hardware;
     OrgasmControlAlgorithm* m_orgasmControl;
     TENSController* m_tensController;
+    ClitoralOscillator* m_clitoralOscillator;
     
     // Configuration
     SafetyLimits m_limits;
@@ -130,7 +153,19 @@ private:
     // Session stats
     int m_punishmentsThisSession;
     int m_rewardsThisSession;
-    
+
+    // Audio/Haptic configuration
+    bool m_audioEnabled;
+    bool m_hapticEnabled;
+    double m_audioVolume;
+    QString m_audioPath;
+    QSoundEffect* m_soundEffect;
+
+    // Progressive warning system
+    int m_warningEscalationLevel;
+    qint64 m_lastWarningTime;
+    static const int WARNING_ESCALATION_COOLDOWN_MS = 5000;
+
     // Constants
     static const int QUEUE_PROCESS_INTERVAL_MS = 100;
 };

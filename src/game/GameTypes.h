@@ -121,7 +121,17 @@ enum class ConsequenceAction {
     // Motion-related
     MOTION_WARNING,        // Warning for detected movement
     MOTION_VIOLATION_SHOCK,// TENS shock for movement violation
-    MOTION_ESCALATION      // Escalating punishment for repeated violations
+    MOTION_ESCALATION,     // Escalating punishment for repeated violations
+
+    // Audio/Haptic Feedback
+    AUDIO_WARNING,         // Play warning sound
+    AUDIO_ANNOUNCEMENT,    // Play speech/announcement
+    HAPTIC_PULSE,          // Vacuum oscillation pulse for tactile feedback
+    HAPTIC_PATTERN,        // Complex haptic pattern through SOL4/SOL5
+    AUDIO_HAPTIC_COMBINED, // Combined audio + haptic warning
+
+    // Progressive Warning System
+    PROGRESSIVE_WARNING    // audio → haptic → TENS shock escalation
 };
 Q_DECLARE_METATYPE(ConsequenceAction)
 

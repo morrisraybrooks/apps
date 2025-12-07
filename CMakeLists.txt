@@ -65,8 +65,17 @@ if(ENABLE_COVERAGE AND CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 # Find required packages
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets Charts Sql)
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets Charts Sql Multimedia)
 find_package(PkgConfig REQUIRED)
+
+# Optional OpenCV for camera-based motion detection
+find_package(OpenCV QUIET COMPONENTS core imgproc video videoio)
+if(OpenCV_FOUND)
+    message(STATUS "OpenCV found: ${OpenCV_VERSION}")
+    add_definitions(-DHAVE_OPENCV)
+else()
+    message(STATUS "OpenCV not found - camera motion detection will be disabled")
+endif()
 
 # System dependencies - prioritize /usr/local for libgpiod v2.x
 set(ENV{PKG_CONFIG_PATH} "/usr/local/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
@@ -105,8 +114,11 @@ set(SOURCES
     src/hardware/HeartRateSensor.cpp
     src/hardware/FluidSensor.cpp
     src/hardware/MotionSensor.cpp
+    src/hardware/CameraMotionSensor.cpp
     src/control/OrgasmControlAlgorithm.cpp
     src/gui/MainWindow.cpp
+    src/gui/MotionMonitor.cpp
+    src/gui/CameraMonitor.cpp
     src/gui/PressureMonitor.cpp
     src/gui/FluidMonitor.cpp
     src/gui/PatternSelector.cpp
@@ -160,8 +172,11 @@ set(HEADERS
     src/hardware/HeartRateSensor.h
     src/hardware/FluidSensor.h
     src/hardware/MotionSensor.h
+    src/hardware/CameraMotionSensor.h
     src/control/OrgasmControlAlgorithm.h
     src/gui/MainWindow.h
+    src/gui/MotionMonitor.h
+    src/gui/CameraMonitor.h
     src/gui/PressureMonitor.h
     src/gui/FluidMonitor.h
     src/gui/PatternSelector.h
@@ -235,11 +250,18 @@ target_link_libraries(VacuumControllerLib
         Qt5::Widgets
         Qt5::Charts
         Qt5::Sql
+        Qt5::Multimedia
     PRIVATE
         pthread
         ${GPIOD_LIBRARIES}
         ${GPIODCXX_LIBRARIES}
 )
+
+# Link OpenCV if available
+if(OpenCV_FOUND)
+    target_link_libraries(VacuumControllerLib PRIVATE ${OpenCV_LIBS})
+    target_include_directories(VacuumControllerLib PRIVATE ${OpenCV_INCLUDE_DIRS})
+endif()
 
 # Add library directories for libgpiod v2.x
 target_link_directories(VacuumControllerLib PRIVATE /usr/local/lib)
