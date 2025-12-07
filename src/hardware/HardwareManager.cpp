@@ -4,6 +4,7 @@
 #include "MCP3008.h"
 #include "TENSController.h"
 #include "FluidSensor.h"
+#include "MotionSensor.h"
 
 #include <QDebug>
 #include <QMutexLocker>
@@ -103,6 +104,19 @@ bool HardwareManager::initialize()
                 emit hardwareError(QString("Fluid overflow critical: %1 mL").arg(volumeMl, 0, 'f', 1));
             });
             qDebug() << "Fluid Sensor initialized (HX711 load cell)";
+        }
+
+        // Create and initialize motion sensor (for stillness detection)
+        m_motionSensor = std::make_unique<MotionSensor>(MotionSensor::SensorType::MPU6050_I2C, this);
+        if (!m_motionSensor->initialize()) {
+            qWarning() << "Motion Sensor initialization failed - continuing without motion detection";
+            // Note: Motion sensor is optional
+        } else {
+            connect(m_motionSensor.get(), &MotionSensor::sensorError,
+                    this, [this](const QString& error) {
+                emit hardwareError(QString("Motion sensor error: %1").arg(error));
+            });
+            qDebug() << "Motion Sensor initialized (MPU6050 IMU)";
         }
 
         // Perform hardware validation

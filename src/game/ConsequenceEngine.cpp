@@ -221,6 +221,7 @@ bool ConsequenceEngine::isPremiumAction(ConsequenceAction action) const
         case ConsequenceAction::MAX_VACUUM_PULSE:
         case ConsequenceAction::COMBINED_ASSAULT:
         case ConsequenceAction::RANDOM_SHOCK_INTERVAL:
+        case ConsequenceAction::MOTION_VIOLATION_SHOCK:
             return true;
         default:
             return false;
@@ -340,6 +341,52 @@ void ConsequenceEngine::executePunishment(ConsequenceAction action, double inten
             }
             break;
 
+        case ConsequenceAction::MOTION_WARNING:
+            qDebug() << "Motion Warning: Movement detected, stay still!";
+            // Could trigger audio/visual warning
+            break;
+
+        case ConsequenceAction::MOTION_VIOLATION_SHOCK:
+            if (m_tensController && m_subscriptionTier == SubscriptionTier::PREMIUM) {
+                // Moderate shock for movement violation
+                double violationAmplitude = qMin(intensity * 80.0, m_limits.maxTensAmplitudePercent);
+                int violationDuration = qMin(200, m_limits.maxTensDurationMs);
+
+                m_tensController->setAmplitude(violationAmplitude / 100.0);
+                m_tensController->pulse(violationDuration);
+
+                m_lastTensTime = QDateTime::currentMSecsSinceEpoch();
+                m_tensShocksInBurst++;
+                m_cooldownTimer->start(m_limits.minTensCooldownMs);
+
+                qDebug() << "Punishment: Motion violation shock at" << violationAmplitude
+                         << "% for" << violationDuration << "ms";
+            }
+            break;
+
+        case ConsequenceAction::MOTION_ESCALATION:
+            // Escalating punishment based on violation count
+            if (m_subscriptionTier == SubscriptionTier::PREMIUM) {
+                // First 3 violations: warning + light shock
+                // 4-6 violations: moderate shock
+                // 7+ violations: combined assault
+                int violationLevel = static_cast<int>(intensity * 10);  // intensity encodes violation count
+
+                if (violationLevel <= 3) {
+                    executePunishment(ConsequenceAction::MOTION_VIOLATION_SHOCK, 0.3, 150, QString());
+                } else if (violationLevel <= 6) {
+                    executePunishment(ConsequenceAction::MOTION_VIOLATION_SHOCK, 0.5, 250, QString());
+                } else {
+                    executePunishment(ConsequenceAction::COMBINED_ASSAULT, 0.6, 300, QString());
+                }
+
+                qDebug() << "Punishment: Motion escalation level" << violationLevel;
+            } else {
+                // Basic tier: increase vacuum intensity
+                executePunishment(ConsequenceAction::INTENSITY_INCREASE, intensity, durationMs, QString());
+            }
+            break;
+
         default:
             break;
     }
@@ -363,6 +410,9 @@ QString ConsequenceEngine::actionDescription(ConsequenceAction action) const
         case ConsequenceAction::MAX_VACUUM_PULSE: return "Max Vacuum Pulse";
         case ConsequenceAction::COMBINED_ASSAULT: return "Combined Assault";
         case ConsequenceAction::RANDOM_SHOCK_INTERVAL: return "Random Shock Interval";
+        case ConsequenceAction::MOTION_WARNING: return "Motion Warning";
+        case ConsequenceAction::MOTION_VIOLATION_SHOCK: return "Motion Violation Shock";
+        case ConsequenceAction::MOTION_ESCALATION: return "Motion Escalation";
         default: return "Unknown";
     }
 }

@@ -34,7 +34,11 @@ enum class GameType {
     // Dom/Sub Games
     OBEDIENCE_TRIAL,      // Follow machine commands
     PUNISHMENT_ENDURANCE, // Endure assigned punishment duration
-    
+
+    // Stillness Games
+    STILLNESS_CHALLENGE,  // Achieve orgasm while staying still
+    FORCED_STILLNESS,     // Endure stimulation without moving
+
     // Custom
     CUSTOM                // User-defined via JSON
 };
@@ -112,7 +116,12 @@ enum class ConsequenceAction {
     TENS_BURST_SERIES,
     MAX_VACUUM_PULSE,
     COMBINED_ASSAULT,
-    RANDOM_SHOCK_INTERVAL
+    RANDOM_SHOCK_INTERVAL,
+
+    // Motion-related
+    MOTION_WARNING,        // Warning for detected movement
+    MOTION_VIOLATION_SHOCK,// TENS shock for movement violation
+    MOTION_ESCALATION      // Escalating punishment for repeated violations
 };
 Q_DECLARE_METATYPE(ConsequenceAction)
 

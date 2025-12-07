@@ -104,6 +104,7 @@ set(SOURCES
     src/hardware/TENSController.cpp
     src/hardware/HeartRateSensor.cpp
     src/hardware/FluidSensor.cpp
+    src/hardware/MotionSensor.cpp
     src/control/OrgasmControlAlgorithm.cpp
     src/gui/MainWindow.cpp
     src/gui/PressureMonitor.cpp
@@ -158,6 +159,7 @@ set(HEADERS
     src/hardware/TENSController.h
     src/hardware/HeartRateSensor.h
     src/hardware/FluidSensor.h
+    src/hardware/MotionSensor.h
     src/control/OrgasmControlAlgorithm.h
     src/gui/MainWindow.h
     src/gui/PressureMonitor.h

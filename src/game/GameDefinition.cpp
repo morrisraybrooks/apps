@@ -312,6 +312,8 @@ GameType GameDefinition::stringToGameType(const QString& str)
         {"INTENSITY_CLIMB", GameType::INTENSITY_CLIMB},
         {"OBEDIENCE_TRIAL", GameType::OBEDIENCE_TRIAL},
         {"PUNISHMENT_ENDURANCE", GameType::PUNISHMENT_ENDURANCE},
+        {"STILLNESS_CHALLENGE", GameType::STILLNESS_CHALLENGE},
+        {"FORCED_STILLNESS", GameType::FORCED_STILLNESS},
         {"CUSTOM", GameType::CUSTOM}
     };
 
@@ -334,6 +336,8 @@ QString GameDefinition::gameTypeToString(GameType type)
         {GameType::INTENSITY_CLIMB, "INTENSITY_CLIMB"},
         {GameType::OBEDIENCE_TRIAL, "OBEDIENCE_TRIAL"},
         {GameType::PUNISHMENT_ENDURANCE, "PUNISHMENT_ENDURANCE"},
+        {GameType::STILLNESS_CHALLENGE, "STILLNESS_CHALLENGE"},
+        {GameType::FORCED_STILLNESS, "FORCED_STILLNESS"},
         {GameType::CUSTOM, "CUSTOM"}
     };
 

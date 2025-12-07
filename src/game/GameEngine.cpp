@@ -6,6 +6,7 @@
 #include "../hardware/HardwareManager.h"
 #include "../hardware/FluidSensor.h"
 #include "../hardware/TENSController.h"
+#include "../hardware/MotionSensor.h"
 #include <QDebug>
 
 GameEngine::GameEngine(HardwareManager* hardware,
@@ -16,6 +17,7 @@ GameEngine::GameEngine(HardwareManager* hardware,
     , m_orgasmControl(orgasmControl)
     , m_fluidSensor(hardware ? hardware->getFluidSensor() : nullptr)
     , m_tensController(hardware ? hardware->getTENSController() : nullptr)
+    , m_motionSensor(nullptr)
     , m_consequenceEngine(nullptr)
     , m_achievements(nullptr)
     , m_progressTracker(nullptr)
@@ -32,6 +34,10 @@ GameEngine::GameEngine(HardwareManager* hardware,
     , m_fluidProduced(0.0)
     , m_currentScore(0)
     , m_bonusPointsEarned(0)
+    , m_motionViolations(0)
+    , m_motionWarnings(0)
+    , m_averageStillness(100.0)
+    , m_stillnessRequired(false)
     , m_subscriptionTier(SubscriptionTier::BASIC)
 {
     connect(m_updateTimer, &QTimer::timeout, this, &GameEngine::onUpdateTick);
@@ -125,10 +131,15 @@ void GameEngine::startGame()
         m_orgasmControl->setEdgeThreshold(stim.edgeThreshold);
         m_orgasmControl->setOrgasmThreshold(stim.orgasmThreshold);
         m_orgasmControl->setRecoveryThreshold(stim.recoveryThreshold);
-        m_orgasmControl->setTENSEnabled(stim.tensEnabled && 
+        m_orgasmControl->setTENSEnabled(stim.tensEnabled &&
                                          m_subscriptionTier == SubscriptionTier::PREMIUM);
     }
-    
+
+    // Check if stillness is required for this game type
+    GameType type = m_currentGame->type();
+    m_stillnessRequired = (type == GameType::STILLNESS_CHALLENGE ||
+                           type == GameType::FORCED_STILLNESS);
+
     // Start countdown
     m_countdownSeconds = COUNTDOWN_SECONDS;
     setState(GameState::COUNTDOWN);
@@ -327,6 +338,11 @@ void GameEngine::setAchievementSystem(AchievementSystem* achievements)
 void GameEngine::setProgressTracker(ProgressTracker* tracker)
 {
     m_progressTracker = tracker;
+}
+
+void GameEngine::setMotionSensor(MotionSensor* sensor)
+{
+    m_motionSensor = sensor;
 }
 
 // ============================================================================
@@ -634,6 +650,16 @@ void GameEngine::connectSignals()
         connect(m_fluidSensor, &FluidSensor::volumeUpdated,
                 this, &GameEngine::onFluidVolumeChanged);
     }
+
+    if (m_motionSensor && m_stillnessRequired) {
+        connect(m_motionSensor, &MotionSensor::violationDetected,
+                this, &GameEngine::onMotionViolation);
+        connect(m_motionSensor, &MotionSensor::warningIssued,
+                this, &GameEngine::onMotionWarning);
+        connect(m_motionSensor, &MotionSensor::stillnessChanged,
+                this, &GameEngine::onStillnessChanged);
+        m_motionSensor->startSession();
+    }
 }
 
 void GameEngine::disconnectSignals()
@@ -651,6 +677,16 @@ void GameEngine::disconnectSignals()
         disconnect(m_fluidSensor, &FluidSensor::volumeUpdated,
                    this, &GameEngine::onFluidVolumeChanged);
     }
+
+    if (m_motionSensor) {
+        disconnect(m_motionSensor, &MotionSensor::violationDetected,
+                   this, &GameEngine::onMotionViolation);
+        disconnect(m_motionSensor, &MotionSensor::warningIssued,
+                   this, &GameEngine::onMotionWarning);
+        disconnect(m_motionSensor, &MotionSensor::stillnessChanged,
+                   this, &GameEngine::onStillnessChanged);
+        m_motionSensor->endSession();
+    }
 }
 
 void GameEngine::resetSessionStats()
@@ -663,6 +699,9 @@ void GameEngine::resetSessionStats()
     m_fluidProduced = 0.0;
     m_currentScore = 0;
     m_bonusPointsEarned = 0;
+    m_motionViolations = 0;
+    m_motionWarnings = 0;
+    m_averageStillness = 100.0;
     m_result = GameResult::NONE;
 }
 
@@ -697,4 +736,80 @@ void GameEngine::stopStimulation()
     if (m_orgasmControl) {
         m_orgasmControl->stop();
     }
+}
+
+// ============================================================================
+// Motion Event Handlers
+// ============================================================================
+
+void GameEngine::onMotionViolation(int level, double intensity)
+{
+    if (m_state != GameState::RUNNING || !m_stillnessRequired) {
+        return;
+    }
+
+    QMutexLocker locker(&m_mutex);
+    m_motionViolations++;
+
+    qDebug() << "Motion violation #" << m_motionViolations
+             << "level:" << level << "intensity:" << intensity;
+
+    locker.unlock();
+
+    // Apply escalating punishment via consequence engine
+    if (m_consequenceEngine) {
+        // Encode violation count in intensity for escalation logic
+        double escalationIntensity = m_motionViolations / 10.0;
+        m_consequenceEngine->executeAction(ConsequenceAction::MOTION_ESCALATION,
+                                           escalationIntensity, 300, QString());
+    }
+
+    emit motionViolationDetected(m_motionViolations, intensity);
+
+    // Check if max violations reached (fail condition)
+    if (m_currentGame && m_motionViolations >= 10) {
+        emit failConditionTriggered("max_motion_violations");
+        setState(GameState::FAILURE);
+    }
+}
+
+void GameEngine::onMotionWarning(const QString& message)
+{
+    if (m_state != GameState::RUNNING || !m_stillnessRequired) {
+        return;
+    }
+
+    QMutexLocker locker(&m_mutex);
+    m_motionWarnings++;
+    locker.unlock();
+
+    qDebug() << "Motion warning #" << m_motionWarnings << ":" << message;
+
+    // Issue warning consequence
+    if (m_consequenceEngine) {
+        m_consequenceEngine->executeAction(ConsequenceAction::MOTION_WARNING,
+                                           0.2, 0, QString());
+    }
+
+    emit motionWarningIssued(m_motionWarnings);
+}
+
+void GameEngine::onStillnessChanged(bool isStill, double score)
+{
+    if (m_state != GameState::RUNNING) {
+        return;
+    }
+
+    QMutexLocker locker(&m_mutex);
+
+    // Update running average
+    static int sampleCount = 0;
+    sampleCount++;
+    m_averageStillness = ((m_averageStillness * (sampleCount - 1)) + score) / sampleCount;
+
+    locker.unlock();
+
+    emit stillnessScoreUpdated(score);
+
+    Q_UNUSED(isStill)
 }

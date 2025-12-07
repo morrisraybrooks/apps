@@ -1,0 +1,156 @@
+{
+    "id": "stillness_beginner",
+    "name": "Statue Challenge",
+    "description": "Stay perfectly still while being stimulated. Any movement triggers punishment. Achieve orgasm without moving to win.",
+    "type": "STILLNESS_CHALLENGE",
+    "difficulty": 2,
+    "subscription_tier": "premium",
+    "unlocked_by": "edge_count_5",
+    "unlocks": ["stillness_advanced", "forced_stillness_intro"],
+    
+    "objectives": {
+        "primary": {
+            "type": "orgasm_while_still",
+            "target": 1,
+            "time_limit_seconds": 900,
+            "points": 200,
+            "mandatory": true
+        },
+        "bonus": [
+            {
+                "type": "zero_violations",
+                "points": 100
+            },
+            {
+                "type": "stillness_score_above",
+                "threshold": 0.9,
+                "points": 75
+            },
+            {
+                "type": "max_warnings_below",
+                "threshold": 3,
+                "points": 50
+            }
+        ]
+    },
+    
+    "fail_conditions": [
+        {
+            "type": "motion_violations",
+            "max_count": 10,
+            "immediate_fail": true
+        },
+        {
+            "type": "time_expired",
+            "immediate_fail": true
+        }
+    ],
+    
+    "motion_settings": {
+        "sensitivity_preset": "NORMAL",
+        "stillness_threshold_g": 0.05,
+        "rotation_threshold_dps": 5.0,
+        "warning_threshold_g": 0.1,
+        "violation_threshold_g": 0.2,
+        "major_violation_threshold_g": 0.5,
+        "debounce_ms": 500,
+        "calibration_required": true
+    },
+    
+    "stimulation": {
+        "pattern": "building_waves",
+        "initial_intensity": 0.5,
+        "max_intensity": 0.9,
+        "edge_threshold": 0.85,
+        "orgasm_threshold": 0.95,
+        "recovery_threshold": 0.4,
+        "tens_enabled": true,
+        "tens_amplitude": 0.3
+    },
+    
+    "scoring": {
+        "base_points": 200,
+        "per_objective_bonus": 50,
+        "stillness_quality_multiplier": 1.5,
+        "time_bonus_per_second": 0.25,
+        "xp_on_win": 250,
+        "xp_on_loss": 25,
+        "streak_multiplier_max": 2.5
+    },
+    
+    "consequences": {
+        "on_motion_warning": {
+            "type": "warning",
+            "action": "audio_warning",
+            "message": "Stay still!",
+            "tier": "basic"
+        },
+        "on_motion_violation": {
+            "type": "punishment",
+            "action": "tens_shock",
+            "intensity": 0.4,
+            "duration_ms": 200,
+            "tier": "premium"
+        },
+        "on_motion_escalation": {
+            "type": "punishment",
+            "action": "escalating_shock",
+            "base_intensity": 0.3,
+            "max_intensity": 0.7,
+            "escalation_per_violation": 0.05,
+            "tier": "premium"
+        },
+        "on_win": {
+            "type": "reward",
+            "action": "unlock_game",
+            "target_id": "stillness_advanced",
+            "tier": "premium"
+        },
+        "on_fail": {
+            "type": "punishment",
+            "action": "denial_extension",
+            "duration_seconds": 120,
+            "tier": "basic"
+        }
+    },
+    
+    "difficulty_variants": {
+        "beginner": {
+            "id": "stillness_beginner",
+            "name": "Statue Challenge - Beginner",
+            "motion_settings": {
+                "sensitivity_preset": "LENIENT",
+                "stillness_threshold_g": 0.1,
+                "violation_threshold_g": 0.3
+            },
+            "fail_conditions": [
+                {"type": "motion_violations", "max_count": 15}
+            ]
+        },
+        "advanced": {
+            "id": "stillness_advanced",
+            "name": "Statue Challenge - Advanced",
+            "motion_settings": {
+                "sensitivity_preset": "STRICT",
+                "stillness_threshold_g": 0.03,
+                "violation_threshold_g": 0.15
+            },
+            "fail_conditions": [
+                {"type": "motion_violations", "max_count": 5}
+            ]
+        },
+        "extreme": {
+            "id": "stillness_extreme",
+            "name": "Statue Challenge - Extreme",
+            "motion_settings": {
+                "sensitivity_preset": "EXTREME",
+                "stillness_threshold_g": 0.02,
+                "violation_threshold_g": 0.1
+            },
+            "fail_conditions": [
+                {"type": "motion_violations", "max_count": 3}
+            ]
+        }
+    }
+}
+

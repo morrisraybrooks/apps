@@ -17,6 +17,7 @@ class HardwareManager;
 class ConsequenceEngine;
 class AchievementSystem;
 class ProgressTracker;
+class MotionSensor;
 
 /**
  * @brief Core game engine for V-Contour gamification system
@@ -69,15 +70,22 @@ public:
     double maxArousal() const { return m_maxArousal; }
     double avgArousal() const;
     double fluidProduced() const { return m_fluidProduced; }
-    
+
+    // Motion tracking statistics
+    int motionViolations() const { return m_motionViolations; }
+    int motionWarnings() const { return m_motionWarnings; }
+    double averageStillness() const { return m_averageStillness; }
+    bool isStillnessRequired() const { return m_stillnessRequired; }
+
     // Subscription
     void setSubscriptionTier(SubscriptionTier tier);
     SubscriptionTier subscriptionTier() const { return m_subscriptionTier; }
-    
+
     // Sub-system access
     void setConsequenceEngine(ConsequenceEngine* engine);
     void setAchievementSystem(AchievementSystem* achievements);
     void setProgressTracker(ProgressTracker* tracker);
+    void setMotionSensor(MotionSensor* sensor);
 
 Q_SIGNALS:
     // State signals
@@ -98,6 +106,11 @@ Q_SIGNALS:
     void orgasmDetectedInGame(int orgasmNumber);
     void fluidMilestone(double totalMl);
     void failConditionTriggered(const QString& conditionType);
+
+    // Motion signals
+    void motionViolationDetected(int violationCount, double intensity);
+    void motionWarningIssued(int warningCount);
+    void stillnessScoreUpdated(double score);
     
     // Countdown
     void countdownTick(int secondsRemaining);
@@ -112,6 +125,9 @@ private Q_SLOTS:
     void onEdgeDetected(int edgeNumber, double intensity);
     void onOrgasmDetected(int orgasmNumber, qint64 timeMs);
     void onFluidVolumeChanged(double currentMl, double cumulativeMl);
+    void onMotionViolation(int level, double intensity);
+    void onMotionWarning(const QString& message);
+    void onStillnessChanged(bool isStill, double score);
 
 private:
     void setState(GameState newState);
@@ -131,7 +147,8 @@ private:
     OrgasmControlAlgorithm* m_orgasmControl;
     FluidSensor* m_fluidSensor;
     TENSController* m_tensController;
-    
+    MotionSensor* m_motionSensor;
+
     // Sub-systems
     ConsequenceEngine* m_consequenceEngine;
     AchievementSystem* m_achievements;
@@ -157,7 +174,13 @@ private:
     double m_fluidProduced;
     int m_currentScore;
     int m_bonusPointsEarned;
-    
+
+    // Motion tracking
+    int m_motionViolations;
+    int m_motionWarnings;
+    double m_averageStillness;
+    bool m_stillnessRequired;
+
     // Configuration
     SubscriptionTier m_subscriptionTier;
     
