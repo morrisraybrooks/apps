@@ -84,6 +84,53 @@ enum class SubscriptionTier {
 Q_DECLARE_METATYPE(SubscriptionTier)
 
 /**
+ * @brief Privilege tiers based on points accumulation
+ *
+ * Users progress through tiers by earning points from game completion.
+ * Higher tiers unlock multi-user control capabilities.
+ */
+enum class PrivilegeTier {
+    BEGINNER,             // 0-1000 points: Local control only, no DOM commands
+    INTERMEDIATE,         // 1000-5000: Can issue DOM commands to self
+    ADVANCED,             // 5000-15000: Can control paired users, transfer points
+    DOM_MASTER            // 15000+: Room control, advanced patterns, any paired user
+};
+Q_DECLARE_METATYPE(PrivilegeTier)
+
+/**
+ * @brief Consent status for multi-user control
+ */
+enum class ConsentStatus {
+    NONE,                 // No consent given
+    PENDING,              // Consent request sent, awaiting response
+    GRANTED,              // User has consented to being controlled
+    REVOKED,              // Previously granted consent has been revoked
+    EXPIRED               // Consent timed out
+};
+Q_DECLARE_METATYPE(ConsentStatus)
+
+/**
+ * @brief Point transaction types for audit logging
+ */
+enum class PointTransactionType {
+    // Earnings
+    GAME_COMPLETION,      // Points earned from completing a game
+    ACHIEVEMENT_BONUS,    // Bonus points from achievements
+    STREAK_BONUS,         // Bonus for win streaks
+    DAILY_BONUS,          // Daily login/play bonus
+
+    // Spending
+    COMMAND_COST,         // Points spent on issuing commands to others
+    POINT_TRANSFER,       // Points transferred to another user
+    FEATURE_UNLOCK,       // Points spent to unlock premium features
+
+    // Administrative
+    ADMIN_ADJUSTMENT,     // Manual adjustment by admin
+    REFUND               // Refund of previously spent points
+};
+Q_DECLARE_METATYPE(PointTransactionType)
+
+/**
  * @brief Objective types for game goals
  */
 enum class ObjectiveType {

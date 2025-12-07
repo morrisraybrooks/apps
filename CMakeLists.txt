@@ -65,7 +65,7 @@ if(ENABLE_COVERAGE AND CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 # Find required packages
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets Charts Sql Multimedia)
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets Charts Sql Multimedia WebSockets)
 find_package(PkgConfig REQUIRED)
 
 # Optional OpenCV for camera-based motion detection
@@ -100,6 +100,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src/error)
 include_directories(${CMAKE_SOURCE_DIR}/src/testing)
 include_directories(${CMAKE_SOURCE_DIR}/src/control)
 include_directories(${CMAKE_SOURCE_DIR}/src/game)
+include_directories(${CMAKE_SOURCE_DIR}/src/network)
 
 # Source files
 set(SOURCES
@@ -158,6 +159,8 @@ set(SOURCES
     src/game/AchievementSystem.cpp
     src/game/ConsequenceEngine.cpp
     src/game/ProgressTracker.cpp
+    src/network/MultiUserController.cpp
+    src/gui/PrivilegePanel.cpp
 )
 
 # Header files
@@ -209,6 +212,8 @@ set(HEADERS
     src/game/AchievementSystem.h
     src/game/ConsequenceEngine.h
     src/game/ProgressTracker.h
+    src/network/MultiUserController.h
+    src/gui/PrivilegePanel.h
 )
 
 # Create shared library for better testing and modularity
@@ -251,6 +256,7 @@ target_link_libraries(VacuumControllerLib
         Qt5::Charts
         Qt5::Sql
         Qt5::Multimedia
+        Qt5::WebSockets
     PRIVATE
         pthread
         ${GPIOD_LIBRARIES}

@@ -136,6 +136,7 @@ private:
     void calculateScore();
     void applyConsequences(GameResult result);
     void recordSession();
+    void awardPointsForGame();
     void connectSignals();
     void disconnectSignals();
     void resetSessionStats();

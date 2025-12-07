@@ -3,6 +3,7 @@
 #include "../hardware/HardwareManager.h"
 #include "../hardware/TENSController.h"
 #include "../hardware/ClitoralOscillator.h"
+#include "../network/MultiUserController.h"
 #include <QDateTime>
 #include <QDebug>
 #include <QSoundEffect>
@@ -32,6 +33,7 @@ ConsequenceEngine::ConsequenceEngine(HardwareManager* hardware,
     , m_soundEffect(new QSoundEffect(this))
     , m_warningEscalationLevel(0)
     , m_lastWarningTime(0)
+    , m_multiUserController(nullptr)
 {
     connect(m_queueTimer, &QTimer::timeout, this, &ConsequenceEngine::processQueue);
     connect(m_cooldownTimer, &QTimer::timeout, this, &ConsequenceEngine::onCooldownExpired);
@@ -604,3 +606,33 @@ void ConsequenceEngine::executeProgressiveWarning()
     }
 }
 
+// ============================================================================
+// Multi-User Control Integration
+// ============================================================================
+
+void ConsequenceEngine::setMultiUserController(MultiUserController* controller)
+{
+    m_multiUserController = controller;
+
+    if (m_multiUserController) {
+        // Connect to receive remote commands
+        connect(m_multiUserController, &MultiUserController::commandReceived,
+                this, [this](const RemoteCommand& cmd) {
+            // Execute the received command locally
+            executeAction(cmd.action, cmd.intensity, cmd.durationMs, cmd.senderId);
+        });
+    }
+}
+
+void ConsequenceEngine::executeRemoteCommand(ConsequenceAction action, double intensity,
+                                              int durationMs, const QString& targetId)
+{
+    if (!m_multiUserController) {
+        qWarning() << "MultiUserController not set, cannot execute remote command";
+        return;
+    }
+
+    // Send command through multi-user controller
+    // The controller handles consent verification and point deduction
+    m_multiUserController->sendCommand(targetId, action, intensity, durationMs);
+}

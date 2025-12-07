@@ -98,6 +98,11 @@ public:
     void resetWarningEscalation();
     int warningEscalationLevel() const { return m_warningEscalationLevel; }
 
+    // Multi-user control integration
+    void setMultiUserController(class MultiUserController* controller);
+    void executeRemoteCommand(ConsequenceAction action, double intensity,
+                              int durationMs, const QString& targetId);
+
     // Statistics
     int punishmentsThisSession() const { return m_punishmentsThisSession; }
     int rewardsThisSession() const { return m_rewardsThisSession; }
@@ -165,6 +170,9 @@ private:
     int m_warningEscalationLevel;
     qint64 m_lastWarningTime;
     static const int WARNING_ESCALATION_COOLDOWN_MS = 5000;
+
+    // Multi-user control
+    class MultiUserController* m_multiUserController;
 
     // Constants
     static const int QUEUE_PROCESS_INTERVAL_MS = 100;

@@ -628,11 +628,82 @@ void GameEngine::recordSession()
         m_fluidProduced
     );
 
+    // Award points based on game result and difficulty
+    awardPointsForGame();
+
     // Check achievements
     if (m_achievements) {
         m_achievements->checkGameCompletion(m_result, m_currentGame->id());
         m_achievements->checkMilestones();
     }
+}
+
+void GameEngine::awardPointsForGame()
+{
+    if (!m_progressTracker || !m_currentGame) return;
+
+    int basePoints = 0;
+    QString description;
+
+    // Base points by result
+    switch (m_result) {
+        case GameResult::VICTORY:
+            basePoints = 100;
+            description = QString("Victory: %1").arg(m_currentGame->name());
+            break;
+        case GameResult::FAILURE:
+            basePoints = 25;  // Participation points
+            description = QString("Attempt: %1").arg(m_currentGame->name());
+            break;
+        case GameResult::TIMEOUT:
+            basePoints = 50;  // Partial credit
+            description = QString("Timeout: %1").arg(m_currentGame->name());
+            break;
+        case GameResult::ABORTED:
+        case GameResult::SAFEWORD:
+        case GameResult::NONE:
+            return;  // No points for aborted/safeword
+    }
+
+    // Difficulty multiplier
+    double difficultyMultiplier = 1.0;
+    switch (m_currentGame->difficulty()) {
+        case GameDifficulty::TUTORIAL:
+            difficultyMultiplier = 0.5;
+            break;
+        case GameDifficulty::EASY:
+            difficultyMultiplier = 0.75;
+            break;
+        case GameDifficulty::NORMAL:
+            difficultyMultiplier = 1.0;
+            break;
+        case GameDifficulty::HARD:
+            difficultyMultiplier = 1.5;
+            break;
+        case GameDifficulty::EXTREME:
+            difficultyMultiplier = 2.0;
+            break;
+        case GameDifficulty::NIGHTMARE:
+            difficultyMultiplier = 3.0;
+            break;
+    }
+
+    // Score bonus (up to 50% extra based on score)
+    double scoreBonus = 1.0 + (m_currentScore / 10000.0) * 0.5;
+    scoreBonus = qMin(scoreBonus, 1.5);
+
+    // Duration bonus for longer games (up to 25% extra)
+    double durationBonus = 1.0;
+    int duration = elapsedSeconds();
+    if (duration > 600) {  // 10+ minutes
+        durationBonus = 1.0 + qMin((duration - 600) / 1800.0, 0.25);
+    }
+
+    // Calculate final points
+    int finalPoints = static_cast<int>(basePoints * difficultyMultiplier * scoreBonus * durationBonus);
+
+    // Award the points
+    m_progressTracker->addPoints(finalPoints, PointTransactionType::GAME_COMPLETION, description);
 }
 
 void GameEngine::connectSignals()
