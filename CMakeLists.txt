@@ -102,9 +102,11 @@ set(SOURCES
     src/hardware/ClitoralOscillator.cpp
     src/hardware/TENSController.cpp
     src/hardware/HeartRateSensor.cpp
+    src/hardware/FluidSensor.cpp
     src/control/OrgasmControlAlgorithm.cpp
     src/gui/MainWindow.cpp
     src/gui/PressureMonitor.cpp
+    src/gui/FluidMonitor.cpp
     src/gui/PatternSelector.cpp
     src/gui/SafetyPanel.cpp
     src/gui/SettingsPanel.cpp
@@ -148,9 +150,11 @@ set(HEADERS
     src/hardware/ClitoralOscillator.h
     src/hardware/TENSController.h
     src/hardware/HeartRateSensor.h
+    src/hardware/FluidSensor.h
     src/control/OrgasmControlAlgorithm.h
     src/gui/MainWindow.h
     src/gui/PressureMonitor.h
+    src/gui/FluidMonitor.h
     src/gui/PatternSelector.h
     src/gui/SafetyPanel.h
     src/gui/SettingsPanel.h

@@ -4,6 +4,7 @@
 #include "../hardware/ClitoralOscillator.h"
 #include "../hardware/TENSController.h"
 #include "../hardware/HeartRateSensor.h"
+#include "../hardware/FluidSensor.h"
 #include <QDebug>
 #include <QThread>
 #include <algorithm>
@@ -16,6 +17,7 @@ OrgasmControlAlgorithm::OrgasmControlAlgorithm(HardwareManager* hardware, QObjec
     , m_clitoralOscillator(nullptr)
     , m_tensController(hardware ? hardware->getTENSController() : nullptr)
     , m_heartRateSensor(nullptr)
+    , m_fluidSensor(hardware ? hardware->getFluidSensor() : nullptr)
     , m_updateTimer(new QTimer(this))
     , m_safetyTimer(new QTimer(this))
     , m_state(ControlState::STOPPED)
@@ -46,15 +48,42 @@ OrgasmControlAlgorithm::OrgasmControlAlgorithm(HardwareManager* hardware, QObjec
     , m_edgeThreshold(DEFAULT_EDGE_THRESHOLD)
     , m_orgasmThreshold(DEFAULT_ORGASM_THRESHOLD)
     , m_recoveryThreshold(DEFAULT_RECOVERY_THRESHOLD)
+    , m_fluidTrackingEnabled(false)
+    , m_sessionFluidMl(0.0)
+    , m_lubricationMl(0.0)
+    , m_orgasmicFluidMl(0.0)
 {
     // Initialize history buffers
     m_pressureHistory.resize(HISTORY_SIZE, 0.0);
     m_arousalHistory.resize(HISTORY_SIZE, 0.0);
-    
+
     // Connect timers
     connect(m_updateTimer, &QTimer::timeout, this, &OrgasmControlAlgorithm::onUpdateTick);
     connect(m_safetyTimer, &QTimer::timeout, this, &OrgasmControlAlgorithm::onSafetyCheck);
-    
+
+    // Connect fluid sensor signals if available
+    if (m_fluidSensor && m_fluidSensor->isReady()) {
+        m_fluidTrackingEnabled = true;
+        connect(m_fluidSensor, &FluidSensor::volumeUpdated,
+                this, [this](double current, double cumulative) {
+            m_sessionFluidMl = cumulative;
+            emit fluidVolumeUpdated(current, cumulative);
+        });
+        connect(m_fluidSensor, &FluidSensor::orgasmicBurstDetected,
+                this, [this](double volumeMl, double /*peakRate*/, int orgasmNum) {
+            m_orgasmicFluidMl += volumeMl;
+            m_fluidPerOrgasm.append(volumeMl);
+            emit fluidOrgasmBurst(volumeMl, orgasmNum);
+        });
+        connect(m_fluidSensor, &FluidSensor::lubricationRateChanged,
+                this, &OrgasmControlAlgorithm::lubricationRateChanged);
+        connect(m_fluidSensor, &FluidSensor::overflowWarning,
+                this, [this](double volumeMl, double /*capacity*/) {
+            emit fluidOverflowWarning(volumeMl);
+        });
+        qDebug() << "OrgasmControlAlgorithm: Fluid sensor connected";
+    }
+
     qDebug() << "OrgasmControlAlgorithm initialized";
 }
 
@@ -70,46 +99,58 @@ OrgasmControlAlgorithm::~OrgasmControlAlgorithm()
 void OrgasmControlAlgorithm::startAdaptiveEdging(int targetCycles)
 {
     QMutexLocker locker(&m_mutex);
-    
+
     if (m_state != ControlState::STOPPED) {
         qWarning() << "Cannot start: algorithm already running";
         return;
     }
-    
+
     m_targetEdges = targetCycles;
     m_edgeCount = 0;
     m_orgasmCount = 0;
     m_intensity = INITIAL_INTENSITY;
     m_frequency = INITIAL_FREQUENCY;
     m_emergencyStop = false;
-    
+
+    // Reset fluid tracking
+    m_sessionFluidMl = 0.0;
+    m_lubricationMl = 0.0;
+    m_orgasmicFluidMl = 0.0;
+    m_fluidPerOrgasm.clear();
+
+    // Start fluid sensor session
+    if (m_fluidSensor && m_fluidTrackingEnabled) {
+        m_fluidSensor->startSession();
+        m_fluidSensor->setCurrentArousalLevel(0.0);
+    }
+
     setMode(Mode::ADAPTIVE_EDGING);
     setState(ControlState::CALIBRATING);
-    
+
     // Start timers
     m_sessionTimer.start();
     m_updateTimer->start(UPDATE_INTERVAL_MS);
     m_safetyTimer->start(SAFETY_INTERVAL_MS);
-    
+
     qDebug() << "Started Adaptive Edging with target cycles:" << targetCycles;
-    
+
     // Calibrate baseline (blocking for simplicity, could be async)
     locker.unlock();
     calibrateBaseline(BASELINE_DURATION_MS);
     locker.relock();
-    
+
     setState(ControlState::BUILDING);
 }
 
 void OrgasmControlAlgorithm::startForcedOrgasm(int targetOrgasms, int maxDurationMs)
 {
     QMutexLocker locker(&m_mutex);
-    
+
     if (m_state != ControlState::STOPPED) {
         qWarning() << "Cannot start: algorithm already running";
         return;
     }
-    
+
     m_targetOrgasms = targetOrgasms;
     m_maxDurationMs = maxDurationMs;
     m_edgeCount = 0;
@@ -118,21 +159,33 @@ void OrgasmControlAlgorithm::startForcedOrgasm(int targetOrgasms, int maxDuratio
     m_frequency = FORCED_BASE_FREQUENCY;
     m_tensAmplitude = FORCED_TENS_AMPLITUDE;
     m_emergencyStop = false;
-    
+
+    // Reset fluid tracking
+    m_sessionFluidMl = 0.0;
+    m_lubricationMl = 0.0;
+    m_orgasmicFluidMl = 0.0;
+    m_fluidPerOrgasm.clear();
+
+    // Start fluid sensor session
+    if (m_fluidSensor && m_fluidTrackingEnabled) {
+        m_fluidSensor->startSession();
+        m_fluidSensor->setCurrentArousalLevel(0.0);
+    }
+
     setMode(Mode::FORCED_ORGASM);
     setState(ControlState::CALIBRATING);
-    
+
     m_sessionTimer.start();
     m_updateTimer->start(UPDATE_INTERVAL_MS);
     m_safetyTimer->start(SAFETY_INTERVAL_MS);
-    
-    qDebug() << "Started Forced Orgasm with target:" << targetOrgasms 
+
+    qDebug() << "Started Forced Orgasm with target:" << targetOrgasms
              << "max duration:" << maxDurationMs << "ms";
-    
+
     locker.unlock();
     calibrateBaseline(BASELINE_DURATION_MS);
     locker.relock();
-    
+
     setState(ControlState::FORCING);
     
     // Enable all stimulation
@@ -181,6 +234,14 @@ void OrgasmControlAlgorithm::stop()
     if (m_hardware) {
         m_hardware->setSOL2(true);   // Vent outer chamber
         m_hardware->setSOL5(true);   // Vent clitoral chamber
+    }
+
+    // End fluid sensor session
+    if (m_fluidSensor && m_fluidTrackingEnabled) {
+        m_fluidSensor->endSession();
+        qDebug() << "Fluid session ended: total=" << m_sessionFluidMl << "mL"
+                 << "lubrication=" << m_lubricationMl << "mL"
+                 << "orgasmic=" << m_orgasmicFluidMl << "mL";
     }
 
     setState(ControlState::STOPPED);
@@ -374,6 +435,11 @@ void OrgasmControlAlgorithm::updateArousalLevel()
     if (qAbs(newArousal - m_arousalLevel) > 0.01) {
         m_arousalLevel = newArousal;
         emit arousalLevelChanged(m_arousalLevel);
+
+        // Update fluid sensor with current arousal level for correlation
+        if (m_fluidSensor && m_fluidTrackingEnabled) {
+            m_fluidSensor->setCurrentArousalLevel(m_arousalLevel);
+        }
     }
 }
 
@@ -745,6 +811,11 @@ void OrgasmControlAlgorithm::runForcedOrgasm(int targetOrgasms, int maxDurationM
         m_orgasmCount++;
 
         emit orgasmDetected(m_orgasmCount, m_sessionTimer.elapsed());
+
+        // Notify fluid sensor of orgasm event for correlation
+        if (m_fluidSensor && m_fluidTrackingEnabled) {
+            m_fluidSensor->recordOrgasmEvent(m_orgasmCount);
+        }
 
         // BOOST through orgasm (do NOT back off)
         m_intensity = qMin(m_intensity + THROUGH_ORGASM_BOOST, MAX_INTENSITY);

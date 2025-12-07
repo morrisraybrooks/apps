@@ -13,6 +13,7 @@ class SensorInterface;
 class ClitoralOscillator;
 class TENSController;
 class HeartRateSensor;
+class FluidSensor;
 
 /**
  * @brief Adaptive orgasm control algorithm with arousal detection
@@ -132,6 +133,12 @@ Q_SIGNALS:
     void heartRateOrgasmSignature();  // HR pattern indicates orgasm
     void heartRateSensorLost();
 
+    // Fluid tracking signals
+    void fluidVolumeUpdated(double currentMl, double cumulativeMl);
+    void fluidOrgasmBurst(double volumeMl, int orgasmNumber);
+    void lubricationRateChanged(double mlPerMin);
+    void fluidOverflowWarning(double volumeMl);
+
     // State signals
     void stateChanged(ControlState state);
     void modeChanged(Mode mode);
@@ -171,6 +178,7 @@ private:
     ClitoralOscillator* m_clitoralOscillator;
     TENSController* m_tensController;
     HeartRateSensor* m_heartRateSensor;
+    FluidSensor* m_fluidSensor;
 
     // Timers
     QTimer* m_updateTimer;
@@ -221,6 +229,13 @@ private:
 
     // Thread safety
     mutable QMutex m_mutex;
+
+    // Fluid tracking
+    bool m_fluidTrackingEnabled;
+    double m_sessionFluidMl;
+    double m_lubricationMl;
+    double m_orgasmicFluidMl;
+    QVector<double> m_fluidPerOrgasm;  // Volume per orgasm event
 
     // Constants
     static const int UPDATE_INTERVAL_MS = 100;

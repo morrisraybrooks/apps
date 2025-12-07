@@ -10,6 +10,7 @@ class SensorInterface;
 class ActuatorControl;
 class MCP3008;
 class TENSController;
+class FluidSensor;
 
 /**
  * @brief Hardware abstraction layer for the vacuum controller
@@ -61,6 +62,12 @@ public:
     SensorInterface* getSensorInterface() const { return m_sensorInterface.get(); }
     ActuatorControl* getActuatorControl() const { return m_actuatorControl.get(); }
     TENSController* getTENSController() const { return m_tensController.get(); }
+    FluidSensor* getFluidSensor() const { return m_fluidSensor.get(); }
+
+    // Fluid sensor readings
+    double readFluidVolumeMl();           // Current volume in reservoir
+    double readFluidFlowRate();           // mL/min flow rate
+    double readCumulativeFluidMl();       // Session total
 
     // TENS control (integrated with clitoral cup electrodes)
     void setTENSEnabled(bool enabled);
@@ -108,6 +115,7 @@ private:
     std::unique_ptr<ActuatorControl> m_actuatorControl;
     std::unique_ptr<MCP3008> m_adc;
     std::unique_ptr<TENSController> m_tensController;
+    std::unique_ptr<FluidSensor> m_fluidSensor;
     
     // System state
     bool m_initialized;

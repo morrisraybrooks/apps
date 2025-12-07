@@ -3,6 +3,7 @@
 #include "ActuatorControl.h"
 #include "MCP3008.h"
 #include "TENSController.h"
+#include "FluidSensor.h"
 
 #include <QDebug>
 #include <QMutexLocker>
@@ -85,6 +86,23 @@ bool HardwareManager::initialize()
                 emit hardwareError(QString("TENS fault: %1").arg(reason));
             });
             qDebug() << "TENS Controller initialized for clitoral cup electrodes";
+        }
+
+        // Create and initialize fluid sensor (for fluid collection measurement)
+        m_fluidSensor = std::make_unique<FluidSensor>(FluidSensor::SensorType::LOAD_CELL_HX711, this);
+        if (!m_fluidSensor->initialize()) {
+            qWarning() << "Fluid Sensor initialization failed - continuing without fluid measurement";
+            // Note: Fluid sensor is optional
+        } else {
+            connect(m_fluidSensor.get(), &FluidSensor::sensorError,
+                    this, [this](const QString& error) {
+                emit hardwareError(QString("Fluid sensor error: %1").arg(error));
+            });
+            connect(m_fluidSensor.get(), &FluidSensor::overflowCritical,
+                    this, [this](double volumeMl) {
+                emit hardwareError(QString("Fluid overflow critical: %1 mL").arg(volumeMl, 0, 'f', 1));
+            });
+            qDebug() << "Fluid Sensor initialized (HX711 load cell)";
         }
 
         // Perform hardware validation
@@ -177,6 +195,36 @@ double HardwareManager::readClitoralPressure()
         throw std::runtime_error("Sensor interface not initialized");
     }
     return m_sensorInterface->getFilteredClitoralPressure();
+}
+
+double HardwareManager::readFluidVolumeMl()
+{
+    QMutexLocker locker(&m_stateMutex);
+
+    if (!m_fluidSensor || !m_fluidSensor->isReady()) {
+        return 0.0;
+    }
+    return m_fluidSensor->getCurrentVolumeMl();
+}
+
+double HardwareManager::readFluidFlowRate()
+{
+    QMutexLocker locker(&m_stateMutex);
+
+    if (!m_fluidSensor || !m_fluidSensor->isReady()) {
+        return 0.0;
+    }
+    return m_fluidSensor->getFlowRateMlPerMin();
+}
+
+double HardwareManager::readCumulativeFluidMl()
+{
+    QMutexLocker locker(&m_stateMutex);
+
+    if (!m_fluidSensor || !m_fluidSensor->isReady()) {
+        return 0.0;
+    }
+    return m_fluidSensor->getCumulativeVolumeMl();
 }
 
 void HardwareManager::setPumpSpeed(double speedPercent)
