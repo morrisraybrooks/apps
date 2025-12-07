@@ -792,7 +792,7 @@ New controls for dual-chamber operation:
 |---------------|-------|
 | **Platform** | Raspberry Pi 4 (8GB RAM) |
 | **Display** | 50-inch HDMI touch display |
-| **Framework** | Qt 6.2+ with C++17 |
+| **Framework** | Qt 5 |
 | **Vacuum Chambers** | 2 (Outer V-seal + Clitoral cylinder) |
 | **Solenoid Valves** | 5 (SOL1-SOL5) |
 | **Pressure Sensors** | 3 (Outer, Tank, Clitoral) |
