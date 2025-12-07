@@ -12,11 +12,17 @@ class HardwareManager;
 class SensorInterface;
 class ClitoralOscillator;
 class TENSController;
+class HeartRateSensor;
 
 /**
  * @brief Adaptive orgasm control algorithm with arousal detection
- * 
- * Implements sensor-driven arousal estimation and control modes:
+ *
+ * Implements multi-sensor arousal estimation using:
+ * - Pressure sensors (clitoral engorgement, contractions)
+ * - Heart rate sensor (HR zone, HRV, acceleration)
+ * - TENS feedback (if enabled)
+ *
+ * Control modes:
  * - Adaptive Edging: Sensor-driven approach/deny cycles
  * - Forced Orgasm: Relentless stimulation through multiple climaxes
  * - Multi-Orgasm Training: Sequential orgasm facilitation
@@ -77,6 +83,11 @@ public:
     void setTENSEnabled(bool enabled);
     void setAntiEscapeEnabled(bool enabled);
 
+    // Heart rate sensor configuration
+    void setHeartRateSensor(HeartRateSensor* sensor);
+    void setHeartRateEnabled(bool enabled);
+    void setHeartRateWeight(double weight);  // Weight in arousal calculation (0.0-0.5)
+
     // Status getters
     ControlState getState() const { return m_state; }
     Mode getMode() const { return m_mode; }
@@ -86,6 +97,8 @@ public:
     int getOrgasmCount() const { return m_orgasmCount; }
     double getCurrentIntensity() const { return m_intensity; }
     double getCurrentFrequency() const { return m_frequency; }
+    int getCurrentHeartRate() const { return m_currentHeartRate; }
+    double getHeartRateContribution() const { return m_heartRateContribution; }
     QVector<double> getArousalHistory() const;
 
 Q_SIGNALS:
@@ -113,7 +126,12 @@ Q_SIGNALS:
     void tissueProtectionTriggered();
     void sessionTimeoutWarning();
     void tensFault(const QString& reason);
-    
+
+    // Heart rate signals
+    void heartRateUpdated(int bpm, double contribution);
+    void heartRateOrgasmSignature();  // HR pattern indicates orgasm
+    void heartRateSensorLost();
+
     // State signals
     void stateChanged(ControlState state);
     void modeChanged(Mode mode);
@@ -152,6 +170,7 @@ private:
     SensorInterface* m_sensorInterface;
     ClitoralOscillator* m_clitoralOscillator;
     TENSController* m_tensController;
+    HeartRateSensor* m_heartRateSensor;
 
     // Timers
     QTimer* m_updateTimer;
@@ -164,6 +183,7 @@ private:
     bool m_emergencyStop;
     bool m_tensEnabled;
     bool m_antiEscapeEnabled;
+    bool m_heartRateEnabled;
 
     // Arousal tracking
     double m_arousalLevel;
@@ -174,6 +194,12 @@ private:
     QVector<double> m_pressureHistory;
     QVector<double> m_arousalHistory;
     int m_historyIndex;
+
+    // Heart rate tracking
+    int m_currentHeartRate;
+    int m_baselineHeartRate;
+    double m_heartRateContribution;  // HR's contribution to arousal (0.0-1.0)
+    double m_heartRateWeight;        // Weight in arousal formula
 
     // Stimulation parameters
     double m_intensity;
@@ -203,12 +229,18 @@ private:
     static const int HISTORY_SIZE = 200;
     static const int VARIANCE_WINDOW_SAMPLES = 100;
 
-    // Arousal calculation weights
-    static constexpr double WEIGHT_DEVIATION = 0.35;
-    static constexpr double WEIGHT_VARIANCE = 0.25;
-    static constexpr double WEIGHT_CONTRACTION = 0.30;
+    // Arousal calculation weights (pressure-based, sum to ~0.70 when HR enabled)
+    static constexpr double WEIGHT_DEVIATION = 0.25;
+    static constexpr double WEIGHT_VARIANCE = 0.15;
+    static constexpr double WEIGHT_CONTRACTION = 0.20;
     static constexpr double WEIGHT_ROC = 0.10;
     static constexpr double AROUSAL_ALPHA = 0.15;
+
+    // Heart rate arousal weights (default 0.30 when enabled)
+    static constexpr double DEFAULT_HR_WEIGHT = 0.30;
+    static constexpr double WEIGHT_HR_ZONE = 0.50;       // HR zone contribution
+    static constexpr double WEIGHT_HR_ACCEL = 0.25;      // HR acceleration contribution
+    static constexpr double WEIGHT_HRV = 0.25;           // HRV (inverted) contribution
 
     // Normalization maxima
     static constexpr double MAX_DEVIATION = 0.5;

@@ -3,6 +3,7 @@
 #include "../hardware/SensorInterface.h"
 #include "../hardware/ClitoralOscillator.h"
 #include "../hardware/TENSController.h"
+#include "../hardware/HeartRateSensor.h"
 #include <QDebug>
 #include <QThread>
 #include <algorithm>
@@ -14,6 +15,7 @@ OrgasmControlAlgorithm::OrgasmControlAlgorithm(HardwareManager* hardware, QObjec
     , m_sensorInterface(hardware ? hardware->getSensorInterface() : nullptr)
     , m_clitoralOscillator(nullptr)
     , m_tensController(hardware ? hardware->getTENSController() : nullptr)
+    , m_heartRateSensor(nullptr)
     , m_updateTimer(new QTimer(this))
     , m_safetyTimer(new QTimer(this))
     , m_state(ControlState::STOPPED)
@@ -21,12 +23,17 @@ OrgasmControlAlgorithm::OrgasmControlAlgorithm(HardwareManager* hardware, QObjec
     , m_emergencyStop(false)
     , m_tensEnabled(true)
     , m_antiEscapeEnabled(true)
+    , m_heartRateEnabled(false)
     , m_arousalLevel(0.0)
     , m_smoothedArousal(0.0)
     , m_arousalState(ArousalState::BASELINE)
     , m_baselineClitoral(0.0)
     , m_baselineAVL(0.0)
     , m_historyIndex(0)
+    , m_currentHeartRate(0)
+    , m_baselineHeartRate(70)
+    , m_heartRateContribution(0.0)
+    , m_heartRateWeight(DEFAULT_HR_WEIGHT)
     , m_intensity(INITIAL_INTENSITY)
     , m_frequency(INITIAL_FREQUENCY)
     , m_tensAmplitude(0.0)
@@ -221,6 +228,57 @@ void OrgasmControlAlgorithm::setAntiEscapeEnabled(bool enabled)
     m_antiEscapeEnabled = enabled;
 }
 
+void OrgasmControlAlgorithm::setHeartRateSensor(HeartRateSensor* sensor)
+{
+    QMutexLocker locker(&m_mutex);
+    m_heartRateSensor = sensor;
+
+    if (sensor) {
+        m_heartRateEnabled = true;
+
+        // Connect to heart rate signals
+        connect(sensor, &HeartRateSensor::heartRateUpdated,
+                this, [this](int bpm) {
+                    m_currentHeartRate = bpm;
+                });
+
+        connect(sensor, &HeartRateSensor::signalLost,
+                this, [this]() {
+                    emit heartRateSensorLost();
+                    // Reduce HR weight when signal is lost
+                    m_heartRateWeight = 0.0;
+                });
+
+        connect(sensor, &HeartRateSensor::signalRecovered,
+                this, [this]() {
+                    m_heartRateWeight = DEFAULT_HR_WEIGHT;
+                });
+
+        qDebug() << "Heart rate sensor connected to OrgasmControlAlgorithm";
+    } else {
+        m_heartRateEnabled = false;
+        m_heartRateWeight = 0.0;
+    }
+}
+
+void OrgasmControlAlgorithm::setHeartRateEnabled(bool enabled)
+{
+    QMutexLocker locker(&m_mutex);
+    m_heartRateEnabled = enabled && (m_heartRateSensor != nullptr);
+
+    if (!m_heartRateEnabled) {
+        m_heartRateWeight = 0.0;
+    } else {
+        m_heartRateWeight = DEFAULT_HR_WEIGHT;
+    }
+}
+
+void OrgasmControlAlgorithm::setHeartRateWeight(double weight)
+{
+    QMutexLocker locker(&m_mutex);
+    m_heartRateWeight = clamp(weight, 0.0, 0.5);  // Max 50% weight for HR
+}
+
 QVector<double> OrgasmControlAlgorithm::getArousalHistory() const
 {
     QMutexLocker locker(&m_mutex);
@@ -351,18 +409,54 @@ double OrgasmControlAlgorithm::calculateArousalLevel()
         sealIntegrity = clamp(currentAVL / m_baselineAVL, 0.0, 1.0);
     }
 
-    // Normalize features
+    // Normalize pressure features
     double normDeviation = clamp(qAbs(baselineDeviation) / MAX_DEVIATION, 0.0, 1.0);
     double normVariance = clamp(pressureVariance / MAX_VARIANCE, 0.0, 1.0);
     double normContraction = clamp(contractionPower / MAX_CONTRACTION_POWER, 0.0, 1.0);
     double normROC = clamp(qAbs(rateOfChange) / MAX_RATE_OF_CHANGE, 0.0, 1.0);
 
-    // Weighted combination
-    double arousal =
+    // Calculate pressure-based arousal component
+    double pressureArousal =
         WEIGHT_DEVIATION * normDeviation +
         WEIGHT_VARIANCE * normVariance +
         WEIGHT_CONTRACTION * normContraction +
         WEIGHT_ROC * normROC;
+
+    // Calculate heart rate arousal component (if enabled)
+    double heartRateArousal = 0.0;
+    m_heartRateContribution = 0.0;
+
+    if (m_heartRateEnabled && m_heartRateSensor && m_heartRateSensor->hasPulseSignal()) {
+        // Get heart rate features
+        double hrNormalized = m_heartRateSensor->getHeartRateNormalized();
+        double hrvNormalized = m_heartRateSensor->getHRVNormalized();
+        double hrAcceleration = m_heartRateSensor->getHeartRateAcceleration();
+
+        // Normalize acceleration (typical max is 10 BPM/sec during orgasm)
+        double normAccel = clamp(qAbs(hrAcceleration) / 10.0, 0.0, 1.0);
+
+        // Weighted combination of HR features
+        heartRateArousal =
+            WEIGHT_HR_ZONE * hrNormalized +
+            WEIGHT_HRV * hrvNormalized +
+            WEIGHT_HR_ACCEL * normAccel;
+
+        m_heartRateContribution = heartRateArousal;
+        m_currentHeartRate = m_heartRateSensor->getCurrentBPM();
+
+        // Check for orgasm signature in heart rate
+        if (m_heartRateSensor->isOrgasmSignature()) {
+            emit heartRateOrgasmSignature();
+        }
+
+        emit heartRateUpdated(m_currentHeartRate, m_heartRateContribution);
+    }
+
+    // Combine pressure and heart rate components
+    // Adjust weights dynamically based on whether HR is available
+    double effectivePressureWeight = 1.0 - m_heartRateWeight;
+    double arousal = effectivePressureWeight * pressureArousal +
+                     m_heartRateWeight * heartRateArousal;
 
     // Apply seal integrity penalty
     arousal *= sealIntegrity;

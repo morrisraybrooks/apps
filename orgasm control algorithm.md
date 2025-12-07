@@ -32,71 +32,107 @@ During female sexual arousal, clitoral engorgement causes measurable changes:
 | Orgasm | Peak + rhythmic contractions | Large amplitude pressure waves (0.8-1.2 Hz) |
 | Resolution | Gradual decrease | Slow pressure normalization |
 
-### 2.2 Sensor-Based Arousal Indicators
+### 2.2 Heart Rate as Arousal Indicator
+
+Heart rate provides a reliable, non-invasive physiological marker of sexual arousal:
+
+| Arousal Stage | Heart Rate (BPM) | HRV (RMSSD) | Physiological Basis |
+|---------------|------------------|-------------|---------------------|
+| Baseline | 60-80 | 50-100 ms | Resting parasympathetic dominance |
+| Early Arousal | 80-100 | 40-60 ms | Sympathetic activation begins |
+| Plateau | 100-130 | 30-50 ms | Sustained sympathetic tone |
+| Pre-Orgasm | 130-160 | 20-35 ms | Peak sympathetic, reduced variability |
+| Orgasm | 150-180+ | < 25 ms | Autonomic surge, rhythmic contractions |
+| Resolution | 100→70 | 40-80 ms | Parasympathetic recovery |
+
+**Heart Rate Variability (HRV)**: Decreases during arousal as sympathetic nervous system dominates. Low HRV + high HR = strong arousal indicator.
+
+### 2.3 Sensor-Based Arousal Indicators
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                     AROUSAL DETECTION SIGNAL FLOW                           │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│   ┌───────────────┐      ┌───────────────┐      ┌───────────────┐          │
-│   │ AVL Pressure  │      │ Clitoral      │      │ Tank          │          │
-│   │ Sensor (CH0)  │      │ Sensor (CH2)  │      │ Sensor (CH1)  │          │
-│   └───────┬───────┘      └───────┬───────┘      └───────┬───────┘          │
-│           │                      │                      │                   │
-│           ▼                      ▼                      ▼                   │
-│   ┌───────────────┐      ┌───────────────┐      ┌───────────────┐          │
-│   │ Low-Pass      │      │ Bandpass      │      │ Reference     │          │
-│   │ Filter        │      │ 0.5-3 Hz      │      │ (Seal Check)  │          │
-│   │ (α = 0.3)     │      │ (Contraction) │      │               │          │
-│   └───────┬───────┘      └───────┬───────┘      └───────┬───────┘          │
-│           │                      │                      │                   │
-│           ▼                      ▼                      ▼                   │
-│   ┌─────────────────────────────────────────────────────────────┐          │
-│   │              AROUSAL ESTIMATOR                              │          │
-│   │                                                             │          │
-│   │   Features:                                                 │          │
-│   │   • Mean clitoral pressure deviation from baseline         │          │
-│   │   • Pressure variance (10-second window)                   │          │
-│   │   • Contraction frequency (0.8-1.2 Hz band power)          │          │
-│   │   • Rate of pressure change (dP/dt)                        │          │
-│   │   • Seal integrity coefficient                             │          │
-│   │                                                             │          │
-│   └─────────────────────────┬───────────────────────────────────┘          │
-│                             │                                               │
-│                             ▼                                               │
-│                   ┌───────────────────┐                                    │
-│                   │  Arousal Level    │                                    │
-│                   │  (0.0 - 1.0)      │                                    │
-│                   └───────────────────┘                                    │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                       MULTI-SENSOR AROUSAL DETECTION                                │
+├─────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                      │
+│   PRESSURE SENSORS                              HEART RATE SENSOR                   │
+│   ┌───────────┐ ┌───────────┐ ┌───────────┐    ┌─────────────────┐                 │
+│   │ AVL (CH0) │ │Clitoral   │ │ Tank (CH1)│    │ Pulse Sensor    │                 │
+│   │ Outer seal│ │ (CH2)     │ │ Reference │    │ (Analog/MAX30102)│                 │
+│   └─────┬─────┘ └─────┬─────┘ └─────┬─────┘    └────────┬────────┘                 │
+│         │             │             │                    │                          │
+│         ▼             ▼             ▼                    ▼                          │
+│   ┌───────────┐ ┌───────────┐ ┌───────────┐    ┌─────────────────┐                 │
+│   │ Low-Pass  │ │ Bandpass  │ │ Seal      │    │ Peak Detection  │                 │
+│   │ Filter    │ │ 0.5-3 Hz  │ │ Check     │    │ BPM Calculation │                 │
+│   └─────┬─────┘ └─────┬─────┘ └─────┬─────┘    └────────┬────────┘                 │
+│         │             │             │                    │                          │
+│         ▼             ▼             ▼                    ▼                          │
+│   ┌────────────────────────────────────────────────────────────────────────────┐   │
+│   │                         AROUSAL ESTIMATOR                                   │   │
+│   │                                                                             │   │
+│   │   Pressure Features (70%):              Heart Rate Features (30%):         │   │
+│   │   • Baseline deviation     (25%)        • HR Zone (50% of HR)              │   │
+│   │   • Pressure variance      (15%)        • HRV inverted (25% of HR)         │   │
+│   │   • Contraction power      (20%)        • HR acceleration (25% of HR)      │   │
+│   │   • Rate of change         (10%)                                           │   │
+│   │   × Seal integrity                      Orgasm signature detection:        │   │
+│   │                                         HR > 150 + HRV < 30 + sustained    │   │
+│   │                                                                             │   │
+│   └────────────────────────────────┬────────────────────────────────────────────┘   │
+│                                    │                                                 │
+│                                    ▼                                                 │
+│                          ┌───────────────────┐                                      │
+│                          │  Arousal Level    │                                      │
+│                          │  (0.0 - 1.0)      │                                      │
+│                          └───────────────────┘                                      │
+│                                                                                      │
+└─────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 2.3 Arousal Estimation Formula
+### 2.4 Arousal Estimation Formula (Multi-Sensor Fusion)
 
 ```cpp
-// Weighted arousal estimation
+// Multi-sensor weighted arousal estimation
 double calculateArousalLevel() {
-    // Feature extraction
+    // === PRESSURE FEATURES ===
     double baselineDeviation = (m_currentClitoralPressure - m_baselineClitoral) / m_baselineClitoral;
     double pressureVariance = calculateVariance(m_pressureHistory, VARIANCE_WINDOW_SAMPLES);
     double contractionPower = calculateBandPower(m_pressureHistory, 0.8, 1.2);  // Hz
     double rateOfChange = calculateDerivative(m_pressureHistory);
     double sealIntegrity = m_currentAVLPressure / m_targetAVLPressure;
 
-    // Normalize features to 0.0-1.0 range
+    // Normalize pressure features to 0.0-1.0 range
     double normDeviation = clamp(baselineDeviation / MAX_DEVIATION, 0.0, 1.0);
     double normVariance = clamp(pressureVariance / MAX_VARIANCE, 0.0, 1.0);
     double normContraction = clamp(contractionPower / MAX_CONTRACTION_POWER, 0.0, 1.0);
     double normROC = clamp(abs(rateOfChange) / MAX_RATE_OF_CHANGE, 0.0, 1.0);
 
-    // Weighted combination (tuned empirically)
-    double arousal =
-        WEIGHT_DEVIATION * normDeviation +      // 0.35
-        WEIGHT_VARIANCE * normVariance +        // 0.25
-        WEIGHT_CONTRACTION * normContraction +  // 0.30
+    // Pressure-based arousal (70% when HR enabled)
+    double pressureArousal =
+        WEIGHT_DEVIATION * normDeviation +      // 0.25
+        WEIGHT_VARIANCE * normVariance +        // 0.15
+        WEIGHT_CONTRACTION * normContraction +  // 0.20
         WEIGHT_ROC * normROC;                   // 0.10
+
+    // === HEART RATE FEATURES (if enabled) ===
+    double heartRateArousal = 0.0;
+    if (m_heartRateEnabled && m_heartRateSensor->hasPulseSignal()) {
+        double hrNormalized = m_heartRateSensor->getHeartRateNormalized();   // 0-1 based on zone
+        double hrvNormalized = m_heartRateSensor->getHRVNormalized();        // Inverted: low HRV = high arousal
+        double hrAcceleration = m_heartRateSensor->getHeartRateAcceleration();
+        double normAccel = clamp(abs(hrAcceleration) / 10.0, 0.0, 1.0);      // Max 10 BPM/sec
+
+        // Heart rate arousal component (30% of total)
+        heartRateArousal =
+            WEIGHT_HR_ZONE * hrNormalized +     // 0.50 of HR weight
+            WEIGHT_HRV * hrvNormalized +        // 0.25 of HR weight
+            WEIGHT_HR_ACCEL * normAccel;        // 0.25 of HR weight
+    }
+
+    // === SENSOR FUSION ===
+    double effectivePressureWeight = 1.0 - m_heartRateWeight;  // 0.70 when HR enabled
+    double arousal = effectivePressureWeight * pressureArousal +
+                     m_heartRateWeight * heartRateArousal;     // 0.30 when HR enabled
 
     // Apply seal integrity penalty
     arousal *= sealIntegrity;
@@ -108,7 +144,7 @@ double calculateArousalLevel() {
 }
 ```
 
-### 2.4 Threshold Values
+### 2.5 Threshold Values
 
 | Parameter | Value | Description |
 |-----------|-------|-------------|
@@ -121,6 +157,9 @@ double calculateArousalLevel() {
 | `AROUSAL_ALPHA` | 0.15 | Smoothing factor |
 | `EDGE_THRESHOLD` | 0.85 | Pre-orgasm arousal level |
 | `ORGASM_THRESHOLD` | 0.95 | Orgasm detection threshold |
+| `DEFAULT_HR_WEIGHT` | 0.30 | Heart rate contribution to arousal |
+| `HR_ORGASM_BPM` | 150 | BPM threshold for orgasm signature |
+| `HR_ORGASM_HRV` | 30 ms | HRV threshold for orgasm signature |
 
 ### 2.5 Arousal State Machine
 

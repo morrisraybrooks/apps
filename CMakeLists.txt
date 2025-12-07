@@ -101,6 +101,7 @@ set(SOURCES
     src/hardware/MCP3008.cpp
     src/hardware/ClitoralOscillator.cpp
     src/hardware/TENSController.cpp
+    src/hardware/HeartRateSensor.cpp
     src/control/OrgasmControlAlgorithm.cpp
     src/gui/MainWindow.cpp
     src/gui/PressureMonitor.cpp
@@ -146,6 +147,7 @@ set(HEADERS
     src/hardware/MCP3008.h
     src/hardware/ClitoralOscillator.h
     src/hardware/TENSController.h
+    src/hardware/HeartRateSensor.h
     src/control/OrgasmControlAlgorithm.h
     src/gui/MainWindow.h
     src/gui/PressureMonitor.h
