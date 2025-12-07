@@ -44,37 +44,9 @@ The system was designed based on observation of actual physiological responses:
 
 ### Hardware Components
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    VACUUM SYSTEM DIAGRAM                        │
-│                                                                 │
-│   ┌─────────┐    ┌─────────┐    ┌─────────────────────────────┐│
-│   │ DC Pump │───►│ Tank    │───►│ Applied Vacuum Line (AVL)  ││
-│   │ (PWM)   │    │         │    │                             ││
-│   └─────────┘    └────┬────┘    └──────────────┬──────────────┘│
-│                       │                         │               │
-│                  [SOL3]│                    [SOL1]              │
-│                  Vent  │                    Vacuum              │
-│                       ▼                         ▼               │
-│                   ┌─────┐              ┌───────────────┐        │
-│                   │ ATM │              │  VACUUM CUP   │        │
-│                   └─────┘              │  (on body)    │        │
-│                                        └───────┬───────┘        │
-│                                            [SOL2]               │
-│                                            Vent                 │
-│                                                ▼                │
-│                                            ┌─────┐              │
-│                                            │ ATM │              │
-│                                            └─────┘              │
-└─────────────────────────────────────────────────────────────────┘
-```
+The system is a **Dual-Chamber V-Contour System** that uses 5 solenoid valves for precise control over two independent vacuum zones.
 
-**Pump**: Creates vacuum in the tank (PWM controlled for variable speed)
-**Tank**: Stores vacuum for rapid pressure changes
-**SOL1**: Controls vacuum flow to the cup (opens = suction applied)
-**SOL2**: Vents the cup to atmosphere (opens = pressure released)
-**SOL3**: Vents the tank (for safety/shutdown)
-**AVL (Applied Vacuum Line)**: The line going to the vacuum cup on the body
+For a detailed explanation of the hardware components, the dual-chamber architecture, and the complete 5-valve vacuum system diagram, please see **Part 2: Dual-Chamber V-Contour System Design** below.
 
 ### Pressure Sensing
 
@@ -274,16 +246,7 @@ Designed for 50-inch medical touch displays:
 | **Safety Monitoring** | 100Hz |
 | **GUI Update Rate** | 30 FPS |
 
-### GPIO Pin Assignments
 
-| Pin | Function |
-|-----|----------|
-| GPIO 17 | SOL1 (Vacuum to cup) |
-| GPIO 27 | SOL2 (Cup vent) |
-| GPIO 22 | SOL3 (Tank vent) |
-| GPIO 25 | Pump enable |
-| GPIO 18 | Pump PWM |
-| GPIO 21 | Emergency stop button |
 
 ---
 
