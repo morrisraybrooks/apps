@@ -265,7 +265,7 @@ Designed for 50-inch medical touch displays:
 |-----------|--------------|
 | **Platform** | Raspberry Pi 4 (8GB RAM) |
 | **Display** | 50-inch HDMI touch display |
-| **Framework** | Qt 5 |
+| **Framework** | Qt 5, C++17 |
 | **ADC** | MCP3008 (10-bit, 8-channel) |
 | **Pressure Sensors** | 2× MPX5010DP (0-75 mmHg) |
 | **Pump Control** | PWM via L293D driver |
@@ -792,7 +792,7 @@ New controls for dual-chamber operation:
 |---------------|-------|
 | **Platform** | Raspberry Pi 4 (8GB RAM) |
 | **Display** | 50-inch HDMI touch display |
-| **Framework** | Qt 5 |
+| **Framework** | Qt 5, C++17 |
 | **Vacuum Chambers** | 2 (Outer V-seal + Clitoral cylinder) |
 | **Solenoid Valves** | 5 (SOL1-SOL5) |
 | **Pressure Sensors** | 3 (Outer, Tank, Clitoral) |
