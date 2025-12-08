@@ -234,9 +234,9 @@ cd build && make docs
 - **Raspberry Pi 4 (8GB RAM)** - Main controller
 - **50-inch HDMI Display** - User interface display
 - **MCP3008 ADC** - 8-channel analog-to-digital converter
-- **3x MPX5010DP Pressure Sensors** - Differential pressure sensors (Outer, Tank, Clitoral)
+- **3x MPX5010DP Pressure Sensors** - Differential pressure sensors (AVL, Tank, Clitoral)
 - **5x Solenoid Valves** - Dual-chamber vacuum control and venting
-- **L293D Motor Driver** - Vacuum pump control
+- **3X L293D Motor Driver** - Vacuum pump control and solenoid valve control
 - **DC Vacuum Pump** - Main vacuum source
 
 ### Dual-Chamber Vacuum System Diagram
@@ -250,29 +250,28 @@ cd build && make docs
 │   └─────────┘    └────┬────┘                                                │
 │                       │                                                     │
 │              ┌────────┴────────┐                                            │
-│              │                 │                                            │
+│              ▲                 │                                            │
 │          [SOL3]            ┌───┴───┐                                        │
-│          Tank              │       │                                        │
-│          Vent          [SOL1]   [SOL4]                                      │
-│              ▼         Outer    Clitoral                                    │
-│          ┌─────┐           │       │                                        │
-│          │ ATM │           ▼       ▼                                        │
-│          └─────┘   ┌───────────────────────┐                                │
+│       Tank Vent            │       │                                        │
+│             │           [SOL1]   [SOL4]                                     │
+│          ┌─────┐         (AVL)  (Clitoral)                                  │
+│          │ ATM │           │       │                                        │
+│          └─────┘           ▼       ▼                                        │
+│                    ┌───────────────────────┐                                │
 │                    │     V-CONTOUR CUP     │                                │
 │                    │   OUTER V-CHAMBER   ◄─┼─── Sensor 1 (AVL)              │
-│                    │  ┌─────────────────┐  │                                │
-│                    │  │   ┌─────────┐   │  │                                │
-│                    │  │   │CLITORAL │◄──┼──┼─── Sensor 3 (Clitoral)         │
-│                    │  │   │CYLINDER │   │  │                                │
-│                    │  │   └┬───────┬┘   │  │       ┌─────┐                  │
-│                    │  │    │ OPEN  │    │  │   ┌───│ ATM │                  │
-│                    │  │    │CHANNEL│    │  │   │   └─────┘                  │
-│                    │  │    │       │    │  │ [SOL5]                         │
-│                    │  │    │       │    │  │ Clitoral                       │
-│                    │  │    │       │    │  │ Vent                           │
-│                    │  │    │       │    │  │   │                            │
-│                    │  └────┤       ├────┘◄─┼───┘                            │
-│                    │       │       │       │                                │
+│                    │      ┌─────────┐◄─────┼─── Sensor 3 (Clitoral)         │
+│                    │      │CLITORAL │      │        ┌─────┐                 │
+│                    │      │CYLINDER │◄─────┼────────│ ATM │  [SOL5]         │
+│                    │      └┬───────┬┘      │        └─────┘  Clitoral       │
+│                    │       │ OPEN  │       │                  Vent          │
+│                    │       │CHANNEL│       │                                │
+│                    │       │ DRAIN │       │                                │
+│                    │       │   │   │       │                                │
+│                    │       │   │   │       │                                │
+│                    │       │   │   │       │                                │
+│                    │       │   │   │       │                                │
+│                    │       │   ▼   │       │                                │
 │                    └───────┘       └───────┘                                │
 │                        ▲                                                    │
 │                        │   ┌─────┐                                          │
@@ -285,10 +284,10 @@ cd build && make docs
 ### GPIO Pin Assignments (Dual-Chamber)
 ```
 GPIO 17 - SOL1 (Outer V-seal vacuum)
-GPIO 27 - SOL2 (Outer V-seal vent)
+GPIO 27 - SOL2 (Outer V-seal vent - safety)
 GPIO 22 - SOL3 (Tank vent - safety)
 GPIO 23 - SOL4 (Clitoral cylinder vacuum)      ← NEW
-GPIO 24 - SOL5 (Clitoral cylinder vent)        ← NEW
+GPIO 24 - SOL5 (Clitoral cylinder vent - safety)        ← NEW
 GPIO 25 - Pump enable (L293D)
 GPIO 18 - Pump PWM control
 GPIO 21 - Emergency stop button (optional)
