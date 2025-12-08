@@ -239,8 +239,6 @@ cd build && make docs
 - **L293D Motor Driver** - Vacuum pump control
 - **DC Vacuum Pump** - Main vacuum source
 
-### Dual-Chamber Vacuum System Diagram
-```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                    DUAL-CHAMBER VACUUM SYSTEM                               │
 │                                                                             │
@@ -250,37 +248,35 @@ cd build && make docs
 │   └─────────┘    └────┬────┘                                                │
 │                       │                                                     │
 │              ┌────────┴────────┐                                            │
-│              │                 │                                            │
+│              ▲                 │                                            │
 │          [SOL3]            ┌───┴───┐                                        │
-│          Tank              │       │                                        │
-│          Vent          [SOL1]   [SOL4]                                      │
-│              ▼         Outer    Clitoral                                    │
-│          ┌─────┐           │       │                                        │
-│          │ ATM │           ▼       ▼                                        │
-│          └─────┘   ┌───────────────────────┐                                │
+│       Tank Vent            │       │                                        │
+│             │           [SOL1]   [SOL4]                                     │
+│          ┌─────┐         (AVL)  (Clitoral)                                  │
+│          │ ATM │           │       │                                        │
+│          └─────┘           ▼       ▼                                        │
+│                    ┌───────────────────────┐                                │
 │                    │     V-CONTOUR CUP     │                                │
 │                    │   OUTER V-CHAMBER   ◄─┼─── Sensor 1 (AVL)              │
-│                    │  ┌─────────────────┐  │                                │
-│                    │  │   ┌─────────┐   │  │                                │
-│                    │  │   │CLITORAL │◄──┼──┼─── Sensor 3 (Clitoral)         │
-│                    │  │   │CYLINDER │   │  │                                │
-│                    │  │   └┬───────┬┘   │  │       ┌─────┐                  │
-│                    │  │    │ OPEN  │    │  │   ┌───│ ATM │                  │
-│                    │  │    │CHANNEL│    │  │   │   └─────┘                  │
-│                    │  │    │       │    │  │ [SOL5]                         │
-│                    │  │    │       │    │  │ Clitoral                       │
-│                    │  │    │       │    │  │ Vent                           │
-│                    │  │    │       │    │  │   │                            │
-│                    │  └────┤       ├────┘◄─┼───┘                            │
-│                    │       │       │       │                                │
+│                    │      ┌─────────┐◄─────┼─── Sensor 3 (Clitoral)         │
+│                    │      │CLITORAL │      │        ┌─────┐                 │
+│                    │      │CYLINDER │◄─────┼────────│ ATM │  [SOL5]         │
+│                    │      └┬───────┬┘      │        └─────┘  Clitoral       │
+│                    │       │ OPEN  │       │                  Vent          │
+│                    │       │CHANNEL│       │                                │
+│                    │       │ DRAIN │       │                                │
+│                    │       │   │   │       │                                │
+│                    │       │   │   │       │                                │
+│                    │       │   │   │       │                                │
+│                    │       │   │   │       │                                │
+│                    │       │   ▼   │       │                                │
 │                    └───────┘       └───────┘                                │
-│                        ▲                                                    │
-│                        │   ┌─────┐                                          │
-│                    [SOL2]──│ ATM │                                          │
-│                    Outer   └─────┘                                          │
-│                    Vent                                                     │
+│                                        ▲                                    │
+│                                        │   ┌─────┐                          │
+│                                    [SOL2]──│ ATM │                          │
+│                                    Outer   └─────┘                          │
+│                                    Vent                                     │
 └─────────────────────────────────────────────────────────────────────────────┘
-```
 
 ### GPIO Pin Assignments (Dual-Chamber)
 ```

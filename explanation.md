@@ -294,7 +294,7 @@ The V-Contour is a purpose-built vacuum interface engineered for the female vulv
 │                  ╱     (Labia Seal Zone)    ╲                     │
 │                 ╱                            ╲                    │
 │                │     ┌─────────────────┐      │                   │
-│                │     │  OPEN CHANNEL   │      │                   │
+│                │     │                 │      │                   │
 │                │     │  CLITORAL       │      │                   │
 │                │     │  CYLINDER       │      │                   │
 │                │     │  (Air Pulse     │      │                   │
@@ -308,10 +308,10 @@ The V-Contour is a purpose-built vacuum interface engineered for the female vulv
 │                │       │  Access)    │        │                   │
 │                │       │             │        │                   │
 │                │       │             │        │                   │
-│                 ╲     ╱               ╲      ╱                    │
-│                  ╲   ╱                 ╲    ╱                     │
-│                   ╲ ╱                   ╲  ╱                      │
-│                    ──                    ──                       │
+│                │       │             │        │                   │
+│                │       │             │        │                   │
+│                │       │             │        │                   │
+│                └───────┘             └────────┘                   │
 │                                                                   │
 │                                                                   │
 │  Legend:                                                          │
