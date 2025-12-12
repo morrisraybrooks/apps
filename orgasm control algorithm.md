@@ -34,18 +34,25 @@ During female sexual arousal, clitoral engorgement causes measurable changes:
 
 ### 2.2 Heart Rate as Arousal Indicator
 
-Heart rate provides a reliable, non-invasive physiological marker of sexual arousal:
+Heart rate provides a non-invasive physiological marker of sexual arousal. However, **actual measured values are much more modest than commonly depicted**.
+
+**Scientific Evidence** (Tan Xue-Rui et al., 2008 - Blood Press Monit):
+- Female baseline: 71.44 ± 5.68 BPM
+- Female peak at orgasm: 90.19 ± 10.38 BPM
+- This represents only a ~27% increase, not 100%+
 
 | Arousal Stage | Heart Rate (BPM) | HRV (RMSSD) | Physiological Basis |
 |---------------|------------------|-------------|---------------------|
-| Baseline | 60-80 | 50-100 ms | Resting parasympathetic dominance |
-| Early Arousal | 80-100 | 40-60 ms | Sympathetic activation begins |
-| Plateau | 100-130 | 30-50 ms | Sustained sympathetic tone |
-| Pre-Orgasm | 130-160 | 20-35 ms | Peak sympathetic, reduced variability |
-| Orgasm | 150-180+ | < 25 ms | Autonomic surge, rhythmic contractions |
-| Resolution | 100→70 | 40-80 ms | Parasympathetic recovery |
+| Baseline | 70-75 | 50-100 ms | Resting parasympathetic dominance |
+| Early Arousal | 75-80 | 40-60 ms | Sympathetic activation begins |
+| Plateau | 80-85 | 30-50 ms | Sustained sympathetic tone |
+| Pre-Orgasm | 85-90 | 20-35 ms | Peak sympathetic, reduced variability |
+| Orgasm | 90-100 | < 25 ms | Autonomic surge, rhythmic contractions |
+| Resolution | 85→72 | 40-80 ms | Parasympathetic recovery (10-20 min) |
 
-**Heart Rate Variability (HRV)**: Decreases during arousal as sympathetic nervous system dominates. Low HRV + high HR = strong arousal indicator.
+**Note**: Claims of 150-180+ BPM during female orgasm appear to be exaggerated. Scientific ambulatory monitoring shows modest increases (~20 BPM above baseline).
+
+**Heart Rate Variability (HRV)**: Decreases during arousal as sympathetic nervous system dominates. Low HRV + elevated HR (relative to baseline) = arousal indicator.
 
 ### 2.3 Sensor-Based Arousal Indicators
 
@@ -76,7 +83,7 @@ Heart rate provides a reliable, non-invasive physiological marker of sexual arou
 │   │   • Contraction power      (20%)        • HR acceleration (25% of HR)      │   │
 │   │   • Rate of change         (10%)                                           │   │
 │   │   × Seal integrity                      Orgasm signature detection:        │   │
-│   │                                         HR > 150 + HRV < 30 + sustained    │   │
+│   │                                         HR > 85 + HRV < 30 + sustained     │   │
 │   │                                                                             │   │
 │   └────────────────────────────────┬────────────────────────────────────────────┘   │
 │                                    │                                                 │
@@ -99,7 +106,7 @@ double calculateArousalLevel() {
     double pressureVariance = calculateVariance(m_pressureHistory, VARIANCE_WINDOW_SAMPLES);
     double contractionPower = calculateBandPower(m_pressureHistory, 0.8, 1.2);  // Hz
     double rateOfChange = calculateDerivative(m_pressureHistory);
-    double sealIntegrity = m_currentAVLPressure / m_targetAVLPressure;
+    double sealIntegrity = clamp(m_currentAVLPressure / m_baselineAVL, 0.0, 1.0);
 
     // Normalize pressure features to 0.0-1.0 range
     double normDeviation = clamp(baselineDeviation / MAX_DEVIATION, 0.0, 1.0);
@@ -149,7 +156,7 @@ double calculateArousalLevel() {
 | Parameter | Value | Description |
 |-----------|-------|-------------|
 | `BASELINE_SAMPLE_TIME` | 10 seconds | Initial calibration period |
-| `VARIANCE_WINDOW_SAMPLES` | 200 (10s @ 20Hz) | Sliding window for variance |
+| `VARIANCE_WINDOW_SAMPLES` | 100 (10s @ 10Hz) | Sliding window for variance |
 | `MAX_DEVIATION` | 0.5 (50%) | Max expected baseline deviation |
 | `MAX_VARIANCE` | 25.0 mmHg² | Max expected pressure variance |
 | `MAX_CONTRACTION_POWER` | 10.0 | Normalized 0.8-1.2 Hz band power |
@@ -158,7 +165,7 @@ double calculateArousalLevel() {
 | `EDGE_THRESHOLD` | 0.85 | Pre-orgasm arousal level |
 | `ORGASM_THRESHOLD` | 0.95 | Orgasm detection threshold |
 | `DEFAULT_HR_WEIGHT` | 0.30 | Heart rate contribution to arousal |
-| `HR_ORGASM_BPM` | 150 | BPM threshold for orgasm signature |
+| `HR_ORGASM_BPM` | 85 | BPM threshold for orgasm signature (scientific: ~90 BPM peak) |
 | `HR_ORGASM_HRV` | 30 ms | HRV threshold for orgasm signature |
 
 ### 2.5 Arousal State Machine
@@ -253,89 +260,31 @@ Unlike pre-programmed edging patterns, adaptive edging uses real-time arousal fe
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 3.2 Edging Pseudocode
+### 3.2 Edging State Machine Logic (in `onUpdateTick`)
 
-```cpp
-void OrgasmControlAlgorithm::runAdaptiveEdging(int targetCycles) {
-    // Phase 1: Baseline calibration
-    calibrateBaseline(BASELINE_DURATION_MS);
+The adaptive edging logic is implemented as a state machine within the `onUpdateTick()` method, which is called by a `QTimer` every 100ms. This avoids blocking the main thread.
 
-    // Phase 2-5: Edging cycles
-    int edgeCount = 0;
-    double baseIntensity = INITIAL_INTENSITY;  // 0.3 (30%)
-    double baseFrequency = INITIAL_FREQUENCY;  // 6.0 Hz
+**`case ControlState::BUILDING:`**
+- If arousal is below `EDGE_THRESHOLD`:
+  - Stimulation intensity and frequency are gradually increased.
+  - The hardware is actively stimulating.
+- If arousal reaches `EDGE_THRESHOLD`:
+  - An `edgeDetected` signal is emitted.
+  - Stimulation is stopped.
+  - The state transitions to `BACKING_OFF`.
 
-    while (edgeCount < targetCycles && !m_emergencyStop) {
-        // BUILD-UP PHASE
-        setState(BUILDING);
-        double intensity = baseIntensity;
-        double frequency = baseFrequency;
+**`case ControlState::BACKING_OFF:`**
+- If arousal is above `RECOVERY_THRESHOLD` or the minimum back-off time (`MIN_BACKOFF_MS`) has not passed:
+  - The system remains in this state with stimulation off, allowing arousal to decrease.
+- If arousal drops below `RECOVERY_THRESHOLD` and the minimum time has elapsed:
+  - The state transitions to `HOLDING`.
+  - A low-level "hold" stimulation is started.
 
-        while (m_arousalLevel < EDGE_THRESHOLD && !m_emergencyStop) {
-            // Apply current stimulation
-            m_hardware->setOuterChamberPressure(intensity * MAX_OUTER_PRESSURE);
-            m_clitoralOscillator->setFrequency(frequency);
-            m_clitoralOscillator->setAmplitude(intensity * MAX_CLITORAL_AMPLITUDE);
-
-            // Update arousal estimate
-            updateArousalLevel();
-
-            // Ramp up if not yet at edge
-            if (m_arousalLevel < EDGE_THRESHOLD * 0.9) {
-                intensity = qMin(intensity + RAMP_RATE, MAX_INTENSITY);
-                frequency = qMin(frequency + FREQ_RAMP_RATE, MAX_FREQUENCY);
-            }
-
-            // Emit progress
-            emit buildUpProgress(m_arousalLevel, EDGE_THRESHOLD);
-
-            QThread::msleep(UPDATE_INTERVAL_MS);
-        }
-
-        // EDGE DETECTED - BACK OFF
-        setState(BACKING_OFF);
-        emit edgeDetected(edgeCount + 1, intensity);
-
-        // Rapid stimulation reduction
-        m_clitoralOscillator->stop();
-        m_hardware->setOuterChamberPressure(BACKOFF_PRESSURE);  // 10%
-
-        // Wait for arousal to drop
-        QElapsedTimer backoffTimer;
-        backoffTimer.start();
-
-        while ((m_arousalLevel > RECOVERY_THRESHOLD ||
-                backoffTimer.elapsed() < MIN_BACKOFF_MS) &&
-               !m_emergencyStop) {
-            updateArousalLevel();
-            emit backOffProgress(m_arousalLevel, RECOVERY_THRESHOLD);
-            QThread::msleep(UPDATE_INTERVAL_MS);
-        }
-
-        // HOLD PHASE
-        setState(HOLDING);
-        m_hardware->setOuterChamberPressure(HOLD_PRESSURE);  // 20%
-        m_clitoralOscillator->setFrequency(HOLD_FREQUENCY);  // 5 Hz
-        m_clitoralOscillator->setAmplitude(HOLD_AMPLITUDE);  // Low
-        m_clitoralOscillator->start();
-
-        QThread::msleep(HOLD_DURATION_MS);
-
-        // Increment edge count and prepare for next cycle
-        edgeCount++;
-        emit edgeCycleCompleted(edgeCount, targetCycles);
-
-        // Escalate base intensity for next cycle (user builds tolerance)
-        baseIntensity = qMin(baseIntensity + ESCALATION_RATE, MAX_BASE_INTENSITY);
-        baseFrequency = qMin(baseFrequency + FREQ_ESCALATION_RATE, MAX_FREQUENCY);
-    }
-
-    // All cycles complete
-    if (!m_emergencyStop) {
-        emit edgingComplete(edgeCount);
-    }
-}
-```
+**`case ControlState::HOLDING:`**
+- The system waits for the `HOLD_DURATION_MS` to elapse with low-level stimulation.
+- After the hold duration:
+  - If the target number of edges has been met, the algorithm either stops (in Denial mode) or transitions to the `FORCING` state to allow a release.
+  - If more edges are needed, the base intensity is escalated, and the state transitions back to `BUILDING` for the next cycle.
 
 ### 3.3 Edging Parameters
 
@@ -520,7 +469,7 @@ void OrgasmControlAlgorithm::runForcedOrgasm(int targetOrgasms, int maxDurationM
 | `ANTI_ESCAPE_RATE` | 0.02/update | Intensity boost when arousal drops |
 | `ANTI_ESCAPE_FREQ_RATE` | 0.1 Hz/update | Frequency boost when escaping |
 | `THROUGH_ORGASM_BOOST` | 0.05 | Intensity increase during orgasm |
-| `ORGASM_DURATION_MS` | 15000 | Expected orgasm duration |
+| `ORGASM_DURATION_MS` | 20000 | Expected orgasm duration (scientific avg: 19.9-35 sec) |
 | `POST_ORGASM_PAUSE_MS` | 2000 | Brief adjustment after orgasm |
 | `POST_ORGASM_FREQ_BOOST` | 0.5 Hz | Frequency increase for next O |
 | `TENS_FORCED_FREQUENCY` | 25.0 Hz | TENS frequency during forced |
@@ -859,9 +808,9 @@ private:
     static const int VARIANCE_WINDOW_SAMPLES = 100; // 10 seconds
 
     // Arousal weights
-    static constexpr double WEIGHT_DEVIATION = 0.35;
-    static constexpr double WEIGHT_VARIANCE = 0.25;
-    static constexpr double WEIGHT_CONTRACTION = 0.30;
+    static constexpr double WEIGHT_DEVIATION = 0.25;
+    static constexpr double WEIGHT_VARIANCE = 0.15;
+    static constexpr double WEIGHT_CONTRACTION = 0.20;
     static constexpr double WEIGHT_ROC = 0.10;
     static constexpr double AROUSAL_ALPHA = 0.15;
 
@@ -894,7 +843,7 @@ private:
     static constexpr double ANTI_ESCAPE_FREQ_RATE = 0.1;
     static constexpr double THROUGH_ORGASM_BOOST = 0.05;
     static constexpr double TENS_FORCED_FREQUENCY = 25.0;
-    static constexpr int ORGASM_DURATION_MS = 15000;
+    static constexpr int ORGASM_DURATION_MS = 20000;  // Scientific avg: 19.9-35 sec
     static constexpr int POST_ORGASM_PAUSE_MS = 2000;
     static constexpr double POST_ORGASM_FREQ_BOOST = 0.5;
     static constexpr int COOLDOWN_DURATION_MS = 60000;

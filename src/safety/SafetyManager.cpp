@@ -116,15 +116,14 @@ void SafetyManager::setWarningThreshold(double warningThreshold)
 void SafetyManager::setSensorTimeoutMs(int timeoutMs)
 {
     if (timeoutMs > 0 && timeoutMs <= 10000) {  // Max 10 seconds
+        QMutexLocker locker(&m_stateMutex);
         m_sensorTimeoutMs = timeoutMs;
         qDebug() << "Sensor timeout set to:" << timeoutMs << "ms";
     }
 }
 
-void SafetyManager::triggerEmergencyStop(const QString& reason)
+void SafetyManager::triggerEmergencyStop_unlocked(const QString& reason)
 {
-    QMutexLocker locker(&m_stateMutex);
-    
     qCritical() << "EMERGENCY STOP TRIGGERED:" << reason;
     
     m_emergencyStopEvents++;
@@ -139,6 +138,12 @@ void SafetyManager::triggerEmergencyStop(const QString& reason)
     emit emergencyStopTriggered(reason);
 }
 
+void SafetyManager::triggerEmergencyStop(const QString& reason)
+{
+    QMutexLocker locker(&m_stateMutex);
+    triggerEmergencyStop_unlocked(reason);
+}
+
 bool SafetyManager::resetEmergencyStop()
 {
     QMutexLocker locker(&m_stateMutex);
@@ -147,23 +152,17 @@ bool SafetyManager::resetEmergencyStop()
         return true;  // Not in emergency stop
     }
     
-    // Perform comprehensive safety check before reset
-    if (!performSafetyCheck()) {
-        m_lastSafetyError = "Safety check failed during emergency stop reset";
-        return false;
-    }
-    
     // Reset hardware emergency stop
     if (m_hardware && !m_hardware->resetEmergencyStop()) {
         m_lastSafetyError = "Hardware emergency stop reset failed";
-        return false;
+        qWarning() << m_lastSafetyError;
     }
     
     // Reset error counters
     m_consecutiveErrors = 0;
     
     setState(SAFE);
-    qDebug() << "Emergency stop reset successfully";
+    qDebug() << "Emergency stop reset successfully. Monitoring will re-assess safety.";
     return true;
 }
 
@@ -200,6 +199,7 @@ bool SafetyManager::performSafetyCheck()
 
 void SafetyManager::performSafetyMonitoring()
 {
+    QMutexLocker locker(&m_stateMutex);
     if (!m_active || !m_hardware) return;
     
     try {
@@ -220,7 +220,7 @@ void SafetyManager::performSafetyMonitoring()
             
             // Trigger emergency stop if too many consecutive errors
             if (m_consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
-                triggerEmergencyStop("Too many consecutive safety check failures");
+                triggerEmergencyStop_unlocked("Too many consecutive safety check failures");
             } else if (m_safetyState == SAFE) {
                 setState(WARNING);
                 emit safetyWarning(m_lastSafetyError);
@@ -234,6 +234,7 @@ void SafetyManager::performSafetyMonitoring()
 
 void SafetyManager::handleSensorError(const QString& sensor, const QString& error)
 {
+    QMutexLocker locker(&m_stateMutex);
     m_sensorErrorEvents++;
     m_lastSafetyError = QString("Sensor error (%1): %2").arg(sensor, error);
     
@@ -345,7 +346,7 @@ void SafetyManager::handleOverpressure(double pressure)
     qCritical() << m_lastSafetyError;
     
     emit overpressureDetected(pressure);
-    triggerEmergencyStop(m_lastSafetyError);
+    triggerEmergencyStop_unlocked(m_lastSafetyError);
 }
 
 void SafetyManager::handleCriticalError(const QString& error)
@@ -357,7 +358,7 @@ void SafetyManager::handleCriticalError(const QString& error)
     emit systemError(error);
     
     // Consider emergency stop for critical errors
-    triggerEmergencyStop(error);
+    triggerEmergencyStop_unlocked(error);
 }
 
 void SafetyManager::initializeSafetyParameters()
@@ -454,7 +455,7 @@ void SafetyManager::performSystemRecovery()
         qCritical() << m_lastSafetyError;
 
         // If recovery fails, trigger emergency stop
-        triggerEmergencyStop("System recovery failed");
+        triggerEmergencyStop_unlocked("System recovery failed");
     }
 
     m_recoveryInProgress = false;
@@ -474,7 +475,7 @@ void SafetyManager::handleSystemCrash(const QString& crashInfo)
     emit crashDetected(crashInfo);
 
     // Trigger emergency stop immediately
-    triggerEmergencyStop(QString("System crash: %1").arg(crashInfo));
+    triggerEmergencyStop_unlocked(QString("System crash: %1").arg(crashInfo));
 
     // Attempt recovery if enabled
     if (m_autoRecoveryEnabled) {

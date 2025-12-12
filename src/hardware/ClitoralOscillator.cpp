@@ -93,6 +93,26 @@ void ClitoralOscillator::stop()
     emit oscillationStopped();
 }
 
+void ClitoralOscillator::emergencyStop()
+{
+    QMutexLocker locker(&m_mutex);
+
+    qWarning() << "ClitoralOscillator EMERGENCY STOP";
+
+    // Immediately stop the timer
+    m_oscillationTimer->stop();
+    m_running = false;
+    m_currentPhase = Phase::IDLE;
+
+    // Safety: Immediately vent the clitoral cylinder to release all pressure
+    if (m_hardware) {
+        m_hardware->setSOL4(false);  // Close vacuum source
+        m_hardware->setSOL5(true);   // Open vent to atmosphere
+    }
+
+    emit oscillationStopped();
+}
+
 void ClitoralOscillator::setFrequency(double frequencyHz)
 {
     QMutexLocker locker(&m_mutex);

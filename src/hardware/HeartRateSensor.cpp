@@ -212,24 +212,34 @@ bool HeartRateSensor::isOrgasmSignature() const
 {
     QMutexLocker locker(&m_mutex);
 
-    // Orgasm signature:
-    // 1. Heart rate > 150 BPM
-    // 2. HRV < 30ms (very low variability)
+    // Orgasm signature based on scientific literature (Tan Xue-Rui et al., 2008):
+    // Female peak HR at orgasm: 90.19 ± 10.38 BPM (NOT 150+ BPM as sometimes claimed)
+    //
+    // Detection criteria:
+    // 1. Heart rate >= 85 BPM (approaching female orgasm range)
+    // 2. HRV < 30ms (very low variability - sympathetic dominance)
     // 3. Sustained for at least 5 seconds
+    // 4. HR significantly above baseline (>15 BPM increase)
 
-    if (m_currentBPM < 150) return false;
+    // Check if HR is in orgasm range (85+ BPM for females)
+    if (m_currentBPM < ZONE_HIGH_BPM) return false;
+
+    // Check if significantly above resting baseline
+    if (m_currentBPM < m_restingBPM + 15) return false;
+
+    // HRV must be low (sympathetic nervous system active)
     if (m_currentHRV > 30.0) return false;
 
-    // Check if sustained
+    // Check if sustained for at least 4 of last 5 seconds
     int highHRCount = 0;
     for (int i = 0; i < 5; ++i) {
         int idx = (m_historyIndex - i + BPM_HISTORY_SIZE) % BPM_HISTORY_SIZE;
-        if (m_bpmHistory[idx] >= 150) {
+        if (m_bpmHistory[idx] >= ZONE_HIGH_BPM && m_bpmHistory[idx] >= m_restingBPM + 12) {
             highHRCount++;
         }
     }
 
-    return highHRCount >= 4;  // At least 4 of last 5 readings
+    return highHRCount >= 4;  // At least 4 of last 5 readings meet criteria
 }
 
 QVector<int> HeartRateSensor::getBPMHistory() const
@@ -286,7 +296,9 @@ void HeartRateSensor::setRestingBPM(int bpm)
 void HeartRateSensor::setMaxBPM(int bpm)
 {
     QMutexLocker locker(&m_mutex);
-    m_maxBPM = qBound(150, bpm, MAX_VALID_BPM);
+    // Allow lower max BPM to reflect realistic female sexual response
+    // Scientific literature shows peak female orgasm HR of ~90-100 BPM
+    m_maxBPM = qBound(90, bpm, MAX_VALID_BPM);
 }
 
 void HeartRateSensor::setFilteringEnabled(bool enabled)

@@ -13,20 +13,25 @@ class MCP3008;
 
 /**
  * @brief Heart Rate Sensor Interface for arousal detection
- * 
+ *
  * Supports multiple sensor types:
  * - Pulse oximeter (MAX30102) via I2C
  * - Analog pulse sensor via MCP3008 ADC
  * - Polar H10 chest strap via Bluetooth (external)
  * - Serial protocol sensors
- * 
- * Heart rate is a key physiological indicator of arousal:
- * - Resting: 60-80 BPM
- * - Early arousal: 80-100 BPM
- * - Plateau: 100-130 BPM  
- * - Pre-orgasm: 130-160 BPM
- * - Orgasm: 150-180+ BPM with HRV decrease
- * 
+ *
+ * Heart rate is a physiological indicator of arousal. Scientific research
+ * (Tan Xue-Rui et al., 2008) shows actual measured values during sexual activity:
+ * - Resting: 70-75 BPM (female baseline)
+ * - Early arousal: 75-80 BPM
+ * - Plateau: 80-85 BPM
+ * - Pre-orgasm: 85-90 BPM
+ * - Orgasm: 90-100 BPM (peak ~90 BPM, not 150-180 as sometimes claimed)
+ * - Recovery: Returns to baseline within 10-20 minutes
+ *
+ * Note: HR increase during female orgasm is modest (~27% above baseline),
+ * not the dramatic 150+ BPM sometimes depicted in fiction.
+ *
  * Also calculates Heart Rate Variability (HRV) which decreases during orgasm.
  */
 class HeartRateSensor : public QObject
@@ -44,13 +49,14 @@ public:
     };
     Q_ENUM(SensorType)
 
-    // Heart rate zones for arousal mapping
+    // Heart rate zones for arousal mapping (based on scientific literature)
+    // Female HR during sexual activity peaks at ~90-100 BPM (Tan Xue-Rui et al., 2008)
     enum class HeartRateZone {
-        RESTING,           // < 80 BPM
-        ELEVATED,          // 80-100 BPM
-        MODERATE,          // 100-130 BPM
-        HIGH,              // 130-160 BPM
-        PEAK               // > 160 BPM
+        RESTING,           // < 75 BPM (baseline)
+        ELEVATED,          // 75-80 BPM (early arousal)
+        MODERATE,          // 80-85 BPM (plateau)
+        HIGH,              // 85-95 BPM (pre-orgasm to orgasm)
+        PEAK               // > 95 BPM (peak orgasm - rare)
     };
     Q_ENUM(HeartRateZone)
 
@@ -173,14 +179,15 @@ private:
     static const int SIGNAL_HISTORY_SIZE = 200;     // 2 seconds at 100 Hz
     static const int MIN_VALID_BPM = 40;
     static const int MAX_VALID_BPM = 220;
-    static const int DEFAULT_RESTING_BPM = 70;
-    static const int DEFAULT_MAX_BPM = 180;
+    static const int DEFAULT_RESTING_BPM = 72;   // Female baseline (scientific avg ~71 BPM)
+    static const int DEFAULT_MAX_BPM = 100;      // Realistic female orgasm peak (science: ~90 BPM)
 
-    // Zone thresholds
-    static const int ZONE_ELEVATED_BPM = 80;
-    static const int ZONE_MODERATE_BPM = 100;
-    static const int ZONE_HIGH_BPM = 130;
-    static const int ZONE_PEAK_BPM = 160;
+    // Zone thresholds (based on scientific measurements, not fiction)
+    // Tan Xue-Rui et al., 2008: female peak HR at orgasm = 90.19 ± 10.38 BPM
+    static const int ZONE_ELEVATED_BPM = 75;     // Early arousal begins
+    static const int ZONE_MODERATE_BPM = 80;     // Plateau phase
+    static const int ZONE_HIGH_BPM = 85;         // Pre-orgasm / orgasm
+    static const int ZONE_PEAK_BPM = 95;         // Peak orgasm (upper range)
 };
 
 #endif // HEARTRATESENSOR_H

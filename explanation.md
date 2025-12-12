@@ -413,7 +413,7 @@ To upgrade from single-chamber to dual-chamber operation, the following componen
 | **SOL4 (Solenoid Valve)** | 1 | Clitoral chamber vacuum control |
 | **SOL5 (Solenoid Valve)** | 1 | Clitoral chamber vent (for air-pulse release) |
 | **MPX5010DP Sensor** | 1 | Clitoral chamber pressure monitoring |
-| **Vacuum Line (6mm ID)** | 1 | Clitoral chamber supply line |
+| **Vacuum Line (5mm ID)** | 1 | Clitoral chamber supply line |
 | **Y-Splitter** | 1 | Connects clitoral chamber to tank |
 
 ### 2.2 Updated GPIO Pin Assignments
@@ -451,24 +451,24 @@ To upgrade from single-chamber to dual-chamber operation, the following componen
 │          └─────┘   ┌───────────────────────┐                                │
 │                    │     V-CONTOUR CUP     │                                │
 │                    │   OUTER V-CHAMBER   ◄─┼─── Sensor 1 (AVL)              │
-│                    │  ┌─────────────────┐  │                                │
-│                    │  │   ┌─────────┐   │  │                                │
-│                    │  │   │CLITORAL │◄──┼──┼─── Sensor 3 (Clitoral)         │
-│                    │  │   │CYLINDER │   │  │                                │
-│                    │  │   └┬───────┬┘   │  │       ┌─────┐                  │
-│                    │  │    │ OPEN  │    │  │   ┌───│ ATM │                  │
-│                    │  │    │CHANNEL│    │  │   │   └─────┘                  │
-│                    │  │    │       │    │  │ [SOL5]                         │
-│                    │  │    │       │    │  │ Clitoral                       │
-│                    │  │    │       │    │  │ Vent                           │
-│                    │  │    │       │    │  │   │                            │
-│                    │  └────┤       ├────┘◄─┼───┘                            │
-│                    │       │       │       │                                │
-│                    │       │       │       │                                │
+│                    │                       │                                │
+│                    │      ┌─────────┐      │                                │
+│                    │      │CLITORAL │◄─────┼─── Sensor 3 (Clitoral)         │
+│                    │      │CYLINDER │◄─────┼───┐                            │
+│                    │      └┬───────┬┘      │   │                            │
+│                    │       │ OPEN  │       │  [SOL5]                        │
+│                    │       │CHANNEL│       │  Clitoral                      │
+│                    │       │  FOR  │       │  Vent                          │
+│                    │       │ DRAIN │       │     │                          │
+│                    │       │   │   │       │     ▼                          │
+│                    │       │   │   │       │  ┌─────┐                       │
+│                    │       │   │   │       │  │ ATM │                       │
+│                    │       │   │   │       │  └─────┘                       │
+│                    │       │   ▼   │       │                                │
 │                    └───────┘       └───────┘                                │
 │                        ▲                                                    │
 │                        │   ┌─────┐                                          │
-│                    [SOL2]──│ ATM │                                          │
+│                    [SOL2]──│ ATM │───►                                      │
 │                    Outer   └─────┘                                          │
 │                    Vent                                                     │
 └─────────────────────────────────────────────────────────────────────────────┘

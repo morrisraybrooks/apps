@@ -95,6 +95,7 @@ private Q_SLOTS:
 
 private:
     void setState(SafetyState newState);
+    void triggerEmergencyStop_unlocked(const QString& reason);
     bool checkPressureLimits();
     bool checkSensorHealth();
     bool checkHardwareStatus();

@@ -50,6 +50,7 @@ public:
     // Oscillation control
     void start();
     void stop();
+    void emergencyStop();  // Bug #13 fix: Immediate stop with safety venting
     bool isRunning() const { return m_running; }
 
     // Frequency control (5-13 Hz range)

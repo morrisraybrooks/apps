@@ -6,6 +6,7 @@
 #include <QElapsedTimer>
 #include <QMutex>
 #include <QVector>
+#include <atomic>
 #include <cmath>
 
 class HardwareManager;
@@ -52,6 +53,9 @@ public:
         BACKING_OFF,
         HOLDING,
         FORCING,
+        MILKING,           // Milking mode: maintaining arousal in milking zone
+        DANGER_REDUCTION,  // Milking mode: arousal too high, reducing stimulation
+        ORGASM_FAILURE,    // Milking mode: unwanted orgasm detected
         COOLING_DOWN,
         ERROR
     };
@@ -63,7 +67,8 @@ public:
         ADAPTIVE_EDGING,
         FORCED_ORGASM,
         MULTI_ORGASM,
-        DENIAL
+        DENIAL,
+        MILKING            // Sustained sub-orgasmic stimulation (orgasm = failure)
     };
     Q_ENUM(Mode)
 
@@ -74,6 +79,7 @@ public:
     void startAdaptiveEdging(int targetCycles = 5);
     void startForcedOrgasm(int targetOrgasms = 3, int maxDurationMs = 1800000);
     void startDenial(int durationMs = 600000);
+    void startMilking(int durationMs = 1800000, int failureMode = 0);
     void stop();
     void emergencyStop();
 
@@ -84,16 +90,28 @@ public:
     void setTENSEnabled(bool enabled);
     void setAntiEscapeEnabled(bool enabled);
 
+    // Milking mode configuration
+    void setMilkingZoneLower(double threshold);
+    void setMilkingZoneUpper(double threshold);
+    void setDangerThreshold(double threshold);
+    void setMilkingFailureMode(int mode);
+
     // Heart rate sensor configuration
     void setHeartRateSensor(HeartRateSensor* sensor);
     void setHeartRateEnabled(bool enabled);
     void setHeartRateWeight(double weight);  // Weight in arousal calculation (0.0-0.5)
 
+    // Debug/diagnostic configuration
+    void setVerboseLogging(bool enabled) { m_verboseLogging = enabled; }
+    bool isVerboseLogging() const { return m_verboseLogging; }
+
     // Status getters
-    ControlState getState() const { return m_state; }
-    Mode getMode() const { return m_mode; }
+    // LOW-3 fix: Use atomic load for thread-safe access from UI thread
+    ControlState getState() const { return m_state.load(std::memory_order_acquire); }
+    Mode getMode() const { return m_mode.load(std::memory_order_acquire); }
     double getArousalLevel() const { return m_arousalLevel; }
-    ArousalState getArousalState() const { return m_arousalState; }
+    // Bug #11 fix: Use atomic load for thread-safe access
+    ArousalState getArousalState() const { return m_arousalState.load(std::memory_order_acquire); }
     int getEdgeCount() const { return m_edgeCount; }
     int getOrgasmCount() const { return m_orgasmCount; }
     double getCurrentIntensity() const { return m_intensity; }
@@ -101,6 +119,13 @@ public:
     int getCurrentHeartRate() const { return m_currentHeartRate; }
     double getHeartRateContribution() const { return m_heartRateContribution; }
     QVector<double> getArousalHistory() const;
+
+    // Milking mode status getters
+    qint64 getMilkingZoneTime() const { return m_milkingZoneTime; }
+    int getDangerZoneEntries() const { return m_dangerZoneEntries; }
+    bool isMilkingSuccess() const { return m_milkingOrgasmCount == 0; }
+    int getMilkingOrgasmCount() const { return m_milkingOrgasmCount; }
+    double getMilkingAvgArousal() const { return m_milkingAvgArousal; }
 
 Q_SIGNALS:
     // Arousal signals
@@ -113,7 +138,9 @@ Q_SIGNALS:
     void edgingComplete(int totalEdges);
     void buildUpProgress(double arousal, double threshold);
     void backOffProgress(double arousal, double threshold);
-    
+    void unexpectedOrgasmDuringEdging(int orgasmCount, int edgeCount);  // Orgasm occurred during edging
+    void pointOfNoReturnReached(int edgeCount);  // Arousal rising during back-off, orgasm inevitable
+
     // Forced orgasm signals
     void orgasmDetected(int orgasmNumber, qint64 timeMs);
     void antiEscapeTriggered(double newIntensity, double newFrequency);
@@ -123,10 +150,13 @@ Q_SIGNALS:
     // Safety signals
     void emergencyStopActivated();
     void sealIntegrityWarning(double pressure);
+    void sealLostEmergencyStop();  // Bug #17: Emitted when seal cannot be re-established
+    void resealAttemptStarted();   // Bug #15: Emitted when attempting to re-establish seal
     void overpressureWarning(double pressure);
     void tissueProtectionTriggered();
     void sessionTimeoutWarning();
     void tensFault(const QString& reason);
+    void sensorError(const QString& sensor, const QString& error);  // Bug #12: Sensor failure detected
 
     // Heart rate signals
     void heartRateUpdated(int bpm, double contribution);
@@ -143,6 +173,15 @@ Q_SIGNALS:
     void stateChanged(ControlState state);
     void modeChanged(Mode mode);
 
+    // Milking mode signals
+    void milkingZoneEntered(double arousalLevel);
+    void milkingZoneMaintained(qint64 durationMs, double avgArousal);
+    void dangerZoneEntered(double arousalLevel);
+    void dangerZoneExited(double arousalLevel);
+    void unwantedOrgasm(int orgasmCount, qint64 sessionDurationMs);
+    void milkingIntensityAdjusted(double newIntensity, double arousalError);
+    void milkingSessionComplete(qint64 durationMs, bool success, int dangerEntries);
+
 private Q_SLOTS:
     void onUpdateTick();
     void onSafetyCheck();
@@ -152,16 +191,22 @@ private:
     void calibrateBaseline(int durationMs);
     void updateArousalLevel();
     double calculateArousalLevel();
-    double calculateVariance(const QVector<double>& data, int windowSize);
-    double calculateBandPower(const QVector<double>& data, double freqLow, double freqHigh);
-    double calculateDerivative(const QVector<double>& data);
+    // Bug #1 fix: Pass currentIdx to ensure consistent index across all calculations
+    double calculateVariance(const QVector<double>& data, int windowSize, int currentIdx);
+    double calculateBandPower(const QVector<double>& data, double freqLow, double freqHigh, int currentIdx);
+    double calculateDerivative(const QVector<double>& data, int currentIdx);
     bool detectContractions();
     void updateArousalState();
     
     // Algorithm execution methods
-    void runAdaptiveEdging(int targetCycles);
-    void runForcedOrgasm(int targetOrgasms, int maxDurationMs);
-    void runCoolDown(int durationMs);
+    void runAdaptiveEdging();
+    void runForcedOrgasm();
+    void runMilking();
+    void startCoolDown();
+    void startAdaptiveEdgingInternal(int targetCycles);
+    void startMilkingInternal(int durationMs, int failureMode);
+    double calculateMilkingIntensityAdjustment();
+    void handleMilkingOrgasmFailure();
     
     // Safety methods
     void performSafetyCheck();
@@ -186,22 +231,24 @@ private:
     QElapsedTimer m_sessionTimer;
 
     // State
-    ControlState m_state;
-    Mode m_mode;
+    // LOW-3 fix: Made atomic for thread-safe access from UI thread via getters
+    std::atomic<ControlState> m_state;
+    std::atomic<Mode> m_mode;
     bool m_emergencyStop;
     bool m_tensEnabled;
     bool m_antiEscapeEnabled;
     bool m_heartRateEnabled;
+    bool m_verboseLogging;  // Non-critical fix: Reduce logging overhead in high-frequency paths
 
     // Arousal tracking
     double m_arousalLevel;
     double m_smoothedArousal;
-    ArousalState m_arousalState;
+    std::atomic<ArousalState> m_arousalState;  // Bug #11 fix: atomic for thread-safe access
     double m_baselineClitoral;
     double m_baselineAVL;
     QVector<double> m_pressureHistory;
     QVector<double> m_arousalHistory;
-    int m_historyIndex;
+    std::atomic<int> m_historyIndex;  // Bug #1 fix: atomic to prevent race condition
 
     // Heart rate tracking
     int m_currentHeartRate;
@@ -227,6 +274,49 @@ private:
     double m_orgasmThreshold;
     double m_recoveryThreshold;
 
+    // Milking mode thresholds
+    double m_milkingZoneLower;      // Lower bound of milking zone (default 0.75)
+    double m_milkingZoneUpper;      // Upper bound of milking zone (default 0.90)
+    double m_dangerThreshold;       // Danger zone threshold (default 0.92)
+
+    // Internal state for algorithm logic
+    QElapsedTimer m_stateTimer; // General purpose timer for states like HOLDING, BACKING_OFF
+    double m_previousArousal;
+    bool m_inOrgasm;
+    bool m_pointOfNoReturnReached;     // Orgasm became inevitable during back-off
+    int m_unexpectedOrgasmCount;       // Orgasms that occurred during edging (not forced)
+
+    // Internal state for calibration
+    double m_calibSumClitoral;
+    double m_calibSumAVL;
+    int m_calibSamples;
+
+    // Internal state for cooldown
+    double m_cooldownStartIntensity;
+    double m_cooldownStartFrequency;
+
+    // Bug #15, #16, #17: Internal state for seal integrity monitoring
+    int m_sealLossCount;           // Consecutive seal loss detections
+    bool m_resealAttemptInProgress;
+    QElapsedTimer m_resealTimer;   // Tracks duration of re-seal boost
+
+    // Arousal-adaptive seal integrity (differentiates swelling from leak)
+    double m_previousAVLPressure;  // For rate of change calculation
+    double m_previousClitoralPressure;  // For detecting tissue swelling
+
+    // Milking mode state
+    int m_milkingFailureMode;       // 0=stop, 1=ruined, 2=punish, 3=continue
+    int m_milkingOrgasmCount;       // Orgasms during milking (should be 0)
+    int m_dangerZoneEntries;        // Times arousal exceeded danger threshold
+    qint64 m_milkingZoneTime;       // Cumulative time in milking zone (ms)
+    double m_milkingAvgArousal;     // Running average arousal in zone
+    int m_milkingAvgSamples;        // Sample count for running average
+
+    // Milking PID control state
+    double m_milkingIntegralError;  // Accumulated error for I term
+    double m_milkingPreviousError;  // Previous error for D term
+    double m_milkingTargetArousal;  // Center of milking zone (0.82)
+
     // Thread safety
     mutable QMutex m_mutex;
 
@@ -243,6 +333,14 @@ private:
     static const int BASELINE_DURATION_MS = 10000;
     static const int HISTORY_SIZE = 200;
     static const int VARIANCE_WINDOW_SAMPLES = 100;
+
+    // HIGH-5 fix: Minimum calibration samples required for valid baseline
+    // At 100ms intervals over 10 seconds, we expect ~100 samples; require at least 50
+    static const int MIN_CALIBRATION_SAMPLES = 50;
+
+    // MEDIUM-3 fix: Centralized pressure validation constants (used in multiple places)
+    static constexpr double PRESSURE_MIN_VALID = 0.0;    // mmHg - below this is sensor error
+    static constexpr double PRESSURE_MAX_VALID = 100.0;  // mmHg - above sensor max (75) with margin
 
     // Arousal calculation weights (pressure-based, sum to ~0.70 when HR enabled)
     static constexpr double WEIGHT_DEVIATION = 0.25;
@@ -279,6 +377,10 @@ private:
     static constexpr int MIN_BACKOFF_MS = 5000;
     static constexpr int HOLD_DURATION_MS = 5000;
 
+    // Point-of-no-return and unexpected orgasm handling
+    static constexpr double PONR_AROUSAL_RISE_THRESHOLD = 0.02;  // 2% rise during back-off = orgasm inevitable
+    static constexpr int POST_UNEXPECTED_ORGASM_RECOVERY_MS = 30000;  // 30 sec recovery after unexpected orgasm
+
     // Forced orgasm defaults
     static constexpr double FORCED_BASE_INTENSITY = 0.60;
     static constexpr double FORCED_BASE_FREQUENCY = 10.0;
@@ -288,7 +390,7 @@ private:
     static constexpr double ANTI_ESCAPE_FREQ_RATE = 0.1;
     static constexpr double THROUGH_ORGASM_BOOST = 0.05;
     static constexpr double TENS_FORCED_FREQUENCY = 25.0;
-    static constexpr int ORGASM_DURATION_MS = 15000;
+    static constexpr int ORGASM_DURATION_MS = 20000;  // Scientific literature: avg 19.9-35 sec
     static constexpr int POST_ORGASM_PAUSE_MS = 2000;
     static constexpr int COOLDOWN_DURATION_MS = 60000;
 
@@ -301,6 +403,44 @@ private:
     static constexpr double MAX_FREQUENCY = 13.0;
     static constexpr int MAX_SESSION_DURATION_MS = 1800000;
     static constexpr int MAX_HIGH_PRESSURE_DURATION_MS = 120000;
+
+    // Bug #15, #16, #17: Seal integrity response constants
+    static constexpr int RESEAL_BOOST_DURATION_MS = 500;     // How long to boost vacuum for re-seal
+    static constexpr int RESEAL_ATTEMPT_THRESHOLD = 3;       // Failures before reducing intensity
+    static constexpr int RESEAL_INTENSITY_THRESHOLD = 6;     // Failures before emergency stop
+    static constexpr int SEAL_EMERGENCY_THRESHOLD = 7;       // Persistent seal loss triggers emergency stop
+    // Non-critical fix: Named constant for seal emergency duration (replaces magic 700ms comment)
+    static constexpr int SEAL_EMERGENCY_DURATION_MS = SEAL_EMERGENCY_THRESHOLD * SAFETY_INTERVAL_MS;  // 700ms
+
+    // Arousal-adaptive seal integrity constants (differentiate swelling from leak)
+    static constexpr double SEAL_AROUSAL_COMPENSATION_FACTOR = 0.5;  // Max 50% threshold reduction at full arousal
+    static constexpr double RAPID_PRESSURE_DROP_THRESHOLD = 5.0;     // mmHg per 100ms - indicates sudden leak
+
+    // Milking mode defaults
+    static constexpr double DEFAULT_MILKING_ZONE_LOWER = 0.75;
+    static constexpr double DEFAULT_MILKING_ZONE_UPPER = 0.90;
+    static constexpr double DEFAULT_DANGER_THRESHOLD = 0.92;
+    static constexpr double MILKING_TARGET_AROUSAL = 0.82;  // Center of milking zone
+
+    // Milking intensity control
+    static constexpr double MILKING_BASE_INTENSITY = 0.50;
+    static constexpr double MILKING_BASE_FREQUENCY = 7.0;
+    static constexpr double MILKING_MIN_INTENSITY = 0.20;
+    static constexpr double MILKING_MAX_INTENSITY = 0.70;
+    static constexpr double MILKING_TENS_AMPLITUDE = 0.40;
+
+    // Milking PID gains for arousal maintenance
+    static constexpr double MILKING_PID_KP = 0.30;   // Proportional gain
+    static constexpr double MILKING_PID_KI = 0.05;   // Integral gain
+    static constexpr double MILKING_PID_KD = 0.10;   // Derivative gain
+
+    // Milking timing
+    static constexpr int MILKING_ZONE_REPORT_INTERVAL_MS = 10000;  // Report every 10 sec
+    static constexpr int MILKING_MAX_SESSION_MS = 3600000;  // 60 min max
+
+    // Danger zone recovery
+    static constexpr double DANGER_RECOVERY_THRESHOLD = 0.88;  // Exit danger when below this
+    static constexpr int DANGER_PAUSE_DURATION_MS = 2000;      // Pause stimulation duration
 };
 
 #endif // ORGASMCONTROLALGORITHM_H
