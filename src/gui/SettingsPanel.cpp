@@ -2,6 +2,7 @@
 #include "components/TouchButton.h"
 #include "CalibrationInterface.h"
 #include "../VacuumController.h"
+#include "../control/OrgasmControlAlgorithm.h"
 #include <QDebug>
 #include <QMessageBox>
 #include <QFileDialog>
@@ -23,6 +24,14 @@ const double SettingsPanel::DEFAULT_ANTI_DETACHMENT_HYSTERESIS = 5.0;          /
 const int SettingsPanel::DEFAULT_ANTI_DETACHMENT_RESPONSE_DELAY_MS = 100;      // 100 ms
 const double SettingsPanel::DEFAULT_ANTI_DETACHMENT_MAX_VACUUM_INCREASE = 20.0; // 20%
 const int SettingsPanel::DEFAULT_ANTI_DETACHMENT_MONITORING_RATE_HZ = 100;     // 100 Hz
+
+// Arousal threshold constants (matching OrgasmControlAlgorithm defaults)
+const double SettingsPanel::DEFAULT_EDGE_THRESHOLD = 0.70;
+const double SettingsPanel::DEFAULT_ORGASM_THRESHOLD = 0.85;
+const double SettingsPanel::DEFAULT_RECOVERY_THRESHOLD = 0.45;
+const double SettingsPanel::DEFAULT_MILKING_ZONE_LOWER = 0.75;
+const double SettingsPanel::DEFAULT_MILKING_ZONE_UPPER = 0.90;
+const double SettingsPanel::DEFAULT_DANGER_THRESHOLD = 0.92;
 
 SettingsPanel::SettingsPanel(VacuumController* controller, QWidget *parent)
     : QWidget(parent)
@@ -48,6 +57,7 @@ void SettingsPanel::setupUI()
     // Create tabs
     setupSafetyTab();
     setupCalibrationTab();
+    setupArousalCalibrationTab();
     setupHardwareTab();
     setupDisplayTab();
     setupDiagnosticsTab();
@@ -205,6 +215,158 @@ void SettingsPanel::setupCalibrationTab()
 {
     m_calibrationInterface = new CalibrationInterface(m_controller, this);
     m_tabWidget->addTab(m_calibrationInterface, "Calibration");
+}
+
+void SettingsPanel::setupArousalCalibrationTab()
+{
+    m_arousalCalibrationTab = new QWidget();
+    m_tabWidget->addTab(m_arousalCalibrationTab, "Arousal Thresholds");
+
+    QVBoxLayout* arousalLayout = new QVBoxLayout(m_arousalCalibrationTab);
+
+    // Current Arousal Display Group
+    QGroupBox* currentGroup = new QGroupBox("Current Arousal Level");
+    currentGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QVBoxLayout* currentLayout = new QVBoxLayout(currentGroup);
+
+    m_currentArousalLabel = new QLabel("0.00");
+    m_currentArousalLabel->setStyleSheet("font-size: 36pt; font-weight: bold; color: #2196F3;");
+    m_currentArousalLabel->setAlignment(Qt::AlignCenter);
+
+    m_arousalProgressBar = new QProgressBar();
+    m_arousalProgressBar->setRange(0, 100);
+    m_arousalProgressBar->setValue(0);
+    m_arousalProgressBar->setTextVisible(true);
+    m_arousalProgressBar->setFormat("%v%");
+    m_arousalProgressBar->setMinimumHeight(30);
+
+    currentLayout->addWidget(m_currentArousalLabel);
+    currentLayout->addWidget(m_arousalProgressBar);
+
+    // Threshold Settings Group
+    QGroupBox* thresholdGroup = new QGroupBox("Arousal Thresholds");
+    thresholdGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QFormLayout* thresholdForm = new QFormLayout(thresholdGroup);
+
+    m_edgeThresholdSpin = new QDoubleSpinBox();
+    m_edgeThresholdSpin->setRange(0.50, 0.95);
+    m_edgeThresholdSpin->setSingleStep(0.01);
+    m_edgeThresholdSpin->setDecimals(2);
+    m_edgeThresholdSpin->setValue(DEFAULT_EDGE_THRESHOLD);
+    m_edgeThresholdSpin->setToolTip("Arousal level at which edging begins (0.50-0.95)");
+
+    m_orgasmThresholdSpin = new QDoubleSpinBox();
+    m_orgasmThresholdSpin->setRange(0.85, 1.00);
+    m_orgasmThresholdSpin->setSingleStep(0.01);
+    m_orgasmThresholdSpin->setDecimals(2);
+    m_orgasmThresholdSpin->setValue(DEFAULT_ORGASM_THRESHOLD);
+    m_orgasmThresholdSpin->setToolTip("Arousal level at which orgasm is detected (0.85-1.00)");
+
+    m_recoveryThresholdSpin = new QDoubleSpinBox();
+    m_recoveryThresholdSpin->setRange(0.30, 0.80);
+    m_recoveryThresholdSpin->setSingleStep(0.01);
+    m_recoveryThresholdSpin->setDecimals(2);
+    m_recoveryThresholdSpin->setValue(DEFAULT_RECOVERY_THRESHOLD);
+    m_recoveryThresholdSpin->setToolTip("Arousal level for recovery from edge (0.30-0.80)");
+
+    thresholdForm->addRow("Edge Threshold:", m_edgeThresholdSpin);
+    thresholdForm->addRow("Orgasm Threshold:", m_orgasmThresholdSpin);
+    thresholdForm->addRow("Recovery Threshold:", m_recoveryThresholdSpin);
+
+    // Milking Zone Settings Group
+    QGroupBox* milkingGroup = new QGroupBox("Milking Zone Configuration");
+    milkingGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QFormLayout* milkingForm = new QFormLayout(milkingGroup);
+
+    m_milkingZoneLowerSpin = new QDoubleSpinBox();
+    m_milkingZoneLowerSpin->setRange(0.60, 0.85);
+    m_milkingZoneLowerSpin->setSingleStep(0.01);
+    m_milkingZoneLowerSpin->setDecimals(2);
+    m_milkingZoneLowerSpin->setValue(DEFAULT_MILKING_ZONE_LOWER);
+    m_milkingZoneLowerSpin->setToolTip("Lower bound of milking zone (0.60-0.85)");
+
+    m_milkingZoneUpperSpin = new QDoubleSpinBox();
+    m_milkingZoneUpperSpin->setRange(0.80, 0.95);
+    m_milkingZoneUpperSpin->setSingleStep(0.01);
+    m_milkingZoneUpperSpin->setDecimals(2);
+    m_milkingZoneUpperSpin->setValue(DEFAULT_MILKING_ZONE_UPPER);
+    m_milkingZoneUpperSpin->setToolTip("Upper bound of milking zone (0.80-0.95)");
+
+    m_dangerThresholdSpin = new QDoubleSpinBox();
+    m_dangerThresholdSpin->setRange(0.88, 0.98);
+    m_dangerThresholdSpin->setSingleStep(0.01);
+    m_dangerThresholdSpin->setDecimals(2);
+    m_dangerThresholdSpin->setValue(DEFAULT_DANGER_THRESHOLD);
+    m_dangerThresholdSpin->setToolTip("Danger zone threshold - approaching orgasm (0.88-0.98)");
+
+    m_milkingFailureModeCombo = new QComboBox();
+    m_milkingFailureModeCombo->addItem("Stop Session", 0);
+    m_milkingFailureModeCombo->addItem("Ruin Orgasm", 1);
+    m_milkingFailureModeCombo->addItem("Punish", 2);
+    m_milkingFailureModeCombo->addItem("Continue", 3);
+    m_milkingFailureModeCombo->setToolTip("Action when orgasm occurs during milking mode");
+
+    milkingForm->addRow("Milking Zone Lower:", m_milkingZoneLowerSpin);
+    milkingForm->addRow("Milking Zone Upper:", m_milkingZoneUpperSpin);
+    milkingForm->addRow("Danger Threshold:", m_dangerThresholdSpin);
+    milkingForm->addRow("Failure Mode:", m_milkingFailureModeCombo);
+
+    // Advanced Options Group
+    QGroupBox* advancedGroup = new QGroupBox("Advanced Options");
+    advancedGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QVBoxLayout* advancedLayout = new QVBoxLayout(advancedGroup);
+
+    m_tensEnabledCheck = new QCheckBox("Enable TENS Integration");
+    m_tensEnabledCheck->setToolTip("Enable TENS unit for enhanced stimulation control");
+
+    m_antiEscapeEnabledCheck = new QCheckBox("Enable Anti-Escape Mode");
+    m_antiEscapeEnabledCheck->setToolTip("Prevent user from escaping stimulation");
+
+    advancedLayout->addWidget(m_tensEnabledCheck);
+    advancedLayout->addWidget(m_antiEscapeEnabledCheck);
+
+    arousalLayout->addWidget(currentGroup);
+    arousalLayout->addWidget(thresholdGroup);
+    arousalLayout->addWidget(milkingGroup);
+    arousalLayout->addWidget(advancedGroup);
+    arousalLayout->addStretch();
+
+    // Connect arousal threshold spinboxes to controller
+    connect(m_edgeThresholdSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, [this](double value) {
+        if (m_controller && m_controller->getOrgasmControlAlgorithm()) {
+            m_controller->getOrgasmControlAlgorithm()->setEdgeThreshold(value);
+        }
+    });
+
+    connect(m_orgasmThresholdSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, [this](double value) {
+        if (m_controller && m_controller->getOrgasmControlAlgorithm()) {
+            m_controller->getOrgasmControlAlgorithm()->setOrgasmThreshold(value);
+        }
+    });
+
+    connect(m_recoveryThresholdSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, [this](double value) {
+        if (m_controller && m_controller->getOrgasmControlAlgorithm()) {
+            m_controller->getOrgasmControlAlgorithm()->setRecoveryThreshold(value);
+        }
+    });
+
+    // Connect TENS and anti-escape checkboxes
+    connect(m_tensEnabledCheck, &QCheckBox::toggled,
+            this, [this](bool checked) {
+        if (m_controller && m_controller->getOrgasmControlAlgorithm()) {
+            m_controller->getOrgasmControlAlgorithm()->setTENSEnabled(checked);
+        }
+    });
+
+    connect(m_antiEscapeEnabledCheck, &QCheckBox::toggled,
+            this, [this](bool checked) {
+        if (m_controller && m_controller->getOrgasmControlAlgorithm()) {
+            m_controller->getOrgasmControlAlgorithm()->setAntiEscapeEnabled(checked);
+        }
+    });
 }
 
 void SettingsPanel::setupHardwareTab()

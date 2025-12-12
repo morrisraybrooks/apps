@@ -23,6 +23,7 @@
 class VacuumController;
 class TouchButton;
 class CalibrationInterface;
+class OrgasmControlAlgorithm;
 
 /**
  * @brief Comprehensive settings and calibration panel
@@ -60,6 +61,7 @@ private:
     void setupUI();
     void setupSafetyTab();
     void setupCalibrationTab();
+    void setupArousalCalibrationTab();
     void setupHardwareTab();
     void setupDisplayTab();
     void setupDiagnosticsTab();
@@ -100,6 +102,20 @@ private:
     
     // Calibration Tab
     CalibrationInterface* m_calibrationInterface;
+
+    // Arousal Calibration Tab
+    QWidget* m_arousalCalibrationTab;
+    QDoubleSpinBox* m_edgeThresholdSpin;
+    QDoubleSpinBox* m_orgasmThresholdSpin;
+    QDoubleSpinBox* m_recoveryThresholdSpin;
+    QDoubleSpinBox* m_milkingZoneLowerSpin;
+    QDoubleSpinBox* m_milkingZoneUpperSpin;
+    QDoubleSpinBox* m_dangerThresholdSpin;
+    QComboBox* m_milkingFailureModeCombo;
+    QCheckBox* m_tensEnabledCheck;
+    QCheckBox* m_antiEscapeEnabledCheck;
+    QLabel* m_currentArousalLabel;
+    QProgressBar* m_arousalProgressBar;
     
     // Hardware Tab
     QWidget* m_hardwareTab;
@@ -174,6 +190,14 @@ private:
     static const int DEFAULT_ANTI_DETACHMENT_RESPONSE_DELAY_MS;
     static const double DEFAULT_ANTI_DETACHMENT_MAX_VACUUM_INCREASE;
     static const int DEFAULT_ANTI_DETACHMENT_MONITORING_RATE_HZ;
+
+    // Arousal threshold constants
+    static const double DEFAULT_EDGE_THRESHOLD;
+    static const double DEFAULT_ORGASM_THRESHOLD;
+    static const double DEFAULT_RECOVERY_THRESHOLD;
+    static const double DEFAULT_MILKING_ZONE_LOWER;
+    static const double DEFAULT_MILKING_ZONE_UPPER;
+    static const double DEFAULT_DANGER_THRESHOLD;
 };
 
 #endif // SETTINGSPANEL_H
