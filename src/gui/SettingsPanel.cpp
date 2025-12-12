@@ -58,6 +58,7 @@ void SettingsPanel::setupUI()
     setupSafetyTab();
     setupCalibrationTab();
     setupArousalCalibrationTab();
+    setupMilkingConfigurationTab();
     setupHardwareTab();
     setupDisplayTab();
     setupDiagnosticsTab();
@@ -367,6 +368,193 @@ void SettingsPanel::setupArousalCalibrationTab()
             m_controller->getOrgasmControlAlgorithm()->setAntiEscapeEnabled(checked);
         }
     });
+
+    // Connect milking zone spinboxes to controller
+    connect(m_milkingZoneLowerSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, [this](double value) {
+        if (m_controller && m_controller->getOrgasmControlAlgorithm()) {
+            m_controller->getOrgasmControlAlgorithm()->setMilkingZoneLower(value);
+        }
+    });
+
+    connect(m_milkingZoneUpperSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, [this](double value) {
+        if (m_controller && m_controller->getOrgasmControlAlgorithm()) {
+            m_controller->getOrgasmControlAlgorithm()->setMilkingZoneUpper(value);
+        }
+    });
+
+    connect(m_dangerThresholdSpin, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, [this](double value) {
+        if (m_controller && m_controller->getOrgasmControlAlgorithm()) {
+            m_controller->getOrgasmControlAlgorithm()->setDangerThreshold(value);
+        }
+    });
+
+    connect(m_milkingFailureModeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, [this](int index) {
+        if (m_controller && m_controller->getOrgasmControlAlgorithm()) {
+            m_controller->getOrgasmControlAlgorithm()->setMilkingFailureMode(index);
+        }
+    });
+}
+
+void SettingsPanel::setupMilkingConfigurationTab()
+{
+    m_milkingConfigTab = new QWidget();
+    m_tabWidget->addTab(m_milkingConfigTab, "Milking Mode");
+
+    QVBoxLayout* milkingLayout = new QVBoxLayout(m_milkingConfigTab);
+    milkingLayout->setSpacing(15);
+
+    // Session Configuration Group
+    QGroupBox* sessionGroup = new QGroupBox("Milking Session Configuration");
+    sessionGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QFormLayout* sessionForm = new QFormLayout(sessionGroup);
+
+    m_milkingDurationSpin = new QSpinBox();
+    m_milkingDurationSpin->setRange(5, 120);
+    m_milkingDurationSpin->setValue(30);
+    m_milkingDurationSpin->setSuffix(" min");
+    m_milkingDurationSpin->setToolTip("Duration of milking session (5-120 minutes)");
+
+    m_milkingTargetOrgasmsSpin = new QSpinBox();
+    m_milkingTargetOrgasmsSpin->setRange(0, 10);
+    m_milkingTargetOrgasmsSpin->setValue(0);
+    m_milkingTargetOrgasmsSpin->setToolTip("Target orgasms (0 = pure milking, no orgasms allowed)");
+
+    sessionForm->addRow("Session Duration:", m_milkingDurationSpin);
+    sessionForm->addRow("Target Orgasms:", m_milkingTargetOrgasmsSpin);
+
+    // Intensity Control Group
+    QGroupBox* intensityGroup = new QGroupBox("Intensity Control");
+    intensityGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QFormLayout* intensityForm = new QFormLayout(intensityGroup);
+
+    m_milkingIntensityMinSpin = new QDoubleSpinBox();
+    m_milkingIntensityMinSpin->setRange(0.1, 0.5);
+    m_milkingIntensityMinSpin->setSingleStep(0.05);
+    m_milkingIntensityMinSpin->setDecimals(2);
+    m_milkingIntensityMinSpin->setValue(0.20);
+    m_milkingIntensityMinSpin->setToolTip("Minimum stimulation intensity during milking");
+
+    m_milkingIntensityMaxSpin = new QDoubleSpinBox();
+    m_milkingIntensityMaxSpin->setRange(0.5, 1.0);
+    m_milkingIntensityMaxSpin->setSingleStep(0.05);
+    m_milkingIntensityMaxSpin->setDecimals(2);
+    m_milkingIntensityMaxSpin->setValue(0.70);
+    m_milkingIntensityMaxSpin->setToolTip("Maximum stimulation intensity during milking");
+
+    m_milkingAutoAdjustCheck = new QCheckBox("Auto-adjust intensity based on arousal");
+    m_milkingAutoAdjustCheck->setChecked(true);
+    m_milkingAutoAdjustCheck->setToolTip("Automatically adjust intensity to maintain arousal in milking zone");
+
+    intensityForm->addRow("Minimum Intensity:", m_milkingIntensityMinSpin);
+    intensityForm->addRow("Maximum Intensity:", m_milkingIntensityMaxSpin);
+    intensityForm->addRow("", m_milkingAutoAdjustCheck);
+
+    // PID Control Group (Advanced)
+    QGroupBox* pidGroup = new QGroupBox("PID Control (Advanced)");
+    pidGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QFormLayout* pidForm = new QFormLayout(pidGroup);
+
+    m_milkingPidKpSpin = new QDoubleSpinBox();
+    m_milkingPidKpSpin->setRange(0.0, 2.0);
+    m_milkingPidKpSpin->setSingleStep(0.1);
+    m_milkingPidKpSpin->setDecimals(2);
+    m_milkingPidKpSpin->setValue(0.5);
+    m_milkingPidKpSpin->setToolTip("Proportional gain for arousal control");
+
+    m_milkingPidKiSpin = new QDoubleSpinBox();
+    m_milkingPidKiSpin->setRange(0.0, 1.0);
+    m_milkingPidKiSpin->setSingleStep(0.05);
+    m_milkingPidKiSpin->setDecimals(2);
+    m_milkingPidKiSpin->setValue(0.1);
+    m_milkingPidKiSpin->setToolTip("Integral gain for arousal control");
+
+    m_milkingPidKdSpin = new QDoubleSpinBox();
+    m_milkingPidKdSpin->setRange(0.0, 1.0);
+    m_milkingPidKdSpin->setSingleStep(0.05);
+    m_milkingPidKdSpin->setDecimals(2);
+    m_milkingPidKdSpin->setValue(0.2);
+    m_milkingPidKdSpin->setToolTip("Derivative gain for arousal control");
+
+    pidForm->addRow("Kp (Proportional):", m_milkingPidKpSpin);
+    pidForm->addRow("Ki (Integral):", m_milkingPidKiSpin);
+    pidForm->addRow("Kd (Derivative):", m_milkingPidKdSpin);
+
+    // Status Display Group
+    QGroupBox* statusGroup = new QGroupBox("Milking Status");
+    statusGroup->setStyleSheet("QGroupBox { font-size: 14pt; font-weight: bold; }");
+    QVBoxLayout* statusLayout = new QVBoxLayout(statusGroup);
+
+    m_milkingStatusLabel = new QLabel("Status: Not Active");
+    m_milkingStatusLabel->setStyleSheet("font-size: 16pt; font-weight: bold; color: #666;");
+
+    m_milkingZoneProgressBar = new QProgressBar();
+    m_milkingZoneProgressBar->setRange(0, 100);
+    m_milkingZoneProgressBar->setValue(0);
+    m_milkingZoneProgressBar->setFormat("Zone Time: %v%");
+    m_milkingZoneProgressBar->setMinimumHeight(30);
+    m_milkingZoneProgressBar->setStyleSheet(
+        "QProgressBar { border: 2px solid #ccc; border-radius: 5px; background: #f0f0f0; }"
+        "QProgressBar::chunk { background: #795548; border-radius: 3px; }"
+    );
+
+    statusLayout->addWidget(m_milkingStatusLabel);
+    statusLayout->addWidget(m_milkingZoneProgressBar);
+
+    milkingLayout->addWidget(sessionGroup);
+    milkingLayout->addWidget(intensityGroup);
+    milkingLayout->addWidget(pidGroup);
+    milkingLayout->addWidget(statusGroup);
+    milkingLayout->addStretch();
+
+    // Connect milking status updates from algorithm
+    if (m_controller && m_controller->getOrgasmControlAlgorithm()) {
+        OrgasmControlAlgorithm* algo = m_controller->getOrgasmControlAlgorithm();
+
+        connect(algo, &OrgasmControlAlgorithm::milkingZoneEntered,
+                this, [this](double arousal) {
+            m_milkingStatusLabel->setText(QString("Status: In Milking Zone (Arousal: %1)").arg(arousal, 0, 'f', 2));
+            m_milkingStatusLabel->setStyleSheet("font-size: 16pt; font-weight: bold; color: #795548;");
+        });
+
+        connect(algo, &OrgasmControlAlgorithm::dangerZoneEntered,
+                this, [this](double arousal) {
+            m_milkingStatusLabel->setText(QString("Status: DANGER ZONE (Arousal: %1)").arg(arousal, 0, 'f', 2));
+            m_milkingStatusLabel->setStyleSheet("font-size: 16pt; font-weight: bold; color: #F44336;");
+        });
+
+        connect(algo, &OrgasmControlAlgorithm::dangerZoneExited,
+                this, [this](double arousal) {
+            m_milkingStatusLabel->setText(QString("Status: Recovered (Arousal: %1)").arg(arousal, 0, 'f', 2));
+            m_milkingStatusLabel->setStyleSheet("font-size: 16pt; font-weight: bold; color: #4CAF50;");
+        });
+
+        connect(algo, &OrgasmControlAlgorithm::unwantedOrgasm,
+                this, [this](int count, qint64 duration) {
+            m_milkingStatusLabel->setText(QString("Status: ORGASM FAILURE #%1 at %2s").arg(count).arg(duration / 1000));
+            m_milkingStatusLabel->setStyleSheet("font-size: 16pt; font-weight: bold; color: #E91E63;");
+        });
+
+        connect(algo, &OrgasmControlAlgorithm::milkingSessionComplete,
+                this, [this](qint64 duration, bool success, int dangerEntries) {
+            QString status = success ? "SUCCESS" : "FAILED";
+            m_milkingStatusLabel->setText(QString("Session Complete: %1 (%2 min, %3 danger entries)")
+                .arg(status).arg(duration / 60000).arg(dangerEntries));
+            m_milkingStatusLabel->setStyleSheet(QString("font-size: 16pt; font-weight: bold; color: %1;")
+                .arg(success ? "#4CAF50" : "#F44336"));
+        });
+
+        connect(algo, &OrgasmControlAlgorithm::milkingZoneMaintained,
+                this, [this](qint64 durationMs, double avgArousal) {
+            int percent = qMin(100, static_cast<int>(durationMs / 600));  // 60 seconds = 100%
+            m_milkingZoneProgressBar->setValue(percent);
+            m_milkingZoneProgressBar->setFormat(QString("Zone Time: %1s (Avg: %2)")
+                .arg(durationMs / 1000).arg(avgArousal, 0, 'f', 2));
+        });
+    }
 }
 
 void SettingsPanel::setupHardwareTab()

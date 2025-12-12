@@ -62,6 +62,7 @@ private:
     void setupSafetyTab();
     void setupCalibrationTab();
     void setupArousalCalibrationTab();
+    void setupMilkingConfigurationTab();
     void setupHardwareTab();
     void setupDisplayTab();
     void setupDiagnosticsTab();
@@ -116,6 +117,19 @@ private:
     QCheckBox* m_antiEscapeEnabledCheck;
     QLabel* m_currentArousalLabel;
     QProgressBar* m_arousalProgressBar;
+
+    // Milking Configuration Tab
+    QWidget* m_milkingConfigTab;
+    QSpinBox* m_milkingDurationSpin;
+    QSpinBox* m_milkingTargetOrgasmsSpin;
+    QDoubleSpinBox* m_milkingIntensityMinSpin;
+    QDoubleSpinBox* m_milkingIntensityMaxSpin;
+    QDoubleSpinBox* m_milkingPidKpSpin;
+    QDoubleSpinBox* m_milkingPidKiSpin;
+    QDoubleSpinBox* m_milkingPidKdSpin;
+    QCheckBox* m_milkingAutoAdjustCheck;
+    QLabel* m_milkingStatusLabel;
+    QProgressBar* m_milkingZoneProgressBar;
     
     // Hardware Tab
     QWidget* m_hardwareTab;
