@@ -68,7 +68,8 @@ OrgasmControlAlgorithm::OrgasmControlAlgorithm(HardwareManager* hardware, QObjec
     , m_sealLossCount(0)
     , m_resealAttemptInProgress(false)
     // Arousal-adaptive seal integrity tracking
-    , m_previousAVLPressure(0.0)
+    // Bug fix: Use -1.0 as sentinel for "uninitialized" since pressure can never be negative
+    , m_previousAVLPressure(-1.0)
     , m_previousClitoralPressure(0.0)
     // Milking mode thresholds
     , m_milkingZoneLower(DEFAULT_MILKING_ZONE_LOWER)
@@ -177,8 +178,9 @@ void OrgasmControlAlgorithm::startAdaptiveEdgingInternal(int targetCycles)
     // Reset seal integrity tracking for new session
     m_sealLossCount = 0;
     m_resealAttemptInProgress = false;
-    m_previousAVLPressure = 0.0;
-    m_previousClitoralPressure = 0.0;
+    // Bug fix: Use -1.0 as sentinel for "uninitialized" since pressure can never be negative
+    m_previousAVLPressure = -1.0;
+    m_previousClitoralPressure = -1.0;
 
     // Reset orgasm detection state for new session
     m_inOrgasm = false;
@@ -259,8 +261,9 @@ void OrgasmControlAlgorithm::startForcedOrgasm(int targetOrgasms, int maxDuratio
     // Reset seal integrity tracking for new session
     m_sealLossCount = 0;
     m_resealAttemptInProgress = false;
-    m_previousAVLPressure = 0.0;
-    m_previousClitoralPressure = 0.0;
+    // Bug fix: Use -1.0 as sentinel for "uninitialized" since pressure can never be negative
+    m_previousAVLPressure = -1.0;
+    m_previousClitoralPressure = -1.0;
 
     // Reset orgasm detection state for new session
     m_inOrgasm = false;
@@ -360,8 +363,9 @@ void OrgasmControlAlgorithm::startMilkingInternal(int durationMs, int failureMod
     // Reset seal integrity tracking
     m_sealLossCount = 0;
     m_resealAttemptInProgress = false;
-    m_previousAVLPressure = 0.0;
-    m_previousClitoralPressure = 0.0;
+    // Bug fix: Use -1.0 as sentinel for "uninitialized" since pressure can never be negative
+    m_previousAVLPressure = -1.0;
+    m_previousClitoralPressure = -1.0;
 
     // Reset orgasm detection state
     m_inOrgasm = false;
@@ -975,6 +979,11 @@ double OrgasmControlAlgorithm::calculateBandPower(const QVector<double>& data,
     lagLow = qBound(1, lagLow, HISTORY_SIZE - 1);
     lagHigh = qBound(1, lagHigh, HISTORY_SIZE - 1);
 
+    // Bug fix: Ensure lagHigh >= lagLow after clamping to prevent empty loop range
+    if (lagHigh < lagLow) {
+        return 0.0;
+    }
+
     // Bug #1 fix: currentIdx passed from caller to ensure consistent index across all calculations
     double maxCorrelation = 0.0;
 
@@ -1408,7 +1417,9 @@ void OrgasmControlAlgorithm::performSafetyCheck()
     // Calculate rate of pressure change (mmHg per 100ms)
     double rateOfChange = 0.0;
     // Bug #5 fix: Skip rate calculation on first tick when m_previousAVLPressure is uninitialized
-    bool hasValidPreviousPressure = (m_previousAVLPressure > 0.0);
+    // Bug fix: Use >= 0.0 since -1.0 is the sentinel value for "uninitialized"
+    // This allows 0.0 to be a valid previous pressure reading
+    bool hasValidPreviousPressure = (m_previousAVLPressure >= 0.0);
     if (hasValidPreviousPressure) {
         // Rate = (previous - current) / time_in_seconds
         // Positive rate means pressure is dropping
@@ -1858,6 +1869,12 @@ double OrgasmControlAlgorithm::calculateMilkingIntensityAdjustment()
 
     // Combined adjustment
     double adjustment = pTerm + iTerm + dTerm;
+
+    // Bug fix: Output clamping to prevent unstable oscillations
+    // Limit maximum adjustment per cycle to prevent sudden intensity swings
+    // Max adjustment of 0.05 per 50ms tick = 1.0/sec maximum rate of change
+    static constexpr double MAX_ADJUSTMENT_PER_TICK = 0.05;
+    adjustment = clamp(adjustment, -MAX_ADJUSTMENT_PER_TICK, MAX_ADJUSTMENT_PER_TICK);
 
     // Emit for debugging/UI
     emit milkingIntensityAdjusted(m_intensity + adjustment, error);
