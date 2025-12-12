@@ -87,8 +87,10 @@ OrgasmControlAlgorithm::OrgasmControlAlgorithm(HardwareManager* hardware, QObjec
     , m_milkingTargetArousal(MILKING_TARGET_AROUSAL)
 {
     // Initialize history buffers
-    m_pressureHistory.resize(HISTORY_SIZE, 0.0);
-    m_arousalHistory.resize(HISTORY_SIZE, 0.0);
+    m_pressureHistory.resize(HISTORY_SIZE);
+    m_pressureHistory.fill(0.0);
+    m_arousalHistory.resize(HISTORY_SIZE);
+    m_arousalHistory.fill(0.0);
 
     // Bug #2 fix: Initialize QElapsedTimers to a known state
     // QElapsedTimer::elapsed() returns undefined values if start() was never called
@@ -1559,8 +1561,8 @@ void OrgasmControlAlgorithm::performSafetyCheck()
 
     // Check TENS safety
     if (m_tensEnabled && m_tensController) {
-        if (m_tensController->hasError()) {
-            emit tensFault(m_tensController->getErrorMessage());
+        if (m_tensController->isFaultDetected()) {
+            emit tensFault(m_tensController->getFaultReason());
             m_tensController->stop();
             m_tensEnabled = false;
         }

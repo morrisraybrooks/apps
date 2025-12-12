@@ -486,9 +486,9 @@ void CameraMonitor::onFrameReady(const QImage& frame)
     m_cameraFeedLabel->setPixmap(pixmap);
 }
 
-void CameraMonitor::onMotionDetected(int level, double magnitude)
+void CameraMonitor::onMotionDetected(CameraMotionSensor::MotionLevel level, double magnitude)
 {
-    m_currentMotionLevel = level;
+    m_currentMotionLevel = static_cast<int>(level);
     m_currentMotionArea = magnitude * 100.0;
     updateMotionLevelDisplay();
 }
@@ -515,7 +515,7 @@ void CameraMonitor::onStillnessChanged(bool isStill, double stillnessScore)
         "QProgressBar::chunk { background-color: %1; border-radius: 3px; }").arg(color));
 }
 
-void CameraMonitor::onViolationDetected(int level, double intensity)
+void CameraMonitor::onViolationDetected(CameraMotionSensor::MotionLevel level, double intensity)
 {
     Q_UNUSED(level)
     Q_UNUSED(intensity)
@@ -535,9 +535,9 @@ void CameraMonitor::onCalibrationComplete(bool success)
     }
 }
 
-void CameraMonitor::onCalibrationProgress(int percent)
+void CameraMonitor::onCalibrationProgress(double progress)
 {
-    m_calibrationProgress->setValue(percent);
+    m_calibrationProgress->setValue(static_cast<int>(progress * 100));
 }
 
 void CameraMonitor::onRecordingStarted(const QString& filename)

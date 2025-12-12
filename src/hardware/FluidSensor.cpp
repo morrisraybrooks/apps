@@ -3,18 +3,18 @@
 #include <cmath>
 #include <algorithm>
 #include <numeric>
+#include <chrono>
+#include <thread>
 
-#ifdef __linux__
-#include <wiringPi.h>
-#else
-// Stub definitions for non-Linux builds
+// Stub definitions for GPIO - actual implementation uses libgpiod in HardwareManager
 #define INPUT 0
 #define OUTPUT 1
 inline void pinMode(int, int) {}
 inline void digitalWrite(int, int) {}
 inline int digitalRead(int) { return 0; }
-inline void delayMicroseconds(unsigned int) {}
-#endif
+inline void delayMicroseconds(unsigned int us) {
+    std::this_thread::sleep_for(std::chrono::microseconds(us));
+}
 
 FluidSensor::FluidSensor(SensorType type, QObject* parent)
     : QObject(parent)
@@ -50,7 +50,8 @@ FluidSensor::FluidSensor(SensorType type, QObject* parent)
     , m_filterAlpha(FILTER_ALPHA)
     , m_sessionActive(false)
 {
-    m_volumeHistory.resize(VOLUME_HISTORY_SIZE, 0.0);
+    m_volumeHistory.resize(VOLUME_HISTORY_SIZE);
+    m_volumeHistory.fill(0.0);
     m_lastEvent = {FluidEventType::LUBRICATION, 0.0, 0.0, 0, -1};
     
     connect(m_updateTimer, &QTimer::timeout, this, &FluidSensor::onUpdateTick);

@@ -45,6 +45,19 @@ enum class GameType {
 Q_DECLARE_METATYPE(GameType)
 
 /**
+ * @brief Game difficulty levels
+ */
+enum class GameDifficulty {
+    TUTORIAL,             // Learning mode
+    EASY,                 // Beginner friendly
+    NORMAL,               // Standard difficulty
+    HARD,                 // Challenging
+    EXTREME,              // Very difficult
+    NIGHTMARE             // Maximum difficulty
+};
+Q_DECLARE_METATYPE(GameDifficulty)
+
+/**
  * @brief Game state machine states
  */
 enum class GameState {
@@ -148,6 +161,8 @@ enum class PointTransactionType {
     ACHIEVEMENT_BONUS,    // Bonus points from achievements
     STREAK_BONUS,         // Bonus for win streaks
     DAILY_BONUS,          // Daily login/play bonus
+    TRANSFER_IN,          // Points received from another user
+    PURCHASE,             // Points purchased
 
     // Spending
     COMMAND_COST,         // Points spent on issuing commands to others
@@ -156,7 +171,7 @@ enum class PointTransactionType {
 
     // Administrative
     ADMIN_ADJUSTMENT,     // Manual adjustment by admin
-    REFUND               // Refund of previously spent points
+    REFUND                // Refund of previously spent points
 };
 Q_DECLARE_METATYPE(PointTransactionType)
 

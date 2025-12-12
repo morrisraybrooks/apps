@@ -122,6 +122,7 @@ public:
 
     // User profile
     UserProfile currentProfile() const { return m_profile; }
+    const UserProfile& profile() const { return m_profile; }  // Alias for currentProfile
     void setDisplayName(const QString& name);
     void setSubscriptionTier(SubscriptionTier tier);
     

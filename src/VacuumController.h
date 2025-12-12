@@ -14,6 +14,7 @@ class PatternDefinitions;
 class AntiDetachmentMonitor;
 class ThreadManager;
 class CalibrationManager;
+class OrgasmControlAlgorithm;
 
 /**
  * @brief Main controller class for the vacuum therapy system
@@ -53,6 +54,7 @@ public:
     PatternEngine* getPatternEngine() const { return m_patternEngine.get(); }
     ThreadManager* getThreadManager() const { return m_threadManager.get(); }
     CalibrationManager* getCalibrationManager() const { return m_calibrationManager.get(); }
+    OrgasmControlAlgorithm* getOrgasmControlAlgorithm() const { return m_orgasmControlAlgorithm.get(); }
 
     // Simulation mode for testing
     void setSimulationMode(bool enabled);
@@ -109,6 +111,7 @@ private:
     std::unique_ptr<AntiDetachmentMonitor> m_antiDetachmentMonitor;
     std::unique_ptr<ThreadManager> m_threadManager;
     std::unique_ptr<CalibrationManager> m_calibrationManager;
+    std::unique_ptr<OrgasmControlAlgorithm> m_orgasmControlAlgorithm;
     
     // System state
     SystemState m_systemState;

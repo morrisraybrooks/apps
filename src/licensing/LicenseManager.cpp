@@ -440,7 +440,7 @@ bool LicenseManager::validateKeyFormat(const QString& key) const
 bool LicenseManager::validateKeyChecksum(const QString& key) const
 {
     // Remove dashes and validate Luhn-like checksum
-    QString clean = key.remove('-');
+    QString clean = QString(key).remove('-');
     if (clean.length() != 16) return false;
 
     int sum = 0;

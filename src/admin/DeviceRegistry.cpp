@@ -9,6 +9,13 @@
 #include <QDir>
 #include <QDebug>
 
+// Helper function to check if a status represents an online state
+static bool isOnlineStatus(DeviceStatus status) {
+    return status == DeviceStatus::ONLINE ||
+           status == DeviceStatus::BUSY ||
+           status == DeviceStatus::IDLE;
+}
+
 DeviceRegistry* DeviceRegistry::s_instance = nullptr;
 
 DeviceRegistry* DeviceRegistry::instance()
@@ -362,12 +369,4 @@ void DeviceRegistry::loadDevicesFromDatabase()
 
         m_devices[device.deviceId] = device;
     }
-}
-
-// Helper function for checking online status
-static bool isOnlineStatus(DeviceStatus status)
-{
-    return status == DeviceStatus::ONLINE ||
-           status == DeviceStatus::BUSY ||
-           status == DeviceStatus::IDLE;
 }

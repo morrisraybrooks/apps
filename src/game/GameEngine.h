@@ -3,6 +3,7 @@
 
 #include "GameTypes.h"
 #include "GameDefinition.h"
+#include "../hardware/MotionSensor.h"
 #include <QObject>
 #include <QTimer>
 #include <QElapsedTimer>
@@ -17,7 +18,6 @@ class HardwareManager;
 class ConsequenceEngine;
 class AchievementSystem;
 class ProgressTracker;
-class MotionSensor;
 
 /**
  * @brief Core game engine for V-Contour gamification system
@@ -125,7 +125,7 @@ private Q_SLOTS:
     void onEdgeDetected(int edgeNumber, double intensity);
     void onOrgasmDetected(int orgasmNumber, qint64 timeMs);
     void onFluidVolumeChanged(double currentMl, double cumulativeMl);
-    void onMotionViolation(int level, double intensity);
+    void onMotionViolation(MotionSensor::MotionLevel level, double intensity);
     void onMotionWarning(const QString& message);
     void onStillnessChanged(bool isStill, double score);
 

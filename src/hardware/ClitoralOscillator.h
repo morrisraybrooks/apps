@@ -53,6 +53,9 @@ public:
     void emergencyStop();  // Bug #13 fix: Immediate stop with safety venting
     bool isRunning() const { return m_running; }
 
+    // Single pulse for haptic feedback
+    void pulse(double intensity, int durationMs);
+
     // Frequency control (5-13 Hz range)
     void setFrequency(double frequencyHz);
     double getFrequency() const { return m_frequencyHz; }

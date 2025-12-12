@@ -667,7 +667,7 @@ void GameEngine::awardPointsForGame()
 
     // Difficulty multiplier
     double difficultyMultiplier = 1.0;
-    switch (m_currentGame->difficulty()) {
+    switch (m_currentGame->gameDifficulty()) {
         case GameDifficulty::TUTORIAL:
             difficultyMultiplier = 0.5;
             break;
@@ -813,7 +813,7 @@ void GameEngine::stopStimulation()
 // Motion Event Handlers
 // ============================================================================
 
-void GameEngine::onMotionViolation(int level, double intensity)
+void GameEngine::onMotionViolation(MotionSensor::MotionLevel level, double intensity)
 {
     if (m_state != GameState::RUNNING || !m_stillnessRequired) {
         return;
@@ -823,7 +823,7 @@ void GameEngine::onMotionViolation(int level, double intensity)
     m_motionViolations++;
 
     qDebug() << "Motion violation #" << m_motionViolations
-             << "level:" << level << "intensity:" << intensity;
+             << "level:" << static_cast<int>(level) << "intensity:" << intensity;
 
     locker.unlock();
 

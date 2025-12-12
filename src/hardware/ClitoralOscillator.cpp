@@ -113,6 +113,35 @@ void ClitoralOscillator::emergencyStop()
     emit oscillationStopped();
 }
 
+void ClitoralOscillator::pulse(double intensity, int durationMs)
+{
+    QMutexLocker locker(&m_mutex);
+
+    // Clamp intensity to valid range
+    intensity = std::clamp(intensity, 0.0, 1.0);
+    durationMs = std::clamp(durationMs, 10, 1000);
+
+    if (!m_hardware) {
+        return;
+    }
+
+    // Apply a single vacuum pulse for haptic feedback
+    double savedAmplitude = m_targetAmplitude;
+    m_targetAmplitude = intensity * 100.0;  // Convert to mmHg
+
+    // Quick suction pulse
+    m_hardware->setSOL5(false);  // Close vent
+    m_hardware->setSOL4(true);   // Open vacuum
+
+    // Use a single-shot timer to end the pulse
+    QTimer::singleShot(durationMs, this, [this, savedAmplitude]() {
+        QMutexLocker locker(&m_mutex);
+        m_hardware->setSOL4(false);  // Close vacuum
+        m_hardware->setSOL5(true);   // Open vent
+        m_targetAmplitude = savedAmplitude;
+    });
+}
+
 void ClitoralOscillator::setFrequency(double frequencyHz)
 {
     QMutexLocker locker(&m_mutex);

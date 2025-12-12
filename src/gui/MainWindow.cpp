@@ -5,6 +5,7 @@
 #include "SettingsPanel.h"
 #include "SystemDiagnosticsPanel.h"
 #include "CustomPatternEditor.h"
+#include "ExecutionModeSelector.h"
 #include "styles/ModernMedicalStyle.h"
 #include "../VacuumController.h"
 
@@ -504,6 +505,7 @@ void MainWindow::setupUI()
     m_settingsPanelWidget = std::make_unique<SettingsPanel>(m_controller, this);
     m_diagnosticsPanelWidget = std::make_unique<SystemDiagnosticsPanel>(m_controller);
     m_customPatternEditor = std::make_unique<CustomPatternEditor>(m_controller, this);
+    m_executionModeSelector = std::make_unique<ExecutionModeSelector>(m_controller, this);
 
     // Setup navigation bar
     setupNavigationBar();
@@ -551,9 +553,16 @@ void MainWindow::setupMainPanel()
     setupControlPanelCard(dashboardLayout);
     setupStatusCard(dashboardLayout);
 
+    // Add Execution Mode Selector card
+    if (m_executionModeSelector) {
+        QFrame* modeCard = createDashboardCard("EXECUTION MODE", m_executionModeSelector.get());
+        dashboardLayout->addWidget(modeCard, 0, 2, 2, 1);  // Right side, span 2 rows
+    }
+
     // Set column and row stretch factors to make the layout expand properly
-    dashboardLayout->setColumnStretch(0, 1);  // Left column gets equal space
-    dashboardLayout->setColumnStretch(1, 1);  // Right column gets equal space
+    dashboardLayout->setColumnStretch(0, 2);  // Left column (patterns) gets more space
+    dashboardLayout->setColumnStretch(1, 1);  // Middle column gets less space
+    dashboardLayout->setColumnStretch(2, 2);  // Right column (mode selector) gets more space
     dashboardLayout->setRowStretch(0, 2);     // Top row gets more space
     dashboardLayout->setRowStretch(1, 2);     // Middle row gets more space
     dashboardLayout->setRowStretch(2, 1);     // Bottom row gets less space

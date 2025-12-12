@@ -8,6 +8,7 @@
 #include <QProgressBar>
 #include <QFrame>
 #include <QTimer>
+#include <QElapsedTimer>
 #include <QtCharts/QChart>
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>

@@ -157,6 +157,19 @@ bool RemoteMonitor::requestControl(const QString& deviceId)
     return false;
 }
 
+void RemoteMonitor::releaseControl(const QString& deviceId)
+{
+    if (!m_sessions.contains(deviceId)) return;
+
+    m_sessions[deviceId].hasControl = false;
+
+    m_accountManager->logActivity(m_accountManager->currentAccount().accountId,
+                                  "release_control",
+                                  QJsonObject{{"device_id", deviceId}});
+
+    emit controlReleased(deviceId);
+}
+
 bool RemoteMonitor::sendRemoteCommand(const QString& deviceId, const QString& command, const QJsonObject& params)
 {
     if (!m_sessions.contains(deviceId)) return false;
@@ -225,7 +238,8 @@ QList<QJsonObject> RemoteMonitor::activityFeed(const QString& deviceId, int limi
     DeviceInfo device = m_deviceRegistry->device(deviceId);
     if (device.ownerAccountId.isEmpty()) return QList<QJsonObject>();
 
-    return m_accountManager->activityLog(device.ownerAccountId, limit);
+    QVector<QJsonObject> vec = m_accountManager->activityLog(device.ownerAccountId, limit);
+    return QList<QJsonObject>(vec.begin(), vec.end());
 }
 
 bool RemoteMonitor::startVideoStream(const QString& deviceId)

@@ -5,6 +5,7 @@
 #include "TENSController.h"
 #include "FluidSensor.h"
 #include "MotionSensor.h"
+#include "ClitoralOscillator.h"
 
 #include <QDebug>
 #include <QMutexLocker>
@@ -118,6 +119,10 @@ bool HardwareManager::initialize()
             });
             qDebug() << "Motion Sensor initialized (MPU6050 IMU)";
         }
+
+        // Create and initialize clitoral oscillator (for air-pulse stimulation)
+        m_clitoralOscillator = std::make_unique<ClitoralOscillator>(this, this);
+        qDebug() << "Clitoral Oscillator initialized";
 
         // Perform hardware validation
         if (!validateHardware()) {

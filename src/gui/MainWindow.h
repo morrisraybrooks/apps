@@ -20,6 +20,7 @@ class SafetyPanel;
 class SettingsPanel;
 class SystemDiagnosticsPanel;
 class CustomPatternEditor;
+class ExecutionModeSelector;
 
 /**
  * @brief Main window for the vacuum controller GUI
@@ -122,6 +123,7 @@ private:
     std::unique_ptr<SettingsPanel> m_settingsPanelWidget;
     std::unique_ptr<SystemDiagnosticsPanel> m_diagnosticsPanelWidget;
     std::unique_ptr<CustomPatternEditor> m_customPatternEditor;
+    std::unique_ptr<ExecutionModeSelector> m_executionModeSelector;
     
     // Control buttons
     QPushButton* m_startStopButton;

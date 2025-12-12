@@ -693,14 +693,14 @@ void PrivilegePanel::onLicenseChanged(const LicenseInfo& info)
     }
 }
 
-void PrivilegePanel::onPurchaseComplete(const QString& productId, int pointsAwarded)
+void PrivilegePanel::onPurchaseComplete(int pointsAwarded, const QString& productId)
 {
     QMessageBox::information(this, "Purchase Complete",
         QString("Purchase successful! %1 points have been added to your account.")
             .arg(pointsAwarded));
 
     // Add points to progress tracker
-    m_progressTracker->addPoints(pointsAwarded, PointTransactionType::TRANSFER_IN,
+    m_progressTracker->addPoints(pointsAwarded, PointTransactionType::PURCHASE,
                                  QString("Purchased: %1").arg(productId));
 
     updateDisplay();

@@ -8,6 +8,7 @@
 #include <QJsonObject>
 #include <QSettings>
 #include <QCryptographicHash>
+#include <QTimer>
 
 /**
  * @brief License information structure

@@ -289,7 +289,7 @@ void ConsequenceEngine::executeReward(ConsequenceAction action, double intensity
 }
 
 void ConsequenceEngine::executePunishment(ConsequenceAction action, double intensity,
-                                          int durationMs, const QString& /*targetId*/)
+                                          int durationMs, const QString& targetId)
 {
     // Apply safety limits
     intensity = qMin(intensity, 1.0);

@@ -14,9 +14,9 @@
 #include <QImage>
 #include <QPixmap>
 #include <QElapsedTimer>
+#include "../hardware/CameraMotionSensor.h"
 
 // Forward declarations
-class CameraMotionSensor;
 class HardwareManager;
 
 /**
@@ -65,11 +65,11 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void onFrameReady(const QImage& frame);
-    void onMotionDetected(int level, double magnitude);
+    void onMotionDetected(CameraMotionSensor::MotionLevel level, double magnitude);
     void onStillnessChanged(bool isStill, double stillnessScore);
-    void onViolationDetected(int level, double intensity);
+    void onViolationDetected(CameraMotionSensor::MotionLevel level, double intensity);
     void onCalibrationComplete(bool success);
-    void onCalibrationProgress(int percent);
+    void onCalibrationProgress(double progress);
     void onRecordingStarted(const QString& filename);
     void onRecordingStopped();
     void updateDisplay();

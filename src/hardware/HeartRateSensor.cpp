@@ -1,6 +1,7 @@
 #include "HeartRateSensor.h"
 #include "MCP3008.h"
 #include <QDebug>
+#include <QThread>
 #include <algorithm>
 #include <numeric>
 #include <cmath>
@@ -29,9 +30,12 @@ HeartRateSensor::HeartRateSensor(SensorType type, QObject* parent)
     , m_dcOffset(512.0)
     , m_prevFilteredValue(0.0)
 {
-    m_bpmHistory.resize(BPM_HISTORY_SIZE, 0);
-    m_rrIntervals.resize(RR_HISTORY_SIZE, 0.0);
-    m_signalHistory.resize(SIGNAL_HISTORY_SIZE, 0.0);
+    m_bpmHistory.resize(BPM_HISTORY_SIZE);
+    m_bpmHistory.fill(0);
+    m_rrIntervals.resize(RR_HISTORY_SIZE);
+    m_rrIntervals.fill(0.0);
+    m_signalHistory.resize(SIGNAL_HISTORY_SIZE);
+    m_signalHistory.fill(0.0);
     
     m_pulseTimer.start();
     
@@ -328,7 +332,7 @@ void HeartRateSensor::onUpdateTick()
     switch (m_sensorType) {
         case SensorType::ANALOG_PULSE:
             if (m_adc) {
-                int adcValue = m_adc->readChannel(m_adcChannel);
+                int adcValue = m_adc->readRawValue(m_adcChannel);
                 processAnalogPulse(adcValue);
             }
             break;

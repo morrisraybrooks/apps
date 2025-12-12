@@ -2,6 +2,7 @@
 #include <QDebug>
 #include <QDateTime>
 #include <QMutexLocker>
+#include <cmath>
 
 // OpenCV includes
 #ifdef HAVE_OPENCV
@@ -164,6 +165,15 @@ void CameraMotionSensor::shutdown()
     }
 
 #ifdef HAVE_OPENCV
+    if (m_camera) {
+        m_camera->release();
+        m_camera.reset();
+    }
+#endif
+
+    m_initialized = false;
+    qDebug() << "CameraMotionSensor: Shutdown complete";
+}
 
 // ============================================================================
 // Configuration

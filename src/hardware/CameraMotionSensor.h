@@ -148,6 +148,13 @@ Q_SIGNALS:
     void motionDetected(MotionLevel level, double magnitude);
     void stillnessChanged(bool isStill, double stillnessScore);
     void violationDetected(MotionLevel level, double intensity);
+    void cameraError(const QString& error);
+    void recordingStarted(const QString& filename);
+    void recordingStopped();
+    void calibrationProgress(double progress);
+    void calibrationComplete(bool success);
+    void warningIssued(const QString& warning);
+    void frameReady(const QImage& frame);
 
 private Q_SLOTS:
     void onCaptureTimer();
@@ -171,12 +178,14 @@ private:
     bool m_calibrated;
     bool m_sessionActive;
 
-    // OpenCV capture
+    // OpenCV capture (only available when OpenCV is built)
+#ifdef HAVE_OPENCV
     std::unique_ptr<cv::VideoCapture> m_capture;
     std::unique_ptr<cv::Mat> m_currentFrame;
     std::unique_ptr<cv::Mat> m_previousFrame;
     std::unique_ptr<cv::Mat> m_motionMask;
     std::unique_ptr<cv::Mat> m_backgroundModel;
+#endif
 
     // Frame settings
     int m_frameWidth;
@@ -212,7 +221,9 @@ private:
     bool m_recording;
     bool m_recordingConsent;
     QString m_recordingFilename;
+#ifdef HAVE_OPENCV
     std::unique_ptr<cv::VideoCapture> m_videoWriter;  // Actually VideoWriter
+#endif
 
     // Privacy
     bool m_privacyMode;

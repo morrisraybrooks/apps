@@ -47,7 +47,7 @@ public Q_SLOTS:
     void onPeerDisconnected(const QString& peerId);
     void onConsentChanged(const QString& partnerId, ConsentStatus status);
     void onLicenseChanged(const LicenseInfo& info);
-    void onPurchaseComplete(const QString& productId, int pointsAwarded);
+    void onPurchaseComplete(int pointsAwarded, const QString& productId);
 
 private Q_SLOTS:
     void onTransferClicked();

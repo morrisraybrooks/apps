@@ -107,8 +107,10 @@ public:
     QString id() const { return m_id; }
     QString name() const { return m_name; }
     QString description() const { return m_description; }
+    GameType type() const { return m_gameType; }  // Alias for gameType()
     GameType gameType() const { return m_gameType; }
     int difficulty() const { return m_difficulty; }
+    GameDifficulty gameDifficulty() const { return static_cast<GameDifficulty>(m_difficulty); }
     SubscriptionTier requiredTier() const { return m_requiredTier; }
     QString unlockedBy() const { return m_unlockedBy; }
     QStringList unlocks() const { return m_unlocks; }
@@ -121,9 +123,11 @@ public:
     const ConsequenceConfig& winConsequence() const { return m_winConsequence; }
     const ConsequenceConfig& failConsequence() const { return m_failConsequence; }
 
-private:
+    // Static conversion utilities
     static GameType stringToGameType(const QString& str);
     static QString gameTypeToString(GameType type);
+
+private:
     
     // Identity
     QString m_id;

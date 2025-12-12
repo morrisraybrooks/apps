@@ -5,6 +5,7 @@
 #include "patterns/PatternEngine.h"
 #include "threading/ThreadManager.h"
 #include "calibration/CalibrationManager.h"
+#include "control/OrgasmControlAlgorithm.h"
 
 #include <QDebug>
 #include <QMutexLocker>
@@ -284,6 +285,9 @@ void VacuumController::initializeSubsystems()
 
     // Initialize calibration manager
     m_calibrationManager = std::make_unique<CalibrationManager>(m_hardwareManager.get());
+
+    // Initialize orgasm control algorithm
+    m_orgasmControlAlgorithm = std::make_unique<OrgasmControlAlgorithm>(m_hardwareManager.get());
 }
 
 void VacuumController::connectSignals()

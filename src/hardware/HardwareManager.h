@@ -12,6 +12,7 @@ class MCP3008;
 class TENSController;
 class FluidSensor;
 class MotionSensor;
+class ClitoralOscillator;
 
 /**
  * @brief Hardware abstraction layer for the vacuum controller
@@ -65,6 +66,7 @@ public:
     TENSController* getTENSController() const { return m_tensController.get(); }
     FluidSensor* getFluidSensor() const { return m_fluidSensor.get(); }
     MotionSensor* getMotionSensor() const { return m_motionSensor.get(); }
+    ClitoralOscillator* getClitoralOscillator() const { return m_clitoralOscillator.get(); }
 
     // Fluid sensor readings
     double readFluidVolumeMl();           // Current volume in reservoir
@@ -119,6 +121,7 @@ private:
     std::unique_ptr<TENSController> m_tensController;
     std::unique_ptr<FluidSensor> m_fluidSensor;
     std::unique_ptr<MotionSensor> m_motionSensor;
+    std::unique_ptr<ClitoralOscillator> m_clitoralOscillator;
 
     // System state
     bool m_initialized;

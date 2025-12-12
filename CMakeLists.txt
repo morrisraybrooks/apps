@@ -65,7 +65,7 @@ if(ENABLE_COVERAGE AND CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 # Find required packages
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets Charts Sql Multimedia WebSockets)
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets Charts Sql Multimedia WebSockets SerialPort)
 find_package(PkgConfig REQUIRED)
 
 # Optional OpenCV for camera-based motion detection
@@ -164,6 +164,7 @@ set(SOURCES
     src/network/MultiUserController.cpp
     src/gui/PrivilegePanel.cpp
     src/gui/AdminPanel.cpp
+    src/gui/ExecutionModeSelector.cpp
     src/licensing/LicenseManager.cpp
     src/licensing/LicenseServer.cpp
     src/admin/AccountManager.cpp
@@ -223,6 +224,7 @@ set(HEADERS
     src/network/MultiUserController.h
     src/gui/PrivilegePanel.h
     src/gui/AdminPanel.h
+    src/gui/ExecutionModeSelector.h
     src/licensing/LicenseManager.h
     src/licensing/LicenseServer.h
     src/admin/AccountManager.h
@@ -271,6 +273,7 @@ target_link_libraries(VacuumControllerLib
         Qt5::Sql
         Qt5::Multimedia
         Qt5::WebSockets
+        Qt5::SerialPort
     PRIVATE
         pthread
         ${GPIOD_LIBRARIES}
