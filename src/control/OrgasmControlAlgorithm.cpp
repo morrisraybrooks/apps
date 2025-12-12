@@ -473,19 +473,31 @@ void OrgasmControlAlgorithm::emergencyStop()
 void OrgasmControlAlgorithm::setEdgeThreshold(double threshold)
 {
     QMutexLocker locker(&m_mutex);
-    m_edgeThreshold = clamp(threshold, 0.5, 0.95);
+    double newValue = clamp(threshold, 0.5, 0.95);
+    if (m_edgeThreshold != newValue) {
+        m_edgeThreshold = newValue;
+        emit edgeThresholdChanged(newValue);
+    }
 }
 
 void OrgasmControlAlgorithm::setOrgasmThreshold(double threshold)
 {
     QMutexLocker locker(&m_mutex);
-    m_orgasmThreshold = clamp(threshold, 0.85, 1.0);
+    double newValue = clamp(threshold, 0.85, 1.0);
+    if (m_orgasmThreshold != newValue) {
+        m_orgasmThreshold = newValue;
+        emit orgasmThresholdChanged(newValue);
+    }
 }
 
 void OrgasmControlAlgorithm::setRecoveryThreshold(double threshold)
 {
     QMutexLocker locker(&m_mutex);
-    m_recoveryThreshold = clamp(threshold, 0.3, 0.8);
+    double newValue = clamp(threshold, 0.3, 0.8);
+    if (m_recoveryThreshold != newValue) {
+        m_recoveryThreshold = newValue;
+        emit recoveryThresholdChanged(newValue);
+    }
 }
 
 void OrgasmControlAlgorithm::setTENSEnabled(bool enabled)

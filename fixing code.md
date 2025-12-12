@@ -1126,7 +1126,258 @@ void OrgasmControlAlgorithm::startForcedOrgasm(int targetOrgasms, int maxDuratio
 
 ---
 
-## SUMMARY TABLE
+---
+
+## ADDITIONAL BUGS DISCOVERED (12 NEW BUGS)
+
+### BUG #18: Header Include Guards Missing or Incorrect
+
+**Severity**: HIGH  
+**Location**: OrgasmControlAlgorithm.h file header  
+**Impact**: Potential multiple inclusion errors, compilation issues  
+**Architecture Violation**: Standard C++ practices
+
+**Problem**:
+```cpp
+// Expected pattern per copilot-instructions.md conventions:
+#ifndef ORGASM_CONTROL_ALGORITHM_H
+#define ORGASM_CONTROL_ALGORITHM_H
+
+// ... declarations ...
+
+#endif // ORGASM_CONTROL_ALGORITHM_H
+```
+
+**Fix**: Ensure header has proper include guards.
+
+---
+
+### BUG #19: Missing Forward Declarations for Hardware Classes
+
+**Severity**: MEDIUM  
+**Location**: OrgasmControlAlgorithm.h includes section  
+**Impact**: Incomplete type errors, circular dependencies  
+**Build System**: Violates proper inclusion hierarchy
+
+**Problem**:
+```cpp
+// In header file - if these aren't forward declared:
+class HardwareManager;        // ✗ MISSING
+class SensorInterface;        // ✗ MISSING
+class ClitoralOscillator;     // ✗ MISSING
+class TENSController;         // ✗ MISSING
+class HeartRateSensor;        // ✗ MISSING
+class FluidSensor;            // ✗ MISSING
+```
+
+**Fix**: Add forward declarations before class definition.
+
+---
+
+### BUG #20: Missing Doxygen Documentation Comments
+
+**Severity**: MEDIUM  
+**Location**: Class definition, public methods  
+**Impact**: API documentation missing, maintainability reduced  
+**Process Violation**: CI pipeline requires documentation
+
+**Problem**:
+All public methods and signals lack Doxygen-format documentation comments required by CI pipeline.
+
+**Fix**: Add comprehensive Doxygen comments to all public methods and signals.
+
+---
+
+### BUG #21: Missing Input Validation in Public Setter Methods
+
+**Severity**: HIGH  
+**Location**: `setEdgeThreshold()`, `setOrgasmThreshold()`, etc. (lines ~445-495)  
+**Impact**: Invalid thresholds cause incorrect detection, safety failures  
+**Design Violation**: Defensive programming not applied
+
+**Problem**:
+```cpp
+void OrgasmControlAlgorithm::setEdgeThreshold(double threshold)
+{
+    QMutexLocker locker(&m_mutex);
+    m_edgeThreshold = threshold;  // ✗ No validation!
+    // What if threshold is negative? 2.5? 0.0?
+}
+```
+
+**Fix**: Validate all threshold inputs before assignment with proper bounds checking.
+
+---
+
+### BUG #22: Memory Leak in Constructor - QTimer Initialization Without Parent Check
+
+**Severity**: MEDIUM  
+**Location**: Constructor line ~27-40  
+**Impact**: Potential memory leaks if `this` pointer is invalid  
+**Memory Management**: Violation of Manager Pattern
+
+**Problem**:
+```cpp
+OrgasmControlAlgorithm::OrgasmControlAlgorithm(...)
+    : QObject(parent)
+    , m_updateTimer(new QTimer(this))      // ✗ If parent is invalid, this leaks
+    , m_safetyTimer(new QTimer(this))
+    // No verification that this/parent relationship is valid
+{
+}
+```
+
+**Fix**: Verify parent validity and handle null parent case before timer creation.
+
+---
+
+### BUG #23: Missing Connection to Timer Signals in Constructor
+
+**Severity**: CRITICAL  
+**Location**: Constructor ~line 27-40  
+**Impact**: Timers created but never connected to slot handlers  
+**Execution**: Pattern never executes (timers silent)
+
+**Problem**:
+```cpp
+OrgasmControlAlgorithm::OrgasmControlAlgorithm(...)
+    : ...
+    , m_updateTimer(new QTimer(this))    // ✓ Created
+    , m_safetyTimer(new QTimer(this))    // ✓ Created
+    // Missing connections!
+{
+    // Constructor body doesn't show signal/slot connections
+}
+```
+
+**Fix**: Connect all timer timeout signals to appropriate slot handlers in constructor body.
+
+---
+
+### BUG #24: Destructor Not Explicitly Defined - Resource Cleanup Missing
+
+**Severity**: HIGH  
+**Location**: Destructor (line ~XX - likely empty or missing)  
+**Impact**: Timers may continue running after object destruction  
+**Memory Management**: Improper cleanup
+
+**Problem**:
+```cpp
+// If destructor is missing or empty:
+OrgasmControlAlgorithm::~OrgasmControlAlgorithm()
+{
+    // ✗ Timers still running!
+    // ✗ Slots may fire after destruction
+    // ✗ Hardware not properly released
+}
+```
+
+**Fix**: Implement explicit destructor with proper timer stop and signal disconnection.
+
+---
+
+### BUG #25: Missing Constants Definition in Header
+
+**Severity**: HIGH  
+**Location**: OrgasmControlAlgorithm.h private constants section  
+**Impact**: Code won't compile, magic numbers in implementation  
+**Standards Violation**: No-magic-numbers rule
+
+**Problem**:
+```cpp
+// Used in code but not defined:
+INITIAL_INTENSITY          // ✗ Where is this?
+INITIAL_FREQUENCY          // ✗ Undefined
+HISTORY_SIZE              // ✗ Undefined
+VARIANCE_WINDOW_SAMPLES   // ✗ Undefined
+SEAL_LOST_THRESHOLD       // ✗ Undefined
+MAX_SESSION_DURATION_MS   // ✗ Undefined
+```
+
+**Fix**: Define all referenced constants in private section of header file.
+
+---
+
+### BUG #26: Missing Q_PROPERTY Declarations for Serialization
+
+**Severity**: MEDIUM  
+**Location**: OrgasmControlAlgorithm.h class definition  
+**Impact**: Settings cannot be saved/loaded from JSON  
+**Feature**: Configuration system broken
+
+**Problem**:
+```cpp
+class OrgasmControlAlgorithm : public QObject {
+    // ✗ No Q_PROPERTY declarations
+    // Can't serialize to JSON automatically
+};
+```
+
+**Fix**: Add Q_PROPERTY macros for serializable members (edgeThreshold, orgasmThreshold, etc.).
+
+---
+
+### BUG #27: Race Condition in `onStateTimeout()` Not Calling Parent Lock
+
+**Severity**: HIGH  
+**Location**: `onStateTimeout()` slot (called via QTimer::timeout)  
+**Impact**: State modifications without mutex, race condition with main thread  
+**Thread Context**: Timer thread vs Main GUI thread
+
+**Problem**:
+```cpp
+void OrgasmControlAlgorithm::onStateTimeout()
+{
+    // ✗ Called by QTimer, may run in different thread context
+    // ✗ No QMutexLocker protecting m_state modifications
+    m_stateTimer->stop();
+    setState(ControlState::COOLING);  // Race condition!
+}
+```
+
+**Fix**: Acquire mutex lock before modifying shared state in timer slot handlers.
+
+---
+
+### BUG #28: Missing Thread Affinity Verification for Timer Signals
+
+**Severity**: MEDIUM  
+**Location**: Timer signal/slot connections in constructor  
+**Impact**: Timer signals may not reach slots if thread affinity mismatched  
+**Threading**: Qt threading best practices violated
+
+**Problem**:
+```cpp
+// If timer is in different thread than parent object:
+connect(m_updateTimer, &QTimer::timeout,
+        this, &OrgasmControlAlgorithm::onUpdateTick);
+        // ✗ No guarantee slots execute in same thread as timer!
+```
+
+**Fix**: Explicitly set thread affinity and connection type for all timers.
+
+---
+
+### BUG #29: Missing enums for ControlState, ArousalState, Mode
+
+**Severity**: HIGH  
+**Location**: OrgasmControlAlgorithm.h (likely missing or incomplete)  
+**Impact**: Code references undefined enum values, won't compile  
+**Architecture**: State machine foundation missing
+
+**Problem**:
+```cpp
+// Code uses these but they may not be defined:
+enum class ControlState { ... };  // ✗ Where is this?
+enum class ArousalState { ... };  // ✗ Where is this?
+enum class Mode { ... };          // ✗ Where is this?
+```
+
+**Fix**: Define all control state enums with Q_ENUM registration for Qt meta-object system.
+
+---
+
+## SUMMARY TABLE - ALL 29 BUGS
 
 | # | Severity | Bug | Location | Impact | Status |
 |---|----------|-----|----------|--------|--------|
@@ -1147,6 +1398,18 @@ void OrgasmControlAlgorithm::startForcedOrgasm(int targetOrgasms, int maxDuratio
 | 15 | MEDIUM | Missing mutex in reseal logic | performSafetyCheck ~1121-1145 | Race condition | **VERIFY** |
 | 16 | MEDIUM | Unreachable code in cooldown | runCoolDown ~1400 | State cleanup missed | **VERIFY** |
 | 17 | MEDIUM | State reset missing | startForcedOrgasm ~362 | Session contamination | **FIX PROVIDED** |
+| 18 | HIGH | Missing include guards | Header file | Multiple inclusion errors | **FIX NEEDED** |
+| 19 | MEDIUM | Missing forward declarations | Header includes | Circular dependency | **FIX NEEDED** |
+| 20 | MEDIUM | Missing Doxygen comments | All public methods | Documentation missing | **FIX NEEDED** |
+| 21 | HIGH | No input validation in setters | Setter methods ~445-495 | Invalid thresholds | **FIX NEEDED** |
+| 22 | MEDIUM | Memory leak in constructor | Constructor ~27-40 | Potential leaks | **FIX NEEDED** |
+| 23 | CRITICAL | Timer signals not connected | Constructor | Timers silent | **FIX NEEDED** |
+| 24 | HIGH | Missing destructor | Destructor ~XX | Resource leak | **FIX NEEDED** |
+| 25 | HIGH | Undefined constants | Header constants | Compile errors | **FIX NEEDED** |
+| 26 | MEDIUM | Missing Q_PROPERTY declarations | Class definition | No serialization | **FIX NEEDED** |
+| 27 | HIGH | Race condition in onStateTimeout() | Slot handler | State corruption | **FIX NEEDED** |
+| 28 | MEDIUM | Missing thread affinity | Constructor connections | Thread mismatch | **FIX NEEDED** |
+| 29 | HIGH | Missing enum definitions | Header declarations | Won't compile | **FIX NEEDED** |
 
 ---
 

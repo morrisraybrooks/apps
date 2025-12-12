@@ -72,23 +72,106 @@ public:
     };
     Q_ENUM(Mode)
 
+    // Bug #26 fix: Q_PROPERTY declarations for serialization and QML bindings
+    Q_PROPERTY(double edgeThreshold READ edgeThreshold WRITE setEdgeThreshold NOTIFY edgeThresholdChanged)
+    Q_PROPERTY(double orgasmThreshold READ orgasmThreshold WRITE setOrgasmThreshold NOTIFY orgasmThresholdChanged)
+    Q_PROPERTY(double recoveryThreshold READ recoveryThreshold WRITE setRecoveryThreshold NOTIFY recoveryThresholdChanged)
+    Q_PROPERTY(double arousalLevel READ getArousalLevel NOTIFY arousalLevelChanged)
+    Q_PROPERTY(ControlState state READ getState NOTIFY stateChanged)
+    Q_PROPERTY(Mode mode READ getMode NOTIFY modeChanged)
+    Q_PROPERTY(bool tensEnabled READ isTENSEnabled WRITE setTENSEnabled)
+    Q_PROPERTY(bool antiEscapeEnabled READ isAntiEscapeEnabled WRITE setAntiEscapeEnabled)
+    Q_PROPERTY(bool verboseLogging READ isVerboseLogging WRITE setVerboseLogging)
+
+public:
+    /**
+     * @brief Constructs the orgasm control algorithm
+     * @param hardware Pointer to hardware manager (required, must not be null)
+     * @param parent QObject parent for memory management
+     */
     explicit OrgasmControlAlgorithm(HardwareManager* hardware, QObject* parent = nullptr);
     ~OrgasmControlAlgorithm();
 
-    // Control methods
+    // ========================================================================
+    // Control Methods - Bug #20 fix: Added Doxygen documentation
+    // ========================================================================
+
+    /**
+     * @brief Start adaptive edging session with sensor-driven approach/deny cycles
+     * @param targetCycles Number of edge cycles to complete before orgasm (default: 5)
+     * @note Session enters CALIBRATING state first, then BUILDING
+     */
     void startAdaptiveEdging(int targetCycles = 5);
+
+    /**
+     * @brief Start forced orgasm session with relentless stimulation
+     * @param targetOrgasms Number of orgasms to induce (default: 3)
+     * @param maxDurationMs Maximum session duration in milliseconds (default: 30 min)
+     */
     void startForcedOrgasm(int targetOrgasms = 3, int maxDurationMs = 1800000);
+
+    /**
+     * @brief Start denial session (extended teasing without release)
+     * @param durationMs Duration of denial period in milliseconds (default: 10 min)
+     */
     void startDenial(int durationMs = 600000);
+
+    /**
+     * @brief Start milking session (sustained sub-orgasmic stimulation)
+     * @param durationMs Session duration in milliseconds (default: 30 min)
+     * @param failureMode What to do on orgasm: 0=stop, 1=ruined, 2=punish, 3=continue
+     */
     void startMilking(int durationMs = 1800000, int failureMode = 0);
+
+    /**
+     * @brief Stop current session gracefully with cooldown
+     */
     void stop();
+
+    /**
+     * @brief Emergency stop - immediate cessation with safety venting
+     * @note Thread-safe: can be called from any thread
+     */
     void emergencyStop();
 
-    // Configuration
+    // ========================================================================
+    // Configuration - Bug #20 fix: Added Doxygen documentation
+    // ========================================================================
+
+    /**
+     * @brief Set arousal threshold for edge detection
+     * @param threshold Value between 0.5 and 0.95 (validated)
+     */
     void setEdgeThreshold(double threshold);
+    double edgeThreshold() const { return m_edgeThreshold; }
+
+    /**
+     * @brief Set arousal threshold for orgasm detection
+     * @param threshold Value between 0.85 and 1.0 (validated)
+     */
     void setOrgasmThreshold(double threshold);
+    double orgasmThreshold() const { return m_orgasmThreshold; }
+
+    /**
+     * @brief Set arousal threshold for recovery from edge
+     * @param threshold Value between 0.3 and 0.8 (validated)
+     */
     void setRecoveryThreshold(double threshold);
+    double recoveryThreshold() const { return m_recoveryThreshold; }
+
+    /**
+     * @brief Enable or disable TENS unit integration
+     * @param enabled True to enable TENS stimulation
+     */
     void setTENSEnabled(bool enabled);
+    bool isTENSEnabled() const { return m_tensEnabled; }
+
+    /**
+     * @brief Enable or disable anti-escape intensity boost
+     * @param enabled True to boost intensity when arousal drops unexpectedly
+     */
     void setAntiEscapeEnabled(bool enabled);
+    bool isAntiEscapeEnabled() const { return m_antiEscapeEnabled; }
 
     // Milking mode configuration
     void setMilkingZoneLower(double threshold);
@@ -105,12 +188,13 @@ public:
     void setVerboseLogging(bool enabled) { m_verboseLogging = enabled; }
     bool isVerboseLogging() const { return m_verboseLogging; }
 
-    // Status getters
-    // LOW-3 fix: Use atomic load for thread-safe access from UI thread
+    // ========================================================================
+    // Status Getters - Thread-safe access for UI
+    // ========================================================================
+
     ControlState getState() const { return m_state.load(std::memory_order_acquire); }
     Mode getMode() const { return m_mode.load(std::memory_order_acquire); }
     double getArousalLevel() const { return m_arousalLevel; }
-    // Bug #11 fix: Use atomic load for thread-safe access
     ArousalState getArousalState() const { return m_arousalState.load(std::memory_order_acquire); }
     int getEdgeCount() const { return m_edgeCount; }
     int getOrgasmCount() const { return m_orgasmCount; }
@@ -172,6 +256,11 @@ Q_SIGNALS:
     // State signals
     void stateChanged(ControlState state);
     void modeChanged(Mode mode);
+
+    // Bug #26 fix: Configuration changed signals for Q_PROPERTY bindings
+    void edgeThresholdChanged(double threshold);
+    void orgasmThresholdChanged(double threshold);
+    void recoveryThresholdChanged(double threshold);
 
     // Milking mode signals
     void milkingZoneEntered(double arousalLevel);
