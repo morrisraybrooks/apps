@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 #include "PressureMonitor.h"
+#include "ArousalMonitor.h"
 #include "PatternSelector.h"
 #include "SafetyPanel.h"
 #include "SettingsPanel.h"
@@ -550,6 +551,7 @@ void MainWindow::setupMainPanel()
     // Create large dashboard cards
     setupPatternSelectionCard(dashboardLayout);
     setupPressureMonitoringCard(dashboardLayout);
+    setupArousalMonitoringCard(dashboardLayout);
     setupControlPanelCard(dashboardLayout);
     setupStatusCard(dashboardLayout);
 
@@ -1042,6 +1044,19 @@ void MainWindow::setupPressureMonitoringCard(QGridLayout* layout)
     if (m_pressureMonitor) {
         QFrame* card = createDashboardCard("REAL-TIME PRESSURE MONITORING", m_pressureMonitor.get());
         layout->addWidget(card, 0, 1, 1, 1);  // Top right
+    }
+}
+
+void MainWindow::setupArousalMonitoringCard(QGridLayout* layout)
+{
+    // Create arousal monitor if not already created
+    if (!m_arousalMonitor) {
+        m_arousalMonitor = std::make_unique<ArousalMonitor>(m_controller, nullptr);
+    }
+
+    if (m_arousalMonitor) {
+        QFrame* card = createDashboardCard("AROUSAL LEVEL MONITORING", m_arousalMonitor.get());
+        layout->addWidget(card, 0, 2, 1, 1);  // Top right of pressure
     }
 }
 

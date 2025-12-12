@@ -165,6 +165,7 @@ set(SOURCES
     src/gui/PrivilegePanel.cpp
     src/gui/AdminPanel.cpp
     src/gui/ExecutionModeSelector.cpp
+    src/gui/ArousalMonitor.cpp
     src/licensing/LicenseManager.cpp
     src/licensing/LicenseServer.cpp
     src/admin/AccountManager.cpp
@@ -225,6 +226,7 @@ set(HEADERS
     src/gui/PrivilegePanel.h
     src/gui/AdminPanel.h
     src/gui/ExecutionModeSelector.h
+    src/gui/ArousalMonitor.h
     src/licensing/LicenseManager.h
     src/licensing/LicenseServer.h
     src/admin/AccountManager.h

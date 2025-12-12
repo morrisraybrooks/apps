@@ -15,6 +15,7 @@
 
 // Forward declarations
 class PressureMonitor;
+class ArousalMonitor;
 class PatternSelector;
 class SafetyPanel;
 class SettingsPanel;
@@ -82,6 +83,7 @@ private:
     // Modern dashboard card setup methods
     void setupPatternSelectionCard(QGridLayout* layout);
     void setupPressureMonitoringCard(QGridLayout* layout);
+    void setupArousalMonitoringCard(QGridLayout* layout);
     void setupControlPanelCard(QGridLayout* layout);
     void setupStatusCard(QGridLayout* layout);
     QFrame* createDashboardCard(const QString& title, QWidget* content);
@@ -118,6 +120,7 @@ private:
     
     // Specialized UI components
     std::unique_ptr<PressureMonitor> m_pressureMonitor;
+    std::unique_ptr<ArousalMonitor> m_arousalMonitor;
     std::unique_ptr<PatternSelector> m_patternSelector;
     std::unique_ptr<SafetyPanel> m_safetyPanelWidget;
     std::unique_ptr<SettingsPanel> m_settingsPanelWidget;
