@@ -190,7 +190,8 @@ private:
     // Arousal detection methods
     void calibrateBaseline(int durationMs);
     void updateArousalLevel();
-    double calculateArousalLevel();
+    // Bug #3 fix: Accept currentIdx parameter to prevent multiple atomic loads per cycle
+    double calculateArousalLevel(int currentIdx);
     // Bug #1 fix: Pass currentIdx to ensure consistent index across all calculations
     double calculateVariance(const QVector<double>& data, int windowSize, int currentIdx);
     double calculateBandPower(const QVector<double>& data, double freqLow, double freqHigh, int currentIdx);

@@ -754,11 +754,18 @@ void OrgasmControlAlgorithm::onSafetyCheck()
 
 void OrgasmControlAlgorithm::updateArousalLevel()
 {
-    double newArousal = calculateArousalLevel();
-
-    // Bug #1 fix: Use atomic load/store for thread-safe history index access
+    // Bug #3 fix: Load index ONCE at cycle start, pass to all functions
+    // This prevents race condition where pressure and arousal histories
+    // could be written with different indices
     int currentIdx = m_historyIndex.load(std::memory_order_acquire);
+
+    // Pass index to calculateArousalLevel - it will use this for pressure history
+    double newArousal = calculateArousalLevel(currentIdx);
+
+    // Write arousal history with SAME index used for pressure history
     m_arousalHistory[currentIdx] = newArousal;
+
+    // Advance index ONCE at cycle end
     m_historyIndex.store((currentIdx + 1) % HISTORY_SIZE, std::memory_order_release);
 
     // Update state if changed
@@ -782,7 +789,7 @@ void OrgasmControlAlgorithm::updateArousalLevel()
     }
 }
 
-double OrgasmControlAlgorithm::calculateArousalLevel()
+double OrgasmControlAlgorithm::calculateArousalLevel(int currentIdx)
 {
     if (!m_hardware) return 0.0;
 
@@ -803,8 +810,9 @@ double OrgasmControlAlgorithm::calculateArousalLevel()
         currentAVL = m_baselineAVL > 0.0 ? m_baselineAVL : 0.0;
     }
 
-    // Bug #1 fix: Use atomic load for thread-safe history index access
-    int currentIdx = m_historyIndex.load(std::memory_order_acquire);
+    // Bug #3 fix: Use passed currentIdx - DO NOT reload m_historyIndex here!
+    // The caller (updateArousalLevel) loads the index once and passes it to ensure
+    // consistent index usage across pressure history, arousal history, and all helper functions
 
     // Store in pressure history (validated values only)
     m_pressureHistory[currentIdx] = currentClitoral;
@@ -816,7 +824,7 @@ double OrgasmControlAlgorithm::calculateArousalLevel()
     }
 
     // Feature 2: Pressure variance (arousal fluctuations)
-    // Bug #1 fix: Pass currentIdx to ensure consistent index across all calculations
+    // Bug #3 fix: Use passed currentIdx to ensure consistent index across all calculations
     double pressureVariance = calculateVariance(m_pressureHistory, VARIANCE_WINDOW_SAMPLES, currentIdx);
 
     // Feature 3: Contraction band power (0.8-1.2 Hz = orgasmic contractions)
@@ -1705,6 +1713,11 @@ void OrgasmControlAlgorithm::runMilking()
 
         // Apply stimulation
         if (m_clitoralOscillator) {
+            // Bug #9 fix: Ensure oscillator is running before setting parameters
+            // It may have been stopped during ORGASM_FAILURE recovery
+            if (!m_clitoralOscillator->isRunning()) {
+                m_clitoralOscillator->start();
+            }
             // Bug #13 fix: Use setAmplitude() not setIntensity() (method doesn't exist)
             m_clitoralOscillator->setAmplitude(m_intensity * MAX_CLITORAL_AMPLITUDE);
             m_clitoralOscillator->setFrequency(m_frequency);
@@ -1726,6 +1739,11 @@ void OrgasmControlAlgorithm::runMilking()
         // Significantly reduce stimulation
         m_intensity = MILKING_MIN_INTENSITY;
         if (m_clitoralOscillator) {
+            // Bug #9 fix: Ensure oscillator is running (at reduced amplitude) during danger reduction
+            // We want minimal stimulation, not zero - complete stop could cause seal issues
+            if (!m_clitoralOscillator->isRunning()) {
+                m_clitoralOscillator->start();
+            }
             // Bug #13 fix: Use setAmplitude() not setIntensity() (method doesn't exist)
             m_clitoralOscillator->setAmplitude(m_intensity * 0.5 * MAX_CLITORAL_AMPLITUDE);  // Half of minimum
         }
