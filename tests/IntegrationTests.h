@@ -6,9 +6,8 @@
 #include <QElapsedTimer>
 #include <memory>
 
-// Forward declarations
-class VacuumController;
-class MainWindow;
+#include "VacuumController.h"
+#include "gui/MainWindow.h"
 
 /**
  * @brief Comprehensive integration tests for the vacuum controller system
@@ -91,10 +90,10 @@ private:
     PerformanceMetrics m_performanceMetrics;
     
     // Test constants
-    static const int DEFAULT_TEST_TIMEOUT = 10000;
-    static const double PRESSURE_TOLERANCE = 0.1;
-    static const double TIMING_TOLERANCE = 0.1;
-    static const int STABILIZATION_TIME = 1000;
+    static constexpr int DEFAULT_TEST_TIMEOUT = 10000;
+    static constexpr double PRESSURE_TOLERANCE = 0.1;
+    static constexpr double TIMING_TOLERANCE = 0.1;
+    static constexpr int STABILIZATION_TIME = 1000;
 };
 
 #endif // INTEGRATIONTESTS_H

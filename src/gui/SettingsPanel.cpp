@@ -98,13 +98,15 @@ void SettingsPanel::setupSafetyTab()
     QFormLayout* pressureForm = new QFormLayout(pressureGroup);
     
     m_maxPressureSpin = new QDoubleSpinBox();
-    m_maxPressureSpin->setRange(50.0, 150.0);
+    // User-configurable maximum pressure is constrained to 100 mmHg,
+    // well below the internal tissue-damage risk threshold.
+    m_maxPressureSpin->setRange(50.0, 100.0);
     m_maxPressureSpin->setSuffix(" mmHg");
     m_maxPressureSpin->setDecimals(1);
     m_maxPressureSpin->setValue(DEFAULT_MAX_PRESSURE);
     
     m_warningThresholdSpin = new QDoubleSpinBox();
-    m_warningThresholdSpin->setRange(30.0, 120.0);
+    m_warningThresholdSpin->setRange(30.0, 100.0);
     m_warningThresholdSpin->setSuffix(" mmHg");
     m_warningThresholdSpin->setDecimals(1);
     m_warningThresholdSpin->setValue(DEFAULT_WARNING_THRESHOLD);
@@ -319,9 +321,15 @@ void SettingsPanel::setupArousalCalibrationTab()
 
     m_tensEnabledCheck = new QCheckBox("Enable TENS Integration");
     m_tensEnabledCheck->setToolTip("Enable TENS unit for enhanced stimulation control");
+    // Safety: TENS is an opt-in enhancement and must default to OFF
+    // to avoid unexpected electrical stimulation.
+    m_tensEnabledCheck->setChecked(false);
 
     m_antiEscapeEnabledCheck = new QCheckBox("Enable Anti-Escape Mode");
     m_antiEscapeEnabledCheck->setToolTip("Prevent user from escaping stimulation");
+    // Safety: Anti-escape is an advanced control feature and should
+    // also default to OFF. Tests assert this behavior.
+    m_antiEscapeEnabledCheck->setChecked(false);
 
     advancedLayout->addWidget(m_tensEnabledCheck);
     advancedLayout->addWidget(m_antiEscapeEnabledCheck);
@@ -879,6 +887,12 @@ void SettingsPanel::loadSettings()
         m_overpressureProtectionCheck->setChecked(safetySettings["overpressure_protection_enabled"].toBool(true));
         m_autoShutdownCheck->setChecked(safetySettings["auto_shutdown_on_error"].toBool(true));
 
+        // Load arousal and advanced feature checkboxes
+        QJsonObject arousalSettings = m_currentSettings["arousal_settings"].toObject();
+        bool tensValue = arousalSettings["tens_enabled"].toBool(false);
+        m_tensEnabledCheck->setChecked(tensValue);
+        m_antiEscapeEnabledCheck->setChecked(arousalSettings["anti_escape_enabled"].toBool(false));
+
         // Load other settings...
     }
 }
@@ -904,6 +918,12 @@ void SettingsPanel::saveSettings()
     safetySettings["anti_detachment_monitoring_rate_hz"] = m_antiDetachmentMonitoringRateSpin->value();
     
     m_currentSettings["safety_settings"] = safetySettings;
+
+    // Save arousal and advanced feature settings
+    QJsonObject arousalSettings;
+    arousalSettings["tens_enabled"] = m_tensEnabledCheck->isChecked();
+    arousalSettings["anti_escape_enabled"] = m_antiEscapeEnabledCheck->isChecked();
+    m_currentSettings["arousal_settings"] = arousalSettings;
     
     // Save to file
     QFile file(SETTINGS_FILE_PATH);

@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QMutex>
+#include <QString>
 #include <memory>
 
 // Forward declarations
@@ -85,6 +86,10 @@ public:
     void emergencyStop();
     bool resetEmergencyStop();
     bool isEmergencyStop() const { return m_emergencyStop; }
+
+    // Safety helper states
+    void enterSealMaintainedSafeState(const QString& reason);
+    void enterFullVentState(const QString& reason);
     
     // Hardware diagnostics
     bool performSelfTest();

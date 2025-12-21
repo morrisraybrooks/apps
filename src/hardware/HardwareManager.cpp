@@ -40,6 +40,22 @@ bool HardwareManager::initialize()
 {
     try {
         qDebug() << "Initializing Hardware Manager...";
+
+        // In simulation mode we deliberately avoid touching any real hardware
+        // interfaces (GPIO, SPI, ADC, etc.). The safety and test harnesses
+        // only depend on the logical state (simulated pressures, pump speed,
+        // emergency flags), so we can short‑circuit initialization here.
+        if (m_simulationMode) {
+            qDebug() << "Hardware Manager running in SIMULATION mode - skipping physical GPIO/SPI/ADC initialization";
+
+            // Do not create MCP3008, SensorInterface, ActuatorControl, or
+            // other physical peripherals. All reads will use the
+            // m_simulated* members and logical state maintained by the
+            // setter methods below.
+
+            m_initialized = true;
+            return true;
+        }
         
         // Initialize GPIO using libgpiod
         qDebug() << "Initializing GPIO using libgpiod...";
@@ -254,10 +270,15 @@ void HardwareManager::setPumpSpeed(double speedPercent)
         qWarning() << "Cannot set pump speed: Emergency stop active";
         return;
     }
-    
-    if (m_actuatorControl) {
+
+    // Always track requested pump speed locally so that safety logic and
+    // tests (including simulation mode) can observe the commanded value
+    // even when no physical ActuatorControl is present.
+    m_pumpSpeed = speedPercent;
+
+    // Only talk to real hardware when not in simulation mode.
+    if (m_actuatorControl && !m_simulationMode) {
         m_actuatorControl->setPumpSpeed(speedPercent);
-        m_pumpSpeed = speedPercent;
     }
 }
 
@@ -269,10 +290,13 @@ void HardwareManager::setPumpEnabled(bool enabled)
         qWarning() << "Cannot enable pump: Emergency stop active";
         return;
     }
-    
-    if (m_actuatorControl) {
+
+    // Track logical pump enable state even when no physical hardware is
+    // present (e.g., in tests or full simulation mode).
+    m_pumpEnabled = enabled;
+
+    if (m_actuatorControl && !m_simulationMode) {
         m_actuatorControl->setPumpEnabled(enabled);
-        m_pumpEnabled = enabled;
     }
 }
 
@@ -338,9 +362,15 @@ void HardwareManager::setSOL5(bool open)
 
 void HardwareManager::emergencyStop()
 {
+    // Preserve legacy API but route through the seal-maintained safe state.
+    enterSealMaintainedSafeState("HardwareManager::emergencyStop() invoked");
+}
+
+void HardwareManager::enterSealMaintainedSafeState(const QString& reason)
+{
     QMutexLocker locker(&m_stateMutex);
 
-    qWarning() << "HARDWARE EMERGENCY STOP ACTIVATED";
+    qWarning() << "HARDWARE SEAL-MAINTAINED SAFE STATE:" << reason;
 
     m_emergencyStop = true;
 
@@ -349,17 +379,63 @@ void HardwareManager::emergencyStop()
         m_tensController->emergencyStop();
     }
 
-    // Immediately stop all actuators
+    // Stop pump and place valves into a state that vents inner circuits
+    // while preserving the outer AVL seal.
+    if (m_actuatorControl) {
+        // Pump off
+        m_actuatorControl->setPumpEnabled(false);
+        m_actuatorControl->setPumpSpeed(0.0);
+
+        // Outer V-seal chamber: close vacuum, keep vent closed (seal maintained)
+        m_actuatorControl->setSOL1(false);  // No new vacuum to AVL
+        m_actuatorControl->setSOL2(false);  // Do NOT vent AVL
+
+        // Tank and clitoral circuit: fully vent
+        m_actuatorControl->setSOL3(true);   // Tank vent open
+        m_actuatorControl->setSOL4(false);  // Clitoral vacuum closed
+        m_actuatorControl->setSOL5(true);   // Clitoral vent open
+    }
+
+    // Mirror state locally
+    m_pumpEnabled = false;
+    m_pumpSpeed = 0.0;
+    m_sol1State = false;
+    m_sol2State = false;
+    m_sol3State = true;
+    m_sol4State = false;
+    m_sol5State = true;
+
+    emit hardwareError("Seal-maintained safe state activated");
+}
+
+void HardwareManager::enterFullVentState(const QString& reason)
+{
+    QMutexLocker locker(&m_stateMutex);
+
+    qCritical() << "HARDWARE FULL-VENT EMERGENCY STATE:" << reason;
+
+    m_emergencyStop = true;
+
+    // Immediately stop TENS (electrical safety first!)
+    if (m_tensController) {
+        m_tensController->emergencyStop();
+    }
+
+    // Use low-level actuator emergency stop to vent all chambers and stop pump
     if (m_actuatorControl) {
         m_actuatorControl->emergencyStop();
     }
 
-    // Update local state
+    // Reflect expected valve and pump state after full-vent emergency
     m_pumpEnabled = false;
     m_pumpSpeed = 0.0;
-    // Note: Valves may remain in their current state for safety
+    m_sol1State = false;  // Outer vacuum closed
+    m_sol2State = true;   // Outer vent open
+    m_sol3State = true;   // Tank vent open
+    m_sol4State = false;  // Clitoral vacuum closed
+    m_sol5State = true;   // Clitoral vent open
 
-    emit hardwareError("Emergency stop activated");
+    emit hardwareError("Full-vent emergency state activated");
 }
 
 bool HardwareManager::resetEmergencyStop()

@@ -171,7 +171,10 @@ void VacuumController::emergencyStop()
     }
     
     if (m_hardwareManager) {
-        m_hardwareManager->emergencyStop();
+        // Default to a seal-maintained safe state; SafetyManager will
+        // escalate to full vent only for tissue-damage risk or
+        // runaway+invalid-sensor scenarios.
+        m_hardwareManager->enterSealMaintainedSafeState("User emergency stop");
     }
     
     setState(EMERGENCY_STOP);
@@ -192,13 +195,21 @@ void VacuumController::resetEmergencyStop()
 
 void VacuumController::setMaxPressure(double maxPressure)
 {
-    if (maxPressure > 0 && maxPressure <= 150.0) {  // Reasonable safety limit
-        m_maxPressure = maxPressure;
-        if (m_safetyManager) {
-            m_safetyManager->setMaxPressure(maxPressure);
-        }
-        qDebug() << "Max pressure set to:" << maxPressure << "mmHg";
+    if (maxPressure <= 0.0) {
+        return;
     }
+
+    // Constrain user-configurable max pressure to a conservative
+    // operational limit well below the tissue-damage threshold.
+    if (maxPressure > 100.0) {
+        maxPressure = 100.0;
+    }
+
+    m_maxPressure = maxPressure;
+    if (m_safetyManager) {
+        m_safetyManager->setMaxPressure(maxPressure);
+    }
+    qDebug() << "Max pressure set to:" << maxPressure << "mmHg";
 }
 
 void VacuumController::setAntiDetachmentThreshold(double threshold)

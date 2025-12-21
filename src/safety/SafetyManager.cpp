@@ -11,6 +11,7 @@ const double SafetyManager::DEFAULT_WARNING_THRESHOLD = 60.0;  // 80% of max (60
 const int SafetyManager::DEFAULT_SENSOR_TIMEOUT_MS = 1000;     // 1 second timeout
 const int SafetyManager::MONITORING_INTERVAL_MS = 100;         // 10Hz monitoring
 const int SafetyManager::MAX_CONSECUTIVE_ERRORS = 3;           // 3 errors trigger emergency stop
+const double SafetyManager::TISSUE_DAMAGE_RISK_PRESSURE = 150.0; // Hard tissue-damage risk threshold (mmHg)
 
 SafetyManager::SafetyManager(HardwareManager* hardware, QObject *parent)
     : QObject(parent)
@@ -29,6 +30,8 @@ SafetyManager::SafetyManager(HardwareManager* hardware, QObject *parent)
     , m_emergencyStopEvents(0)
     , m_recoveryAttempts(0)
     , m_consecutiveErrors(0)
+    , m_consecutiveInvalidSensorReadings(0)
+    , m_consecutiveRunawaySamples(0)
     , m_autoRecoveryEnabled(true)
     , m_recoveryInProgress(false)
 {
@@ -94,14 +97,21 @@ void SafetyManager::shutdown()
 
 void SafetyManager::setMaxPressure(double maxPressure)
 {
-    if (maxPressure > 0 && maxPressure <= 150.0) {  // Reasonable upper limit
-        QMutexLocker locker(&m_stateMutex);
-        m_maxPressure = maxPressure;
-        m_warningThreshold = maxPressure * 0.8;  // 80% of max
-        
-        qDebug() << QString("Safety limits updated: Max = %1 mmHg, Warning = %2 mmHg")
-                    .arg(m_maxPressure).arg(m_warningThreshold);
+    // Clamp operational max pressure to a conservative limit (well below tissue-damage risk)
+    if (maxPressure <= 0.0) {
+        return;
     }
+
+    if (maxPressure > 100.0) {
+        maxPressure = 100.0;  // User-configurable limit must stay below tissue-damage threshold
+    }
+
+    QMutexLocker locker(&m_stateMutex);
+    m_maxPressure = maxPressure;
+    m_warningThreshold = maxPressure * 0.8;  // 80% of max
+
+    qDebug() << QString("Safety limits updated: Max = %1 mmHg, Warning = %2 mmHg")
+                .arg(m_maxPressure).arg(m_warningThreshold);
 }
 
 void SafetyManager::setWarningThreshold(double warningThreshold)
@@ -129,11 +139,11 @@ void SafetyManager::triggerEmergencyStop_unlocked(const QString& reason)
     m_emergencyStopEvents++;
     m_lastSafetyError = QString("Emergency stop: %1").arg(reason);
     
-    // Immediately stop hardware
+    // Default emergency-stop path should preserve AVL seal while venting inner chambers.
     if (m_hardware) {
-        m_hardware->emergencyStop();
+        m_hardware->enterSealMaintainedSafeState(reason);
     }
-    
+
     setState(EMERGENCY_STOP);
     emit emergencyStopTriggered(reason);
 }
@@ -268,8 +278,11 @@ bool SafetyManager::checkPressureLimits()
         double avlPressure = m_hardware->readAVLPressure();
         double tankPressure = m_hardware->readTankPressure();
         
-        // Check for invalid readings
-        if (avlPressure < 0 || tankPressure < 0) {
+        // Evaluate complex safety conditions that combine sensor validity and pump behavior
+        evaluateRunawayAndInvalidSensors(avlPressure, tankPressure);
+
+        // Check for grossly invalid readings
+        if (!isSensorDataValid(avlPressure, tankPressure)) {
             m_lastSafetyError = "Invalid pressure readings";
             return false;
         }
@@ -342,11 +355,34 @@ void SafetyManager::handleOverpressure(double pressure)
     m_overpressureEvents++;
     m_lastSafetyError = QString("Overpressure detected: %1 mmHg (max: %2 mmHg)")
                        .arg(pressure, 0, 'f', 1).arg(m_maxPressure, 0, 'f', 1);
-    
-    qCritical() << m_lastSafetyError;
-    
+
     emit overpressureDetected(pressure);
-    triggerEmergencyStop_unlocked(m_lastSafetyError);
+
+    // Two-tier response:
+    // 1) Above hard tissue-damage risk threshold -> full-vent emergency (cup may detach)
+    // 2) Above configured max but below tissue-damage risk -> seal-maintained safe state
+    if (pressure >= TISSUE_DAMAGE_RISK_PRESSURE) {
+        qCritical() << m_lastSafetyError << "- exceeding tissue-damage risk threshold, FULL VENT";
+
+        m_emergencyStopEvents++;
+
+        if (m_hardware) {
+            m_hardware->enterFullVentState("Overpressure above tissue-damage risk threshold");
+        }
+
+        setState(EMERGENCY_STOP);
+        emit emergencyStopTriggered(m_lastSafetyError);
+    } else {
+        qWarning() << m_lastSafetyError << "- entering seal-maintained safe state";
+
+        if (m_hardware) {
+            m_hardware->enterSealMaintainedSafeState("Overpressure above configured maximum");
+        }
+
+        // This is a critical-but-recoverable condition; keep explicit CRITICAL state
+        setState(CRITICAL);
+        emit safetyWarning(m_lastSafetyError);
+    }
 }
 
 void SafetyManager::handleCriticalError(const QString& error)
@@ -374,6 +410,64 @@ void SafetyManager::initializeSafetyParameters()
     m_emergencyStopEvents = 0;
     m_recoveryAttempts = 0;
     m_consecutiveErrors = 0;
+
+    m_consecutiveInvalidSensorReadings = 0;
+    m_consecutiveRunawaySamples = 0;
+}
+
+bool SafetyManager::isSensorDataValid(double avlPressure, double tankPressure) const
+{
+    // Use a broad validity window; detailed safety is handled by maxPressure + monitors
+    const double MIN_VALID = 0.0;    // Sensors should never report negative mmHg
+    const double MAX_VALID = 200.0;  // Beyond this we assume sensor fault or out-of-range
+
+    return (avlPressure >= MIN_VALID && avlPressure <= MAX_VALID &&
+            tankPressure >= MIN_VALID && tankPressure <= MAX_VALID);
+}
+
+void SafetyManager::evaluateRunawayAndInvalidSensors(double avlPressure, double tankPressure)
+{
+    if (!m_hardware) {
+        return;
+    }
+
+    const bool valid = isSensorDataValid(avlPressure, tankPressure);
+    if (!valid) {
+        m_consecutiveInvalidSensorReadings++;
+    } else {
+        m_consecutiveInvalidSensorReadings = 0;
+    }
+
+    // Pump "runaway" heuristic: sustained high pump speed
+    const double pumpSpeed = m_hardware->getPumpSpeed();  // 0-100%
+    const bool runawayNow = (pumpSpeed >= 80.0);          // >=80% duty considered suspicious
+
+    if (runawayNow) {
+        m_consecutiveRunawaySamples++;
+    } else {
+        m_consecutiveRunawaySamples = 0;
+    }
+
+    // Require both conditions to persist for multiple consecutive checks before escalating
+    static const int REQUIRED_INVALID_SAMPLES = 5;  // At 10Hz, ~0.5s
+    static const int REQUIRED_RUNAWAY_SAMPLES = 5;  // At 10Hz, ~0.5s
+
+    if (m_consecutiveInvalidSensorReadings >= REQUIRED_INVALID_SAMPLES &&
+        m_consecutiveRunawaySamples >= REQUIRED_RUNAWAY_SAMPLES &&
+        m_safetyState != EMERGENCY_STOP)
+    {
+        m_lastSafetyError = "Invalid pressure sensor data combined with pump runaway";
+        qCritical() << m_lastSafetyError << "- triggering FULL VENT for safety";
+
+        m_emergencyStopEvents++;
+
+        if (m_hardware) {
+            m_hardware->enterFullVentState("Invalid sensor data + pump runaway");
+        }
+
+        setState(EMERGENCY_STOP);
+        emit emergencyStopTriggered(m_lastSafetyError);
+    }
 }
 
 // Auto-recovery implementation
@@ -416,21 +510,14 @@ void SafetyManager::performSystemRecovery()
         // Step 1: Reset safety state to safe
         setState(SAFE);
 
-        // Step 2: Reset hardware to safe state
+        // Step 2: Reset hardware to a seal-maintained safe state
         if (m_hardware) {
-            // Stop all actuators
-            m_hardware->setPumpEnabled(false);
-            m_hardware->setPumpSpeed(0.0);
+            m_hardware->enterSealMaintainedSafeState("SafetyManager system recovery");
 
-            // Open vent valves for safety
-            m_hardware->setSOL2(true);  // AVL vent valve
-            m_hardware->setSOL3(true);  // Tank vent valve
-            m_hardware->setSOL1(false); // Close AVL valve
-
-            // Clear emergency stop if set
+            // Clear emergency stop if set (allows future operation once user explicitly resets)
             m_hardware->resetEmergencyStop();
 
-            qDebug() << "Hardware reset to safe state";
+            qDebug() << "Hardware reset to seal-maintained safe state";
         }
 
         // Step 3: Reset error counters

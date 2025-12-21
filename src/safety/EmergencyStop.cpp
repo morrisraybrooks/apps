@@ -191,11 +191,13 @@ void EmergencyStop::performEmergencyShutdown()
     }
     
     try {
-        // Immediately stop all hardware operations
-        m_hardware->emergencyStop();
-        
-        qDebug() << "Emergency shutdown completed";
-        
+        // By default, enter a seal-maintained safe state so the
+        // outer AVL chamber remains attached unless a higher-level
+        // safety manager escalates to full vent.
+        m_hardware->enterSealMaintainedSafeState("Hardware emergency stop triggered");
+
+        qDebug() << "Emergency shutdown (seal-maintained) completed";
+
     } catch (const std::exception& e) {
         qCritical() << "Emergency shutdown failed:" << e.what();
     }

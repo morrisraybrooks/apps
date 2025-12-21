@@ -66,6 +66,24 @@ target_link_libraries(VacuumTestFramework
     VacuumControllerLib
 )
 
+# Standalone safety system test runner
+#
+# This executable uses the custom TestFramework/TestRunner pipeline and
+# runs the SafetySystemTests suite. It is wired into CTest so that
+# `ctest -R SafetySystemTests` exercises all safety invariants,
+# including the AVL seal behavior and tissue-damage threshold logic.
+add_executable(SafetySystemTests
+    TestRunner.cpp
+)
+
+target_link_libraries(SafetySystemTests
+    VacuumTestFramework
+    Qt5::Core
+    Qt5::Test
+)
+
+add_test(NAME SafetySystemTests COMMAND SafetySystemTests --suite SafetySystem)
+
 # NOTE: SafetySystemTests, HardwareTests, PatternTests, GUITests, PerformanceTests, IntegrationTests
 # are temporarily disabled - they need API updates to match the new TestFramework
 

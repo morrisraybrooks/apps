@@ -77,11 +77,11 @@ int TestRunner::run(const QStringList& arguments)
         QString outputFile = parser.value(outputOption);
         QString format = parser.value(formatOption).toLower();
         
-        TestFramework::ExportFormat exportFormat = TestFramework::XML_FORMAT;
+        ExportFormat exportFormat = XML_FORMAT;
         if (format == "json") {
-            exportFormat = TestFramework::JSON_FORMAT;
+            exportFormat = JSON_FORMAT;
         } else if (format == "csv") {
-            exportFormat = TestFramework::CSV_FORMAT;
+            exportFormat = CSV_FORMAT;
         }
         
         if (!m_framework->exportResults(outputFile, exportFormat)) {

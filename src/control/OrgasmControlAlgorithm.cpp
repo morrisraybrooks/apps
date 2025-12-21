@@ -23,8 +23,11 @@ OrgasmControlAlgorithm::OrgasmControlAlgorithm(HardwareManager* hardware, QObjec
     , m_state(ControlState::STOPPED)
     , m_mode(Mode::MANUAL)
     , m_emergencyStop(false)
-    , m_tensEnabled(true)
-    , m_antiEscapeEnabled(true)
+    // Safety-first defaults: TENS and Anti-Escape start disabled.
+    // GUI explicitly exposes these as opt-in advanced features and
+    // tests expect them to be OFF by default.
+    , m_tensEnabled(false)
+    , m_antiEscapeEnabled(false)
     , m_heartRateEnabled(false)
     , m_verboseLogging(false)  // Non-critical fix: Default to non-verbose for production
     , m_arousalLevel(0.0)

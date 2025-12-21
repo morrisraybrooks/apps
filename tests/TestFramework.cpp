@@ -322,7 +322,7 @@ bool TestFramework::exportToCSV(QTextStream& stream)
                   .arg(testResultToString(record.result))
                   .arg(record.duration)
                   .arg(record.timestamp.toString(Qt::ISODate))
-                  .arg(record.errorMessage.replace("\"", "\"\""));
+                  .arg(QString(record.errorMessage).replace("\"", "\"\""));
     }
     
     return true;

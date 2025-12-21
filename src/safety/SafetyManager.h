@@ -76,6 +76,10 @@ public:
     int getEmergencyStopEvents() const { return m_emergencyStopEvents; }
     int getRecoveryAttempts() const { return m_recoveryAttempts; }
 
+    // Key safety thresholds (exposed for monitoring and tests)
+    double tissueDamageRiskPressure() const { return TISSUE_DAMAGE_RISK_PRESSURE; }
+    int monitoringIntervalMs() const { return MONITORING_INTERVAL_MS; }
+
 Q_SIGNALS:
     void safetyStateChanged(SafetyState newState);
     void overpressureDetected(double pressure);
@@ -103,6 +107,10 @@ private:
     void handleCriticalError(const QString& error);
     void initializeSafetyParameters();
 
+    // Helpers for advanced safety conditions
+    bool isSensorDataValid(double avlPressure, double tankPressure) const;
+    void evaluateRunawayAndInvalidSensors(double avlPressure, double tankPressure);
+
     // Hardware interface
     HardwareManager* m_hardware;
     CrashHandler* m_crashHandler;
@@ -124,6 +132,10 @@ private:
     QString m_lastSafetyError;
     qint64 m_lastAVLReading;     // Timestamp of last AVL reading
     qint64 m_lastTankReading;    // Timestamp of last tank reading
+
+    // Runaway pump + invalid sensor detection
+    int m_consecutiveInvalidSensorReadings;
+    int m_consecutiveRunawaySamples;
     
     // Safety statistics
     int m_overpressureEvents;
@@ -141,6 +153,9 @@ private:
     static const int DEFAULT_SENSOR_TIMEOUT_MS;    // 1000 ms
     static const int MONITORING_INTERVAL_MS;       // 100 ms (10Hz)
     static const int MAX_CONSECUTIVE_ERRORS;       // 3 errors before emergency stop
+
+    // Hard, non-overrideable tissue-damage risk threshold (mmHg)
+    static const double TISSUE_DAMAGE_RISK_PRESSURE;
     
     // Error tracking
     int m_consecutiveErrors;
