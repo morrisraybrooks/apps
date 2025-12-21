@@ -383,42 +383,49 @@ void PatternEngine::buildWavePattern(const QJsonObject& params)
 
 void PatternEngine::buildAirPulsePattern(const QJsonObject& params)
 {
-    // Enhanced air pulse for single-chamber therapeutic system
-    double frequency = params["frequency_hz"].toDouble(8.0);
+    // REWRITTEN: Now uses ClitoralOscillator for correct high-speed air pulse generation
+    // mimicking commercial toys like Womanizer/Satisfyer (8-13 Hz)
+
+    // Outer chamber pressure (for engorgement seal)
     double basePressure = params["base_pressure_mmhg"].toDouble(25.0);
-    double pulseAmplitude = params["pulse_amplitude_mmhg"].toDouble(15.0);
-    double dutyCycle = params["duty_cycle_percent"].toDouble(35.0) / 100.0;
-    int totalCycles = params["cycle_count"].toInt(20);
-    bool progressiveIntensity = params["progressive_intensity"].toBool(false);
-
-    // Calculate timing from frequency
-    int cycleDurationMs = static_cast<int>(1000.0 / frequency);
-    int suctionDurationMs = static_cast<int>(cycleDurationMs * dutyCycle);
-    int releaseDurationMs = cycleDurationMs - suctionDurationMs;
-
-    // Convert mmHg to percentage (assuming 75 mmHg = 100% with MPX5010DP)
     double basePressurePercent = (basePressure / 75.0) * 100.0;
-    double maxPressurePercent = (basePressure + pulseAmplitude) / 75.0 * 100.0;
 
-    // Create therapeutic air pulse pattern
-    for (int i = 0; i < totalCycles; ++i) {
-        double intensityMultiplier = 1.0;
-        if (progressiveIntensity) {
-            // Gradually increase intensity over first 50% of cycles
-            double progress = static_cast<double>(i) / totalCycles;
-            if (progress < 0.5) {
-                intensityMultiplier = 0.5 + progress; // Start at 50%, reach 100% at halfway
-            }
-        }
+    // Pulse settings
+    double startFreq = params["frequency_hz"].toDouble(5.0);
+    double endFreq = params["end_frequency_hz"].toDouble(12.0); // Ramp to optimal 12Hz
+    double pulseAmplitude = params["pulse_amplitude_mmhg"].toDouble(30.0);
 
-        double currentMaxPressure = basePressurePercent + (pulseAmplitude * intensityMultiplier);
+    int duration = params["duration_ms"].toInt(120000); // 2 minutes default
+    bool progressive = params["progressive_intensity"].toBool(true);
 
-        // Suction phase: Apply vacuum for blood flow and stimulation
-        m_patternSteps.append(PatternStep(currentMaxPressure, suctionDurationMs, "therapeutic_suction"));
+    // If progressive, we create a few "macro" steps to ramp up the oscillator
+    // The oscillator handles the micro-switching (12Hz), not the pattern engine steps.
 
-        // Release phase: Return to baseline (not zero - maintains seal and drainage)
-        m_patternSteps.append(PatternStep(basePressurePercent, releaseDurationMs, "maintain_baseline"));
+    int steps = progressive ? 5 : 1;
+    int stepDuration = duration / steps;
+
+    for (int i = 0; i < steps; ++i) {
+        double progress = static_cast<double>(i) / std::max(1, steps - 1);
+        double currentFreq = progressive ? (startFreq + (endFreq - startFreq) * progress) : startFreq;
+
+        // Intensity ramp (optional)
+        double currentAmp = progressive ? (pulseAmplitude * (0.6 + 0.4 * progress)) : pulseAmplitude;
+
+        PatternStep step;
+        step.pressurePercent = basePressurePercent; // Maintain outer seal
+        step.durationMs = stepDuration;
+        step.action = "air_pulse_oscillation";
+
+        // Configure the ClitoralOscillator for this segment
+        step.parameters["clitoral_oscillation"] = true;
+        step.parameters["clitoral_frequency"] = currentFreq;
+        step.parameters["clitoral_amplitude"] = currentAmp;
+        step.parameters["description"] = QString("Air pulse @ %1 Hz").arg(currentFreq, 0, 'f', 1);
+
+        m_patternSteps.append(step);
     }
+
+    qDebug() << "Built correct hardware-accelerated Air Pulse pattern";
 }
 
 void PatternEngine::buildMilkingPattern(const QJsonObject& params)
@@ -761,9 +768,9 @@ void PatternEngine::executeStep(const PatternStep& step)
             }
         }
 
-        // Handle clitoral oscillation for dual-chamber, clitoral-only, and TENS patterns
+        // Handle clitoral oscillation for dual-chamber, clitoral-only, TENS patterns, AND air pulse
         if (m_currentPatternType == DUAL_CHAMBER || m_currentPatternType == CLITORAL_ONLY ||
-            m_currentPatternType == TENS_VACUUM) {
+            m_currentPatternType == TENS_VACUUM || m_currentPatternType == AIR_PULSE) {
             bool enableOscillation = step.parameters.value("clitoral_oscillation").toBool(false);
 
             if (enableOscillation && m_clitoralOscillator) {
