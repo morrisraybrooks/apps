@@ -1,0 +1,49 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/src",
+                "${workspaceFolder}/src/hardware",
+                "${workspaceFolder}/src/gui",
+                "${workspaceFolder}/src/gui/components",
+                "${workspaceFolder}/src/patterns",
+                "${workspaceFolder}/src/safety",
+                "${workspaceFolder}/src/threading",
+                "${workspaceFolder}/src/calibration",
+                "${workspaceFolder}/src/error",
+                "${workspaceFolder}/src/testing",
+                "${workspaceFolder}/src/logging",
+                "${workspaceFolder}/src/performance",
+                "${workspaceFolder}/src/reporting",
+                "${workspaceFolder}/src/control",
+                "${workspaceFolder}/src/game",
+                "/usr/include/x86_64-linux-gnu/qt5",
+                "/usr/include/x86_64-linux-gnu/qt5/QtCore",
+                "/usr/include/x86_64-linux-gnu/qt5/QtWidgets",
+                "/usr/include/x86_64-linux-gnu/qt5/QtGui",
+                "/usr/include/x86_64-linux-gnu/qt5/QtCharts",
+                "/usr/include/x86_64-linux-gnu/qt5/QtSql",
+                "/usr/include/x86_64-linux-gnu/qt5/QtMultimedia",
+                "/usr/include/x86_64-linux-gnu/qt5/QtWebSockets",
+                "/usr/include/x86_64-linux-gnu/qt5/QtSerialPort",
+                "/usr/local/include"
+            ],
+            "defines": [
+                "QT_CORE_LIB",
+                "QT_WIDGETS_LIB",
+                "QT_GUI_LIB",
+                "QT_CHARTS_LIB"
+            ],
+            "compilerPath": "/usr/bin/g++",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-gcc-x64",
+            "configurationProvider": "ms-vscode.cmake-tools",
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json"
+        }
+    ],
+    "version": 4
+}
+
