@@ -383,40 +383,52 @@ void PatternEngine::buildWavePattern(const QJsonObject& params)
 
 void PatternEngine::buildAirPulsePattern(const QJsonObject& params)
 {
-    // REWRITTEN: Now uses ClitoralOscillator for correct high-speed air pulse generation
-    // mimicking commercial toys like Womanizer/Satisfyer (8-13 Hz)
+    // === ARCHITECTURE: Hardware-Accelerated Air Pulse ===
+    // This pattern delegates high-speed valve switching (5-13Hz) to ClitoralOscillator.
+    // PatternEngine creates "macro steps" that control oscillation parameters over time,
+    // while ClitoralOscillator handles the "micro switching" of SOL4/SOL5 valves.
+    //
+    // Valve Segregation:
+    // - Outer Chamber (SOL1/SOL2): Controlled by applyPressureTarget() - maintains seal
+    // - Inner Chamber (SOL4/SOL5): Controlled by ClitoralOscillator - creates air pulses
+    //
+    // This mimics commercial toys (Womanizer/Satisfyer) which use 8-13Hz optimal range.
 
-    // Outer chamber pressure (for engorgement seal)
-    double basePressure = params["base_pressure_mmhg"].toDouble(25.0);
-    double basePressurePercent = (basePressure / 75.0) * 100.0;
+    m_patternSteps.clear();
 
-    // Pulse settings
-    double startFreq = params["frequency_hz"].toDouble(5.0);
-    double endFreq = params["end_frequency_hz"].toDouble(12.0); // Ramp to optimal 12Hz
-    double pulseAmplitude = params["pulse_amplitude_mmhg"].toDouble(30.0);
+    // 1. Get Parameters
+    double outerVacuumMmHg = params["base_pressure_mmhg"].toDouble(25.0);  // Outer seal pressure
+    double outerVacuumPercent = (outerVacuumMmHg / 75.0) * 100.0;          // Convert to percentage
 
-    int duration = params["duration_ms"].toInt(120000); // 2 minutes default
-    bool progressive = params["progressive_intensity"].toBool(true);
+    double startFreq = params["start_frequency_hz"].toDouble(5.0);         // Initial frequency
+    double endFreq = params["end_frequency_hz"].toDouble(12.0);            // Target frequency (optimal)
+    double amplitude = params["amplitude_mmhg"].toDouble(40.0);            // Pulse amplitude
 
-    // If progressive, we create a few "macro" steps to ramp up the oscillator
-    // The oscillator handles the micro-switching (12Hz), not the pattern engine steps.
+    int durationMs = params["duration_ms"].toInt(120000);                  // 2 minutes default
+    bool progressive = params["progressive_intensity"].toBool(true);       // Ramp up over time
 
-    int steps = progressive ? 5 : 1;
-    int stepDuration = duration / steps;
+    // 2. Strategy: Break duration into segments for progressive frequency ramping
+    // Each segment is a "macro step" that runs the oscillator at a specific frequency.
+    // Typical commercial toys ramp from gentle (5Hz) to intense (12Hz) over 30-60 seconds.
 
-    for (int i = 0; i < steps; ++i) {
-        double progress = static_cast<double>(i) / std::max(1, steps - 1);
+    int segmentDuration = 5000;  // 5-second segments for smooth ramping
+    int numSegments = durationMs / segmentDuration;
+
+    for (int i = 0; i < numSegments; ++i) {
+        double progress = static_cast<double>(i) / static_cast<double>(numSegments);
+
+        // Interpolate frequency (e.g., 5Hz -> 12Hz over the pattern duration)
         double currentFreq = progressive ? (startFreq + (endFreq - startFreq) * progress) : startFreq;
 
-        // Intensity ramp (optional)
-        double currentAmp = progressive ? (pulseAmplitude * (0.6 + 0.4 * progress)) : pulseAmplitude;
+        // Optional: Also ramp amplitude for progressive intensity
+        double currentAmp = progressive ? (amplitude * (0.6 + 0.4 * progress)) : amplitude;
 
         PatternStep step;
-        step.pressurePercent = basePressurePercent; // Maintain outer seal
-        step.durationMs = stepDuration;
-        step.action = "air_pulse_oscillation";
+        step.action = "air_pulse_run";
+        step.durationMs = segmentDuration;
+        step.pressurePercent = outerVacuumPercent;  // MAINTAIN OUTER SEAL (SOL1)
 
-        // Configure the ClitoralOscillator for this segment
+        // Pass parameters to ClitoralOscillator via step metadata
         step.parameters["clitoral_oscillation"] = true;
         step.parameters["clitoral_frequency"] = currentFreq;
         step.parameters["clitoral_amplitude"] = currentAmp;
@@ -425,7 +437,10 @@ void PatternEngine::buildAirPulsePattern(const QJsonObject& params)
         m_patternSteps.append(step);
     }
 
-    qDebug() << "Built correct hardware-accelerated Air Pulse pattern";
+    qDebug() << "Built Hardware-Accelerated Air Pulse Pattern:"
+             << numSegments << "segments,"
+             << startFreq << "Hz ->" << endFreq << "Hz,"
+             << amplitude << "mmHg amplitude";
 }
 
 void PatternEngine::buildMilkingPattern(const QJsonObject& params)
@@ -742,6 +757,25 @@ void PatternEngine::executeNextStep()
 
 void PatternEngine::executeStep(const PatternStep& step)
 {
+    // === DUAL-CHAMBER CONTROL ARCHITECTURE ===
+    // This function coordinates two independent control loops:
+    //
+    // 1. OUTER CHAMBER (SOL1/SOL2) - Controlled by applyPressureTarget()
+    //    - Purpose: Maintains sustained vacuum seal for tissue engorgement
+    //    - Frequency: Slow (0.1-4 Hz) - pattern-dependent
+    //    - Control: Direct valve control via step.pressurePercent
+    //
+    // 2. INNER CHAMBER (SOL4/SOL5) - Controlled by ClitoralOscillator
+    //    - Purpose: High-speed air-pulse stimulation (mimics commercial toys)
+    //    - Frequency: Fast (5-13 Hz) - optimal for orgasm induction
+    //    - Control: Delegated to ClitoralOscillator via step.parameters
+    //
+    // CONFLICT PREVENTION:
+    // - SOL1/SOL2 and SOL4/SOL5 are physically separate valve pairs
+    // - HardwareManager uses separate mutexes for each chamber
+    // - PatternEngine never directly controls SOL4/SOL5 (only via ClitoralOscillator)
+    // - ClitoralOscillator never controls SOL1/SOL2 (only PatternEngine does)
+
     if (!m_hardware) return;
 
     try {
@@ -771,6 +805,7 @@ void PatternEngine::executeStep(const PatternStep& step)
         // Handle clitoral oscillation for dual-chamber, clitoral-only, TENS patterns, AND air pulse
         if (m_currentPatternType == DUAL_CHAMBER || m_currentPatternType == CLITORAL_ONLY ||
             m_currentPatternType == TENS_VACUUM || m_currentPatternType == AIR_PULSE) {
+
             bool enableOscillation = step.parameters.value("clitoral_oscillation").toBool(false);
 
             if (enableOscillation && m_clitoralOscillator) {
@@ -778,10 +813,23 @@ void PatternEngine::executeStep(const PatternStep& step)
                 double freq = step.parameters.value("clitoral_frequency").toDouble(8.0);
                 double amp = step.parameters.value("clitoral_amplitude").toDouble(40.0);
 
-                m_clitoralOscillator->setFrequency(freq);
-                m_clitoralOscillator->setAmplitude(amp);
-
-                if (!m_clitoralOscillator->isRunning()) {
+                // Real-time parameter updates: Only update if values changed significantly
+                // This prevents unnecessary valve reconfiguration during running oscillation
+                if (m_clitoralOscillator->isRunning()) {
+                    // Update frequency if changed by more than 0.1 Hz
+                    if (std::abs(m_clitoralOscillator->getFrequency() - freq) > 0.1) {
+                        m_clitoralOscillator->setFrequency(freq);
+                        qDebug() << "Clitoral frequency updated to" << freq << "Hz";
+                    }
+                    // Update amplitude if changed by more than 1.0 mmHg
+                    if (std::abs(m_clitoralOscillator->getAmplitude() - amp) > 1.0) {
+                        m_clitoralOscillator->setAmplitude(amp);
+                        qDebug() << "Clitoral amplitude updated to" << amp << "mmHg";
+                    }
+                } else {
+                    // First time starting - set parameters and start
+                    m_clitoralOscillator->setFrequency(freq);
+                    m_clitoralOscillator->setAmplitude(amp);
                     m_clitoralOscillator->start();
                     qDebug() << "Clitoral oscillation started:" << freq << "Hz," << amp << "mmHg";
                 }
