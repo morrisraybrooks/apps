@@ -409,7 +409,6 @@ To upgrade from single-chamber to dual-chamber operation, the following componen
 | **SOL5 (Solenoid Valve)** | 1 | Clitoral chamber vent (for air-pulse release) |
 | **MPX5010DP Sensor** | 1 | Clitoral chamber pressure monitoring |
 | **Vacuum Line (5mm ID)** | 1 | Clitoral chamber supply line |
-| **Y-Splitter** | 1 | Connects clitoral chamber to tank |
 
 ### 2.2 Updated GPIO Pin Assignments
 
