@@ -51,24 +51,16 @@ The "A" shape represents the cup's anatomy, creating an **open-channel design** 
                   A-CONTOUR CUP ANATOMY (Top View)
 
                          ╱╲
-                        ╱  ╲
-                       ╱ ▲  ╲  ← A-APEX TRIANGLE
-                      ╱ 15mm ╲    (Clitoral Cylinder)
-                     ╱───────╲ ← A-CROSSBAR (Diaphragm)
-                    ╱         ╲
-                   ╱   OUTER   ╲
-                  ╱  A-CHAMBER  ╲
-                 ╱ (Labia Seal)  ╲
-                ╱                 ╲
-               │                   │  ← A-LEGS
-               │     ┌───────┐     │     (Bilateral
-               │     │ OPEN  │     │      Outer Chambers)
-               │     │CHANNEL│     │
-               │     │(Vaginal│    │
-               │     │Urethral│    │
-               │     │Access) │    │
-               │     └───────┘     │
-               └───────────────────┘
+                        ╱╱╲╲
+                       ╱╱  ╲╲  ← A-APEX TRIANGLE (15mm Clitoral Cylinder)
+                      ╱╱clit╲╲
+                     ╱╱──────╲╲ ← A-CROSSBAR (Divide between Clitoral Cylinder and Outer Chamber)
+                    ╱╱────────╲╲
+                   ╱╱   OPEN   ╲╲ ← A-LEGS (Bilateral Outer Chambers / Labia Seal)
+                  ╱╱   CHANNEL  ╲╲
+                 ╱╱  (Urethral)  ╲╲
+                ╱╱    (Vaginal)   ╲╲
+               └┘      Access      └┘
 ```
 
 ### A-Shape Component Breakdown

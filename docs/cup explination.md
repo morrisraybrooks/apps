@@ -85,24 +85,16 @@ The "A" shape represents the cup's anatomy:
                   A-CONTOUR CUP ANATOMY (Top View)
 
                          ╱╲
-                        ╱  ╲
-                       ╱ ▲  ╲  ← A-APEX TRIANGLE
-                      ╱ 15mm ╲    (Clitoral Cylinder)
-                     ╱───────╲ ← A-CROSSBAR (Diaphragm)
-                    ╱         ╲
-                   ╱   OUTER   ╲
-                  ╱  A-CHAMBER  ╲
-                 ╱ (Labia Seal)  ╲
-                ╱                 ╲
-               │                   │  ← A-LEGS
-               │     ┌───────┐     │     (Bilateral
-               │     │ OPEN  │     │      Outer Chambers)
-               │     │CHANNEL│     │
-               │     │(Vaginal│    │
-               │     │Urethral│    │
-               │     │Access) │    │
-               │     └───────┘     │
-               └───────────────────┘
+                        ╱╱╲╲
+                       ╱╱  ╲╲  ← A-APEX TRIANGLE (15mm Clitoral Cylinder)
+                      ╱╱clit╲╲
+                     ╱╱──────╲╲ ← A-CROSSBAR (Divide between Clitoral Cylinder and Outer Chamber)
+                    ╱╱────────╲╲
+                   ╱╱   OPEN   ╲╲ ← A-LEGS (Bilateral Outer Chambers / Labia Seal)
+                  ╱╱   CHANNEL  ╲╲
+                 ╱╱  (Urethral)  ╲╲
+                ╱╱    (Vaginal)   ╲╲
+               └┘      Access      └┘
 ```
 
 ### Cross-Section View (Side)
@@ -110,14 +102,14 @@ The "A" shape represents the cup's anatomy:
 ```
               OPEN-CHANNEL CROSS-SECTION (Side View)
 
-                    A-Apex Triangle
-                   (Clitoral Cylinder)
-                         │
-                         ▼
-                      ╭─────╮
-                      │~~~~~│ ← Clitoral Gland (15mm)
-                      │~~~~~│
-     ════════════════╧═════╧════════════════ ← A-CROSSBAR
+                            A-Apex Triangle
+                          (Clitoral Cylinder)
+                                   │
+                                   ▼
+                                ╭─────╮
+                                │~~~~~│ ← Clitoral Gland (15mm)
+                                │~~~~~│
+                      ══════════╧═════╧══════ ← A-CROSSBAR
     A-Cup Outer Wall │                       │   (Diaphragm)
             │        │                       │
             ▼        │                       │

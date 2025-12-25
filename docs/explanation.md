@@ -292,24 +292,16 @@ The A-Contour is a purpose-built vacuum interface engineered for the female vulv
 │                  A-CONTOUR CUP ANATOMY (Top View)                 │
 │                                                                   │
 │                            ╱╲                                     │
-│                           ╱  ╲                                    │
-│                          ╱ ▲  ╲  ← A-APEX TRIANGLE                │
-│                         ╱ 15mm ╲    (Clitoral Cylinder)           │
-│                        ╱───────╲ ← A-CROSSBAR (Diaphragm)         │
-│                       ╱         ╲                                 │
-│                      ╱   OUTER   ╲                                │
-│                     ╱  A-CHAMBER  ╲                               │
-│                    ╱ (Labia Seal)  ╲                              │
-│                   ╱                 ╲                             │
-│                  │                   │  ← A-LEGS                  │
-│                  │     ┌───────┐     │     (Bilateral             │
-│                  │     │ OPEN  │     │      Outer Chambers)       │
-│                  │     │CHANNEL│     │                            │
-│                  │     │(Vaginal│    │                            │
-│                  │     │Urethral│    │                            │
-│                  │     │Access) │    │                            │
-│                  │     └───────┘     │                            │
-│                  └───────────────────┘                            │
+│                           ╱╱╲╲                                    │
+│                          ╱╱  ╲╲  ← A-APEX TRIANGLE                │
+│                         ╱╱clit╲╲    (15mm Clitoral Cylinder)      │
+│                        ╱╱──────╲╲ ← A-CROSSBAR (Divide between    │
+│                       ╱╱────────╲╲   Clitoral Cylinder & Outer)   │
+│                      ╱╱   OPEN   ╲╲ ← A-LEGS (Bilateral Outer     │
+│                     ╱╱   CHANNEL  ╲╲   Chambers / Labia Seal)     │
+│                    ╱╱  (Urethral)  ╲╲                             │
+│                   ╱╱    (Vaginal)   ╲╲                            │
+│                  └┘      Access      └┘                           │
 │                                                                   │
 │  Legend:                                                          │
 │  • A-Apex Triangle: 15mm clitoral cylinder chamber                │
@@ -372,14 +364,14 @@ The A-shape creates an **open channel** by sealing around the periphery of the v
 ┌─────────────────────────────────────────────────────────────────┐
 │              OPEN-CHANNEL CROSS-SECTION (Side View)             │
 │                                                                 │
-│                    A-Apex Triangle                              │
-│                   (Clitoral Cylinder)                           │
-│                         │                                       │
-│                         ▼                                       │
-│                      ╭─────╮                                    │
-│                      │~~~~~│ ← Clitoral Gland (15mm)            │
-│                      │~~~~~│                                    │
-│     ════════════════╧═════╧════════════════ ← A-CROSSBAR        │
+│                            A-Apex Triangle                      │
+│                          (Clitoral Cylinder)                    │
+│                                   │                             │
+│                                   ▼                             │
+│                               ╭─────╮                          │
+│                               │~~~~~│ ← Clitoral Gland (15mm)  │
+│                               │~~~~~│                          │
+│                      ═════════╧═════╧═══════ ← A-CROSSBAR       │
 │    A-Cup Outer Wall │                       │   (Diaphragm)     │
 │            │        │                       │                   │
 │            ▼        │                       │                   │
