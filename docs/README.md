@@ -357,19 +357,19 @@ cd build && make docs
 │              ┌────────┴────────┐                                            │
 │              ▲                 │                                            │
 │          [SOL3]            ┌───┴───┐                                        │
-│       Tank Vent            │       │                                        │
-│             │           [SOL1]   [SOL4]                                     │
-│          ┌─────┐         (AVL)  (Clitoral)                                  │
+│          Tank Vent         │       │                                        │
+│              │         [SOL1]   [SOL4]                                      │
+│          ┌─────┐       (AVL)   (Clitoral)                                   │
 │          │ ATM │           │       │                                        │
 │          └─────┘           ▼       ▼                                        │
 │                    ┌───────────────────────┐                                │
 │                    │     A-CONTOUR CUP     │                                │
 │                    │   OUTER A-CHAMBER   ◄─┼─── Sensor 1 (AVL)              │
 │                    │      ┌─────────┐◄─────┼─── Sensor 3 (Clitoral)         │
-│                    │      │CLITORAL │      │        ┌─────┐                 │
-│                    │      │CYLINDER │◄─────┼────────│ ATM │  [SOL5]         │
-│                    │      └┬───────┬┘      │        └─────┘  Clitoral       │
-│                    │       │ OPEN  │       │                  Vent          │
+│                    │      │CLITORAL │      │   ┌─────┐                      │
+│                    │      │CYLINDER │◄─────┼───│ ATM │ [SOL5]               │
+│                    │      └┬───────┬┘      │   └─────┘ Clitoral             │
+│                    │       │ OPEN  │       │           Vent                 │
 │                    │       │CHANNEL│       │                                │
 │                    │       │ DRAIN │       │                                │
 │                    │       │   │   │       │                                │
@@ -378,11 +378,11 @@ cd build && make docs
 │                    │       │   │   │       │                                │
 │                    │       │   ▼   │       │                                │
 │                    └───────┘       └───────┘                                │
-│                                        ▲                                    │
-│                                        │   ┌─────┐                          │
-│                                    [SOL2]──│ ATM │                          │
-│                                    Outer   └─────┘                          │
-│                                    Vent                                     │
+│                        ▲                                                    │
+│                        │   ┌─────┐                                          │
+│                    [SOL2]──│ ATM │                                          │
+│                    Outer   └─────┘                                          │
+│                    Vent                                                     │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ### GPIO Pin Assignments (Dual-Chamber)

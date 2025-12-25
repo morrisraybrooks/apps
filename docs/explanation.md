@@ -435,34 +435,32 @@ To upgrade from single-chamber to dual-chamber operation, the following componen
 │   └─────────┘    └────┬────┘                                                │
 │                       │                                                     │
 │              ┌────────┴────────┐                                            │
-│              │                 │                                            │
+│              ▲                 │                                            │
 │          [SOL3]            ┌───┴───┐                                        │
-│          Tank              │       │                                        │
-│          Vent          [SOL1]   [SOL4]                                      │
-│              ▼         Outer    Clitoral                                    │
-│          ┌─────┐           │       │                                        │
-│          │ ATM │           ▼       ▼                                        │
-│          └─────┘   ┌───────────────────────┐                                │
+│          Tank Vent         │       │                                        │
+│              │         [SOL1]   [SOL4]                                      │
+│          ┌─────┐       (AVL)   (Clitoral)                                   │
+│          │ ATM │           │       │                                        │
+│          └─────┘           ▼       ▼                                        │
+│                    ┌───────────────────────┐                                │
 │                    │     A-CONTOUR CUP     │                                │
 │                    │   OUTER A-CHAMBER   ◄─┼─── Sensor 1 (AVL)              │
-│                    │                       │                                │
-│                    │      ┌─────────┐      │                                │
-│                    │      │CLITORAL │◄─────┼─── Sensor 3 (Clitoral)         │
-│                    │      │CYLINDER │◄─────┼───┐                            │
-│                    │      └┬───────┬┘      │   │                            │
-│                    │       │ OPEN  │       │  [SOL5]                        │
-│                    │       │CHANNEL│       │  Clitoral                      │
-│                    │       │  FOR  │       │  Vent                          │
-│                    │       │ DRAIN │       │     │                          │
-│                    │       │   │   │       │     ▼                          │
-│                    │       │   │   │       │  ┌─────┐                       │
-│                    │       │   │   │       │  │ ATM │                       │
-│                    │       │   │   │       │  └─────┘                       │
+│                    │      ┌─────────┐◄─────┼─── Sensor 3 (Clitoral)         │
+│                    │      │CLITORAL │      │   ┌─────┐                      │
+│                    │      │CYLINDER │◄─────┼───│ ATM │ [SOL5]               │
+│                    │      └┬───────┬┘      │   └─────┘ Clitoral             │
+│                    │       │ OPEN  │       │           Vent                 │
+│                    │       │CHANNEL│       │                                │
+│                    │       │ DRAIN │       │                                │
+│                    │       │   │   │       │                                │
+│                    │       │   │   │       │                                │
+│                    │       │   │   │       │                                │
+│                    │       │   │   │       │                                │
 │                    │       │   ▼   │       │                                │
 │                    └───────┘       └───────┘                                │
 │                        ▲                                                    │
 │                        │   ┌─────┐                                          │
-│                    [SOL2]──│ ATM │───►                                      │
+│                    [SOL2]──│ ATM │                                          │
 │                    Outer   └─────┘                                          │
 │                    Vent                                                     │
 └─────────────────────────────────────────────────────────────────────────────┘
