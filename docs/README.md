@@ -102,16 +102,19 @@ The A-shape's open channel provides unique advantages over closed dome designs:
 
 ### Physical Specifications
 
-| Parameter | Value |
-|-----------|-------|
-| Overall dome diameter | 80mm |
-| Clitoral cylinder diameter | 15mm |
-| Dome height | 50mm |
-| Wall thickness | 2.0mm |
-| Chamber separation height | 8mm |
-| Diaphragm thickness | 1.0mm |
-| Port separation angle | 45° |
-| Pressure rating | −40 kPa continuous, −60 kPa transient |
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| Overall dome diameter | 80mm | Full vulva coverage |
+| Clitoral cylinder diameter | 15mm | Focused clitoral stimulation |
+| Dome height | 50mm | |
+| Wall thickness | 2.0mm | |
+| Chamber separation height | 8mm | |
+| Diaphragm thickness | 1.0mm | A-crossbar membrane |
+| Port separation angle | 45° | |
+| Pressure rating | −40 kPa continuous, −60 kPa transient | |
+
+![A-Contour Cup Render](images/a-contour-cup-render.png)
+*A-Contour cup 3D render showing the A-shaped geometry with clitoral cylinder (A-apex), structural divider (A-crossbar), bilateral outer chambers (A-legs), and central open channel.*
 
 ### Materials
 
