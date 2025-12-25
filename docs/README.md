@@ -1,4 +1,4 @@
-# V-Contour Dual-Therapy System
+# A-Contour Dual-Therapy System
 
 A sophisticated **Automated Vacuum Stimulation Device** - an electromechanical system that applies controlled vacuum pressure to the vulva/clitoris for inducing sexual arousal and orgasm. Designed as a "hands-free" device that automatically brings a user to climax through precisely controlled vacuum patterns.
 
@@ -10,14 +10,14 @@ Built with Qt on Raspberry Pi 4 with a 50-inch HDMI display and modern **libgpio
 
 > **Commercial air-pulse toys (Womanizer, Satisfyer, LELO) only provide oscillating pressure waves for stimulation—they CANNOT create sustained vacuum for tissue engorgement.** They rely on natural arousal (5-15 minutes) to engorge the clitoris before/during use.
 
-**The V-Contour dual-chamber system separates these functions:**
+**The A-Contour dual-chamber system separates these functions:**
 
 | Chamber | Valve Control | Capability |
 |---------|---------------|------------|
-| **Outer V-seal** | SOL1/SOL2 | Sustained vacuum (30-50 mmHg) for vulva/labia engorgement |
-| **Clitoral cylinder** | SOL4/SOL5 | Sustained vacuum for clitoral engorgement **OR** oscillating air-pulse (5-13 Hz) for stimulation |
+| **Outer A-seal (A-legs)** | SOL1/SOL2 | Sustained vacuum (30-50 mmHg) for vulva/labia engorgement |
+| **Clitoral cylinder (A-apex)** | SOL4/SOL5 | Sustained vacuum for clitoral engorgement **OR** oscillating air-pulse (5-13 Hz) for stimulation |
 
-**This allows the V-Contour to actively induce clitoral erection/engorgement in 15-30 seconds, rather than waiting for natural arousal to occur.**
+**This allows the A-Contour to actively induce clitoral erection/engorgement in 15-30 seconds, rather than waiting for natural arousal to occur.**
 
 ### Active Engorgement Benefits:
 1. **Faster arousal**: Engorge the clitoris BEFORE beginning air-pulse stimulation
@@ -27,6 +27,121 @@ Built with Qt on Raspberry Pi 4 with a 50-inch HDMI display and modern **libgpio
 5. **Consistent response**: Does not rely on the user's natural arousal state
 6. **Dual-mode flexibility**: Can switch between engorgement and stimulation dynamically
 
+## 🔺 A-Contour Cup Design: Engineering Rationale
+
+The A-Contour cup uses a revolutionary **A-shaped geometry** that solves fundamental problems with traditional dome-shaped vacuum cups. This section explains why the A-shape was chosen and how it enables the dual-chamber active engorgement system.
+
+### Problems with Traditional Dome Cups
+
+Traditional dome-shaped vacuum cups have significant limitations for vulva stimulation:
+
+| Problem | Description |
+|---------|-------------|
+| **Poor Anatomical Fit** | Generic dome shape doesn't match vulva anatomy |
+| **Single Chamber Limitation** | Cannot provide both attachment AND targeted clitoral stimulation |
+| **Fluid Trapping** | Closed design traps fluids (urine, vaginal secretions, ejaculate) inside |
+| **No Access** | Blocks urethra and vaginal opening, preventing simultaneous play |
+| **Uniform Suction** | Cannot replicate localized oral stimulation sensations |
+
+### The A-Shape Solution
+
+The "A" shape represents the cup's anatomy, creating an **open-channel design** that seals around the periphery of the vulva while leaving the center open:
+
+```
+                  A-CONTOUR CUP ANATOMY (Top View)
+
+                         ╱╲
+                        ╱  ╲
+                       ╱ ▲  ╲  ← A-APEX TRIANGLE
+                      ╱ 15mm ╲    (Clitoral Cylinder)
+                     ╱───────╲ ← A-CROSSBAR (Diaphragm)
+                    ╱         ╲
+                   ╱   OUTER   ╲
+                  ╱  A-CHAMBER  ╲
+                 ╱ (Labia Seal)  ╲
+                ╱                 ╲
+               │                   │  ← A-LEGS
+               │     ┌───────┐     │     (Bilateral
+               │     │ OPEN  │     │      Outer Chambers)
+               │     │CHANNEL│     │
+               │     │(Vaginal│    │
+               │     │Urethral│    │
+               │     │Access) │    │
+               │     └───────┘     │
+               └───────────────────┘
+```
+
+### A-Shape Component Breakdown
+
+| Component | Description | Function |
+|-----------|-------------|----------|
+| **A-apex triangle** | Enclosed triangular space at top of "A" | Houses the 15mm clitoral cylinder for focused stimulation |
+| **A-crossbar** | Internal diaphragm separating chambers | Creates pressure isolation between clitoral and outer chambers |
+| **A-legs** | Two bilateral outer vacuum chambers | Seal against labia for attachment + engorgement (80mm total coverage) |
+| **Open channel** | Space between the A-legs | Allows vaginal/urethral access and fluid drainage |
+
+### Dual-Chamber Functionality
+
+The A-shape enables **two independent vacuum zones** with separate control:
+
+| Chamber | Location | Valve Control | Purpose |
+|---------|----------|---------------|---------|
+| **Outer A-seal** | A-legs (bilateral) | SOL1/SOL2 | Sustained vacuum (30-50 mmHg) for vulva/labia engorgement + anti-detachment |
+| **Clitoral cylinder** | A-apex triangle | SOL4/SOL5 | Variable vacuum: sustained for engorgement OR oscillating (5-13 Hz) for air-pulse stimulation |
+
+**How it seals while staying open:**
+- **Left A-leg**: Seals against left labia majora/minora
+- **Right A-leg**: Seals against right labia majora/minora
+- **Center gap**: Open channel between the A-legs—no seal, no suction
+- **A-apex triangle**: Clitoral cylinder creates focused seal around clitoris
+- **A-crossbar**: Internal diaphragm separates clitoral chamber from outer chambers
+
+### Open-Channel Design Benefits
+
+The A-shape's open channel provides unique advantages over closed dome designs:
+
+| Benefit | Description |
+|---------|-------------|
+| **Hygiene** | Fluids (urine, vaginal lubrication, ejaculate) drain away from vacuum system |
+| **Squirting-Compatible** | Female ejaculation doesn't contaminate vacuum lines or components |
+| **Urethral Access** | Enables simultaneous urethral sounding while vacuum is active |
+| **Vaginal Access** | Allows insertable toys (vibrators, dildos) during vacuum therapy |
+| **Easy Cleanup** | Vacuum hoses remain dry; only cup exterior needs cleaning |
+
+### Physical Specifications
+
+| Parameter | Value |
+|-----------|-------|
+| Overall dome diameter | 80mm |
+| Clitoral cylinder diameter | 15mm |
+| Dome height | 50mm |
+| Wall thickness | 2.0mm |
+| Chamber separation height | 8mm |
+| Diaphragm thickness | 1.0mm |
+| Port separation angle | 45° |
+| Pressure rating | −40 kPa continuous, −60 kPa transient |
+
+### Materials
+
+- **Shell**: Clear PC/Tritan (polycarbonate/copolyester) - highly transparent for visual feedback
+- **Seal lip**: Silicone (Shore A 10–15) for comfortable skin contact
+- **Compliance**: ISO 10993 biocompatible materials, ISO 80369-7 Luer-lock connections
+
+### Why A-Shape vs. Commercial Air-Pulse Toys
+
+| Feature | Commercial Toys (Womanizer, Satisfyer) | A-Contour System |
+|---------|----------------------------------------|------------------|
+| **Engorgement** | Passive only (relies on natural arousal) | **Active** (sustained vacuum induces engorgement in 15-30s) |
+| **Vacuum Type** | Oscillating only (cannot sustain) | Sustained AND oscillating (independent control) |
+| **Chambers** | Single chamber | Dual chamber (outer + clitoral) |
+| **Fluid Handling** | Trapped inside nozzle | Drains through open channel |
+| **Vaginal Access** | Blocked | Open for simultaneous use |
+| **Scalability** | Handheld only | Industrial-scale automation |
+
+> **Key Advantage**: The A-Contour's dual-chamber architecture provides sustained vacuum in the outer chamber for vulva/labia engorgement while independently controlling the clitoral cylinder—something commercial air-pulse toys fundamentally cannot do.
+
+For complete technical specifications, see [docs/cup explination.md](cup%20explination.md) and [docs/explanation.md](explanation.md).
+
 ## Overview
 
 This system provides a complete GUI solution for controlling a vacuum therapy device with the following key features:
@@ -35,7 +150,7 @@ This system provides a complete GUI solution for controlling a vacuum therapy de
 - **19+ vacuum patterns** including pulse, wave, air pulse, milking, automated orgasm cycles, and specialized therapeutic patterns
 - **Automated Orgasm Patterns** with physiological progression cycles for complete arousal-to-climax sequences
 - **🔑 Active Engorgement Technology** - Unlike commercial toys that only oscillate, sustained vacuum actively induces clitoral erection
-- **Dual-Chamber V-Contour Design** - Separate outer V-seal (engorgement) and clitoral cylinder (air-pulse) chambers
+- **Dual-Chamber A-Contour Design** - Separate outer A-seal/A-legs (engorgement) and clitoral cylinder/A-apex (air-pulse) chambers
 - **Safety-critical anti-detachment system** that prevents cup detachment during therapy
 - **Emergency stop functionality** with immediate system shutdown and safe state recovery
 - **Touch-optimized embedded widgets** designed for 50-inch medical displays with optimal scaling
@@ -118,8 +233,8 @@ The vacuum controller now includes advanced **Automated Orgasm Patterns** that p
    - Perfect for extended pleasure sessions
 
 ### **Key Features**
-- **🔑 Active Engorgement Phase**: Unlike commercial toys (Womanizer, Satisfyer) that only oscillate, the V-Contour uses sustained vacuum to actively engorge the clitoris BEFORE stimulation begins
-- **Dual-Chamber Architecture**: Independent outer V-seal (SOL1/SOL2) for engorgement + clitoral cylinder (SOL4/SOL5) for air-pulse stimulation
+- **🔑 Active Engorgement Phase**: Unlike commercial toys (Womanizer, Satisfyer) that only oscillate, the A-Contour uses sustained vacuum to actively engorge the clitoris BEFORE stimulation begins
+- **Dual-Chamber Architecture**: Independent outer A-seal/A-legs (SOL1/SOL2) for engorgement + clitoral cylinder/A-apex (SOL4/SOL5) for air-pulse stimulation
 - **Physiological Progression**: Patterns follow natural arousal curves with Phase 0 engorgement
 - **Intelligent Timing**: Based on research showing 8-13 Hz as the optimal orgasm frequency
 - **Safety Integration**: Enhanced monitoring during automated cycles
@@ -127,7 +242,7 @@ The vacuum controller now includes advanced **Automated Orgasm Patterns** that p
 - **Customizable Parameters**: Adjust intensity, timing, and sensitivity thresholds
 
 ### **Why Active Engorgement Matters**
-> Commercial air-pulse toys rely on natural arousal (5-15 minutes) to engorge the clitoris. The V-Contour's sustained vacuum actively induces clitoral erection in 15-30 seconds, significantly reducing time to orgasm.
+> Commercial air-pulse toys rely on natural arousal (5-15 minutes) to engorge the clitoris. The A-Contour's sustained vacuum actively induces clitoral erection in 15-30 seconds, significantly reducing time to orgasm.
 
 See [docs/AUTOMATED_ORGASM_PATTERNS.md](docs/AUTOMATED_ORGASM_PATTERNS.md) for detailed technical specifications.
 
@@ -256,8 +371,8 @@ cd build && make docs
 │          │ ATM │           │       │                                        │
 │          └─────┘           ▼       ▼                                        │
 │                    ┌───────────────────────┐                                │
-│                    │     V-CONTOUR CUP     │                                │
-│                    │   OUTER V-CHAMBER   ◄─┼─── Sensor 1 (AVL)              │
+│                    │     A-CONTOUR CUP     │                                │
+│                    │   OUTER A-CHAMBER   ◄─┼─── Sensor 1 (AVL)              │
 │                    │      ┌─────────┐◄─────┼─── Sensor 3 (Clitoral)         │
 │                    │      │CLITORAL │      │        ┌─────┐                 │
 │                    │      │CYLINDER │◄─────┼────────│ ATM │  [SOL5]         │
@@ -280,11 +395,11 @@ cd build && make docs
 
 ### GPIO Pin Assignments (Dual-Chamber)
 ```
-GPIO 17 - SOL1 (Outer V-seal vacuum)
-GPIO 27 - SOL2 (Outer V-seal vent - safety)
+GPIO 17 - SOL1 (Outer A-seal vacuum / A-legs)
+GPIO 27 - SOL2 (Outer A-seal vent - safety / A-legs)
 GPIO 22 - SOL3 (Tank vent - safety)
-GPIO 23 - SOL4 (Clitoral cylinder vacuum)      ← NEW
-GPIO 24 - SOL5 (Clitoral cylinder vent - safety)        ← NEW
+GPIO 23 - SOL4 (Clitoral cylinder vacuum / A-apex)      ← NEW
+GPIO 24 - SOL5 (Clitoral cylinder vent - safety / A-apex)        ← NEW
 GPIO 25 - Pump enable (L293D)
 GPIO 18 - Pump PWM control
 GPIO 21 - Emergency stop button (optional)
@@ -292,7 +407,7 @@ GPIO 21 - Emergency stop button (optional)
 
 ### Pressure Specifications by Chamber
 
-| Parameter | Outer V-Seal Chamber | Clitoral Cylinder |
+| Parameter | Outer A-Seal Chamber (A-legs) | Clitoral Cylinder (A-apex) |
 |-----------|---------------------|-------------------|
 | **Purpose** | Attachment + engorgement | Air-pulse stimulation |
 | **Operating Range** | 30-60 mmHg | 20-75 mmHg |
@@ -311,9 +426,9 @@ GPIO 8 (CS)    → CS
 ### ADC Channel Assignments
 | Sensor | ADC Channel | Purpose | Update Rate |
 |--------|-------------|---------|-------------|
-| AVL (Outer) | CH0 | V-seal pressure, anti-detachment | 50 Hz |
+| AVL (Outer) | CH0 | A-seal pressure (A-legs), anti-detachment | 50 Hz |
 | Tank | CH1 | Reservoir monitoring | 50 Hz |
-| Clitoral | CH2 | Clitoral cylinder pressure | 100 Hz |
+| Clitoral | CH2 | Clitoral cylinder pressure (A-apex) | 100 Hz |
 
 > **📝 Important**: This system uses the modern **libgpiod v2.2.1** library for GPIO control instead of the deprecated `wiringPi`. This ensures compatibility with current and future Raspberry Pi OS versions and provides better security, performance, and reliability. The new request-based API offers improved resource management and enhanced safety for medical device applications.
 

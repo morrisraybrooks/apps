@@ -44,9 +44,9 @@ The system was designed based on observation of actual physiological responses:
 
 ### Hardware Components
 
-The system is a **Dual-Chamber V-Contour System** that uses 5 solenoid valves for precise control over two independent vacuum zones.
+The system is a **Dual-Chamber A-Contour System** that uses 5 solenoid valves for precise control over two independent vacuum zones.
 
-For a detailed explanation of the hardware components, the dual-chamber architecture, and the complete 5-valve vacuum system diagram, please see **Part 2: Dual-Chamber V-Contour System Design** below.
+For a detailed explanation of the hardware components, the dual-chamber architecture, and the complete 5-valve vacuum system diagram, please see **Part 2: Dual-Chamber A-Contour System Design** below.
 
 ### Pressure Sensing
 
@@ -265,11 +265,11 @@ The goal: **One button press → Complete automated orgasm experience**
 
 ---
 
-# Part 2: Dual-Chamber V-Contour System Design
+# Part 2: Dual-Chamber A-Contour System Design
 
 ---
 
-## 1. Hardware Evolution: Dual-Chamber V-Contour System
+## 1. Hardware Evolution: Dual-Chamber A-Contour System
 
 ### 1.1 The Problem with Traditional Dome Cups
 
@@ -280,63 +280,62 @@ Standard vacuum cups have fundamental design flaws:
 - **No access** to urethra or vaginal opening for simultaneous play
 - **Uniform suction** cannot replicate the localized sensation of oral stimulation
 
-### 1.2 The V-Contour Solution: Anatomical V-Shape Design
+### 1.2 The A-Contour Solution: Anatomical A-Shape Design
 
-The V-Contour is a purpose-built vacuum interface engineered for the female vulva:
+The A-Contour is a purpose-built vacuum interface engineered for the female vulva. The "A" shape represents:
+- **A-apex triangle**: The enclosed triangular space at the top housing the 15mm clitoral cylinder
+- **A-crossbar**: The internal diaphragm separating the clitoral chamber from outer chambers
+- **A-legs**: The two bilateral outer vacuum chambers (80mm total coverage)
 
 ```
 ┌───────────────────────────────────────────────────────────────────┐
-│                  V-CONTOUR CUP ANATOMY (Top View)                 │
+│                  A-CONTOUR CUP ANATOMY (Top View)                 │
 │                                                                   │
-│                     ╭────────────────────╮                        │
-│                    ╱                      ╲                       │
-│                   ╱    OUTER V-CHAMBER     ╲                      │
-│                  ╱     (Labia Seal Zone)    ╲                     │
-│                 ╱                            ╲                    │
-│                │     ┌─────────────────┐      │                   │
-│                │     │                 │      │                   │
-│                │     │  CLITORAL       │      │                   │
-│                │     │  CYLINDER       │      │                   │
-│                │     │  (Air Pulse     │      │                   │
-│                │     │   Zone)         │      │                   │
-│                │     └─┬─────────────┬─┘      │                   │
-│                │       │             │        │                   │
-│                │       │             │        │                   │
-│                │       │ OPEN CHANNEL│        │                   │
-│                │       │ (Urethra +  │        │                   │
-│                │       │  Vaginal    │        │                   │
-│                │       │  Access)    │        │                   │
-│                │       │             │        │                   │
-│                │       │             │        │                   │
-│                │       │             │        │                   │
-│                │       │             │        │                   │
-│                │       │             │        │                   │
-│                └───────┘             └────────┘                   │
-│                                                                   │
+│                            ╱╲                                     │
+│                           ╱  ╲                                    │
+│                          ╱ ▲  ╲  ← A-APEX TRIANGLE                │
+│                         ╱ 15mm ╲    (Clitoral Cylinder)           │
+│                        ╱───────╲ ← A-CROSSBAR (Diaphragm)         │
+│                       ╱         ╲                                 │
+│                      ╱   OUTER   ╲                                │
+│                     ╱  A-CHAMBER  ╲                               │
+│                    ╱ (Labia Seal)  ╲                              │
+│                   ╱                 ╲                             │
+│                  │                   │  ← A-LEGS                  │
+│                  │     ┌───────┐     │     (Bilateral             │
+│                  │     │ OPEN  │     │      Outer Chambers)       │
+│                  │     │CHANNEL│     │                            │
+│                  │     │(Vaginal│    │                            │
+│                  │     │Urethral│    │                            │
+│                  │     │Access) │    │                            │
+│                  │     └───────┘     │                            │
+│                  └───────────────────┘                            │
 │                                                                   │
 │  Legend:                                                          │
-│  • Outer V-Chamber: Seals around labia majora/minora              │
-│  • Open Channel: Fluid drainage + accessory access                │
-│  • Clitoral Cylinder: Independent air-pulse stimulation           │
+│  • A-Apex Triangle: 15mm clitoral cylinder chamber                │
+│  • A-Crossbar: Internal diaphragm separating chambers             │
+│  • A-Legs: Bilateral outer chambers sealing around labia          │
+│  • Open Channel: Fluid drainage + vaginal/urethral access         │
 └───────────────────────────────────────────────────────────────────┘
 ```
 ### 1.3 Dual-Chamber Architecture
 
-The V-Contour utilizes two independent vacuum zones:
+The A-Contour utilizes two independent vacuum zones:
 
 | Zone | Name | Function | Vacuum Type |
 |------|------|----------|-------------|
-| **Zone 1** | Outer V-Seal Chamber | Attachment, engorgement, labia stimulation | Constant/slow variation |
-| **Zone 2** | Clitoral Cylinder | Targeted clitoral air-pulse stimulation | Rapid pulsing (1-20 Hz) OR sustained engorgement |
+| **Zone 1** | Outer A-Seal Chamber (A-legs) | Attachment, engorgement, labia stimulation | Constant/slow variation |
+| **Zone 2** | Clitoral Cylinder (A-apex) | Targeted clitoral air-pulse stimulation | Rapid pulsing (1-20 Hz) OR sustained engorgement |
 
-**Zone 1: Outer V-Seal Chamber** (SOL1/SOL2)
-- Creates peripheral seal around the vulva (labia majora/minora)
+**Zone 1: Outer A-Seal Chamber** (SOL1/SOL2)
+- The two A-legs create peripheral seal around the vulva (labia majora/minora)
 - Maintains **sustained vacuum (30-50 mmHg continuous)** for blood engorgement of vulva and labia
 - Causes active tissue engorgement → increased sensitivity and clitoral erection
 - Anti-detachment system monitors this zone only
 
 **Zone 2: Clitoral Cylinder** (SOL4/SOL5)
-- Small cylinder positioned at apex of V, over clitoral glans
+- Small cylinder positioned at A-apex triangle, over clitoral glans
+- Separated from outer chambers by the A-crossbar (internal diaphragm)
 - Independent vacuum supply enables two operating modes:
   - **Sustained vacuum mode**: Continuous negative pressure for clitoral engorgement
   - **Air-pulse mode**: Rapid pressure oscillation (5-13 Hz) for stimulation
@@ -347,14 +346,14 @@ The V-Contour utilizes two independent vacuum zones:
 
 > **Commercial air-pulse toys (Womanizer, Satisfyer, LELO) only provide oscillating pressure waves for stimulation—they CANNOT create sustained vacuum for tissue engorgement.** They rely on natural arousal to engorge the clitoris before/during use.
 
-**The V-Contour dual-chamber system separates these functions:**
+**The A-Contour dual-chamber system separates these functions:**
 
 | Chamber | Valve Control | Capability |
 |---------|---------------|------------|
-| **Outer V-seal** | SOL1/SOL2 | Sustained vacuum for vulva/labia engorgement |
-| **Clitoral cylinder** | SOL4/SOL5 | Sustained vacuum for clitoral engorgement **OR** oscillating air-pulse for stimulation |
+| **Outer A-seal (A-legs)** | SOL1/SOL2 | Sustained vacuum for vulva/labia engorgement |
+| **Clitoral cylinder (A-apex)** | SOL4/SOL5 | Sustained vacuum for clitoral engorgement **OR** oscillating air-pulse for stimulation |
 
-**This allows the V-Contour to actively induce clitoral erection/engorgement, rather than waiting for natural arousal to occur.**
+**This allows the A-Contour to actively induce clitoral erection/engorgement, rather than waiting for natural arousal to occur.**
 
 #### Active Engorgement Benefits:
 
@@ -367,28 +366,32 @@ The V-Contour utilizes two independent vacuum zones:
 
 ### 1.4 Open-Channel Design Benefits
 
-The V-shape creates an **open channel** by sealing around the periphery of the vulva while leaving the urethra and vaginal opening completely exposed between the two arms of the cup.
+The A-shape creates an **open channel** by sealing around the periphery of the vulva while leaving the urethra and vaginal opening completely exposed between the two A-legs of the cup.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │              OPEN-CHANNEL CROSS-SECTION (Side View)             │
 │                                                                 │
-│                    Clitoral Cylinder                            │
-│                    (Air-Pulse Zone)                             │
+│                    A-Apex Triangle                              │
+│                   (Clitoral Cylinder)                           │
 │                         │                                       │
 │                         ▼                                       │
-│     V-Cup Outer Wall ╭─────╮                                    │
-│            │         │~~~~~│ ← Clitoral Hood Position           │
-│            ▼         │~~~~~│                                    │
-│         ╭────────────┴─────┴────────────╮                       │
-│        ╱          ╲           ╱          ╲                      │
-│       │  Vacuum    │ Urethra │   Vacuum   │                     │
-│       │  Chamber   │ Vaginal │  Chamber   │                     │
-│       │  (sealed)  │ Opening │  (sealed)  │                     │
-│        ╲          ╱           ╲          ╱                      │
-│     ═════════════════════════════════════════  ← Body Surface   │
-│     OPEN CHANNEL Unobstructed access to urethra/vagina          │
-│     Fluids drain away from vacuum system                        │
+│                      ╭─────╮                                    │
+│                      │~~~~~│ ← Clitoral Gland (15mm)            │
+│                      │~~~~~│                                    │
+│     ════════════════╧═════╧════════════════ ← A-CROSSBAR        │
+│    A-Cup Outer Wall │                       │   (Diaphragm)     │
+│            │        │                       │                   │
+│            ▼        │                       │                   │
+│         ╭───────────┤                       ├───────────╮       │
+│        ╱            │                       │            ╲      │
+│       │  A-LEG      │        OPEN           │   A-LEG    │      │
+│       │  (Left      │       CHANNEL         │   (Right   │      │
+│       │   Vacuum    │   (Urethra/Vaginal)   │   Vacuum   │      │
+│       │   Chamber)  │                       │   Chamber) │      │
+│        ╲            │                       │            ╱      │
+│     ═══════════════════════════════════════════════════════     │
+│     Body Surface - Fluids drain through open channel            │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -420,14 +423,14 @@ To upgrade from single-chamber to dual-chamber operation, the following componen
 
 | Pin | Function | Chamber |
 |-----|----------|---------|
-| GPIO 17 | SOL1 (Vacuum to V-seal) | Outer |
-| GPIO 27 | SOL2 (V-seal vent) | Outer |
+| GPIO 17 | SOL1 (Vacuum to A-seal) | Outer (A-legs) |
+| GPIO 27 | SOL2 (A-seal vent) | Outer (A-legs) |
 | GPIO 22 | SOL3 (Tank vent) | Shared |
 | GPIO 25 | Pump enable | Shared |
 | GPIO 18 | Pump PWM | Shared |
 | GPIO 21 | Emergency stop button | Shared |
-| **GPIO 23** | **SOL4 (Vacuum to clitoral)** | **Inner** |
-| **GPIO 24** | **SOL5 (Clitoral vent)** | **Inner** |
+| **GPIO 23** | **SOL4 (Vacuum to clitoral)** | **Inner (A-apex)** |
+| **GPIO 24** | **SOL5 (Clitoral vent)** | **Inner (A-apex)** |
 
 ### 2.3 Updated Vacuum System Diagram
 
@@ -449,8 +452,8 @@ To upgrade from single-chamber to dual-chamber operation, the following componen
 │          ┌─────┐           │       │                                        │
 │          │ ATM │           ▼       ▼                                        │
 │          └─────┘   ┌───────────────────────┐                                │
-│                    │     V-CONTOUR CUP     │                                │
-│                    │   OUTER V-CHAMBER   ◄─┼─── Sensor 1 (AVL)              │
+│                    │     A-CONTOUR CUP     │                                │
+│                    │   OUTER A-CHAMBER   ◄─┼─── Sensor 1 (AVL)              │
 │                    │                       │                                │
 │                    │      ┌─────────┐      │                                │
 │                    │      │CLITORAL │◄─────┼─── Sensor 3 (Clitoral)         │
@@ -479,7 +482,7 @@ To upgrade from single-chamber to dual-chamber operation, the following componen
 
 ### 2.4 Pressure Specifications by Chamber
 
-| Parameter | Outer V-Seal Chamber | Clitoral Cylinder |
+| Parameter | Outer A-Seal Chamber (A-legs) | Clitoral Cylinder (A-apex) |
 |-----------|---------------------|-------------------|
 | **Purpose** | Attachment + engorgement | Air-pulse stimulation |
 | **Operating Range** | 30-60 mmHg | 20-75 mmHg |
@@ -524,9 +527,9 @@ Pressure
 
 | Sensor | ADC Channel | Purpose | Update Rate |
 |--------|-------------|---------|-------------|
-| AVL (Outer) | CH0 | V-seal pressure, anti-detachment | 50 Hz |
+| AVL (Outer) | CH0 | A-seal pressure (A-legs), anti-detachment | 50 Hz |
 | Tank | CH1 | Reservoir monitoring | 50 Hz |
-| **Clitoral** | **CH2** | **Clitoral cylinder pressure** | **100 Hz** |
+| **Clitoral** | **CH2** | **Clitoral cylinder pressure (A-apex)** | **100 Hz** |
 
 The clitoral sensor runs at **100 Hz** to accurately track rapid air-pulse transitions.
 
@@ -541,11 +544,11 @@ The clitoral sensor runs at **100 Hz** to accurately track rapid air-pulse trans
 ```cpp
 // New valve definitions
 enum ValveType {
-    SOL1_OUTER_VACUUM,    // Outer V-seal vacuum
-    SOL2_OUTER_VENT,      // Outer V-seal vent
+    SOL1_OUTER_VACUUM,    // Outer A-seal vacuum (A-legs)
+    SOL2_OUTER_VENT,      // Outer A-seal vent (A-legs)
     SOL3_TANK_VENT,       // Tank vent (safety)
-    SOL4_CLITORAL_VACUUM, // Clitoral cylinder vacuum (NEW)
-    SOL5_CLITORAL_VENT    // Clitoral cylinder vent (NEW)
+    SOL4_CLITORAL_VACUUM, // Clitoral cylinder vacuum (A-apex)
+    SOL5_CLITORAL_VENT    // Clitoral cylinder vent (A-apex)
 };
 
 // Dual-channel pressure control
@@ -559,9 +562,9 @@ void ActuatorControl::stopAirPulse();
 
 ```cpp
 // Triple-sensor support
-double SensorInterface::readOuterPressure();   // V-seal chamber
+double SensorInterface::readOuterPressure();   // A-seal chamber (A-legs)
 double SensorInterface::readTankPressure();    // Tank reservoir
-double SensorInterface::readClitoralPressure(); // Clitoral cylinder (NEW)
+double SensorInterface::readClitoralPressure(); // Clitoral cylinder (A-apex)
 
 // High-speed clitoral monitoring (100 Hz)
 void SensorInterface::enableHighSpeedClitoralMonitoring();
@@ -575,8 +578,8 @@ Patterns now specify independent targets for each chamber:
 
 ```cpp
 struct DualZonePatternStep {
-    double outerPressurePercent;     // V-seal chamber target (0-100%)
-    double clitoralPressurePercent;  // Clitoral cylinder target (0-100%)
+    double outerPressurePercent;     // A-seal chamber target (A-legs) (0-100%)
+    double clitoralPressurePercent;  // Clitoral cylinder target (A-apex) (0-100%)
     int durationMs;                  // Step duration
     QString outerAction;             // e.g., "maintain_seal"
     QString clitoralAction;          // e.g., "air_pulse_8hz"
@@ -645,7 +648,7 @@ void PatternEngine::executeEdgingMode() {
 
 ### 3.3 AntiDetachmentMonitor Updates
 
-The anti-detachment system monitors **only the outer V-seal chamber**. Clitoral cylinder pressure variations are expected during air-pulse operation.
+The anti-detachment system monitors **only the outer A-seal chamber (A-legs)**. Clitoral cylinder (A-apex) pressure variations are expected during air-pulse operation.
 
 ```cpp
 void AntiDetachmentMonitor::checkSealIntegrity() {
@@ -713,22 +716,22 @@ New controls for dual-chamber operation:
 
 ### 4.1 Recommended Product Name
 
-**Primary Name:** `V-Contour Dual-Therapy System`
+**Primary Name:** `A-Contour Dual-Therapy System`
 
 **Alternative Names:**
 | Name | Best For |
 |------|----------|
-| V-Station | Emphasizes the console/tech aspect |
-| V-Pulse | Emphasizes the air-pulse feature |
-| Anatomical V-Seal | Emphasizes the anatomical fit |
+| A-Station | Emphasizes the console/tech aspect |
+| A-Pulse | Emphasizes the air-pulse feature |
+| Anatomical A-Seal | Emphasizes the anatomical fit |
 | Dry-Seal Pulse System | Emphasizes hygiene + air-pulse |
-| The Lotus V | Boutique/sensual branding |
+| The Lotus A | Boutique/sensual branding |
 
 ### 4.2 Key Technical Selling Points
 
 | Feature | Technical Description | User Benefit |
 |---------|----------------------|--------------|
-| **Open-V Architecture** | Peripheral seal with central open channel | Hygiene, fluid drainage, simultaneous access |
+| **Open-A Architecture** | Peripheral seal with central open channel (A-legs + A-apex) | Hygiene, fluid drainage, simultaneous access |
 | **Dual-Zone Technology** | Independent vacuum chambers with separate controls | Attachment + targeted stimulation |
 | **Air-Pulse Engine** | 1-20 Hz rapid vacuum oscillation in clitoral cylinder | Replicates oral stimulation sensation |
 | **Bio-Feedback System** | Triple pressure sensors with 100 Hz clitoral monitoring | Precise, responsive pressure control |
@@ -756,7 +759,7 @@ New controls for dual-chamber operation:
 | **Platform** | Raspberry Pi 4 (8GB RAM) |
 | **Display** | 50-inch HDMI touch display |
 | **Framework** | Qt 5, C++17 |
-| **Vacuum Chambers** | 2 (Outer V-seal + Clitoral cylinder) |
+| **Vacuum Chambers** | 2 (Outer A-seal/A-legs + Clitoral cylinder/A-apex) |
 | **Solenoid Valves** | 5 (SOL1-SOL5) |
 | **Pressure Sensors** | 3 (Outer, Tank, Clitoral) |
 | **Air-Pulse Frequency** | 1-20 Hz |
@@ -782,15 +785,15 @@ New controls for dual-chamber operation:
 
 ## Summary: Evolution from Single to Dual-Chamber
 
-This document describes the evolution from the current **single-chamber vacuum system** to an advanced **dual-chamber V-Contour system**:
+This document describes the evolution from the current **single-chamber vacuum system** to an advanced **dual-chamber A-Contour system**:
 
 | Aspect | Current (Single) | Proposed (Dual) |
 |--------|-----------------|-----------------|
-| **Vacuum Zones** | 1 (AVL only) | 2 (Outer V-seal + Clitoral) |
+| **Vacuum Zones** | 1 (AVL only) | 2 (Outer A-seal/A-legs + Clitoral/A-apex) |
 | **Valves** | 3 (SOL1-SOL3) | 5 (SOL1-SOL5) |
 | **Sensors** | 2 (AVL, Tank) | 3 (Outer, Tank, Clitoral) |
 | **Stimulation** | Uniform suction | Targeted air-pulse + **active engorgement** |
-| **Cup Design** | Dome | Anatomical V-shape |
+| **Cup Design** | Dome | Anatomical A-shape |
 | **Fluid Handling** | Trapped in cup | Drained via open channel |
 | **Access** | Blocked | Urethra/vagina unobstructed |
 | **Engorgement** | Passive (relies on natural arousal) | **Active (sustained vacuum induces engorgement)** |
@@ -799,9 +802,9 @@ This document describes the evolution from the current **single-chamber vacuum s
 
 > **Commercial toys (Womanizer, Satisfyer, etc.) only oscillate—they cannot sustain vacuum for tissue engorgement.**
 
-The V-Contour's unique dual-chamber design provides:
-- **Sustained vacuum** in outer chamber for vulva/labia engorgement
-- **Sustained OR oscillating vacuum** in clitoral cylinder
+The A-Contour's unique dual-chamber design provides:
+- **Sustained vacuum** in outer chamber (A-legs) for vulva/labia engorgement
+- **Sustained OR oscillating vacuum** in clitoral cylinder (A-apex)
 - **Active clitoral erection** before stimulation begins
 - **Faster time to orgasm** by eliminating the arousal delay
 
@@ -809,4 +812,4 @@ The V-Contour's unique dual-chamber design provides:
 
 ---
 
-**End of Dual-Chamber V-Contour Design Document**
+**End of Dual-Chamber A-Contour Design Document**
