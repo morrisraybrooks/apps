@@ -1,5 +1,6 @@
 #include "ParameterAdjustmentPanel.h"
 #include "components/TouchButton.h"
+#include "styles/ModernMedicalStyle.h"
 #include "../VacuumController.h"
 #include "../patterns/PatternEngine.h"
 #include <QDebug>
@@ -65,7 +66,7 @@ void ParameterAdjustmentPanel::setupUI()
 void ParameterAdjustmentPanel::setupIntensityControls()
 {
     m_intensityGroup = new QGroupBox("Intensity Control");
-    m_intensityGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_intensityGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     
     QVBoxLayout* intensityLayout = new QVBoxLayout(m_intensityGroup);
     
@@ -129,7 +130,7 @@ void ParameterAdjustmentPanel::setupIntensityControls()
 void ParameterAdjustmentPanel::setupSpeedControls()
 {
     m_speedGroup = new QGroupBox("Speed Control");
-    m_speedGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #FF9800; }");
+    m_speedGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle(QColor("#FF9800")));
     
     QVBoxLayout* speedLayout = new QVBoxLayout(m_speedGroup);
     
@@ -164,7 +165,7 @@ void ParameterAdjustmentPanel::setupSpeedControls()
 void ParameterAdjustmentPanel::setupPressureControls()
 {
     m_pressureGroup = new QGroupBox("Pressure Adjustment");
-    m_pressureGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #9C27B0; }");
+    m_pressureGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle(QColor("#9C27B0")));
     
     QVBoxLayout* pressureLayout = new QVBoxLayout(m_pressureGroup);
     
@@ -199,7 +200,7 @@ void ParameterAdjustmentPanel::setupPressureControls()
 void ParameterAdjustmentPanel::setupTimingControls()
 {
     m_timingGroup = new QGroupBox("Timing Control");
-    m_timingGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #607D8B; }");
+    m_timingGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle(QColor("#607D8B")));
     
     QVBoxLayout* timingLayout = new QVBoxLayout(m_timingGroup);
     
@@ -238,7 +239,7 @@ void ParameterAdjustmentPanel::setupTimingControls()
 void ParameterAdjustmentPanel::setupPatternSpecificControls()
 {
     m_patternSpecificGroup = new QGroupBox("Pattern-Specific Controls");
-    m_patternSpecificGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #795548; }");
+    m_patternSpecificGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle(QColor("#795548")));
     m_patternSpecificGroup->setVisible(false); // Hidden by default
     
     m_patternSpecificLayout = new QVBoxLayout(m_patternSpecificGroup);
@@ -252,7 +253,7 @@ void ParameterAdjustmentPanel::setupPatternSpecificControls()
 void ParameterAdjustmentPanel::setupPresetControls()
 {
     m_presetGroup = new QGroupBox("Quick Presets");
-    m_presetGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #4CAF50; }");
+    m_presetGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle(ModernMedicalStyle::Colors::MEDICAL_GREEN));
     
     QHBoxLayout* presetLayout = new QHBoxLayout(m_presetGroup);
     
@@ -290,7 +291,7 @@ void ParameterAdjustmentPanel::setupPresetControls()
 void ParameterAdjustmentPanel::setupSafetyControls()
 {
     m_safetyGroup = new QGroupBox("Safety Monitor");
-    m_safetyGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #f44336; }");
+    m_safetyGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle(ModernMedicalStyle::Colors::MEDICAL_RED));
     
     QVBoxLayout* safetyLayout = new QVBoxLayout(m_safetyGroup);
     

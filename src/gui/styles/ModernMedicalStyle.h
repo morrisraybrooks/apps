@@ -139,6 +139,7 @@ public:
     static QString getButtonStyle(const QString& type = "primary");
     static QString getLabelStyle(const QString& type = "body");
     static QString getGroupBoxStyle();
+    static QString getGroupBoxStyle(const QColor& titleColor);  // Overload with custom title color
     static QString getFrameStyle();
     static QString getScrollAreaStyle();
     static QString getProgressBarStyle();

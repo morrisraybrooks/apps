@@ -80,6 +80,16 @@ private:
     void connectSignals();
     void applyLargeDisplayStyles();
 
+    /**
+     * @brief Update navigation button highlighting
+     *
+     * Consolidates duplicate stylesheet application for navigation buttons.
+     * Sets the active button to highlighted state, all others to default.
+     *
+     * @param activeButton Pointer to the button that should be highlighted (nullptr to clear all)
+     */
+    void updateNavigationHighlight(QPushButton* activeButton);
+
     // Modern dashboard card setup methods
     void setupPatternSelectionCard(QGridLayout* layout);
     void setupPressureMonitoringCard(QGridLayout* layout);

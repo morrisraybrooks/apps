@@ -74,7 +74,7 @@ void SafetyPanel::setupUI()
     
     // Add alert group at the bottom
     m_alertGroup = new QGroupBox("System Alerts");
-    m_alertGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #f44336; }");
+    m_alertGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle(ModernMedicalStyle::Colors::MEDICAL_RED));
     
     QVBoxLayout* alertLayout = new QVBoxLayout(m_alertGroup);
     
@@ -135,7 +135,7 @@ void SafetyPanel::setupEmergencyControls()
 void SafetyPanel::setupStatusMonitoring()
 {
     m_statusGroup = new QGroupBox("System Status");
-    m_statusGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_statusGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     
     QVBoxLayout* statusLayout = new QVBoxLayout(m_statusGroup);
     
@@ -163,7 +163,7 @@ void SafetyPanel::setupStatusMonitoring()
 void SafetyPanel::setupPressureLimits()
 {
     m_pressureGroup = new QGroupBox("Pressure Monitoring");
-    m_pressureGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_pressureGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     
     QGridLayout* pressureLayout = new QGridLayout(m_pressureGroup);
     pressureLayout->setSpacing(10);
@@ -217,7 +217,7 @@ void SafetyPanel::setupPressureLimits()
 void SafetyPanel::setupSystemDiagnostics()
 {
     m_diagnosticsGroup = new QGroupBox("System Diagnostics");
-    m_diagnosticsGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_diagnosticsGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     
     QVBoxLayout* diagnosticsLayout = new QVBoxLayout(m_diagnosticsGroup);
     

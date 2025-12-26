@@ -330,6 +330,11 @@ QString ModernMedicalStyle::getLabelStyle(const QString& type)
 
 QString ModernMedicalStyle::getGroupBoxStyle()
 {
+    return getGroupBoxStyle(Colors::PRIMARY_BLUE);
+}
+
+QString ModernMedicalStyle::getGroupBoxStyle(const QColor& titleColor)
+{
     return QString(
         "QGroupBox {"
         "    font-family: %1;"
@@ -353,7 +358,7 @@ QString ModernMedicalStyle::getGroupBoxStyle()
     ).arg(Typography::PRIMARY_FONT)
      .arg(Typography::getSubtitle())
      .arg(Typography::WEIGHT_MEDIUM)
-     .arg(Colors::PRIMARY_BLUE.name())
+     .arg(titleColor.name())
      .arg(scalePixelValue(2))
      .arg(Colors::BORDER_LIGHT.name())
      .arg(scalePixelValue(Spacing::getMediumRadius()))

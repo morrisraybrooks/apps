@@ -58,7 +58,7 @@ private:
     void checkHardwareStatus();
     
     // Utility methods
-    bool isValidPressure(double pressure) const;
+    // NOTE: Use SafetyConstants::isValidPressure() for pressure validation
     void logSafetyEvent(const QString& event);
 
     // Hardware interface
@@ -85,13 +85,11 @@ private:
     // Thread safety
     mutable QMutex m_mutex;
     
-    // Constants
+    // Constants - most are now accessed via SafetyConstants namespace
     static const double DEFAULT_MAX_PRESSURE;      // 75.0 mmHg
     static const double DEFAULT_WARNING_THRESHOLD; // 60.0 mmHg
     static const int DEFAULT_MONITORING_RATE_HZ;   // 20 Hz (reduced for GUI compatibility)
-    static const int MAX_CONSECUTIVE_ERRORS;       // 5 errors before alarm
-    static const double MIN_VALID_PRESSURE;        // 0.0 mmHg
-    static const double MAX_VALID_PRESSURE;        // 200.0 mmHg
+    // NOTE: Use SafetyConstants::MAX_CONSECUTIVE_ERRORS, MIN_VALID_PRESSURE, MAX_VALID_PRESSURE directly
 };
 
 #endif // LIGHTWEIGHTSAFETYMONITOR_H

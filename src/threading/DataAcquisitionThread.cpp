@@ -1,9 +1,11 @@
 #include "DataAcquisitionThread.h"
 #include "../hardware/HardwareManager.h"
+#include "../safety/SafetyConstants.h"
 #include <QDebug>
 #include <QMutexLocker>
 #include <QCoreApplication>
 #include <cmath>
+#include <memory>
 
 DataAcquisitionThread::DataAcquisitionThread(HardwareManager* hardware, QObject *parent)
     : QThread(parent)
@@ -189,28 +191,30 @@ void DataAcquisitionThread::run()
 {
     qDebug() << "Data acquisition thread started";
     emit threadStarted();
-    
+
     initializeThread();
-    
-    // Create timer for precise timing
-    m_acquisitionTimer = new QTimer();
+
+    // Create timer for precise timing on the worker thread
+    // Use a local unique_ptr for RAII cleanup to prevent leaks if an exception occurs
+    std::unique_ptr<QTimer> acquisitionTimer = std::make_unique<QTimer>();
+    m_acquisitionTimer = acquisitionTimer.get();
     m_acquisitionTimer->setInterval(m_samplingIntervalMs);
     m_acquisitionTimer->setTimerType(Qt::PreciseTimer);
-    
+
     connect(m_acquisitionTimer, &QTimer::timeout, this, &DataAcquisitionThread::performDataAcquisition);
-    
+
     m_acquisitionTimer->start();
-    
+
     // Run event loop for timer
     exec();
-    
-    // Cleanup
+
+    // Cleanup - unique_ptr will delete timer automatically, but stop it first
     if (m_acquisitionTimer) {
         m_acquisitionTimer->stop();
-        delete m_acquisitionTimer;
-        m_acquisitionTimer = nullptr;
     }
-    
+    m_acquisitionTimer = nullptr;
+    // acquisitionTimer goes out of scope here and deletes the timer
+
     cleanupThread();
     qDebug() << "Data acquisition thread finished";
 }
@@ -368,9 +372,9 @@ void DataAcquisitionThread::performIntegratedSafetyCheck(const SensorData& data)
                               .arg(data.tankPressure, 0, 'f', 1));
         }
 
-        // Check for invalid readings
-        if (data.avlPressure < 0 || data.tankPressure < 0 ||
-            data.avlPressure > 200.0 || data.tankPressure > 200.0) {
+        // Check for invalid readings using centralized SafetyConstants
+        if (!SafetyConstants::isValidPressure(data.avlPressure) ||
+            !SafetyConstants::isValidPressure(data.tankPressure)) {
             emit safetyWarning("Invalid pressure readings detected");
             m_consecutiveSafetyErrors++;
         } else {

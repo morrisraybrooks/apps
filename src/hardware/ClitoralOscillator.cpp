@@ -166,7 +166,7 @@ void ClitoralOscillator::setAmplitude(double pressureMmHg)
 {
     QMutexLocker locker(&m_mutex);
 
-    m_targetAmplitude = std::clamp(pressureMmHg, MIN_AMPLITUDE_MMHG, MAX_AMPLITUDE_MMHG);
+    m_targetAmplitude = std::clamp(pressureMmHg, MIN_AMPLITUDE_MMHG, SafetyConstants::MAX_PRESSURE_STIMULATION_MMHG);
 
     qDebug() << "ClitoralOscillator amplitude set to" << m_targetAmplitude << "mmHg";
 }

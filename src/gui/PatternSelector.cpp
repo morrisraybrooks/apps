@@ -101,7 +101,7 @@ void PatternSelector::setupCategorySelector()
 {
     qDebug() << "setupCategorySelector called.";
     m_categoryGroup = new QGroupBox("Pattern Categories");
-    m_categoryGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_categoryGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
 
     QVBoxLayout* categoryLayout = new QVBoxLayout(m_categoryGroup);
 
@@ -135,7 +135,7 @@ void PatternSelector::setupPatternGrid()
 {
     qDebug() << "setupPatternGrid called.";
     m_patternGroup = new QGroupBox("Available Patterns");
-    m_patternGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_patternGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     
     QVBoxLayout* patternGroupLayout = new QVBoxLayout(m_patternGroup);
     
@@ -159,7 +159,7 @@ void PatternSelector::setupPatternGrid()
 void PatternSelector::setupParameterPanel()
 {
     m_parameterGroup = new QGroupBox("Pattern Parameters");
-    m_parameterGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_parameterGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     
     QVBoxLayout* parameterGroupLayout = new QVBoxLayout(m_parameterGroup);
     
@@ -182,7 +182,7 @@ void PatternSelector::setupParameterPanel()
 void PatternSelector::setupPreviewPanel()
 {
     m_previewGroup = new QGroupBox("Pattern Preview");
-    m_previewGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_previewGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     m_previewGroup->setFixedHeight(PREVIEW_PANEL_HEIGHT);
     
     QVBoxLayout* previewLayout = new QVBoxLayout(m_previewGroup);
@@ -286,7 +286,7 @@ void PatternSelector::loadPatternsFromConfig()
     // Load patterns from each category
     QStringList categoryKeys = {"pulse_patterns", "wave_patterns", "air_pulse_patterns",
                                "milking_patterns", "automated_orgasm_patterns",
-                               "constant_patterns", "special_patterns"};
+                               "constant_patterns", "special_patterns", "therapeutic_patterns"};
     
     for (const QString& categoryKey : categoryKeys) {
         QJsonArray patterns = vacuumPatterns[categoryKey].toArray();
@@ -666,24 +666,8 @@ void PatternSelector::onPatternCreated(const QString& patternName, const QJsonOb
     // Add the new pattern to our pattern map
     PatternInfo newPattern;
     newPattern.name = patternName;
-    newPattern.type = patternData["type"].toString();
-    newPattern.description = patternData["description"].toString();
-    newPattern.basePressure = patternData.value("base_pressure").toDouble(50.0);
-    newPattern.speed = patternData.value("speed").toDouble(1.0);
-    newPattern.intensity = patternData.value("intensity").toDouble(50.0);
-
-    // Parse pattern steps
-    QJsonArray stepsArray = patternData["steps"].toArray();
-    for (const QJsonValue& stepValue : stepsArray) {
-        QJsonObject stepObj = stepValue.toObject();
-        PatternStep step;
-        step.pressurePercent = stepObj["pressure_percent"].toDouble();
-        step.durationMs = stepObj["duration_ms"].toInt();
-        step.action = stepObj["action"].toString();
-        step.description = stepObj["description"].toString();
-        step.parameters = stepObj["parameters"].toObject();
-        newPattern.steps.append(step);
-    }
+    newPattern.updateFromJson(patternData);  // Use consolidated field extraction
+    newPattern.steps = parsePatternSteps(patternData["steps"].toArray());
 
     m_patterns[patternName] = newPattern;
 
@@ -706,25 +690,8 @@ void PatternSelector::onPatternModified(const QString& patternName, const QJsonO
     // Update the existing pattern
     if (m_patterns.contains(patternName)) {
         PatternInfo& pattern = m_patterns[patternName];
-        pattern.type = patternData["type"].toString();
-        pattern.description = patternData["description"].toString();
-        pattern.basePressure = patternData.value("base_pressure").toDouble(pattern.basePressure);
-        pattern.speed = patternData.value("speed").toDouble(pattern.speed);
-        pattern.intensity = patternData.value("intensity").toDouble(pattern.intensity);
-
-        // Update pattern steps
-        pattern.steps.clear();
-        QJsonArray stepsArray = patternData["steps"].toArray();
-        for (const QJsonValue& stepValue : stepsArray) {
-            QJsonObject stepObj = stepValue.toObject();
-            PatternStep step;
-            step.pressurePercent = stepObj["pressure_percent"].toDouble();
-            step.durationMs = stepObj["duration_ms"].toInt();
-            step.action = stepObj["action"].toString();
-            step.description = stepObj["description"].toString();
-            step.parameters = stepObj["parameters"].toObject();
-            pattern.steps.append(step);
-        }
+        pattern.updateFromJson(patternData);  // Use consolidated field extraction
+        pattern.steps = parsePatternSteps(patternData["steps"].toArray());
 
         // Save the modified pattern to configuration
         savePatternToConfig(pattern);
@@ -792,6 +759,22 @@ void PatternSelector::savePatternToConfig(const PatternInfo& pattern)
     } else {
         qWarning() << "Failed to save pattern to config:" << pattern.name;
     }
+}
+
+QList<PatternSelector::PatternStep> PatternSelector::parsePatternSteps(const QJsonArray& stepsArray)
+{
+    QList<PatternStep> steps;
+    for (const QJsonValue& stepValue : stepsArray) {
+        QJsonObject stepObj = stepValue.toObject();
+        PatternStep step;
+        step.pressurePercent = stepObj["pressure_percent"].toDouble();
+        step.durationMs = stepObj["duration_ms"].toInt();
+        step.action = stepObj["action"].toString();
+        step.description = stepObj["description"].toString();
+        step.parameters = stepObj["parameters"].toObject();
+        steps.append(step);
+    }
+    return steps;
 }
 
 QJsonObject PatternSelector::getCurrentParameters() const

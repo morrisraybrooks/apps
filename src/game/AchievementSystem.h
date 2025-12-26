@@ -94,6 +94,17 @@ private:
     void registerBuiltInAchievements();
     bool evaluateCondition(const Achievement& achievement) const;
     double calculateProgress(const Achievement& achievement) const;
+
+    /**
+     * @brief Get current value for an achievement condition type
+     *
+     * Consolidates the condition type lookup logic used by both
+     * evaluateCondition and calculateProgress.
+     *
+     * @param conditionType The condition type string (e.g., "wins", "total_edges")
+     * @return Current value for the specified condition type
+     */
+    int getConditionValue(const QString& conditionType) const;
     
     // Definitions
     QMap<QString, Achievement> m_achievements;

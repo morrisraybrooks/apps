@@ -446,20 +446,7 @@ QVector<GameSession> ProgressTracker::recentSessions(int count) const
     query.exec();
 
     while (query.next()) {
-        GameSession s;
-        s.id = query.value("id").toLongLong();
-        s.gameId = query.value("game_id").toString();
-        s.result = static_cast<GameResult>(query.value("result").toInt());
-        s.score = query.value("score").toInt();
-        s.durationSeconds = query.value("duration_seconds").toInt();
-        s.edgesAchieved = query.value("edges_achieved").toInt();
-        s.orgasmsDetected = query.value("orgasms_detected").toInt();
-        s.maxArousal = query.value("max_arousal").toDouble();
-        s.avgArousal = query.value("avg_arousal").toDouble();
-        s.fluidProducedMl = query.value("fluid_produced_ml").toDouble();
-        s.xpEarned = query.value("xp_earned").toInt();
-        s.playedAt = QDateTime::fromString(query.value("played_at").toString(), Qt::ISODate);
-        sessions.append(s);
+        sessions.append(parseGameSession(query, true));
     }
 
     return sessions;
@@ -475,12 +462,7 @@ QVector<GameSession> ProgressTracker::sessionsByGame(const QString& gameId, int 
     query.exec();
 
     while (query.next()) {
-        GameSession s;
-        s.id = query.value("id").toLongLong();
-        s.gameId = query.value("game_id").toString();
-        s.result = static_cast<GameResult>(query.value("result").toInt());
-        s.score = query.value("score").toInt();
-        sessions.append(s);
+        sessions.append(parseGameSession(query, false));  // Partial parse for summary data
     }
 
     return sessions;
@@ -846,17 +828,7 @@ QVector<PointTransaction> ProgressTracker::recentTransactions(int count) const
 
     if (query.exec()) {
         while (query.next()) {
-            PointTransaction tx;
-            tx.id = query.value(0).toLongLong();
-            tx.userId = query.value(1).toString();
-            tx.type = static_cast<PointTransactionType>(query.value(2).toInt());
-            tx.amount = query.value(3).toInt();
-            tx.balanceAfter = query.value(4).toInt();
-            tx.description = query.value(5).toString();
-            tx.relatedUserId = query.value(6).toString();
-            tx.relatedGameId = query.value(7).toString();
-            tx.timestamp = QDateTime::fromString(query.value(8).toString(), Qt::ISODate);
-            transactions.append(tx);
+            transactions.append(parsePointTransaction(query));
         }
     }
     return transactions;
@@ -880,17 +852,7 @@ QVector<PointTransaction> ProgressTracker::transactionsByType(PointTransactionTy
 
     if (query.exec()) {
         while (query.next()) {
-            PointTransaction tx;
-            tx.id = query.value(0).toLongLong();
-            tx.userId = query.value(1).toString();
-            tx.type = static_cast<PointTransactionType>(query.value(2).toInt());
-            tx.amount = query.value(3).toInt();
-            tx.balanceAfter = query.value(4).toInt();
-            tx.description = query.value(5).toString();
-            tx.relatedUserId = query.value(6).toString();
-            tx.relatedGameId = query.value(7).toString();
-            tx.timestamp = QDateTime::fromString(query.value(8).toString(), Qt::ISODate);
-            transactions.append(tx);
+            transactions.append(parsePointTransaction(query));
         }
     }
     return transactions;
@@ -1166,4 +1128,45 @@ QVector<PointTransaction> ProgressTracker::commandAuditLog(int count) const
 {
     // Return command-related transactions from the audit log
     return transactionsByType(PointTransactionType::COMMAND_COST, count);
+}
+
+// ============================================================================
+// Database Query Helper Methods
+// ============================================================================
+
+GameSession ProgressTracker::parseGameSession(const QSqlQuery& query, bool full)
+{
+    GameSession s;
+    s.id = query.value("id").toLongLong();
+    s.gameId = query.value("game_id").toString();
+    s.result = static_cast<GameResult>(query.value("result").toInt());
+    s.score = query.value("score").toInt();
+
+    if (full) {
+        s.durationSeconds = query.value("duration_seconds").toInt();
+        s.edgesAchieved = query.value("edges_achieved").toInt();
+        s.orgasmsDetected = query.value("orgasms_detected").toInt();
+        s.maxArousal = query.value("max_arousal").toDouble();
+        s.avgArousal = query.value("avg_arousal").toDouble();
+        s.fluidProducedMl = query.value("fluid_produced_ml").toDouble();
+        s.xpEarned = query.value("xp_earned").toInt();
+        s.playedAt = QDateTime::fromString(query.value("played_at").toString(), Qt::ISODate);
+    }
+
+    return s;
+}
+
+PointTransaction ProgressTracker::parsePointTransaction(const QSqlQuery& query)
+{
+    PointTransaction tx;
+    tx.id = query.value(0).toLongLong();
+    tx.userId = query.value(1).toString();
+    tx.type = static_cast<PointTransactionType>(query.value(2).toInt());
+    tx.amount = query.value(3).toInt();
+    tx.balanceAfter = query.value(4).toInt();
+    tx.description = query.value(5).toString();
+    tx.relatedUserId = query.value(6).toString();
+    tx.relatedGameId = query.value(7).toString();
+    tx.timestamp = QDateTime::fromString(query.value(8).toString(), Qt::ISODate);
+    return tx;
 }

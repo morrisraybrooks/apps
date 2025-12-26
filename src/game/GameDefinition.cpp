@@ -1,4 +1,5 @@
 #include "GameDefinition.h"
+#include "../core/JsonFileHelper.h"
 #include <QFile>
 #include <QJsonDocument>
 #include <QDebug>
@@ -230,22 +231,13 @@ bool GameDefinition::loadFromJson(const QJsonObject& json)
 
 bool GameDefinition::loadFromFile(const QString& filePath)
 {
-    QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly)) {
-        m_validationError = "Cannot open file: " + filePath;
+    // Use JsonFileHelper for consistent error handling
+    QJsonObject root;
+    if (!JsonFileHelper::loadObject(filePath, root, &m_validationError)) {
         return false;
     }
 
-    QJsonParseError parseError;
-    QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &parseError);
-    file.close();
-
-    if (parseError.error != QJsonParseError::NoError) {
-        m_validationError = "JSON parse error: " + parseError.errorString();
-        return false;
-    }
-
-    return loadFromJson(doc.object());
+    return loadFromJson(root);
 }
 
 QJsonObject GameDefinition::toJson() const

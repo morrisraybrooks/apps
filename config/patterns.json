@@ -296,6 +296,74 @@
           }
         }
       }
+    ],
+    "therapeutic_patterns": [
+      {
+        "name": "Gentle Therapeutic Pulse",
+        "type": "therapeutic_pulse",
+        "baseline_pressure_mmhg": 20.0,
+        "therapeutic_pressure_mmhg": 30.0,
+        "frequency_hz": 4.0,
+        "session_duration_ms": 180000,
+        "include_warmup": true,
+        "include_cooldown": true,
+        "description": "Gentle therapeutic pattern for blood flow enhancement"
+      },
+      {
+        "name": "Moderate Therapeutic Pulse",
+        "type": "therapeutic_pulse",
+        "baseline_pressure_mmhg": 25.0,
+        "therapeutic_pressure_mmhg": 35.0,
+        "frequency_hz": 6.0,
+        "session_duration_ms": 240000,
+        "include_warmup": true,
+        "include_cooldown": true,
+        "description": "Moderate intensity therapeutic pattern"
+      },
+      {
+        "name": "Intensive Therapeutic Pulse",
+        "type": "therapeutic_pulse",
+        "baseline_pressure_mmhg": 30.0,
+        "therapeutic_pressure_mmhg": 42.0,
+        "frequency_hz": 8.0,
+        "session_duration_ms": 300000,
+        "include_warmup": true,
+        "include_cooldown": true,
+        "description": "Higher intensity therapeutic pattern for advanced users"
+      },
+      {
+        "name": "Circulation Enhancer",
+        "type": "therapeutic_pulse",
+        "baseline_pressure_mmhg": 18.0,
+        "therapeutic_pressure_mmhg": 28.0,
+        "frequency_hz": 3.0,
+        "session_duration_ms": 600000,
+        "include_warmup": true,
+        "include_cooldown": true,
+        "description": "Extended light therapy for circulation improvement"
+      },
+      {
+        "name": "Engorgement Protocol",
+        "type": "therapeutic_pulse",
+        "baseline_pressure_mmhg": 25.0,
+        "therapeutic_pressure_mmhg": 38.0,
+        "frequency_hz": 5.0,
+        "session_duration_ms": 480000,
+        "include_warmup": true,
+        "include_cooldown": true,
+        "description": "Optimized for tissue engorgement and sensitivity"
+      },
+      {
+        "name": "Pre-Session Preparation",
+        "type": "therapeutic_pulse",
+        "baseline_pressure_mmhg": 20.0,
+        "therapeutic_pressure_mmhg": 32.0,
+        "frequency_hz": 4.0,
+        "session_duration_ms": 300000,
+        "include_warmup": true,
+        "include_cooldown": false,
+        "description": "Preparatory pattern to enhance sensitivity before main session"
+      }
     ]
   },
   "pattern_categories": [
@@ -333,13 +401,39 @@
       "name": "Special Patterns",
       "patterns": ["Edging"],
       "description": "Advanced specialized patterns"
+    },
+    {
+      "name": "Therapeutic Patterns",
+      "patterns": [
+        "Gentle Therapeutic Pulse",
+        "Moderate Therapeutic Pulse",
+        "Intensive Therapeutic Pulse",
+        "Circulation Enhancer",
+        "Engorgement Protocol",
+        "Pre-Session Preparation"
+      ],
+      "description": "Medical/therapeutic patterns optimized for blood flow, tissue health, and sensitivity enhancement",
+      "safety_notes": [
+        "Monitor pressure levels carefully during extended sessions",
+        "Ensure proper seal integrity throughout session",
+        "Allow adequate recovery time between intensive sessions"
+      ]
     }
   ],
   "safety_limits": {
-    "max_pressure_mmhg": 75.0,
-    "max_pattern_duration_minutes": 60,
-    "min_pressure_percent": 10,
-    "max_pressure_percent": 90,
-    "emergency_stop_pressure_mmhg": 80.0
+    "stimulation": {
+      "max_pressure_mmhg": 75.0,
+      "max_pattern_duration_minutes": 60,
+      "min_pressure_percent": 10,
+      "max_pressure_percent": 90,
+      "emergency_stop_pressure_mmhg": 80.0
+    },
+    "therapeutic": {
+      "max_pressure_mmhg": 50.0,
+      "max_session_duration_ms": 900000,
+      "min_drainage_pause_interval": 5,
+      "recommended_recovery_time_ms": 300000,
+      "anti_detachment_threshold_mmhg": 50.0
+    }
   }
 }

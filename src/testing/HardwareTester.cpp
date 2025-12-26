@@ -3,6 +3,7 @@
 #include "../hardware/SensorInterface.h"
 #include "../hardware/ActuatorControl.h"
 #include "../safety/SafetyManager.h"
+#include "../core/StatisticsUtils.h"
 #include <QDebug>
 #include <QThread>
 #include <QJsonDocument>
@@ -343,7 +344,6 @@ bool HardwareTester::performAVLSensorTest(TestCase& testCase)
     }
 
     QList<double> readings;
-    double sum = 0.0;
 
     // Take multiple readings
     for (int i = 0; i < DEFAULT_SENSOR_SAMPLES; ++i) {
@@ -353,33 +353,26 @@ bool HardwareTester::performAVLSensorTest(TestCase& testCase)
             return false;
         }
         readings.append(reading);
-        sum += reading;
         QThread::msleep(100); // Small delay between readings
     }
 
-    // Calculate statistics
-    double mean = sum / readings.size();
-    double variance = 0.0;
-    for (double reading : readings) {
-        variance += (reading - mean) * (reading - mean);
-    }
-    double stdDev = sqrt(variance / readings.size());
-    double coefficientOfVariation = (stdDev / mean) * 100.0;
+    // Calculate statistics using shared utility
+    StatisticsUtils::Stats stats = StatisticsUtils::calculate(readings);
 
     // Store test data
-    testCase.data["mean_reading"] = mean;
-    testCase.data["std_deviation"] = stdDev;
-    testCase.data["coefficient_of_variation"] = coefficientOfVariation;
-    testCase.data["sample_count"] = readings.size();
+    testCase.data["mean_reading"] = stats.mean;
+    testCase.data["std_deviation"] = stats.stdDev;
+    testCase.data["coefficient_of_variation"] = stats.coefficientOfVariation;
+    testCase.data["sample_count"] = stats.sampleCount;
 
-    // Check if readings are stable (CV < 5%)
-    if (coefficientOfVariation > DEFAULT_SENSOR_TOLERANCE) {
-        testCase.details = QString("Sensor readings unstable: CV = %1%").arg(coefficientOfVariation, 0, 'f', 2);
+    // Check if readings are stable (CV < tolerance)
+    if (stats.coefficientOfVariation > DEFAULT_SENSOR_TOLERANCE) {
+        testCase.details = QString("Sensor readings unstable: CV = %1%").arg(stats.coefficientOfVariation, 0, 'f', 2);
         return false;
     }
 
     testCase.details = QString("AVL sensor stable: mean = %1 mmHg, CV = %2%")
-                      .arg(mean, 0, 'f', 2).arg(coefficientOfVariation, 0, 'f', 2);
+                      .arg(stats.mean, 0, 'f', 2).arg(stats.coefficientOfVariation, 0, 'f', 2);
     return true;
 }
 
@@ -391,7 +384,6 @@ bool HardwareTester::performTankSensorTest(TestCase& testCase)
     }
 
     QList<double> readings;
-    double sum = 0.0;
 
     // Take multiple readings
     for (int i = 0; i < DEFAULT_SENSOR_SAMPLES; ++i) {
@@ -401,33 +393,26 @@ bool HardwareTester::performTankSensorTest(TestCase& testCase)
             return false;
         }
         readings.append(reading);
-        sum += reading;
         QThread::msleep(100);
     }
 
-    // Calculate statistics
-    double mean = sum / readings.size();
-    double variance = 0.0;
-    for (double reading : readings) {
-        variance += (reading - mean) * (reading - mean);
-    }
-    double stdDev = sqrt(variance / readings.size());
-    double coefficientOfVariation = (stdDev / mean) * 100.0;
+    // Calculate statistics using shared utility
+    StatisticsUtils::Stats stats = StatisticsUtils::calculate(readings);
 
     // Store test data
-    testCase.data["mean_reading"] = mean;
-    testCase.data["std_deviation"] = stdDev;
-    testCase.data["coefficient_of_variation"] = coefficientOfVariation;
-    testCase.data["sample_count"] = readings.size();
+    testCase.data["mean_reading"] = stats.mean;
+    testCase.data["std_deviation"] = stats.stdDev;
+    testCase.data["coefficient_of_variation"] = stats.coefficientOfVariation;
+    testCase.data["sample_count"] = stats.sampleCount;
 
     // Check stability
-    if (coefficientOfVariation > DEFAULT_SENSOR_TOLERANCE) {
-        testCase.details = QString("Sensor readings unstable: CV = %1%").arg(coefficientOfVariation, 0, 'f', 2);
+    if (stats.coefficientOfVariation > DEFAULT_SENSOR_TOLERANCE) {
+        testCase.details = QString("Sensor readings unstable: CV = %1%").arg(stats.coefficientOfVariation, 0, 'f', 2);
         return false;
     }
 
     testCase.details = QString("Tank sensor stable: mean = %1 mmHg, CV = %2%")
-                      .arg(mean, 0, 'f', 2).arg(coefficientOfVariation, 0, 'f', 2);
+                      .arg(stats.mean, 0, 'f', 2).arg(stats.coefficientOfVariation, 0, 'f', 2);
     return true;
 }
 

@@ -5,6 +5,7 @@
 #include <QTimer>
 #include <QElapsedTimer>
 #include <QMutex>
+#include "../safety/SafetyConstants.h"
 
 class HardwareManager;
 
@@ -140,7 +141,7 @@ private:
 
     // Amplitude limits
     static constexpr double MIN_AMPLITUDE_MMHG = 5.0;
-    static constexpr double MAX_AMPLITUDE_MMHG = 75.0;
+    // MAX_AMPLITUDE_MMHG uses SafetyConstants::MAX_PRESSURE_STIMULATION_MMHG (75.0 mmHg)
     static constexpr double DEFAULT_AMPLITUDE_MMHG = 40.0;
 
     // Default phase ratios (optimized for smooth oscillation)

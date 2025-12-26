@@ -61,6 +61,20 @@ public:
         PatternInfo() : basePressure(50.0), speed(1.0), intensity(50.0) {}
         PatternInfo(const QString& n, const QString& t, const QString& d, const QString& c)
             : name(n), type(t), description(d), category(c), basePressure(50.0), speed(1.0), intensity(50.0) {}
+
+        /**
+         * @brief Update pattern fields from JSON object
+         *
+         * Consolidates duplicate field extraction from onPatternCreated and onPatternModified.
+         * Uses existing values as defaults for optional fields.
+         */
+        void updateFromJson(const QJsonObject& json) {
+            type = json["type"].toString(type);
+            description = json["description"].toString(description);
+            basePressure = json.value("base_pressure").toDouble(basePressure);
+            speed = json.value("speed").toDouble(speed);
+            intensity = json.value("intensity").toDouble(intensity);
+        }
     };
 
     explicit PatternSelector(VacuumController* controller, QWidget *parent = nullptr);
@@ -110,19 +124,29 @@ private:
     void setupParameterPanel();
     void setupPreviewPanel();
     QString findPatternsConfigFile();
-    
+
     void loadPatternsFromConfig();
     void populateCategorySelector();
     void populatePatternGrid();
     void updateParameterPanel();
     void updatePreviewPanel();
-    
+
     TouchButton* createPatternButton(const PatternInfo& pattern);
     QWidget* createParameterControl(const QString& name, const QJsonValue& value);
-    
+
     void highlightSelectedPattern();
     void showPatternDescription(const PatternInfo& pattern);
     void savePatternToConfig(const PatternInfo& pattern);
+
+    /**
+     * @brief Parse pattern steps from JSON array
+     *
+     * Consolidates step parsing logic used by onPatternCreated and onPatternModified.
+     *
+     * @param stepsArray JSON array containing step definitions
+     * @return List of parsed PatternStep objects
+     */
+    static QList<PatternStep> parsePatternSteps(const QJsonArray& stepsArray);
     
     // Controller interface
     VacuumController* m_controller;

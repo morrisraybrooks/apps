@@ -10,6 +10,9 @@
 #include <algorithm>
 #include <numeric>
 
+// Static constant definitions (required for ODR-use)
+const int OrgasmControlAlgorithm::HISTORY_SIZE;
+
 OrgasmControlAlgorithm::OrgasmControlAlgorithm(HardwareManager* hardware, QObject* parent)
     : QObject(parent)
     , m_hardware(hardware)
@@ -168,70 +171,21 @@ void OrgasmControlAlgorithm::startAdaptiveEdgingInternal(int targetCycles)
         return;
     }
 
+    // Reset all session state
+    resetSessionState();
+
+    // Set mode-specific parameters
     m_targetEdges = targetCycles;
-    m_edgeCount = 0;
-    m_orgasmCount = 0;
     m_intensity = INITIAL_INTENSITY;
     m_frequency = INITIAL_FREQUENCY;
-    m_emergencyStop = false;
-
-    // Bug #11 fix: Reset high pressure duration tracking for new session
-    m_highPressureDuration = 0;
-
-    // Reset seal integrity tracking for new session
-    m_sealLossCount = 0;
-    m_resealAttemptInProgress = false;
-    // Bug fix: Use -1.0 as sentinel for "uninitialized" since pressure can never be negative
-    m_previousAVLPressure = -1.0;
-    m_previousClitoralPressure = -1.0;
-
-    // Reset orgasm detection state for new session
-    m_inOrgasm = false;
-    m_pointOfNoReturnReached = false;
-    m_unexpectedOrgasmCount = 0;
-
-    // Bug #20 fix: Reset previous arousal to prevent stale value on first iteration
-    m_previousArousal = 0.0;
-    m_arousalLevel = 0.0;
-    m_smoothedArousal = 0.0;
-
-    // Reset fluid tracking
-    m_sessionFluidMl = 0.0;
-    m_lubricationMl = 0.0;
-    m_orgasmicFluidMl = 0.0;
-    m_fluidPerOrgasm.clear();
-
-    // Bug #18 fix: Reset milking-specific state to prevent state leaks between sessions
-    m_milkingZoneTime = 0;
-    m_milkingAvgArousal = 0.0;
-    m_milkingAvgSamples = 0;
-    m_milkingOrgasmCount = 0;
-    m_dangerZoneEntries = 0;
-    m_milkingIntegralError = 0.0;
-    m_milkingPreviousError = 0.0;
-
-    // Start fluid sensor session
-    if (m_fluidSensor && m_fluidTrackingEnabled) {
-        m_fluidSensor->startSession();
-        m_fluidSensor->setCurrentArousalLevel(0.0);
-    }
 
     setMode(Mode::ADAPTIVE_EDGING);
     setState(ControlState::CALIBRATING);
 
-    // Start timers
-    // Bug #2 fix: Start m_stateTimer to ensure it's valid even during calibration
-    m_sessionTimer.start();
-    m_stateTimer.start();
-    m_updateTimer->start(UPDATE_INTERVAL_MS);
-    m_safetyTimer->start(SAFETY_INTERVAL_MS);
+    // Start session timers (consolidated from duplicate code)
+    startSessionTimers();
 
     qDebug() << "Started Adaptive Edging with target cycles:" << targetCycles;
-
-    // Reset calibration state
-    m_calibSumClitoral = 0.0;
-    m_calibSumAVL = 0.0;
-    m_calibSamples = 0;
 }
 
 void OrgasmControlAlgorithm::startAdaptiveEdging(int targetCycles)
@@ -249,72 +203,24 @@ void OrgasmControlAlgorithm::startForcedOrgasm(int targetOrgasms, int maxDuratio
         return;
     }
 
+    // Reset all session state
+    resetSessionState();
+
+    // Set mode-specific parameters
     m_targetOrgasms = targetOrgasms;
     m_maxDurationMs = maxDurationMs;
-    m_edgeCount = 0;
-    m_orgasmCount = 0;
     m_intensity = FORCED_BASE_INTENSITY;
     m_frequency = FORCED_BASE_FREQUENCY;
     m_tensAmplitude = FORCED_TENS_AMPLITUDE;
-    m_emergencyStop = false;
-
-    // Bug #11 fix: Reset high pressure duration tracking for new session
-    m_highPressureDuration = 0;
-
-    // Reset seal integrity tracking for new session
-    m_sealLossCount = 0;
-    m_resealAttemptInProgress = false;
-    // Bug fix: Use -1.0 as sentinel for "uninitialized" since pressure can never be negative
-    m_previousAVLPressure = -1.0;
-    m_previousClitoralPressure = -1.0;
-
-    // Reset orgasm detection state for new session
-    m_inOrgasm = false;
-    m_pointOfNoReturnReached = false;
-    m_unexpectedOrgasmCount = 0;
-
-    // Bug #20 fix: Reset previous arousal to prevent stale value / false anti-escape trigger
-    m_previousArousal = 0.0;
-    m_arousalLevel = 0.0;
-    m_smoothedArousal = 0.0;
-
-    // Reset fluid tracking
-    m_sessionFluidMl = 0.0;
-    m_lubricationMl = 0.0;
-    m_orgasmicFluidMl = 0.0;
-    m_fluidPerOrgasm.clear();
-
-    // Bug #18 fix: Reset milking-specific state to prevent state leaks between sessions
-    m_milkingZoneTime = 0;
-    m_milkingAvgArousal = 0.0;
-    m_milkingAvgSamples = 0;
-    m_milkingOrgasmCount = 0;
-    m_dangerZoneEntries = 0;
-    m_milkingIntegralError = 0.0;
-    m_milkingPreviousError = 0.0;
-
-    // Start fluid sensor session
-    if (m_fluidSensor && m_fluidTrackingEnabled) {
-        m_fluidSensor->startSession();
-        m_fluidSensor->setCurrentArousalLevel(0.0);
-    }
 
     setMode(Mode::FORCED_ORGASM);
     setState(ControlState::CALIBRATING);
 
-    // Bug #2 fix: Start m_stateTimer to ensure it's valid even during calibration
-    m_sessionTimer.start();
-    m_stateTimer.start();
-    m_updateTimer->start(UPDATE_INTERVAL_MS);
-    m_safetyTimer->start(SAFETY_INTERVAL_MS);
+    // Start session timers (consolidated from duplicate code)
+    startSessionTimers();
 
     qDebug() << "Started Forced Orgasm with target:" << targetOrgasms
              << "max duration:" << maxDurationMs << "ms";
-
-    // Reset calibration state
-    m_calibSumClitoral = 0.0;
-    m_calibSumAVL = 0.0;
-    m_calibSamples = 0;
 }
 
 void OrgasmControlAlgorithm::startDenial(int durationMs)
@@ -357,46 +263,8 @@ void OrgasmControlAlgorithm::startMilkingInternal(int durationMs, int failureMod
 
     qDebug() << "Starting milking session:" << durationMs << "ms, failure mode:" << failureMode;
 
-    // Reset session state
-    m_edgeCount = 0;
-    m_orgasmCount = 0;
-    m_emergencyStop = false;
-    m_highPressureDuration = 0;
-
-    // Reset seal integrity tracking
-    m_sealLossCount = 0;
-    m_resealAttemptInProgress = false;
-    // Bug fix: Use -1.0 as sentinel for "uninitialized" since pressure can never be negative
-    m_previousAVLPressure = -1.0;
-    m_previousClitoralPressure = -1.0;
-
-    // Reset orgasm detection state
-    m_inOrgasm = false;
-    m_pointOfNoReturnReached = false;
-    m_unexpectedOrgasmCount = 0;
-
-    // Bug #20 fix: Reset previous arousal to prevent stale value on first iteration
-    m_previousArousal = 0.0;
-    m_arousalLevel = 0.0;
-    m_smoothedArousal = 0.0;
-
-    // Reset fluid tracking
-    m_sessionFluidMl = 0.0;
-    m_lubricationMl = 0.0;
-    m_orgasmicFluidMl = 0.0;
-    m_fluidPerOrgasm.clear();
-
-    // Reset milking-specific state
-    m_milkingOrgasmCount = 0;
-    m_dangerZoneEntries = 0;
-    m_milkingZoneTime = 0;
-    m_milkingAvgArousal = 0.0;
-    m_milkingAvgSamples = 0;
-
-    // Reset PID state
-    m_milkingIntegralError = 0.0;
-    m_milkingPreviousError = 0.0;
-    m_milkingTargetArousal = MILKING_TARGET_AROUSAL;
+    // Reset all session state
+    resetSessionState();
 
     // Set session parameters
     m_maxDurationMs = qMin(durationMs, MILKING_MAX_SESSION_MS);
@@ -410,26 +278,12 @@ void OrgasmControlAlgorithm::startMilkingInternal(int durationMs, int failureMod
         m_tensAmplitude = MILKING_TENS_AMPLITUDE;
     }
 
-    // Start fluid sensor session
-    if (m_fluidSensor && m_fluidTrackingEnabled) {
-        m_fluidSensor->startSession();
-        m_fluidSensor->setCurrentArousalLevel(0.0);
-    }
-
     // Set mode and state
     setMode(Mode::MILKING);
     setState(ControlState::CALIBRATING);
 
-    // Reset calibration state
-    m_calibSumClitoral = 0.0;
-    m_calibSumAVL = 0.0;
-    m_calibSamples = 0;
-
-    // Start timers
-    m_sessionTimer.start();
-    m_stateTimer.start();
-    m_updateTimer->start(UPDATE_INTERVAL_MS);
-    m_safetyTimer->start(SAFETY_INTERVAL_MS);
+    // Start session timers (consolidated from duplicate code)
+    startSessionTimers();
 }
 
 void OrgasmControlAlgorithm::stop()
@@ -651,8 +505,8 @@ void OrgasmControlAlgorithm::onUpdateTick()
                     double avlReading = m_hardware->readAVLPressure();
 
                     // Only include valid readings in calibration
-                    if (clitoralReading >= PRESSURE_MIN_VALID && clitoralReading <= PRESSURE_MAX_VALID &&
-                        avlReading >= PRESSURE_MIN_VALID && avlReading <= PRESSURE_MAX_VALID) {
+                    if (clitoralReading >= SafetyConstants::MIN_VALID_PRESSURE && clitoralReading <= PRESSURE_MAX_VALID_CONTROL &&
+                        avlReading >= SafetyConstants::MIN_VALID_PRESSURE && avlReading <= PRESSURE_MAX_VALID_CONTROL) {
                         m_calibSumClitoral += clitoralReading;
                         m_calibSumAVL += avlReading;
                         m_calibSamples++;
@@ -821,12 +675,12 @@ double OrgasmControlAlgorithm::calculateArousalLevel(int currentIdx)
 
     // Bug #12 fix: Validate sensor readings
     // Negative values indicate sensor error; use previous value or baseline
-    // MEDIUM-3 fix: Use class-level PRESSURE_MIN_VALID/PRESSURE_MAX_VALID constants
-    if (currentClitoral < PRESSURE_MIN_VALID || currentClitoral > PRESSURE_MAX_VALID) {
+    // Use SafetyConstants::MIN_VALID_PRESSURE and PRESSURE_MAX_VALID_CONTROL (stricter limit for control)
+    if (currentClitoral < SafetyConstants::MIN_VALID_PRESSURE || currentClitoral > PRESSURE_MAX_VALID_CONTROL) {
         qWarning() << "Invalid clitoral pressure reading:" << currentClitoral << "mmHg - using baseline";
         currentClitoral = m_baselineClitoral > 0.0 ? m_baselineClitoral : 0.0;
     }
-    if (currentAVL < PRESSURE_MIN_VALID || currentAVL > PRESSURE_MAX_VALID) {
+    if (currentAVL < SafetyConstants::MIN_VALID_PRESSURE || currentAVL > PRESSURE_MAX_VALID_CONTROL) {
         qWarning() << "Invalid AVL pressure reading:" << currentAVL << "mmHg - using baseline";
         currentAVL = m_baselineAVL > 0.0 ? m_baselineAVL : 0.0;
     }
@@ -1385,14 +1239,14 @@ void OrgasmControlAlgorithm::performSafetyCheck()
 
     // Bug #12 fix: Validate sensor readings before safety checks
     // Invalid readings (-1.0) indicate sensor failure - treat as emergency
-    // MEDIUM-3 fix: Use class-level PRESSURE_MIN_VALID/PRESSURE_MAX_VALID constants
-    if (avlPressure < PRESSURE_MIN_VALID || avlPressure > PRESSURE_MAX_VALID) {
+    // Use SafetyConstants::MIN_VALID_PRESSURE and PRESSURE_MAX_VALID_CONTROL (stricter limit for control)
+    if (avlPressure < SafetyConstants::MIN_VALID_PRESSURE || avlPressure > PRESSURE_MAX_VALID_CONTROL) {
         qWarning() << "AVL sensor failure detected:" << avlPressure << "mmHg - triggering emergency stop";
         emit sensorError("AVL", QString("Invalid reading: %1 mmHg").arg(avlPressure));
         handleEmergencyStop();
         return;
     }
-    if (clitoralPressure < PRESSURE_MIN_VALID || clitoralPressure > PRESSURE_MAX_VALID) {
+    if (clitoralPressure < SafetyConstants::MIN_VALID_PRESSURE || clitoralPressure > PRESSURE_MAX_VALID_CONTROL) {
         qWarning() << "Clitoral sensor failure detected:" << clitoralPressure << "mmHg - triggering emergency stop";
         emit sensorError("Clitoral", QString("Invalid reading: %1 mmHg").arg(clitoralPressure));
         handleEmergencyStop();
@@ -1646,6 +1500,70 @@ void OrgasmControlAlgorithm::setMode(Mode mode)
 double OrgasmControlAlgorithm::clamp(double value, double min, double max)
 {
     return qBound(min, value, max);
+}
+
+void OrgasmControlAlgorithm::resetSessionState()
+{
+    // Reset session counters
+    m_edgeCount = 0;
+    m_orgasmCount = 0;
+    m_emergencyStop = false;
+
+    // Bug #11 fix: Reset high pressure duration tracking for new session
+    m_highPressureDuration = 0;
+
+    // Reset seal integrity tracking for new session
+    m_sealLossCount = 0;
+    m_resealAttemptInProgress = false;
+    // Bug fix: Use -1.0 as sentinel for "uninitialized" since pressure can never be negative
+    m_previousAVLPressure = -1.0;
+    m_previousClitoralPressure = -1.0;
+
+    // Reset orgasm detection state for new session
+    m_inOrgasm = false;
+    m_pointOfNoReturnReached = false;
+    m_unexpectedOrgasmCount = 0;
+
+    // Bug #20 fix: Reset previous arousal to prevent stale value on first iteration
+    m_previousArousal = 0.0;
+    m_arousalLevel = 0.0;
+    m_smoothedArousal = 0.0;
+
+    // Reset fluid tracking
+    m_sessionFluidMl = 0.0;
+    m_lubricationMl = 0.0;
+    m_orgasmicFluidMl = 0.0;
+    m_fluidPerOrgasm.clear();
+
+    // Bug #18 fix: Reset milking-specific state to prevent state leaks between sessions
+    m_milkingZoneTime = 0;
+    m_milkingAvgArousal = 0.0;
+    m_milkingAvgSamples = 0;
+    m_milkingOrgasmCount = 0;
+    m_dangerZoneEntries = 0;
+    m_milkingIntegralError = 0.0;
+    m_milkingPreviousError = 0.0;
+    m_milkingTargetArousal = MILKING_TARGET_AROUSAL;
+
+    // Consolidation fix: Reset calibration state (previously duplicated in start methods)
+    m_calibSumClitoral = 0.0;
+    m_calibSumAVL = 0.0;
+    m_calibSamples = 0;
+
+    // Start fluid sensor session if enabled
+    if (m_fluidSensor && m_fluidTrackingEnabled) {
+        m_fluidSensor->startSession();
+        m_fluidSensor->setCurrentArousalLevel(0.0);
+    }
+}
+
+void OrgasmControlAlgorithm::startSessionTimers()
+{
+    // Bug #2 fix: Start m_stateTimer to ensure it's valid even during calibration
+    m_sessionTimer.start();
+    m_stateTimer.start();
+    m_updateTimer->start(UPDATE_INTERVAL_MS);
+    m_safetyTimer->start(SAFETY_INTERVAL_MS);
 }
 
 // ============================================================================

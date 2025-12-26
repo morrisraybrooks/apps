@@ -1,5 +1,6 @@
 #include "CalibrationInterface.h"
 #include "components/TouchButton.h"
+#include "styles/ModernMedicalStyle.h"
 #include "../VacuumController.h"
 #include <QDebug>
 #include <QMessageBox>
@@ -127,7 +128,7 @@ void CalibrationInterface::setupUI()
 void CalibrationInterface::setupControlPanel()
 {
     m_controlGroup = new QGroupBox("Calibration Control");
-    m_controlGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_controlGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     
     QHBoxLayout* controlLayout = new QHBoxLayout(m_controlGroup);
     controlLayout->setSpacing(SPACING_NORMAL);
@@ -176,7 +177,7 @@ void CalibrationInterface::setupControlPanel()
 void CalibrationInterface::setupStatusPanel()
 {
     m_statusGroup = new QGroupBox("Calibration Status");
-    m_statusGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_statusGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     
     QVBoxLayout* statusLayout = new QVBoxLayout(m_statusGroup);
     
@@ -208,7 +209,7 @@ void CalibrationInterface::setupStatusPanel()
 void CalibrationInterface::setupProgressPanel()
 {
     m_progressGroup = new QGroupBox("Calibration Progress");
-    m_progressGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_progressGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     m_progressGroup->setVisible(false); // Hidden by default
     
     QVBoxLayout* progressLayout = new QVBoxLayout(m_progressGroup);
@@ -239,7 +240,7 @@ void CalibrationInterface::setupProgressPanel()
 void CalibrationInterface::setupResultsPanel()
 {
     m_resultsGroup = new QGroupBox("Calibration Results");
-    m_resultsGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_resultsGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     
     QHBoxLayout* resultsLayout = new QHBoxLayout(m_resultsGroup);
     
@@ -285,7 +286,7 @@ void CalibrationInterface::setupResultsPanel()
 void CalibrationInterface::setupSettingsPanel()
 {
     m_settingsGroup = new QGroupBox("Calibration Settings");
-    m_settingsGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_settingsGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
 
     QHBoxLayout* settingsLayout = new QHBoxLayout(m_settingsGroup);
 
@@ -1007,17 +1008,7 @@ bool CalibrationInterface::exportCalibrationData(const QString& filePath)
     for (const QString& component : components) {
         CalibrationManager::CalibrationResult result;
         if (m_calibrationManager->loadCalibrationData(component, result)) {
-            QJsonObject calibrationObj;
-            calibrationObj["component"] = result.component;
-            calibrationObj["type"] = static_cast<int>(result.type);
-            calibrationObj["slope"] = result.slope;
-            calibrationObj["offset"] = result.offset;
-            calibrationObj["correlation"] = result.correlation;
-            calibrationObj["max_error"] = result.maxError;
-            calibrationObj["timestamp"] = result.timestamp.toString(Qt::ISODate);
-            calibrationObj["successful"] = result.successful;
-
-            calibrations.append(calibrationObj);
+            calibrations.append(result.toJson(false));  // Export without points for summary
         }
     }
 
@@ -1055,17 +1046,8 @@ bool CalibrationInterface::importCalibrationData(const QString& filePath)
     // Import calibrations
     QJsonArray calibrations = importData["calibrations"].toArray();
     for (const QJsonValue& calibrationValue : calibrations) {
-        QJsonObject calibrationObj = calibrationValue.toObject();
-
-        CalibrationManager::CalibrationResult result;
-        result.component = calibrationObj["component"].toString();
-        result.type = static_cast<CalibrationManager::CalibrationType>(calibrationObj["type"].toInt());
-        result.slope = calibrationObj["slope"].toDouble();
-        result.offset = calibrationObj["offset"].toDouble();
-        result.correlation = calibrationObj["correlation"].toDouble();
-        result.maxError = calibrationObj["max_error"].toDouble();
-        result.timestamp = QDateTime::fromString(calibrationObj["timestamp"].toString(), Qt::ISODate);
-        result.successful = calibrationObj["successful"].toBool();
+        CalibrationManager::CalibrationResult result =
+            CalibrationManager::CalibrationResult::fromJson(calibrationValue.toObject(), false);
 
         if (m_calibrationManager) {
             m_calibrationManager->saveCalibrationData(result);

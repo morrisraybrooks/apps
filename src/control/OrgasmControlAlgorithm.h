@@ -8,6 +8,7 @@
 #include <QVector>
 #include <atomic>
 #include <cmath>
+#include "../safety/SafetyConstants.h"
 
 class HardwareManager;
 class SensorInterface;
@@ -306,7 +307,34 @@ private:
     void setState(ControlState state);
     void setMode(Mode mode);
     static double clamp(double value, double min, double max);
-    
+
+    /**
+     * @brief Resets all session state to prepare for a new session
+     *
+     * Consolidates common state reset logic shared across startAdaptiveEdging,
+     * startForcedOrgasm, and startMilking methods. Thread-safe: assumes caller holds m_mutex.
+     *
+     * Resets:
+     * - Session counters (edgeCount, orgasmCount)
+     * - Safety tracking (highPressureDuration, sealLossCount)
+     * - Arousal state (arousalLevel, smoothedArousal, previousArousal)
+     * - Orgasm detection state (inOrgasm, pointOfNoReturnReached)
+     * - Calibration state (calibSumClitoral, calibSumAVL, calibSamples)
+     * - Fluid tracking (sessionFluidMl, lubricationMl, etc.)
+     * - Milking-specific state (milkingZoneTime, dangerZoneEntries, PID state)
+     * - Starts fluid sensor session if enabled
+     */
+    void resetSessionState();
+
+    /**
+     * @brief Start all session timers
+     *
+     * Consolidates duplicate timer start logic from startAdaptiveEdgingInternal,
+     * startForcedOrgasm, and startMilkingInternal. Starts m_sessionTimer, m_stateTimer,
+     * m_updateTimer, and m_safetyTimer. Thread-safe: assumes caller holds m_mutex.
+     */
+    void startSessionTimers();
+
     // Hardware interfaces
     HardwareManager* m_hardware;
     SensorInterface* m_sensorInterface;
@@ -428,9 +456,11 @@ private:
     // At 100ms intervals over 10 seconds, we expect ~100 samples; require at least 50
     static const int MIN_CALIBRATION_SAMPLES = 50;
 
-    // MEDIUM-3 fix: Centralized pressure validation constants (used in multiple places)
-    static constexpr double PRESSURE_MIN_VALID = 0.0;    // mmHg - below this is sensor error
-    static constexpr double PRESSURE_MAX_VALID = 100.0;  // mmHg - above sensor max (75) with margin
+    // Pressure validation: Use SafetyConstants::MIN_VALID_PRESSURE (0.0 mmHg)
+    // For max valid, this algorithm uses a stricter limit (100 mmHg) than SafetyConstants (200 mmHg)
+    // because readings above ~100 mmHg in the control context indicate sensor malfunction
+    // (MPX5010DP sensor max is 75 mmHg, so 100 mmHg provides reasonable margin for noise)
+    static constexpr double PRESSURE_MAX_VALID_CONTROL = 100.0;  // Stricter than SafetyConstants
 
     // Arousal calculation weights (pressure-based, sum to ~0.70 when HR enabled)
     static constexpr double WEIGHT_DEVIATION = 0.25;
@@ -487,7 +517,7 @@ private:
     // Safety limits
     static constexpr double SEAL_LOST_THRESHOLD = 10.0;
     static constexpr double MAX_SAFE_CLITORAL_PRESSURE = 80.0;
-    static constexpr double MAX_OUTER_PRESSURE = 75.0;
+    // Removed MAX_OUTER_PRESSURE - use SafetyConstants::MAX_PRESSURE_STIMULATION_MMHG instead
     static constexpr double MAX_CLITORAL_AMPLITUDE = 60.0;
     static constexpr double MAX_INTENSITY = 0.95;
     static constexpr double MAX_FREQUENCY = 13.0;

@@ -1,23 +1,30 @@
 #include "SafetyManager.h"
+#include "SafetyConstants.h"
+#include "EmergencyStopCoordinator.h"
+#include "../logging/ISafetyLogger.h"
 #include "../hardware/HardwareManager.h"
 #include "../error/CrashHandler.h"
+#include "../core/SafeOperationHelper.h"
 #include <QDebug>
 #include <QMutexLocker>
 #include <QDateTime>
+#include <QJsonObject>
 
-// Constants
-const double SafetyManager::DEFAULT_MAX_PRESSURE = 75.0;       // 75 mmHg (MPX5010DP FS ~75 mmHg)
-const double SafetyManager::DEFAULT_WARNING_THRESHOLD = 60.0;  // 80% of max (60 mmHg)
-const int SafetyManager::DEFAULT_SENSOR_TIMEOUT_MS = 1000;     // 1 second timeout
-const int SafetyManager::MONITORING_INTERVAL_MS = 100;         // 10Hz monitoring
-const int SafetyManager::MAX_CONSECUTIVE_ERRORS = 3;           // 3 errors trigger emergency stop
-const double SafetyManager::TISSUE_DAMAGE_RISK_PRESSURE = 150.0; // Hard tissue-damage risk threshold (mmHg)
+// Constants - using centralized SafetyConstants for consistency
+// NOTE: MAX_CONSECUTIVE_ERRORS, TISSUE_DAMAGE_RISK_MMHG are now accessed
+// directly via SafetyConstants namespace
+const double SafetyManager::DEFAULT_MAX_PRESSURE = SafetyConstants::MAX_PRESSURE_STIMULATION_MMHG;
+const double SafetyManager::DEFAULT_WARNING_THRESHOLD = SafetyConstants::WARNING_THRESHOLD_MMHG;
+const int SafetyManager::DEFAULT_SENSOR_TIMEOUT_MS = SafetyConstants::SENSOR_TIMEOUT_MS;
+const int SafetyManager::MONITORING_INTERVAL_MS = SafetyConstants::MONITORING_INTERVAL_MS;
 
 SafetyManager::SafetyManager(HardwareManager* hardware, QObject *parent)
     : QObject(parent)
+    , StatefulComponent<int>(SAFE, "SafetyManager")  // Initialize StatefulComponent
     , m_hardware(hardware)
     , m_crashHandler(nullptr)
-    , m_safetyState(SAFE)
+    , m_emergencyStopCoordinator(nullptr)
+    , m_safetyLogger(nullptr)
     , m_active(false)
     , m_maxPressure(DEFAULT_MAX_PRESSURE)
     , m_warningThreshold(DEFAULT_WARNING_THRESHOLD)
@@ -38,10 +45,19 @@ SafetyManager::SafetyManager(HardwareManager* hardware, QObject *parent)
     // Set up monitoring timer
     m_monitoringTimer->setInterval(MONITORING_INTERVAL_MS);
     connect(m_monitoringTimer, &QTimer::timeout, this, &SafetyManager::performSafetyMonitoring);
+
+    // Register state transition callback with StatefulComponent base
+    registerTransitionCallback([this](int oldState, int newState) {
+        onStateTransition(oldState, newState);
+    });
 }
 
 SafetyManager::~SafetyManager()
 {
+    // Unregister from emergency stop coordinator
+    if (m_emergencyStopCoordinator) {
+        m_emergencyStopCoordinator->unregisterHandler("SafetyManager");
+    }
     shutdown();
 }
 
@@ -132,13 +148,36 @@ void SafetyManager::setSensorTimeoutMs(int timeoutMs)
     }
 }
 
-void SafetyManager::triggerEmergencyStop_unlocked(const QString& reason)
+void SafetyManager::triggerEmergencyStop(const QString& reason)
 {
     qCritical() << "EMERGENCY STOP TRIGGERED:" << reason;
-    
+
     m_emergencyStopEvents++;
     m_lastSafetyError = QString("Emergency stop: %1").arg(reason);
-    
+
+    // Use EmergencyStopCoordinator if available for centralized coordination
+    if (m_emergencyStopCoordinator) {
+        m_emergencyStopCoordinator->triggerEmergencyStop(reason);
+    } else {
+        // Fallback to direct hardware control if coordinator not available
+        if (m_hardware) {
+            m_hardware->enterSealMaintainedSafeState(reason);
+        }
+    }
+
+    setState(EMERGENCY_STOP);
+    emit emergencyStopTriggered(reason);
+    logSafetyEvent(QString("Emergency stop: %1").arg(reason));
+}
+
+void SafetyManager::onEmergencyStopTriggered(const QString& reason)
+{
+    // This is called by the coordinator when any component triggers emergency stop
+    qWarning() << "SafetyManager handling emergency stop from coordinator:" << reason;
+
+    m_emergencyStopEvents++;
+    m_lastSafetyError = QString("Emergency stop (coordinated): %1").arg(reason);
+
     // Default emergency-stop path should preserve AVL seal while venting inner chambers.
     if (m_hardware) {
         m_hardware->enterSealMaintainedSafeState(reason);
@@ -148,30 +187,29 @@ void SafetyManager::triggerEmergencyStop_unlocked(const QString& reason)
     emit emergencyStopTriggered(reason);
 }
 
-void SafetyManager::triggerEmergencyStop(const QString& reason)
-{
-    QMutexLocker locker(&m_stateMutex);
-    triggerEmergencyStop_unlocked(reason);
-}
-
 bool SafetyManager::resetEmergencyStop()
 {
-    QMutexLocker locker(&m_stateMutex);
-    
-    if (m_safetyState != EMERGENCY_STOP) {
+    if (getState() != EMERGENCY_STOP) {
         return true;  // Not in emergency stop
     }
-    
-    // Reset hardware emergency stop
-    if (m_hardware && !m_hardware->resetEmergencyStop()) {
+
+    // Reset hardware emergency stop using SafeOperationHelper
+    auto result = SafeOperationHelper::execute<bool>(
+        "resetEmergencyStop", "SafetyManager",
+        [this]() { return m_hardware ? m_hardware->resetEmergencyStop() : true; },
+        [this](const QString& err) { emit systemError(err); }
+    );
+
+    if (!result.isSuccess() || !result.get()) {
         m_lastSafetyError = "Hardware emergency stop reset failed";
         qWarning() << m_lastSafetyError;
     }
-    
+
     // Reset error counters
     m_consecutiveErrors = 0;
-    
+
     setState(SAFE);
+    logSafetyEvent("Emergency stop reset successfully");
     qDebug() << "Emergency stop reset successfully. Monitoring will re-assess safety.";
     return true;
 }
@@ -219,19 +257,19 @@ void SafetyManager::performSafetyMonitoring()
             if (m_consecutiveErrors > 0) {
                 m_consecutiveErrors--;
             }
-            
+
             // Update to SAFE state if we were in WARNING
-            if (m_safetyState == WARNING) {
+            if (getState() == WARNING) {
                 setState(SAFE);
             }
         } else {
             // Increment error count
             m_consecutiveErrors++;
-            
+
             // Trigger emergency stop if too many consecutive errors
-            if (m_consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
-                triggerEmergencyStop_unlocked("Too many consecutive safety check failures");
-            } else if (m_safetyState == SAFE) {
+            if (m_consecutiveErrors >= SafetyConstants::MAX_CONSECUTIVE_ERRORS) {
+                triggerEmergencyStop("Too many consecutive safety check failures");
+            } else if (getState() == SAFE) {
                 setState(WARNING);
                 emit safetyWarning(m_lastSafetyError);
             }
@@ -247,33 +285,91 @@ void SafetyManager::handleSensorError(const QString& sensor, const QString& erro
     QMutexLocker locker(&m_stateMutex);
     m_sensorErrorEvents++;
     m_lastSafetyError = QString("Sensor error (%1): %2").arg(sensor, error);
-    
+
     qWarning() << m_lastSafetyError;
-    
-    if (m_safetyState == SAFE) {
+
+    if (getState() == SAFE) {
         setState(WARNING);
         emit safetyWarning(m_lastSafetyError);
     }
-    
+
     emit sensorTimeout(sensor);
 }
 
 void SafetyManager::setState(SafetyState newState)
 {
-    if (m_safetyState != newState) {
-        SafetyState oldState = m_safetyState;
-        m_safetyState = newState;
-        
-        qDebug() << QString("Safety state changed: %1 -> %2")
-                    .arg(static_cast<int>(oldState))
-                    .arg(static_cast<int>(newState));
-        
+    // Use StatefulComponent base class for thread-safe state management
+    if (setStateInternal(static_cast<int>(newState))) {
+        // Emit Qt signal (StatefulComponent can't emit signals since it's a template)
         emit safetyStateChanged(newState);
+    }
+}
+
+QString SafetyManager::stateToString(int state) const
+{
+    switch (static_cast<SafetyState>(state)) {
+        case SAFE:           return "SAFE";
+        case WARNING:        return "WARNING";
+        case CRITICAL:       return "CRITICAL";
+        case EMERGENCY_STOP: return "EMERGENCY_STOP";
+        default:             return "UNKNOWN";
+    }
+}
+
+void SafetyManager::onStateTransition(int oldState, int newState)
+{
+    SafetyState newSafetyState = static_cast<SafetyState>(newState);
+
+    // Log state transition via unified logger
+    logSafetyEvent(QString("State transition: %1 -> %2")
+                   .arg(stateToString(oldState))
+                   .arg(stateToString(newState)));
+
+    // Handle emergency stop state via coordinator if available
+    if (newSafetyState == EMERGENCY_STOP && m_emergencyStopCoordinator) {
+        // Don't call coordinator here to avoid recursion - coordinator will be called
+        // explicitly by triggerEmergencyStop() method
+    }
+}
+
+void SafetyManager::setEmergencyStopCoordinator(EmergencyStopCoordinator* coordinator)
+{
+    // Unregister from old coordinator
+    if (m_emergencyStopCoordinator) {
+        m_emergencyStopCoordinator->unregisterHandler("SafetyManager");
+    }
+
+    m_emergencyStopCoordinator = coordinator;
+
+    // Register with new coordinator - SafetyManager is CRITICAL priority
+    if (m_emergencyStopCoordinator) {
+        m_emergencyStopCoordinator->registerHandler("SafetyManager",
+            EmergencyStopCoordinator::PRIORITY_CRITICAL,
+            [this](const QString& reason) { onEmergencyStopTriggered(reason); });
+    }
+}
+
+void SafetyManager::setSafetyLogger(ISafetyLogger* logger)
+{
+    m_safetyLogger = logger;
+}
+
+void SafetyManager::logSafetyEvent(const QString& event)
+{
+    qDebug() << "SafetyManager:" << event;
+
+    if (m_safetyLogger) {
+        m_safetyLogger->logEvent("SafetyManager", event);
     }
 }
 
 bool SafetyManager::checkPressureLimits()
 {
+    if (!m_hardware) {
+        m_lastSafetyError = "Hardware manager not available";
+        return false;
+    }
+
     try {
         double avlPressure = m_hardware->readAVLPressure();
         double tankPressure = m_hardware->readTankPressure();
@@ -300,7 +396,7 @@ bool SafetyManager::checkPressureLimits()
         
         // Check warning thresholds
         if (avlPressure > m_warningThreshold || tankPressure > m_warningThreshold) {
-            if (m_safetyState == SAFE) {
+            if (getState() == SAFE) {
                 setState(WARNING);
                 emit safetyWarning(QString("Pressure approaching limit: AVL=%1, Tank=%2 mmHg")
                                   .arg(avlPressure, 0, 'f', 1).arg(tankPressure, 0, 'f', 1));
@@ -342,11 +438,16 @@ bool SafetyManager::checkSensorHealth()
 
 bool SafetyManager::checkHardwareStatus()
 {
+    if (!m_hardware) {
+        m_lastSafetyError = "Hardware manager not available";
+        return false;
+    }
+
     if (!m_hardware->isReady()) {
         m_lastSafetyError = "Hardware not ready";
         return false;
     }
-    
+
     return true;
 }
 
@@ -361,7 +462,7 @@ void SafetyManager::handleOverpressure(double pressure)
     // Two-tier response:
     // 1) Above hard tissue-damage risk threshold -> full-vent emergency (cup may detach)
     // 2) Above configured max but below tissue-damage risk -> seal-maintained safe state
-    if (pressure >= TISSUE_DAMAGE_RISK_PRESSURE) {
+    if (pressure >= SafetyConstants::TISSUE_DAMAGE_RISK_MMHG) {
         qCritical() << m_lastSafetyError << "- exceeding tissue-damage risk threshold, FULL VENT";
 
         m_emergencyStopEvents++;
@@ -389,12 +490,12 @@ void SafetyManager::handleCriticalError(const QString& error)
 {
     m_lastSafetyError = error;
     qCritical() << "CRITICAL SAFETY ERROR:" << error;
-    
+
     setState(CRITICAL);
     emit systemError(error);
-    
+
     // Consider emergency stop for critical errors
-    triggerEmergencyStop_unlocked(error);
+    triggerEmergencyStop(error);
 }
 
 void SafetyManager::initializeSafetyParameters()
@@ -417,12 +518,9 @@ void SafetyManager::initializeSafetyParameters()
 
 bool SafetyManager::isSensorDataValid(double avlPressure, double tankPressure) const
 {
-    // Use a broad validity window; detailed safety is handled by maxPressure + monitors
-    const double MIN_VALID = 0.0;    // Sensors should never report negative mmHg
-    const double MAX_VALID = 200.0;  // Beyond this we assume sensor fault or out-of-range
-
-    return (avlPressure >= MIN_VALID && avlPressure <= MAX_VALID &&
-            tankPressure >= MIN_VALID && tankPressure <= MAX_VALID);
+    // Use centralized SafetyConstants for pressure validation range
+    return SafetyConstants::isValidPressure(avlPressure) &&
+           SafetyConstants::isValidPressure(tankPressure);
 }
 
 void SafetyManager::evaluateRunawayAndInvalidSensors(double avlPressure, double tankPressure)
@@ -454,7 +552,7 @@ void SafetyManager::evaluateRunawayAndInvalidSensors(double avlPressure, double 
 
     if (m_consecutiveInvalidSensorReadings >= REQUIRED_INVALID_SAMPLES &&
         m_consecutiveRunawaySamples >= REQUIRED_RUNAWAY_SAMPLES &&
-        m_safetyState != EMERGENCY_STOP)
+        getState() != EMERGENCY_STOP)
     {
         m_lastSafetyError = "Invalid pressure sensor data combined with pump runaway";
         qCritical() << m_lastSafetyError << "- triggering FULL VENT for safety";
@@ -542,7 +640,7 @@ void SafetyManager::performSystemRecovery()
         qCritical() << m_lastSafetyError;
 
         // If recovery fails, trigger emergency stop
-        triggerEmergencyStop_unlocked("System recovery failed");
+        triggerEmergencyStop("System recovery failed");
     }
 
     m_recoveryInProgress = false;
@@ -562,7 +660,7 @@ void SafetyManager::handleSystemCrash(const QString& crashInfo)
     emit crashDetected(crashInfo);
 
     // Trigger emergency stop immediately
-    triggerEmergencyStop_unlocked(QString("System crash: %1").arg(crashInfo));
+    triggerEmergencyStop(QString("System crash: %1").arg(crashInfo));
 
     // Attempt recovery if enabled
     if (m_autoRecoveryEnabled) {
@@ -582,7 +680,7 @@ void SafetyManager::onSystemStateRestored()
     qDebug() << "System state restored - checking for recovery needs";
 
     // Check if we need to perform recovery
-    if (m_safetyState == EMERGENCY_STOP && m_autoRecoveryEnabled) {
+    if (getState() == EMERGENCY_STOP && m_autoRecoveryEnabled) {
         // Delay recovery to allow system to fully initialize
         QTimer::singleShot(3000, this, &SafetyManager::performSystemRecovery);
     }

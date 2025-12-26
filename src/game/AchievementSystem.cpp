@@ -316,45 +316,33 @@ void AchievementSystem::resetAchievements()
 // Private Helpers
 // ============================================================================
 
+int AchievementSystem::getConditionValue(const QString& conditionType) const
+{
+    if (conditionType == "wins") {
+        return m_totalWins;
+    } else if (conditionType == "total_edges") {
+        return m_totalEdges;
+    } else if (conditionType == "total_games") {
+        return m_totalGames;
+    } else if (conditionType == "win_streak") {
+        return m_bestStreak;
+    } else if (conditionType == "total_fluid") {
+        return static_cast<int>(m_totalFluidMl);
+    } else if (conditionType == "total_orgasms") {
+        return m_totalOrgasms;
+    }
+    return 0;
+}
+
 bool AchievementSystem::evaluateCondition(const Achievement& achievement) const
 {
-    int current = 0;
-
-    if (achievement.conditionType == "wins") {
-        current = m_totalWins;
-    } else if (achievement.conditionType == "total_edges") {
-        current = m_totalEdges;
-    } else if (achievement.conditionType == "total_games") {
-        current = m_totalGames;
-    } else if (achievement.conditionType == "win_streak") {
-        current = m_bestStreak;
-    } else if (achievement.conditionType == "total_fluid") {
-        current = static_cast<int>(m_totalFluidMl);
-    } else if (achievement.conditionType == "total_orgasms") {
-        current = m_totalOrgasms;
-    }
-
+    int current = getConditionValue(achievement.conditionType);
     return current >= achievement.conditionValue;
 }
 
 double AchievementSystem::calculateProgress(const Achievement& achievement) const
 {
-    int current = 0;
-
-    if (achievement.conditionType == "wins") {
-        current = m_totalWins;
-    } else if (achievement.conditionType == "total_edges") {
-        current = m_totalEdges;
-    } else if (achievement.conditionType == "total_games") {
-        current = m_totalGames;
-    } else if (achievement.conditionType == "win_streak") {
-        current = m_bestStreak;
-    } else if (achievement.conditionType == "total_fluid") {
-        current = static_cast<int>(m_totalFluidMl);
-    } else if (achievement.conditionType == "total_orgasms") {
-        current = m_totalOrgasms;
-    }
-
+    int current = getConditionValue(achievement.conditionType);
     if (achievement.conditionValue <= 0) return 1.0;
     return qMin(1.0, static_cast<double>(current) / achievement.conditionValue);
 }

@@ -1,0 +1,217 @@
+Found a 32 line (195 tokens) duplication in the following files: 
+Starting at line 350 of /home/morris/Automated Orgasm/apps-main/src/testing/HardwareTester.cpp
+Starting at line 398 of /home/morris/Automated Orgasm/apps-main/src/testing/HardwareTester.cpp
+
+        double reading = m_sensorInterface->readAVLPressure();
+        if (reading < 0) {
+            testCase.details = QString("Invalid reading %1 at sample %2").arg(reading).arg(i + 1);
+            return false;
+        }
+        readings.append(reading);
+        sum += reading;
+        QThread::msleep(100); // Small delay between readings
+    }
+
+    // Calculate statistics
+    double mean = sum / readings.size();
+    double variance = 0.0;
+    for (double reading : readings) {
+        variance += (reading - mean) * (reading - mean);
+    }
+    double stdDev = sqrt(variance / readings.size());
+    double coefficientOfVariation = (stdDev / mean) * 100.0;
+
+    // Store test data
+    testCase.data["mean_reading"] = mean;
+    testCase.data["std_deviation"] = stdDev;
+    testCase.data["coefficient_of_variation"] = coefficientOfVariation;
+    testCase.data["sample_count"] = readings.size();
+
+    // Check if readings are stable (CV < 5%)
+    if (coefficientOfVariation > DEFAULT_SENSOR_TOLERANCE) {
+        testCase.details = QString("Sensor readings unstable: CV = %1%").arg(coefficientOfVariation, 0, 'f', 2);
+        return false;
+    }
+
+    testCase.details = QString("AVL sensor stable: mean = %1 mmHg, CV = %2%")
+
+=====================================================================
+Found a 20 line (193 tokens) duplication in the following files: 
+Starting at line 844 of /home/morris/Automated Orgasm/apps-main/src/game/ProgressTracker.cpp
+Starting at line 878 of /home/morris/Automated Orgasm/apps-main/src/game/ProgressTracker.cpp
+
+    query.addBindValue(m_profile.id);
+    query.addBindValue(count);
+
+    if (query.exec()) {
+        while (query.next()) {
+            PointTransaction tx;
+            tx.id = query.value(0).toLongLong();
+            tx.userId = query.value(1).toString();
+            tx.type = static_cast<PointTransactionType>(query.value(2).toInt());
+            tx.amount = query.value(3).toInt();
+            tx.balanceAfter = query.value(4).toInt();
+            tx.description = query.value(5).toString();
+            tx.relatedUserId = query.value(6).toString();
+            tx.relatedGameId = query.value(7).toString();
+            tx.timestamp = QDateTime::fromString(query.value(8).toString(), Qt::ISODate);
+            transactions.append(tx);
+        }
+    }
+    return transactions;
+}
+
+=====================================================================
+Found a 45 line (122 tokens) duplication in the following files: 
+Starting at line 175 of /home/morris/Automated Orgasm/apps-main/src/control/OrgasmControlAlgorithm.cpp
+Starting at line 258 of /home/morris/Automated Orgasm/apps-main/src/control/OrgasmControlAlgorithm.cpp
+
+    m_frequency = INITIAL_FREQUENCY;
+    m_emergencyStop = false;
+
+    // Bug #11 fix: Reset high pressure duration tracking for new session
+    m_highPressureDuration = 0;
+
+    // Reset seal integrity tracking for new session
+    m_sealLossCount = 0;
+    m_resealAttemptInProgress = false;
+    // Bug fix: Use -1.0 as sentinel for "uninitialized" since pressure can never be negative
+    m_previousAVLPressure = -1.0;
+    m_previousClitoralPressure = -1.0;
+
+    // Reset orgasm detection state for new session
+    m_inOrgasm = false;
+    m_pointOfNoReturnReached = false;
+    m_unexpectedOrgasmCount = 0;
+
+    // Bug #20 fix: Reset previous arousal to prevent stale value on first iteration
+    m_previousArousal = 0.0;
+    m_arousalLevel = 0.0;
+    m_smoothedArousal = 0.0;
+
+    // Reset fluid tracking
+    m_sessionFluidMl = 0.0;
+    m_lubricationMl = 0.0;
+    m_orgasmicFluidMl = 0.0;
+    m_fluidPerOrgasm.clear();
+
+    // Bug #18 fix: Reset milking-specific state to prevent state leaks between sessions
+    m_milkingZoneTime = 0;
+    m_milkingAvgArousal = 0.0;
+    m_milkingAvgSamples = 0;
+    m_milkingOrgasmCount = 0;
+    m_dangerZoneEntries = 0;
+    m_milkingIntegralError = 0.0;
+    m_milkingPreviousError = 0.0;
+
+    // Start fluid sensor session
+    if (m_fluidSensor && m_fluidTrackingEnabled) {
+        m_fluidSensor->startSession();
+        m_fluidSensor->setCurrentArousalLevel(0.0);
+    }
+
+    setMode(Mode::ADAPTIVE_EDGING);
+
+=====================================================================
+Found a 20 line (121 tokens) duplication in the following files: 
+Starting at line 738 of /home/morris/Automated Orgasm/apps-main/src/gui/MainWindow.cpp
+Starting at line 1110 of /home/morris/Automated Orgasm/apps-main/src/gui/MainWindow.cpp
+
+    m_systemStatusLabel->setStyleSheet(QString(
+        "QLabel {"
+        "    font-family: %1;"
+        "    font-size: %2pt;"
+        "    font-weight: %3;"
+        "    color: %4;"
+        "    background-color: %5;"
+        "    border: %6 solid %7;"
+        "    border-radius: %8;"
+        "    padding: %9;"
+        "}"
+    ).arg(ModernMedicalStyle::Typography::PRIMARY_FONT)
+     .arg(ModernMedicalStyle::Typography::getTitle())
+     .arg(ModernMedicalStyle::Typography::WEIGHT_BOLD)
+     .arg(ModernMedicalStyle::Colors::TEXT_ON_PRIMARY.name())
+     .arg(ModernMedicalStyle::Colors::MEDICAL_GREEN.name())
+     .arg(ModernMedicalStyle::scalePixelValue(2))
+     .arg(ModernMedicalStyle::Colors::MEDICAL_GREEN.name())
+     .arg(ModernMedicalStyle::scalePixelValue(ModernMedicalStyle::Spacing::getMediumRadius()))
+     .arg(ModernMedicalStyle::scalePixelValue(ModernMedicalStyle::Spacing::getMedium())));
+
+=====================================================================
+Found a 17 line (108 tokens) duplication in the following files: 
+Starting at line 319 of /home/morris/Automated Orgasm/apps-main/src/game/AchievementSystem.cpp
+Starting at line 340 of /home/morris/Automated Orgasm/apps-main/src/game/AchievementSystem.cpp
+
+bool AchievementSystem::evaluateCondition(const Achievement& achievement) const
+{
+    int current = 0;
+
+    if (achievement.conditionType == "wins") {
+        current = m_totalWins;
+    } else if (achievement.conditionType == "total_edges") {
+        current = m_totalEdges;
+    } else if (achievement.conditionType == "total_games") {
+        current = m_totalGames;
+    } else if (achievement.conditionType == "win_streak") {
+        current = m_bestStreak;
+    } else if (achievement.conditionType == "total_fluid") {
+        current = static_cast<int>(m_totalFluidMl);
+    } else if (achievement.conditionType == "total_orgasms") {
+        current = m_totalOrgasms;
+    }
+
+=====================================================================
+Found a 12 line (101 tokens) duplication in the following files: 
+Starting at line 673 of /home/morris/Automated Orgasm/apps-main/src/gui/PatternSelector.cpp
+Starting at line 716 of /home/morris/Automated Orgasm/apps-main/src/gui/PatternSelector.cpp
+
+    newPattern.intensity = patternData.value("intensity").toDouble(50.0);
+
+    // Parse pattern steps
+    QJsonArray stepsArray = patternData["steps"].toArray();
+    for (const QJsonValue& stepValue : stepsArray) {
+        QJsonObject stepObj = stepValue.toObject();
+        PatternStep step;
+        step.pressurePercent = stepObj["pressure_percent"].toDouble();
+        step.durationMs = stepObj["duration_ms"].toInt();
+        step.action = stepObj["action"].toString();
+        step.description = stepObj["description"].toString();
+        step.parameters = stepObj["parameters"].toObject();
+
+=====================================================================
+Found a 7 line (100 tokens) duplication in the following files: 
+Starting at line 829 of /home/morris/Automated Orgasm/apps-main/src/calibration/CalibrationManager.cpp
+Starting at line 1062 of /home/morris/Automated Orgasm/apps-main/src/gui/CalibrationInterface.cpp
+
+    result.type = static_cast<CalibrationType>(calibrationObj["type"].toInt());
+    result.slope = calibrationObj["slope"].toDouble();
+    result.offset = calibrationObj["offset"].toDouble();
+    result.correlation = calibrationObj["correlation"].toDouble();
+    result.maxError = calibrationObj["max_error"].toDouble();
+    result.timestamp = QDateTime::fromString(calibrationObj["timestamp"].toString(), Qt::ISODate);
+    result.successful = calibrationObj["successful"].toBool();
+
+=====================================================================
+Found a 17 line (100 tokens) duplication in the following files: 
+Starting at line 116 of /home/morris/Automated Orgasm/apps-main/src/logging/DataLogger.cpp
+Starting at line 255 of /home/morris/Automated Orgasm/apps-main/src/logging/DataLogger.cpp
+
+            QString fileName = generateLogFileName(type);
+            QString filePath = m_logDirectory + "/" + fileName;
+            
+            QFile* logFile = new QFile(filePath);
+            if (logFile->open(QIODevice::WriteOnly | QIODevice::Append)) {
+                QTextStream* stream = new QTextStream(logFile);
+                stream->setCodec("UTF-8");
+                
+                m_logFiles[type] = logFile;
+                m_logStreams[type] = stream;
+                m_currentLogFiles[type] = fileName;
+                
+                // Write header for CSV format
+                if (m_logFormat == CSV_FORMAT) {
+                    *stream << "Timestamp,Component,Event,Data\n";
+                    stream->flush();
+                }
+

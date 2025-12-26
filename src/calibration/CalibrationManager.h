@@ -62,9 +62,24 @@ public:
         bool successful;         // Whether calibration was successful
         QString errorMessage;    // Error message if failed
         QList<CalibrationPoint> points; // Calibration points used
-        
-        CalibrationResult() : type(SENSOR_CALIBRATION), slope(1.0), offset(0.0), 
+
+        CalibrationResult() : type(SENSOR_CALIBRATION), slope(1.0), offset(0.0),
                              correlation(0.0), maxError(0.0), successful(false) {}
+
+        /**
+         * @brief Serialize calibration result to JSON
+         * @param includePoints If true, includes calibration points array
+         * @return JSON object representation
+         */
+        QJsonObject toJson(bool includePoints = true) const;
+
+        /**
+         * @brief Deserialize calibration result from JSON
+         * @param json JSON object to parse
+         * @param loadPoints If true, loads calibration points array
+         * @return Populated CalibrationResult
+         */
+        static CalibrationResult fromJson(const QJsonObject& json, bool loadPoints = true);
     };
 
     explicit CalibrationManager(HardwareManager* hardware, QObject *parent = nullptr);

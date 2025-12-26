@@ -142,6 +142,8 @@ set(SOURCES
     src/safety/SafetyManager.cpp
     src/safety/AntiDetachmentMonitor.cpp
     src/safety/EmergencyStop.cpp
+    src/safety/EmergencyStopCoordinator.cpp
+    src/safety/LightweightSafetyMonitor.cpp
     src/threading/ThreadManager.cpp
     src/threading/DataAcquisitionThread.cpp
     src/threading/GuiUpdateThread.cpp
@@ -207,6 +209,9 @@ set(HEADERS
     src/safety/SafetyManager.h
     src/safety/AntiDetachmentMonitor.h
     src/safety/EmergencyStop.h
+    src/safety/EmergencyStopCoordinator.h
+    src/safety/LightweightSafetyMonitor.h
+    src/safety/SafetyConstants.h
     src/threading/ThreadManager.h
     src/threading/DataAcquisitionThread.h
     src/threading/GuiUpdateThread.h

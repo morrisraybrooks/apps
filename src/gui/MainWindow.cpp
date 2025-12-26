@@ -278,12 +278,7 @@ void MainWindow::showMainPanel()
 {
     if (m_stackedWidget) {
         m_stackedWidget->setCurrentWidget(m_mainPanel);
-        
-        // Update navigation buttons
-        m_mainPanelButton->setStyleSheet("background-color: #2196F3; color: white;");
-        m_safetyPanelButton->setStyleSheet("");
-        m_settingsButton->setStyleSheet("");
-        m_diagnosticsButton->setStyleSheet("");
+        updateNavigationHighlight(m_mainPanelButton);
     }
 }
 
@@ -291,12 +286,7 @@ void MainWindow::showSafetyPanel()
 {
     if (m_stackedWidget && m_safetyPanelWidget) {
         m_stackedWidget->setCurrentWidget(m_safetyPanelWidget.get());
-        
-        // Update navigation buttons
-        m_mainPanelButton->setStyleSheet("");
-        m_safetyPanelButton->setStyleSheet("background-color: #2196F3; color: white;");
-        m_settingsButton->setStyleSheet("");
-        m_diagnosticsButton->setStyleSheet("");
+        updateNavigationHighlight(m_safetyPanelButton);
     }
 }
 
@@ -304,12 +294,7 @@ void MainWindow::showSettingsPanel()
 {
     if (m_settingsPanelWidget) {
         m_stackedWidget->setCurrentWidget(m_settingsPanelWidget.get());
-
-        // Update navigation buttons
-        m_mainPanelButton->setStyleSheet("");
-        m_safetyPanelButton->setStyleSheet("");
-        m_settingsButton->setStyleSheet("background-color: #2196F3; color: white;");
-        m_diagnosticsButton->setStyleSheet("");
+        updateNavigationHighlight(m_settingsButton);
     }
 }
 
@@ -317,12 +302,7 @@ void MainWindow::showDiagnosticsPanel()
 {
     if (m_stackedWidget && m_diagnosticsPanelWidget) {
         m_stackedWidget->setCurrentWidget(m_diagnosticsPanelWidget.get());
-
-        // Update navigation buttons
-        m_mainPanelButton->setStyleSheet("");
-        m_safetyPanelButton->setStyleSheet("");
-        m_settingsButton->setStyleSheet("");
-        m_diagnosticsButton->setStyleSheet("background-color: #2196F3; color: white;");
+        updateNavigationHighlight(m_diagnosticsButton);
     }
 }
 
@@ -332,10 +312,7 @@ void MainWindow::showPatternEditor()
         m_stackedWidget->setCurrentWidget(m_customPatternEditor.get());
 
         // Clear all navigation button highlights (pattern editor is not in main nav)
-        m_mainPanelButton->setStyleSheet("");
-        m_safetyPanelButton->setStyleSheet("");
-        m_settingsButton->setStyleSheet("");
-        m_diagnosticsButton->setStyleSheet("");
+        updateNavigationHighlight(nullptr);
 
         // Show the editor for creating a new pattern
         m_customPatternEditor->createNewPattern();
@@ -349,10 +326,7 @@ void MainWindow::showPatternEditor(const QString& patternName)
         m_stackedWidget->setCurrentWidget(m_customPatternEditor.get());
 
         // Clear all navigation button highlights (pattern editor is not in main nav)
-        m_mainPanelButton->setStyleSheet("");
-        m_safetyPanelButton->setStyleSheet("");
-        m_settingsButton->setStyleSheet("");
-        m_diagnosticsButton->setStyleSheet("");
+        updateNavigationHighlight(nullptr);
 
         // Show the editor with the specified pattern for editing
         if (!patternName.isEmpty()) {
@@ -480,6 +454,23 @@ void MainWindow::updateControlButtons()
     } else {
         m_shutdownButton->setText("EMERGENCY STOP");
         m_shutdownButton->setStyleSheet(ModernMedicalStyle::getButtonStyle("danger"));
+    }
+}
+
+void MainWindow::updateNavigationHighlight(QPushButton* activeButton)
+{
+    // Define navigation buttons and their styles
+    QList<QPushButton*> navButtons = {
+        m_mainPanelButton, m_safetyPanelButton, m_settingsButton, m_diagnosticsButton
+    };
+
+    const QString activeStyle = "background-color: #2196F3; color: white;";
+    const QString inactiveStyle = "";
+
+    for (QPushButton* button : navButtons) {
+        if (button) {
+            button->setStyleSheet(button == activeButton ? activeStyle : inactiveStyle);
+        }
     }
 }
 

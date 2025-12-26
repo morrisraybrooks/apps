@@ -1,4 +1,5 @@
 #include "PatternTemplateManager.h"
+#include "../core/JsonFileHelper.h"
 #include <QDebug>
 #include <QJsonDocument>
 #include <QFile>
@@ -65,21 +66,14 @@ bool PatternTemplateManager::saveTemplates()
 
 bool PatternTemplateManager::loadTemplatesFromFile(const QString& filePath)
 {
-    QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "Cannot open templates file:" << filePath;
+    // Use JsonFileHelper for consistent error handling
+    QJsonObject root;
+    QString errorMsg;
+    if (!JsonFileHelper::loadObject(filePath, root, &errorMsg)) {
+        qWarning() << "Cannot load templates file:" << errorMsg;
         return false;
     }
-    
-    QJsonParseError error;
-    QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &error);
-    
-    if (error.error != QJsonParseError::NoError) {
-        qWarning() << "JSON parse error in templates file:" << error.errorString();
-        return false;
-    }
-    
-    QJsonObject root = doc.object();
+
     QJsonArray templatesArray = root["templates"].toArray();
     
     m_templates.clear();
@@ -143,17 +137,9 @@ bool PatternTemplateManager::saveTemplatesToFile(const QString& filePath)
     root["templates"] = templatesArray;
     root["version"] = "1.0";
     root["lastModified"] = QDateTime::currentDateTime().toString(Qt::ISODate);
-    
-    QJsonDocument doc(root);
-    
-    QFile file(filePath);
-    if (!file.open(QIODevice::WriteOnly)) {
-        qWarning() << "Cannot write templates file:" << filePath;
-        return false;
-    }
-    
-    file.write(doc.toJson());
-    return true;
+
+    // Use JsonFileHelper for consistent file writing with directory creation
+    return JsonFileHelper::saveObject(filePath, root);
 }
 
 QStringList PatternTemplateManager::getTemplateNames() const

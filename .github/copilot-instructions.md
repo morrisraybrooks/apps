@@ -81,7 +81,7 @@ class ThreadManager : public QObject { /* thread lifecycle */ };
 **Pattern usage**: Initialize in `VacuumController::initialize()`, access via public getters, emit signals for status changes.
 
 ### Configuration-Driven Patterns
-Pattern definitions stored in JSON (`config/patterns.json`, `config/therapeutic_patterns.json`):
+Pattern definitions stored in JSON (`config/patterns.json`):
 ```json
 {
   "name": "Slow Pulse",
@@ -124,9 +124,8 @@ Pattern definitions stored in JSON (`config/patterns.json`, `config/therapeutic_
 - `src/gui/PatternSelector.h/.cpp`: Pattern selection embedded widget
 
 ### Configuration & Data
-- `config/patterns.json`: Standard pattern library
+- `config/patterns.json`: Unified pattern library (stimulation + therapeutic patterns)
 - `config/settings.json`: User preferences
-- `config/therapeutic_patterns.json`: Medical/therapeutic patterns
 
 ### Testing
 - `tests/SafetySystemTests.h/.cpp`: Safety critical testing

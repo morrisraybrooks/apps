@@ -1,6 +1,7 @@
 #include "SystemDiagnosticsPanel.h"
 #include "components/TouchButton.h"
 #include "components/StatusIndicator.h"
+#include "styles/ModernMedicalStyle.h"
 #include "../VacuumController.h"
 #include "../hardware/HardwareManager.h"
 #include "../safety/SafetyManager.h"
@@ -68,7 +69,7 @@ void SystemDiagnosticsPanel::setupOverviewTab()
     overviewLayout->setSpacing(15);
     
     QGroupBox* statusGroup = new QGroupBox("System Status");
-    statusGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    statusGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     QVBoxLayout* statusLayout = new QVBoxLayout(statusGroup);
     
     m_systemStatusIndicator = new MultiStatusIndicator();
@@ -83,7 +84,7 @@ void SystemDiagnosticsPanel::setupOverviewTab()
     statusLayout->addWidget(m_systemStatusIndicator);
     
     QGroupBox* infoGroup = new QGroupBox("System Information");
-    infoGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    infoGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     QGridLayout* infoLayout = new QGridLayout(infoGroup);
     
     QLabel* uptimeLabel = new QLabel("System Uptime:");
@@ -137,7 +138,7 @@ void SystemDiagnosticsPanel::setupHardwareTab()
     hardwareLayout->setSpacing(15);
     
     m_gpioStatusGroup = new QGroupBox("GPIO Status");
-    m_gpioStatusGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_gpioStatusGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     QGridLayout* gpioLayout = new QGridLayout(m_gpioStatusGroup);
     
     QStringList gpioPins = {"SOL1 (GPIO 17)", "SOL2 (GPIO 27)", "SOL3 (GPIO 22)", 
@@ -155,7 +156,7 @@ void SystemDiagnosticsPanel::setupHardwareTab()
     }
     
     m_spiStatusGroup = new QGroupBox("SPI Communication");
-    m_spiStatusGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_spiStatusGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     QGridLayout* spiLayout = new QGridLayout(m_spiStatusGroup);
     
     QLabel* spiChannelLabel = new QLabel("SPI Channel 0:");
@@ -194,7 +195,7 @@ void SystemDiagnosticsPanel::setupSensorsTab()
     sensorsLayout->setSpacing(15);
     
     m_sensorReadingsGroup = new QGroupBox("Current Sensor Readings");
-    m_sensorReadingsGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_sensorReadingsGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     QGridLayout* readingsLayout = new QGridLayout(m_sensorReadingsGroup);
     
     QLabel* avlSensorLabel = new QLabel("AVL Pressure Sensor:");
@@ -219,7 +220,7 @@ void SystemDiagnosticsPanel::setupSensorsTab()
     readingsLayout->addWidget(m_tankReadingLabel, 1, 2);
     
     m_sensorCalibrationGroup = new QGroupBox("Calibration Status");
-    m_sensorCalibrationGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_sensorCalibrationGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     QVBoxLayout* calibrationLayout = new QVBoxLayout(m_sensorCalibrationGroup);
     
     QLabel* lastCalibrationLabel = new QLabel("Last Calibration:");
@@ -259,7 +260,7 @@ void SystemDiagnosticsPanel::setupActuatorsTab()
     actuatorsLayout->setSpacing(15);
     
     m_valveStatusGroup = new QGroupBox("Solenoid Valve Status");
-    m_valveStatusGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_valveStatusGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     QGridLayout* valveLayout = new QGridLayout(m_valveStatusGroup);
     
     QLabel* sol1Label = new QLabel("SOL1 (AVL Valve):");
@@ -285,7 +286,7 @@ void SystemDiagnosticsPanel::setupActuatorsTab()
     valveLayout->addWidget(m_sol3StatusIndicator, 2, 1);
     
     m_pumpStatusGroup = new QGroupBox("Vacuum Pump Status");
-    m_pumpStatusGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_pumpStatusGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     QGridLayout* pumpLayout = new QGridLayout(m_pumpStatusGroup);
     
     QLabel* pumpStatusLabel = new QLabel("Pump Status:");
@@ -324,7 +325,7 @@ void SystemDiagnosticsPanel::setupPerformanceTab()
     performanceLayout->setSpacing(15);
 
     m_cpuMemoryGroup = new QGroupBox("CPU & Memory Usage");
-    m_cpuMemoryGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_cpuMemoryGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     QGridLayout* cpuMemLayout = new QGridLayout(m_cpuMemoryGroup);
 
     QLabel* cpuLabel = new QLabel("CPU Usage:");
@@ -357,7 +358,7 @@ void SystemDiagnosticsPanel::setupPerformanceTab()
     cpuMemLayout->addWidget(m_memoryUsageBar, 1, 2);
 
     m_threadingGroup = new QGroupBox("Threading & Concurrency");
-    m_threadingGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_threadingGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     QGridLayout* threadLayout = new QGridLayout(m_threadingGroup);
 
     QLabel* threadCountLabel = new QLabel("Active Threads:");
@@ -369,7 +370,7 @@ void SystemDiagnosticsPanel::setupPerformanceTab()
     threadLayout->addWidget(m_threadCountLabel, 0, 1);
 
     m_timingGroup = new QGroupBox("System Timing & Rates");
-    m_timingGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_timingGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     QGridLayout* timingLayout = new QGridLayout(m_timingGroup);
 
     QLabel* dataRateLabel = new QLabel("Data Acquisition Rate:");
@@ -439,7 +440,7 @@ void SystemDiagnosticsPanel::setupTestingTab()
     testingLayout->setSpacing(15);
 
     m_testControlsGroup = new QGroupBox("Test Controls");
-    m_testControlsGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_testControlsGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     QGridLayout* controlsLayout = new QGridLayout(m_testControlsGroup);
 
     m_runSystemTestButton = new TouchButton("Run System Test", this);
@@ -459,7 +460,7 @@ void SystemDiagnosticsPanel::setupTestingTab()
     m_testProgressBar->setMinimumHeight(30);
 
     m_testResultsGroup = new QGroupBox("Test Results");
-    m_testResultsGroup->setStyleSheet("QGroupBox { font-size: 16pt; font-weight: bold; color: #2196F3; }");
+    m_testResultsGroup->setStyleSheet(ModernMedicalStyle::getGroupBoxStyle());
     QVBoxLayout* resultsLayout = new QVBoxLayout(m_testResultsGroup);
 
     m_testResultsDisplay = new QTextEdit();

@@ -244,6 +244,25 @@ private:
     bool saveStats();
     void updatePrivilegeTier();
 
+    /**
+     * @brief Parse a GameSession from current QSqlQuery row
+     *
+     * Consolidates common session parsing logic used by recentSessions and sessionsByGame.
+     * @param query The query positioned at a valid row
+     * @param full If true, parses all fields; if false, parses only id, gameId, result, score
+     * @return Populated GameSession structure
+     */
+    static GameSession parseGameSession(const QSqlQuery& query, bool full = true);
+
+    /**
+     * @brief Parse a PointTransaction from current QSqlQuery row
+     *
+     * Consolidates common transaction parsing logic used by recentTransactions and transactionsByType.
+     * @param query The query positioned at a valid row
+     * @return Populated PointTransaction structure
+     */
+    static PointTransaction parsePointTransaction(const QSqlQuery& query);
+
     QSqlDatabase m_db;
     bool m_initialized;
     UserProfile m_profile;

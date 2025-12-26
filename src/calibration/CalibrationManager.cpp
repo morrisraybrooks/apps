@@ -19,6 +19,69 @@ const double CalibrationManager::DEFAULT_MAX_CALIBRATION_ERROR = 2.0; // 2% max 
 const int CalibrationManager::DEFAULT_CALIBRATION_INTERVAL = 1000; // 1 second
 const int CalibrationManager::DEFAULT_CALIBRATION_TIMEOUT = 300000; // 5 minutes
 
+// ============================================================================
+// CalibrationResult JSON Serialization
+// ============================================================================
+
+QJsonObject CalibrationManager::CalibrationResult::toJson(bool includePoints) const
+{
+    QJsonObject obj;
+    obj["component"] = component;
+    obj["type"] = static_cast<int>(type);
+    obj["slope"] = slope;
+    obj["offset"] = offset;
+    obj["correlation"] = correlation;
+    obj["max_error"] = maxError;
+    obj["timestamp"] = timestamp.toString(Qt::ISODate);
+    obj["successful"] = successful;
+    obj["error_message"] = errorMessage;
+
+    if (includePoints) {
+        QJsonArray pointsArray;
+        for (const CalibrationPoint& point : points) {
+            QJsonObject pointObj;
+            pointObj["reference_value"] = point.referenceValue;
+            pointObj["measured_value"] = point.measuredValue;
+            pointObj["timestamp"] = point.timestamp.toString(Qt::ISODate);
+            pointObj["valid"] = point.valid;
+            pointsArray.append(pointObj);
+        }
+        obj["points"] = pointsArray;
+    }
+
+    return obj;
+}
+
+CalibrationManager::CalibrationResult CalibrationManager::CalibrationResult::fromJson(
+    const QJsonObject& json, bool loadPoints)
+{
+    CalibrationResult result;
+    result.component = json["component"].toString();
+    result.type = static_cast<CalibrationType>(json["type"].toInt());
+    result.slope = json["slope"].toDouble();
+    result.offset = json["offset"].toDouble();
+    result.correlation = json["correlation"].toDouble();
+    result.maxError = json["max_error"].toDouble();
+    result.timestamp = QDateTime::fromString(json["timestamp"].toString(), Qt::ISODate);
+    result.successful = json["successful"].toBool();
+    result.errorMessage = json["error_message"].toString();
+
+    if (loadPoints && json.contains("points")) {
+        QJsonArray pointsArray = json["points"].toArray();
+        for (const QJsonValue& pointValue : pointsArray) {
+            QJsonObject pointObj = pointValue.toObject();
+            CalibrationPoint point;
+            point.referenceValue = pointObj["reference_value"].toDouble();
+            point.measuredValue = pointObj["measured_value"].toDouble();
+            point.timestamp = QDateTime::fromString(pointObj["timestamp"].toString(), Qt::ISODate);
+            point.valid = pointObj["valid"].toBool();
+            result.points.append(point);
+        }
+    }
+
+    return result;
+}
+
 CalibrationManager::CalibrationManager(HardwareManager* hardware, QObject *parent)
     : QObject(parent)
     , m_hardware(hardware)
@@ -769,30 +832,7 @@ bool CalibrationManager::saveCalibrationToFile(const CalibrationResult& result)
 {
     QString filePath = getCalibrationFilePath(result.component);
 
-    QJsonObject calibrationObj;
-    calibrationObj["component"] = result.component;
-    calibrationObj["type"] = static_cast<int>(result.type);
-    calibrationObj["slope"] = result.slope;
-    calibrationObj["offset"] = result.offset;
-    calibrationObj["correlation"] = result.correlation;
-    calibrationObj["max_error"] = result.maxError;
-    calibrationObj["timestamp"] = result.timestamp.toString(Qt::ISODate);
-    calibrationObj["successful"] = result.successful;
-    calibrationObj["error_message"] = result.errorMessage;
-
-    // Save calibration points
-    QJsonArray pointsArray;
-    for (const CalibrationPoint& point : result.points) {
-        QJsonObject pointObj;
-        pointObj["reference_value"] = point.referenceValue;
-        pointObj["measured_value"] = point.measuredValue;
-        pointObj["timestamp"] = point.timestamp.toString(Qt::ISODate);
-        pointObj["valid"] = point.valid;
-        pointsArray.append(pointObj);
-    }
-    calibrationObj["points"] = pointsArray;
-
-    QJsonDocument doc(calibrationObj);
+    QJsonDocument doc(result.toJson(true));
 
     QFile file(filePath);
     if (file.open(QIODevice::WriteOnly)) {
@@ -823,30 +863,7 @@ bool CalibrationManager::loadCalibrationFromFile(const QString& component, Calib
         return false;
     }
 
-    QJsonObject calibrationObj = doc.object();
-
-    result.component = calibrationObj["component"].toString();
-    result.type = static_cast<CalibrationType>(calibrationObj["type"].toInt());
-    result.slope = calibrationObj["slope"].toDouble();
-    result.offset = calibrationObj["offset"].toDouble();
-    result.correlation = calibrationObj["correlation"].toDouble();
-    result.maxError = calibrationObj["max_error"].toDouble();
-    result.timestamp = QDateTime::fromString(calibrationObj["timestamp"].toString(), Qt::ISODate);
-    result.successful = calibrationObj["successful"].toBool();
-    result.errorMessage = calibrationObj["error_message"].toString();
-
-    // Load calibration points
-    result.points.clear();
-    QJsonArray pointsArray = calibrationObj["points"].toArray();
-    for (const QJsonValue& pointValue : pointsArray) {
-        QJsonObject pointObj = pointValue.toObject();
-        CalibrationPoint point;
-        point.referenceValue = pointObj["reference_value"].toDouble();
-        point.measuredValue = pointObj["measured_value"].toDouble();
-        point.timestamp = QDateTime::fromString(pointObj["timestamp"].toString(), Qt::ISODate);
-        point.valid = pointObj["valid"].toBool();
-        result.points.append(point);
-    }
+    result = CalibrationResult::fromJson(doc.object(), true);
 
     qDebug() << "Calibration data loaded for:" << component;
     return true;

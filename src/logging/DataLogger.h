@@ -136,6 +136,17 @@ private:
     QString logTypeToString(LogType type);
     void connectToController();
     void flushBuffers();
+
+    /**
+     * @brief Open a log file for a specific log type and write header
+     *
+     * Consolidates file opening and header writing logic used by
+     * setupLogFiles and setLogType.
+     *
+     * @param type The log type to create a file for
+     * @return true if file was opened successfully, false otherwise
+     */
+    bool openLogFile(LogType type);
     
     // Controller interface
     VacuumController* m_controller;

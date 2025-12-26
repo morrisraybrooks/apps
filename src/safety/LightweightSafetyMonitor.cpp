@@ -1,16 +1,16 @@
 #include "LightweightSafetyMonitor.h"
+#include "SafetyConstants.h"
 #include "../hardware/HardwareManager.h"
 #include <QDebug>
 #include <QMutexLocker>
 #include <QDateTime>
 
-// Constants
-const double LightweightSafetyMonitor::DEFAULT_MAX_PRESSURE = 100.0;
-const double LightweightSafetyMonitor::DEFAULT_WARNING_THRESHOLD = 80.0;
-const int LightweightSafetyMonitor::DEFAULT_MONITORING_RATE_HZ = 20;
-const int LightweightSafetyMonitor::MAX_CONSECUTIVE_ERRORS = 5;
-const double LightweightSafetyMonitor::MIN_VALID_PRESSURE = 0.0;
-const double LightweightSafetyMonitor::MAX_VALID_PRESSURE = 200.0;
+// Constants - using centralized SafetyConstants for consistency
+// NOTE: MAX_CONSECUTIVE_ERRORS, MIN_VALID_PRESSURE, MAX_VALID_PRESSURE
+// are now accessed directly via SafetyConstants namespace
+const double LightweightSafetyMonitor::DEFAULT_MAX_PRESSURE = SafetyConstants::MAX_PRESSURE_STIMULATION_MMHG;
+const double LightweightSafetyMonitor::DEFAULT_WARNING_THRESHOLD = SafetyConstants::WARNING_THRESHOLD_MMHG;
+const int LightweightSafetyMonitor::DEFAULT_MONITORING_RATE_HZ = SafetyConstants::DEFAULT_MONITORING_RATE_HZ;
 
 LightweightSafetyMonitor::LightweightSafetyMonitor(HardwareManager* hardware, QObject *parent)
     : QObject(parent)
@@ -129,7 +129,7 @@ void LightweightSafetyMonitor::performSafetyCheck()
         m_consecutiveErrors++;
         m_lastError = QString("Safety check error: %1").arg(e.what());
         
-        if (m_consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+        if (m_consecutiveErrors >= SafetyConstants::MAX_CONSECUTIVE_ERRORS) {
             emit emergencyStopRequired(QString("Too many consecutive safety errors: %1").arg(m_lastError));
         }
         
@@ -150,8 +150,8 @@ void LightweightSafetyMonitor::checkPressureLimits()
     double avlPressure = m_hardware->readAVLPressure();
     double tankPressure = m_hardware->readTankPressure();
     
-    // Validate readings
-    if (!isValidPressure(avlPressure) || !isValidPressure(tankPressure)) {
+    // Validate readings using centralized SafetyConstants
+    if (!SafetyConstants::isValidPressure(avlPressure) || !SafetyConstants::isValidPressure(tankPressure)) {
         throw std::runtime_error("Invalid pressure readings");
     }
     
@@ -192,10 +192,7 @@ void LightweightSafetyMonitor::checkHardwareStatus()
     }
 }
 
-bool LightweightSafetyMonitor::isValidPressure(double pressure) const
-{
-    return (pressure >= MIN_VALID_PRESSURE && pressure <= MAX_VALID_PRESSURE);
-}
+// NOTE: isValidPressure() removed - use SafetyConstants::isValidPressure() instead
 
 void LightweightSafetyMonitor::logSafetyEvent(const QString& event)
 {

@@ -231,6 +231,7 @@ bool ThreadManager::areAllThreadsStopped() const
 
 void ThreadManager::setDataAcquisitionRate(int hz)
 {
+    QMutexLocker locker(&m_stateMutex);
     m_dataAcquisitionRateHz = hz;
     if (m_dataThread) {
         m_dataThread->setSamplingRate(hz);
@@ -239,6 +240,7 @@ void ThreadManager::setDataAcquisitionRate(int hz)
 
 void ThreadManager::setGuiUpdateRate(int fps)
 {
+    QMutexLocker locker(&m_stateMutex);
     m_guiUpdateRateFps = fps;
     if (m_guiThread) {
         m_guiThread->setUpdateRate(fps);
@@ -247,6 +249,7 @@ void ThreadManager::setGuiUpdateRate(int fps)
 
 void ThreadManager::setSafetyMonitorRate(int hz)
 {
+    QMutexLocker locker(&m_stateMutex);
     m_safetyMonitorRateHz = hz;
     if (m_safetyThread) {
         m_safetyThread->setMonitoringRate(hz);
@@ -284,6 +287,7 @@ QString ThreadManager::getThreadStatistics() const
 
 int ThreadManager::getActiveThreadCount() const
 {
+    QMutexLocker locker(&m_stateMutex);
     int count = 0;
     if (m_dataThreadRunning) count++;
     if (m_guiThreadRunning) count++;
@@ -423,23 +427,32 @@ bool ThreadManager::waitForThreadsToStop(int timeoutMs)
 // Slot implementations
 void ThreadManager::onDataThreadStarted()
 {
-    m_dataThreadRunning = true;
+    {
+        QMutexLocker locker(&m_stateMutex);
+        m_dataThreadRunning = true;
+    }
     updateOverallState();
     emit threadStateChanged("DataAcquisition", RUNNING);
 }
 
 void ThreadManager::onDataThreadStopped()
 {
-    m_dataThreadRunning = false;
+    {
+        QMutexLocker locker(&m_stateMutex);
+        m_dataThreadRunning = false;
+    }
     updateOverallState();
     emit threadStateChanged("DataAcquisition", STOPPED);
 }
 
 void ThreadManager::onDataThreadError(const QString& error)
 {
-    m_errorCount++;
+    {
+        QMutexLocker locker(&m_stateMutex);
+        m_errorCount++;
+    }
     emit threadError("DataAcquisition", error);
-    
+
     if (m_errorCount >= MAX_THREAD_ERRORS) {
         emergencyStopAllThreads();
     }
@@ -447,43 +460,61 @@ void ThreadManager::onDataThreadError(const QString& error)
 
 void ThreadManager::onGuiThreadStarted()
 {
-    m_guiThreadRunning = true;
+    {
+        QMutexLocker locker(&m_stateMutex);
+        m_guiThreadRunning = true;
+    }
     updateOverallState();
     emit threadStateChanged("GuiUpdate", RUNNING);
 }
 
 void ThreadManager::onGuiThreadStopped()
 {
-    m_guiThreadRunning = false;
+    {
+        QMutexLocker locker(&m_stateMutex);
+        m_guiThreadRunning = false;
+    }
     updateOverallState();
     emit threadStateChanged("GuiUpdate", STOPPED);
 }
 
 void ThreadManager::onGuiThreadError(const QString& error)
 {
-    m_errorCount++;
+    {
+        QMutexLocker locker(&m_stateMutex);
+        m_errorCount++;
+    }
     emit threadError("GuiUpdate", error);
 }
 
 void ThreadManager::onSafetyThreadStarted()
 {
-    m_safetyThreadRunning = true;
+    {
+        QMutexLocker locker(&m_stateMutex);
+        m_safetyThreadRunning = true;
+    }
     updateOverallState();
     emit threadStateChanged("SafetyMonitor", RUNNING);
 }
 
 void ThreadManager::onSafetyThreadStopped()
 {
-    m_safetyThreadRunning = false;
+    {
+        QMutexLocker locker(&m_stateMutex);
+        m_safetyThreadRunning = false;
+    }
     updateOverallState();
     emit threadStateChanged("SafetyMonitor", STOPPED);
 }
 
 void ThreadManager::onSafetyThreadError(const QString& error)
 {
-    m_errorCount++;
+    {
+        QMutexLocker locker(&m_stateMutex);
+        m_errorCount++;
+    }
     emit threadError("SafetyMonitor", error);
-    
+
     // Safety thread errors are critical
     emergencyStopAllThreads();
 }

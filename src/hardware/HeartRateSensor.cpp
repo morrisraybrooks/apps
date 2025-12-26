@@ -6,6 +6,12 @@
 #include <numeric>
 #include <cmath>
 
+// Static constant definitions (required for ODR-use)
+const int HeartRateSensor::BPM_HISTORY_SIZE;
+const int HeartRateSensor::RR_HISTORY_SIZE;
+const int HeartRateSensor::MIN_VALID_BPM;
+const int HeartRateSensor::MAX_VALID_BPM;
+
 HeartRateSensor::HeartRateSensor(SensorType type, QObject* parent)
     : QObject(parent)
     , m_sensorType(type)

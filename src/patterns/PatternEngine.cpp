@@ -4,6 +4,7 @@
 #include "../hardware/ClitoralOscillator.h"
 #include "../hardware/TENSController.h"
 #include "../safety/AntiDetachmentMonitor.h"
+#include "../safety/SafetyConstants.h"
 #include <QDebug>
 #include <QMutexLocker>
 #include <QDateTime>
@@ -987,11 +988,10 @@ void PatternEngine::performSafetyCheck()
         // Check pressure limits
         double avlPressure = m_hardware->readAVLPressure();
         double tankPressure = m_hardware->readTankPressure();
-        
+
         // Convert mmHg to percentage for comparison (sensor FS = 75 mmHg)
-        double maxPressureMmHg = 75.0;  // MPX5010DP full-scale assumed as nominal max
-        double avlPercent = (avlPressure / maxPressureMmHg) * 100.0;
-        double tankPercent = (tankPressure / maxPressureMmHg) * 100.0;
+        double avlPercent = (avlPressure / SafetyConstants::MAX_PRESSURE_STIMULATION_MMHG) * 100.0;
+        double tankPercent = (tankPressure / SafetyConstants::MAX_PRESSURE_STIMULATION_MMHG) * 100.0;
 
         if (avlPercent > m_maxPressure || tankPercent > m_maxPressure) {
             emergencyStop();

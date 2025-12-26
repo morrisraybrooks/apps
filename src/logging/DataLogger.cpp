@@ -112,30 +112,7 @@ void DataLogger::setupLogFiles()
     // Create new log files for each enabled type
     for (auto it = m_enabledLogTypes.begin(); it != m_enabledLogTypes.end(); ++it) {
         if (it.value()) {
-            LogType type = it.key();
-            QString fileName = generateLogFileName(type);
-            QString filePath = m_logDirectory + "/" + fileName;
-            
-            QFile* logFile = new QFile(filePath);
-            if (logFile->open(QIODevice::WriteOnly | QIODevice::Append)) {
-                QTextStream* stream = new QTextStream(logFile);
-                stream->setCodec("UTF-8");
-                
-                m_logFiles[type] = logFile;
-                m_logStreams[type] = stream;
-                m_currentLogFiles[type] = fileName;
-                
-                // Write header for CSV format
-                if (m_logFormat == CSV_FORMAT) {
-                    *stream << "Timestamp,Component,Event,Data\n";
-                    stream->flush();
-                }
-                
-                qDebug() << "Created log file:" << filePath;
-            } else {
-                qCritical() << "Failed to create log file:" << filePath;
-                delete logFile;
-            }
+            openLogFile(it.key());
         }
     }
 }
@@ -248,29 +225,11 @@ void DataLogger::setLogType(LogType type, bool enabled)
 {
     bool wasEnabled = m_enabledLogTypes.value(type, false);
     m_enabledLogTypes[type] = enabled;
-    
+
     if (enabled && !wasEnabled) {
         // Create log file for this type if logging is active
         if (m_loggingActive) {
-            QString fileName = generateLogFileName(type);
-            QString filePath = m_logDirectory + "/" + fileName;
-            
-            QFile* logFile = new QFile(filePath);
-            if (logFile->open(QIODevice::WriteOnly | QIODevice::Append)) {
-                QTextStream* stream = new QTextStream(logFile);
-                stream->setCodec("UTF-8");
-                
-                m_logFiles[type] = logFile;
-                m_logStreams[type] = stream;
-                m_currentLogFiles[type] = fileName;
-                
-                if (m_logFormat == CSV_FORMAT) {
-                    *stream << "Timestamp,Component,Event,Data\n";
-                    stream->flush();
-                }
-            } else {
-                delete logFile;
-            }
+            openLogFile(type);
         }
     } else if (!enabled && wasEnabled) {
         // Close log file for this type
@@ -279,13 +238,13 @@ void DataLogger::setLogType(LogType type, bool enabled)
             delete m_logStreams[type];
             m_logStreams.remove(type);
         }
-        
+
         if (m_logFiles.contains(type)) {
             m_logFiles[type]->close();
             delete m_logFiles[type];
             m_logFiles.remove(type);
         }
-        
+
         m_currentLogFiles.remove(type);
     }
 }
@@ -512,6 +471,35 @@ void DataLogger::flushBuffers()
                 stream->flush();
             }
         }
+    }
+}
+
+bool DataLogger::openLogFile(LogType type)
+{
+    QString fileName = generateLogFileName(type);
+    QString filePath = m_logDirectory + "/" + fileName;
+
+    QFile* logFile = new QFile(filePath);
+    if (logFile->open(QIODevice::WriteOnly | QIODevice::Append)) {
+        QTextStream* stream = new QTextStream(logFile);
+        stream->setCodec("UTF-8");
+
+        m_logFiles[type] = logFile;
+        m_logStreams[type] = stream;
+        m_currentLogFiles[type] = fileName;
+
+        // Write header for CSV format
+        if (m_logFormat == CSV_FORMAT) {
+            *stream << "Timestamp,Component,Event,Data\n";
+            stream->flush();
+        }
+
+        qDebug() << "Created log file:" << filePath;
+        return true;
+    } else {
+        qCritical() << "Failed to create log file:" << filePath;
+        delete logFile;
+        return false;
     }
 }
 

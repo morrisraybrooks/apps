@@ -4,22 +4,32 @@
 #include <QObject>
 #include <QTimer>
 #include <QMutex>
+#include "../core/StatefulComponent.h"
+#include "SafetyConstants.h"
 
 // Forward declarations
 class HardwareManager;
 class CrashHandler;
+class EmergencyStopCoordinator;
+class ISafetyLogger;
 
 /**
  * @brief Core safety management system for vacuum controller
- * 
+ *
  * This class implements critical safety features including:
  * - Overpressure protection (max 75 mmHg with MPX5010DP sensor)
  * - Sensor error detection and response
  * - Emergency stop handling
  * - System health monitoring
  * - Automatic safety shutdowns
+ *
+ * Refactored to eliminate code duplication:
+ * - Uses StatefulComponent<int> for state management (SafetyState enum)
+ * - Uses EmergencyStopCoordinator for centralized emergency stop handling
+ * - Uses ISafetyLogger for unified safety logging
+ * - Uses SafeOperationHelper for consistent error handling
  */
-class SafetyManager : public QObject
+class SafetyManager : public QObject, public StatefulComponent<int>
 {
     Q_OBJECT
 
@@ -50,15 +60,15 @@ public:
     void setSensorTimeoutMs(int timeoutMs);
     int getSensorTimeoutMs() const { return m_sensorTimeoutMs; }
 
-    // Safety status
-    SafetyState getSafetyState() const { return m_safetyState; }
-    bool isSystemSafe() const { return m_safetyState == SAFE; }
-    bool isEmergencyStop() const { return m_safetyState == EMERGENCY_STOP; }
-    
+    // Safety status - uses StatefulComponent base class
+    SafetyState getSafetyState() const { return static_cast<SafetyState>(getState()); }
+    bool isSystemSafe() const { return getState() == SAFE; }
+    bool isEmergencyStop() const { return getState() == EMERGENCY_STOP; }
+
     // Manual safety controls
     void triggerEmergencyStop(const QString& reason);
     bool resetEmergencyStop();
-    
+
     // System health
     bool performSafetyCheck();
     QString getLastSafetyError() const { return m_lastSafetyError; }
@@ -77,8 +87,14 @@ public:
     int getRecoveryAttempts() const { return m_recoveryAttempts; }
 
     // Key safety thresholds (exposed for monitoring and tests)
-    double tissueDamageRiskPressure() const { return TISSUE_DAMAGE_RISK_PRESSURE; }
+    double tissueDamageRiskPressure() const { return SafetyConstants::TISSUE_DAMAGE_RISK_MMHG; }
     int monitoringIntervalMs() const { return MONITORING_INTERVAL_MS; }
+
+    // NEW: Centralized emergency stop integration
+    void setEmergencyStopCoordinator(EmergencyStopCoordinator* coordinator);
+
+    // NEW: Unified safety logging
+    void setSafetyLogger(ISafetyLogger* logger);
 
 Q_SIGNALS:
     void safetyStateChanged(SafetyState newState);
@@ -98,8 +114,17 @@ private Q_SLOTS:
     void onSystemStateRestored();
 
 private:
+    // State management - uses StatefulComponent base class
     void setState(SafetyState newState);
-    void triggerEmergencyStop_unlocked(const QString& reason);
+    QString stateToString(int state) const override;
+    void onStateTransition(int oldState, int newState);
+
+    // Emergency stop callback for coordinator
+    void onEmergencyStopTriggered(const QString& reason);
+
+    // Safety logging helper
+    void logSafetyEvent(const QString& event);
+
     bool checkPressureLimits();
     bool checkSensorHealth();
     bool checkHardwareStatus();
@@ -114,20 +139,23 @@ private:
     // Hardware interface
     HardwareManager* m_hardware;
     CrashHandler* m_crashHandler;
-    
-    // Safety state
-    SafetyState m_safetyState;
+
+    // NEW: Centralized emergency stop and logging
+    EmergencyStopCoordinator* m_emergencyStopCoordinator;
+    ISafetyLogger* m_safetyLogger;
+
+    // Safety state - REMOVED m_safetyState (now in StatefulComponent base)
     bool m_active;
-    mutable QMutex m_stateMutex;
-    
+    // NOTE: m_stateMutex is inherited from StatefulComponent as protected
+
     // Safety parameters (as per specification)
     double m_maxPressure;        // Maximum allowed pressure (75 mmHg default; sensor FS)
     double m_warningThreshold;   // Warning threshold (80% of max)
     int m_sensorTimeoutMs;       // Sensor timeout in milliseconds
-    
+
     // Monitoring
     QTimer* m_monitoringTimer;
-    
+
     // Safety tracking
     QString m_lastSafetyError;
     qint64 m_lastAVLReading;     // Timestamp of last AVL reading
@@ -136,7 +164,7 @@ private:
     // Runaway pump + invalid sensor detection
     int m_consecutiveInvalidSensorReadings;
     int m_consecutiveRunawaySamples;
-    
+
     // Safety statistics
     int m_overpressureEvents;
     int m_sensorErrorEvents;
@@ -146,17 +174,14 @@ private:
     // Auto-recovery
     bool m_autoRecoveryEnabled;
     bool m_recoveryInProgress;
-    
-    // Safety constants
+
+    // Safety constants - behavior-specific defaults kept here
     static const double DEFAULT_MAX_PRESSURE;      // 75.0 mmHg
     static const double DEFAULT_WARNING_THRESHOLD; // 60.0 mmHg
     static const int DEFAULT_SENSOR_TIMEOUT_MS;    // 1000 ms
     static const int MONITORING_INTERVAL_MS;       // 100 ms (10Hz)
-    static const int MAX_CONSECUTIVE_ERRORS;       // 3 errors before emergency stop
+    // NOTE: Use SafetyConstants::MAX_CONSECUTIVE_ERRORS, TISSUE_DAMAGE_RISK_MMHG directly
 
-    // Hard, non-overrideable tissue-damage risk threshold (mmHg)
-    static const double TISSUE_DAMAGE_RISK_PRESSURE;
-    
     // Error tracking
     int m_consecutiveErrors;
 };
