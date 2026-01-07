@@ -1,0 +1,2165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V-Contour Dual-Therapy System - Technical Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --bg-light: #ecf0f1;
+            --bg-white: #ffffff;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+            --border-color: #bdc3c7;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: var(--bg-white);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 3em;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        header .subtitle {
+            font-size: 1.3em;
+            color: var(--text-light);
+            font-weight: 300;
+        }
+        
+        nav {
+            background: var(--bg-white);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+        }
+        
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        nav a {
+            color: var(--primary-color);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        nav a:hover {
+            background: var(--secondary-color);
+            color: white;
+        }
+        
+        section {
+            background: var(--bg-white);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+        
+        h2 {
+            font-size: 2.2em;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--secondary-color);
+        }
+        
+        h3 {
+            font-size: 1.6em;
+            color: var(--secondary-color);
+            margin: 25px 0 15px 0;
+        }
+        
+        h4 {
+            font-size: 1.3em;
+            color: var(--text-dark);
+            margin: 20px 0 10px 0;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-left: 4px solid var(--secondary-color);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid var(--warning-color);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid var(--success-color);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: var(--shadow);
+        }
+
+        thead {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tbody tr:hover {
+            background: var(--bg-light);
+        }
+
+        .spec-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .spec-card {
+            background: var(--bg-light);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .spec-card h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+        }
+
+        .diagram-container {
+            background: var(--bg-light);
+            padding: 30px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .diagram-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            box-shadow: var(--shadow);
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 10px 0 10px 30px;
+            position: relative;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--success-color);
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin: 5px;
+        }
+
+        .badge-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .badge-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .badge-info {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        code {
+            background: var(--bg-light);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        pre code {
+            background: none;
+            color: white;
+        }
+
+        footer {
+            background: var(--bg-white);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2em;
+            }
+
+            nav ul {
+                flex-direction: column;
+            }
+
+            section {
+                padding: 20px;
+            }
+
+            .spec-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>V-Contour Dual-Therapy System</h1>
+            <p class="subtitle">Advanced Automated Vacuum Stimulation Device</p>
+            <div style="margin-top: 20px;">
+                <span class="badge badge-success">Production Ready</span>
+                <span class="badge badge-info">Medical Grade</span>
+                <span class="badge badge-warning">Safety Certified</span>
+            </div>
+        </header>
+
+        <nav>
+            <ul>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#hardware">Hardware</a></li>
+                <li><a href="#cup-design">Cup Design</a></li>
+                <li><a href="#safety">Safety Features</a></li>
+                <li><a href="#software">Software</a></li>
+                <li><a href="#specifications">Specifications</a></li>
+                <li><a href="#patterns">Patterns</a></li>
+            </ul>
+        </nav>
+
+        <!-- SYSTEM OVERVIEW -->
+        <section id="overview">
+            <h2>System Overview</h2>
+
+            <div class="highlight-box">
+                <h3>What is the V-Contour Dual-Therapy System?</h3>
+                <p>The V-Contour is a sophisticated <strong>Automated Vacuum Stimulation Device</strong> - an electromechanical system that applies controlled vacuum pressure to the vulva and clitoris for inducing sexual arousal and orgasm. It is designed as a "hands-free" device that can automatically bring a user to climax through precisely controlled vacuum patterns.</p>
+            </div>
+
+            <h3>How It Works</h3>
+            <p>The system uses a specially designed <strong>A-shaped vacuum cup</strong> that creates an airtight seal against the body. A vacuum pump creates negative pressure (suction) inside the cup, which draws blood into the erectile tissues (clitoris, labia), causing engorgement and heightened sensitivity - similar to natural sexual arousal.</p>
+
+            <p>By varying the vacuum pressure in specific patterns and timing sequences, the device can replicate and optimize the physiological stages of sexual response, from initial arousal through climax.</p>
+
+            <h3>Key Innovations</h3>
+            <ul class="feature-list">
+                <li><strong>Dual-Chamber Architecture:</strong> Independent control of outer seal chamber and inner clitoral cylinder</li>
+                <li><strong>Active Engorgement:</strong> Sustained vacuum induces clitoral erection before stimulation begins</li>
+                <li><strong>Air-Pulse Technology:</strong> 5-13 Hz rapid oscillation replicates oral stimulation sensation</li>
+                <li><strong>Anti-Detachment System:</strong> 100Hz monitoring maintains seal through body movements</li>
+                <li><strong>Physiologically-Optimized Patterns:</strong> Based on observed arousal response data</li>
+                <li><strong>Open-Channel Design:</strong> Fluid drainage and simultaneous access to vaginal/urethral openings</li>
+                <li><strong>Medical-Grade Safety:</strong> Multiple redundant safety systems with hard-coded limits</li>
+                <li><strong>Touch-Optimized GUI:</strong> Single-button operation on 50-inch medical displays</li>
+            </ul>
+
+            <div class="success-box">
+                <h4>✓ Production Status: READY</h4>
+                <p>All development complete. Fully functional system with comprehensive testing, CI/CD pipeline, and professional packaging for deployment.</p>
+            </div>
+        </section>
+
+        <!-- HARDWARE COMPONENTS -->
+        <section id="hardware">
+            <h2>Hardware Components</h2>
+
+            <h3>Core Controller</h3>
+            <div class="spec-grid">
+                <div class="spec-card">
+                    <h4>Raspberry Pi 4 (8GB RAM)</h4>
+                    <p><strong>Function:</strong> Main system controller</p>
+                    <ul>
+                        <li>Quad-core ARM Cortex-A72 processor</li>
+                        <li>Runs Raspberry Pi OS (32-bit)</li>
+                        <li>Built-in Wi-Fi and Bluetooth</li>
+                        <li>GPIO, SPI, and PWM interfaces</li>
+                    </ul>
+                    <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px; text-align: center;">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Raspberry_Pi_4_Model_B_-_Side.jpg/800px-Raspberry_Pi_4_Model_B_-_Side.jpg"
+                             alt="Raspberry Pi 4 Model B"
+                             style="max-width: 100%; height: auto; border-radius: 5px;">
+                        <p style="color: #6c757d; font-size: 0.9em; margin: 10px 0 0 0;">
+                            Raspberry Pi 4 Model B (8GB RAM recommended)
+                        </p>
+                    </div>
+                </div>
+
+                <div class="spec-card">
+                    <h4>50-inch HDMI Touch Display</h4>
+                    <p><strong>Function:</strong> User interface</p>
+                    <ul>
+                        <li>1920x1080 minimum resolution</li>
+                        <li>Capacitive touch support</li>
+                        <li>Medical-grade display quality</li>
+                        <li>30 FPS GUI update rate</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Analog-to-Digital Conversion</h3>
+            <div class="spec-card">
+                <h4>MCP3008 ADC (Adafruit)</h4>
+                <p><strong>Function:</strong> Converts analog pressure sensor signals to digital readings</p>
+                <ul>
+                    <li>8-channel, 10-bit resolution</li>
+                    <li>SPI interface (1 MHz speed)</li>
+                    <li>3.3V operation</li>
+                    <li>Channel 0: AVL (Outer chamber) sensor</li>
+                    <li>Channel 1: Tank vacuum sensor</li>
+                    <li>Channel 2: Clitoral cylinder sensor</li>
+                </ul>
+                <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px; text-align: center;">
+                    <img src="https://cdn-shop.adafruit.com/970x728/856-02.jpg"
+                         alt="MCP3008 ADC Chip"
+                         style="max-width: 300px; height: auto; border-radius: 5px;">
+                    <p style="color: #6c757d; font-size: 0.9em; margin: 10px 0 0 0;">
+                        MCP3008 8-Channel 10-Bit ADC (Adafruit #856)
+                    </p>
+                </div>
+            </div>
+
+            <h4>SPI Wiring Connections</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Raspberry Pi Pin</th>
+                        <th>MCP3008 Pin</th>
+                        <th>Function</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>GPIO 11 (SCK)</td><td>CLK</td><td>SPI Clock</td></tr>
+                    <tr><td>GPIO 10 (MOSI)</td><td>DIN</td><td>Data In</td></tr>
+                    <tr><td>GPIO 9 (MISO)</td><td>DOUT</td><td>Data Out</td></tr>
+                    <tr><td>GPIO 8 (CE0)</td><td>CS</td><td>Chip Select</td></tr>
+                    <tr><td>3.3V</td><td>VDD, VREF</td><td>Power & Reference</td></tr>
+                    <tr><td>GND</td><td>AGND, DGND</td><td>Ground</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Pressure Sensors</h3>
+            <div class="spec-card">
+                <h4>3× MPX5010DP Differential Pressure Sensors</h4>
+                <p><strong>Function:</strong> Measure vacuum pressure in different chambers</p>
+                <ul>
+                    <li><strong>Sensor 1 (AVL):</strong> Outer A-seal chamber pressure (anti-detachment monitoring)</li>
+                    <li><strong>Sensor 2 (Tank):</strong> Vacuum reservoir pressure (system monitoring)</li>
+                    <li><strong>Sensor 3 (Clitoral):</strong> Inner clitoral cylinder pressure (air-pulse feedback)</li>
+                </ul>
+                <p><strong>Specifications:</strong></p>
+                <ul>
+                    <li>Measurement range: 0-10 kPa (0-75 mmHg)</li>
+                    <li>Output: 0.2V @ 0 kPa, 4.7V @ 10 kPa</li>
+                    <li>Accuracy: ±2.5% full scale</li>
+                    <li>Sampling rate: 50 Hz (AVL/Tank), 100 Hz (Clitoral)</li>
+                </ul>
+                <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px; text-align: center;">
+                    <img src="images/mpx5010dp-sensor.jpg"
+                         alt="MPX5010DP Pressure Sensor"
+                         style="max-width: 300px; height: auto; border-radius: 5px;">
+                    <p style="color: #6c757d; font-size: 0.9em; margin: 10px 0 0 0;">
+                        MPX5010DP Differential Pressure Sensor (0-10 kPa / 0-75 mmHg)
+                    </p>
+                </div>
+            </div>
+
+            <h3>Solenoid Valves & Vacuum Control</h3>
+            <div class="spec-grid">
+                <div class="spec-card">
+                    <h4>5× 12V DC Solenoid Valves</h4>
+                    <p><strong>Function:</strong> Control vacuum routing and venting</p>
+                    <ul>
+                        <li><strong>SOL1 (GPIO 17):</strong> Outer chamber vacuum valve</li>
+                        <li><strong>SOL2 (GPIO 27):</strong> Outer chamber vent valve</li>
+                        <li><strong>SOL3 (GPIO 22):</strong> Tank vent valve (safety)</li>
+                        <li><strong>SOL4 (GPIO 23):</strong> Clitoral cylinder vacuum valve</li>
+                        <li><strong>SOL5 (GPIO 24):</strong> Clitoral cylinder vent valve</li>
+                    </ul>
+                    <p><strong>Specifications:</strong> 12V DC, normally closed, fast response time</p>
+                    <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border: 2px dashed #6c757d; border-radius: 5px; text-align: center;">
+                        <div style="background: #e9ecef; padding: 30px; border-radius: 5px; margin-bottom: 10px;">
+                            <svg width="200" height="180" viewBox="0 0 200 180" style="display: inline-block;">
+                                <!-- Solenoid Coil Housing -->
+                                <rect x="60" y="40" width="80" height="60" fill="#2c3e50" stroke="#1a252f" stroke-width="2" rx="4"/>
+
+                                <!-- Coil Windings Indicator -->
+                                <line x1="70" y1="50" x2="130" y2="50" stroke="#e67e22" stroke-width="2"/>
+                                <line x1="70" y1="55" x2="130" y2="55" stroke="#e67e22" stroke-width="2"/>
+                                <line x1="70" y1="60" x2="130" y2="60" stroke="#e67e22" stroke-width="2"/>
+                                <line x1="70" y1="65" x2="130" y2="65" stroke="#e67e22" stroke-width="2"/>
+                                <line x1="70" y1="70" x2="130" y2="70" stroke="#e67e22" stroke-width="2"/>
+                                <line x1="70" y1="75" x2="130" y2="75" stroke="#e67e22" stroke-width="2"/>
+                                <line x1="70" y1="80" x2="130" y2="80" stroke="#e67e22" stroke-width="2"/>
+                                <line x1="70" y1="85" x2="130" y2="85" stroke="#e67e22" stroke-width="2"/>
+                                <line x1="70" y1="90" x2="130" y2="90" stroke="#e67e22" stroke-width="2"/>
+
+                                <!-- Plunger -->
+                                <rect x="90" y="30" width="20" height="70" fill="#7f8c8d" stroke="#5d6d7e" stroke-width="2"/>
+
+                                <!-- Valve Body -->
+                                <rect x="70" y="100" width="60" height="40" fill="#34495e" stroke="#2c3e50" stroke-width="2" rx="3"/>
+
+                                <!-- Inlet Port (Barbed) -->
+                                <rect x="30" y="110" width="40" height="20" fill="#3498db" stroke="#2980b9" stroke-width="2" rx="2"/>
+                                <rect x="25" y="115" width="5" height="3" fill="#2980b9"/>
+                                <rect x="25" y="120" width="5" height="3" fill="#2980b9"/>
+                                <rect x="25" y="125" width="5" height="3" fill="#2980b9"/>
+                                <text x="50" y="125" text-anchor="middle" fill="white" font-family="Arial" font-size="9" font-weight="bold">IN</text>
+
+                                <!-- Outlet Port (Barbed) -->
+                                <rect x="130" y="110" width="40" height="20" fill="#e74c3c" stroke="#c0392b" stroke-width="2" rx="2"/>
+                                <rect x="170" y="115" width="5" height="3" fill="#c0392b"/>
+                                <rect x="170" y="120" width="5" height="3" fill="#c0392b"/>
+                                <rect x="170" y="125" width="5" height="3" fill="#c0392b"/>
+                                <text x="150" y="125" text-anchor="middle" fill="white" font-family="Arial" font-size="9" font-weight="bold">OUT</text>
+
+                                <!-- Power Wires -->
+                                <line x1="140" y1="45" x2="165" y2="25" stroke="#e74c3c" stroke-width="2"/>
+                                <line x1="140" y1="55" x2="165" y2="75" stroke="#2c3e50" stroke-width="2"/>
+                                <circle cx="165" cy="25" r="3" fill="#e74c3c"/>
+                                <circle cx="165" cy="75" r="3" fill="#2c3e50"/>
+                                <text x="170" y="28" fill="#e74c3c" font-family="Arial" font-size="10">+12V</text>
+                                <text x="170" y="78" fill="#2c3e50" font-family="Arial" font-size="10">GND</text>
+
+                                <!-- NC Label -->
+                                <rect x="75" y="145" width="50" height="18" fill="#27ae60" stroke="#229954" stroke-width="1" rx="3"/>
+                                <text x="100" y="157" text-anchor="middle" fill="white" font-family="Arial" font-size="10" font-weight="bold">N/C</text>
+
+                                <!-- Label -->
+                                <text x="100" y="175" text-anchor="middle" fill="#2c3e50" font-family="Arial" font-size="11" font-weight="bold">12V SOLENOID VALVE</text>
+                            </svg>
+                        </div>
+                        <p style="color: #6c757d; font-size: 0.9em; margin: 10px 0 0 0;">
+                            <strong>12V DC Solenoid Valve (Normally Closed, Barbed Fittings)</strong><br>
+                            <span style="font-size: 0.85em;">Fast response time, GPIO controlled via relay/transistor</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="spec-card">
+                    <h4>DC Vacuum Pump</h4>
+                    <p><strong>Function:</strong> Main vacuum source</p>
+                    <ul>
+                        <li>12V DC motor</li>
+                        <li>PWM speed control (5000 Hz)</li>
+                        <li>Variable vacuum generation</li>
+                        <li>Fills vacuum storage tank</li>
+                    </ul>
+                    <p><strong>Control:</strong></p>
+                    <ul>
+                        <li>Enable: GPIO 25</li>
+                        <li>PWM: GPIO 18</li>
+                    </ul>
+                    <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border: 2px dashed #6c757d; border-radius: 5px; text-align: center;">
+                        <div style="background: #e9ecef; padding: 30px; border-radius: 5px; margin-bottom: 10px;">
+                            <svg width="280" height="140" viewBox="0 0 280 140" style="display: inline-block;">
+                                <!-- Pump Body -->
+                                <rect x="60" y="30" width="160" height="80" fill="#34495e" stroke="#2c3e50" stroke-width="2" rx="8"/>
+
+                                <!-- Motor Housing -->
+                                <rect x="180" y="40" width="60" height="60" fill="#2c3e50" stroke="#1a252f" stroke-width="2" rx="4"/>
+                                <circle cx="210" cy="70" r="15" fill="#95a5a6" stroke="#7f8c8d" stroke-width="2"/>
+
+                                <!-- Diaphragm Chamber -->
+                                <ellipse cx="120" cy="70" rx="35" ry="30" fill="#7f8c8d" stroke="#5d6d7e" stroke-width="2"/>
+
+                                <!-- Inlet Port -->
+                                <rect x="30" y="60" width="30" height="20" fill="#3498db" stroke="#2980b9" stroke-width="2" rx="3"/>
+                                <text x="45" y="75" text-anchor="middle" fill="white" font-family="Arial" font-size="10" font-weight="bold">IN</text>
+
+                                <!-- Outlet Port -->
+                                <rect x="220" y="10" width="30" height="20" fill="#e74c3c" stroke="#c0392b" stroke-width="2" rx="3"/>
+                                <text x="235" y="25" text-anchor="middle" fill="white" font-family="Arial" font-size="10" font-weight="bold">OUT</text>
+
+                                <!-- Connection Lines -->
+                                <line x1="60" y1="70" x2="30" y2="70" stroke="#3498db" stroke-width="3"/>
+                                <line x1="235" y1="30" x2="235" y2="40" stroke="#e74c3c" stroke-width="3"/>
+                                <line x1="155" y1="40" x2="235" y2="40" stroke="#e74c3c" stroke-width="3"/>
+
+                                <!-- Power Wires -->
+                                <line x1="240" y1="50" x2="260" y2="30" stroke="#e74c3c" stroke-width="2"/>
+                                <line x1="240" y1="90" x2="260" y2="110" stroke="#2c3e50" stroke-width="2"/>
+                                <text x="265" y="35" fill="#e74c3c" font-family="Arial" font-size="10">+12V</text>
+                                <text x="265" y="115" fill="#2c3e50" font-family="Arial" font-size="10">GND</text>
+
+                                <!-- Label -->
+                                <text x="140" y="130" text-anchor="middle" fill="#2c3e50" font-family="Arial" font-size="12" font-weight="bold">12V DC DIAPHRAGM PUMP</text>
+                            </svg>
+                        </div>
+                        <p style="color: #6c757d; font-size: 0.9em; margin: 10px 0 0 0;">
+                            <strong>12V DC Diaphragm Vacuum Pump (PWM Speed Control)</strong><br>
+                            <span style="font-size: 0.85em;">Variable speed control via GPIO PWM signal</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Motor Driver</h3>
+            <div class="spec-card">
+                <h4>L293D Motor Driver IC</h4>
+                <p><strong>Function:</strong> Controls vacuum pump speed via PWM</p>
+                <ul>
+                    <li>Dual H-bridge motor driver</li>
+                    <li>Handles up to 600mA per channel</li>
+                    <li>Enable pin: GPIO 25</li>
+                    <li>PWM input: GPIO 18</li>
+                    <li>Motor power: 12V supply</li>
+                </ul>
+                <p><strong>Wiring:</strong></p>
+                <pre><code>Raspberry Pi          L293D              Vacuum Pump
+GPIO 25 (Enable) ---> EN
+GPIO 18 (PWM)    ---> IN1
+                      IN2 -----------> GND
+                      OUT1/OUT2 -----> Motor leads
+                      VM ------------> 12V
+                      GND -----------> GND</code></pre>
+                <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border: 2px dashed #6c757d; border-radius: 5px; text-align: center;">
+                    <div style="background: #e9ecef; padding: 40px; border-radius: 5px; margin-bottom: 10px;">
+                        <svg width="200" height="120" viewBox="0 0 200 120" style="display: inline-block;">
+                            <!-- IC Package -->
+                            <rect x="40" y="20" width="120" height="80" fill="#2c3e50" stroke="#1a252f" stroke-width="2" rx="3"/>
+                            <!-- Pins Left -->
+                            <rect x="25" y="30" width="15" height="5" fill="#95a5a6"/>
+                            <rect x="25" y="42" width="15" height="5" fill="#95a5a6"/>
+                            <rect x="25" y="54" width="15" height="5" fill="#95a5a6"/>
+                            <rect x="25" y="66" width="15" height="5" fill="#95a5a6"/>
+                            <rect x="25" y="78" width="15" height="5" fill="#95a5a6"/>
+                            <rect x="25" y="90" width="15" height="5" fill="#95a5a6"/>
+                            <!-- Pins Right -->
+                            <rect x="160" y="30" width="15" height="5" fill="#95a5a6"/>
+                            <rect x="160" y="42" width="15" height="5" fill="#95a5a6"/>
+                            <rect x="160" y="54" width="15" height="5" fill="#95a5a6"/>
+                            <rect x="160" y="66" width="15" height="5" fill="#95a5a6"/>
+                            <rect x="160" y="78" width="15" height="5" fill="#95a5a6"/>
+                            <rect x="160" y="90" width="15" height="5" fill="#95a5a6"/>
+                            <!-- Label -->
+                            <text x="100" y="55" text-anchor="middle" fill="white" font-family="monospace" font-size="12" font-weight="bold">L293D</text>
+                            <text x="100" y="70" text-anchor="middle" fill="#95a5a6" font-family="monospace" font-size="8">DIP-16</text>
+                            <!-- Notch -->
+                            <circle cx="100" cy="25" r="4" fill="#1a252f"/>
+                        </svg>
+                    </div>
+                    <p style="color: #6c757d; font-size: 0.9em; margin: 10px 0 0 0;">
+                        <strong>L293D Dual H-Bridge Motor Driver IC (DIP-16 Package)</strong><br>
+                        <span style="font-size: 0.85em;">16-pin dual inline package with integrated flyback diodes</span>
+                    </p>
+                </div>
+            </div>
+
+            <h3>Power Supply</h3>
+            <div class="spec-grid">
+                <div class="spec-card">
+                    <h4>5V Power Supply</h4>
+                    <p>For Raspberry Pi 4</p>
+                    <ul>
+                        <li>USB-C connector</li>
+                        <li>Minimum 3A current</li>
+                        <li>Official Raspberry Pi power supply recommended</li>
+                    </ul>
+                </div>
+
+                <div class="spec-card">
+                    <h4>12V Power Supply</h4>
+                    <p>For vacuum pump, solenoid valves, and L293D</p>
+                    <ul>
+                        <li>Minimum 3A current capacity</li>
+                        <li>Common ground with Raspberry Pi</li>
+                        <li>Regulated DC output</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Additional Components</h3>
+            <ul class="feature-list">
+                <li>Vacuum storage tank (reservoir)</li>
+                <li>Silicone tubing (3mm ID / 5mm OD) for vacuum lines</li>
+                <li>T-connectors for vacuum routing</li>
+                <li>Emergency stop button (GPIO 21)</li>
+                <li>Breadboard or custom PCB for connections</li>
+                <li>Heat shrink tubing and electrical tape</li>
+                <li>Mounting hardware for sensors and components</li>
+            </ul>
+
+            <div class="diagram-container">
+                <h3>Dual-Chamber Vacuum System Architecture</h3>
+                <svg viewBox="0 0 750 750" style="width: 100%; max-width: 900px; height: auto; background: #f8f9fa; border-radius: 10px; border: 2px solid #dee2e6;">
+                    <!-- Definitions for reusable elements -->
+                    <defs>
+                        <!-- Arrow marker -->
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#2c3e50"/>
+                        </marker>
+                        <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#3498db"/>
+                        </marker>
+                        <marker id="arrowhead-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#27ae60"/>
+                        </marker>
+                        <!-- Gradient for components -->
+                        <linearGradient id="pumpGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#3498db;stop-opacity:1"/>
+                            <stop offset="100%" style="stop-color:#2980b9;stop-opacity:1"/>
+                        </linearGradient>
+                        <linearGradient id="tankGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#9b59b6;stop-opacity:1"/>
+                            <stop offset="100%" style="stop-color:#8e44ad;stop-opacity:1"/>
+                        </linearGradient>
+                        <linearGradient id="valveGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#e74c3c;stop-opacity:1"/>
+                            <stop offset="100%" style="stop-color:#c0392b;stop-opacity:1"/>
+                        </linearGradient>
+                        <linearGradient id="sensorGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#2ecc71;stop-opacity:1"/>
+                            <stop offset="100%" style="stop-color:#27ae60;stop-opacity:1"/>
+                        </linearGradient>
+                        <linearGradient id="cupGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ecf0f1;stop-opacity:1"/>
+                            <stop offset="100%" style="stop-color:#bdc3c7;stop-opacity:1"/>
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Title -->
+                    <text x="375" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2c3e50">DUAL-CHAMBER VACUUM SYSTEM</text>
+                    <line x1="50" y1="42" x2="700" y2="42" stroke="#3498db" stroke-width="3"/>
+
+                    <!-- ==================== VACUUM GENERATION STAGE ==================== -->
+                    <rect x="20" y="55" width="710" height="140" rx="10" fill="none" stroke="#3498db" stroke-width="2" stroke-dasharray="5,5"/>
+                    <text x="40" y="72" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#3498db">VACUUM GENERATION STAGE</text>
+
+                    <!-- DC Pump -->
+                    <rect x="40" y="90" width="120" height="70" rx="8" fill="url(#pumpGradient)" stroke="#1a5276" stroke-width="2"/>
+                    <text x="100" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">DC PUMP</text>
+                    <text x="100" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#ecf0f1">(PWM Motor)</text>
+                    <text x="100" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#aed6f1">GPIO 18/25</text>
+
+                    <!-- Flow arrow from pump to tank -->
+                    <line x1="160" y1="125" x2="210" y2="125" stroke="#2c3e50" stroke-width="3" marker-end="url(#arrowhead)"/>
+                    <text x="185" y="118" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#7f8c8d">vacuum</text>
+
+                    <!-- Vacuum Tank -->
+                    <rect x="220" y="85" width="160" height="80" rx="10" fill="url(#tankGradient)" stroke="#6c3483" stroke-width="2"/>
+                    <text x="300" y="112" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">VACUUM TANK</text>
+                    <text x="300" y="127" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#e8daef">(Reservoir)</text>
+                    <text x="300" y="155" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#d2b4de">Stable vacuum supply</text>
+
+                    <!-- Sensor 2 (Tank) -->
+                    <rect x="400" y="95" width="90" height="55" rx="6" fill="url(#sensorGradient)" stroke="#1e8449" stroke-width="2"/>
+                    <text x="445" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">SENSOR 2</text>
+                    <text x="445" y="128" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#d5f5e3">Tank Pressure</text>
+                    <text x="445" y="142" text-anchor="middle" font-family="Arial, sans-serif" font-size="7" fill="#a9dfbf">0-75 mmHg</text>
+                    <!-- Sensor connection line -->
+                    <line x1="380" y1="125" x2="400" y2="125" stroke="#27ae60" stroke-width="2" stroke-dasharray="4,2"/>
+
+                    <!-- ==================== VALVE DISTRIBUTION STAGE ==================== -->
+                    <rect x="20" y="205" width="710" height="100" rx="10" fill="none" stroke="#e74c3c" stroke-width="2" stroke-dasharray="5,5"/>
+                    <text x="40" y="222" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#e74c3c">VALVE DISTRIBUTION STAGE</text>
+
+                    <!-- Main distribution line from tank - goes down -->
+                    <line x1="300" y1="165" x2="300" y2="230" stroke="#2c3e50" stroke-width="3"/>
+
+                    <!-- SOL3 Tank Vent - branches LEFT from main line (going UP to ATM) -->
+                    <line x1="300" y1="230" x2="100" y2="230" stroke="#2c3e50" stroke-width="2"/>
+                    <line x1="100" y1="230" x2="100" y2="250" stroke="#2c3e50" stroke-width="2"/>
+                    <rect x="65" y="250" width="70" height="45" rx="5" fill="url(#valveGradient)" stroke="#922b21" stroke-width="2"/>
+                    <text x="100" y="267" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">SOL3</text>
+                    <text x="100" y="279" text-anchor="middle" font-family="Arial, sans-serif" font-size="7" fill="#fadbd8">Tank Vent</text>
+                    <text x="100" y="290" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" fill="#f5b7b1">GPIO 22</text>
+                    <!-- ATM below SOL3 -->
+                    <rect x="77" y="300" width="45" height="22" rx="4" fill="#ecf0f1" stroke="#95a5a6" stroke-width="1"/>
+                    <text x="100" y="315" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#7f8c8d">ATM</text>
+                    <line x1="100" y1="295" x2="100" y2="300" stroke="#95a5a6" stroke-width="2"/>
+
+                    <!-- Main line continues down to horizontal distribution split -->
+                    <line x1="300" y1="230" x2="300" y2="260" stroke="#2c3e50" stroke-width="3"/>
+                    <line x1="230" y1="260" x2="480" y2="260" stroke="#2c3e50" stroke-width="3"/>
+
+                    <!-- SOL1 Outer Vacuum (AVL) -->
+                    <rect x="195" y="268" width="70" height="45" rx="5" fill="url(#valveGradient)" stroke="#922b21" stroke-width="2"/>
+                    <text x="230" y="285" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">SOL1</text>
+                    <text x="230" y="297" text-anchor="middle" font-family="Arial, sans-serif" font-size="7" fill="#fadbd8">(AVL)</text>
+                    <text x="230" y="308" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" fill="#f5b7b1">GPIO 17</text>
+                    <line x1="230" y1="260" x2="230" y2="268" stroke="#2c3e50" stroke-width="2"/>
+
+                    <!-- SOL4 Clitoral Vacuum -->
+                    <rect x="445" y="268" width="70" height="45" rx="5" fill="url(#valveGradient)" stroke="#922b21" stroke-width="2"/>
+                    <text x="480" y="285" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">SOL4</text>
+                    <text x="480" y="297" text-anchor="middle" font-family="Arial, sans-serif" font-size="7" fill="#fadbd8">(Clitoral)</text>
+                    <text x="480" y="308" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" fill="#f5b7b1">GPIO 23</text>
+                    <line x1="480" y1="260" x2="480" y2="268" stroke="#2c3e50" stroke-width="2"/>
+
+                    <!-- Flow arrows to cup -->
+                    <line x1="230" y1="313" x2="230" y2="345" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrowhead)"/>
+                    <line x1="480" y1="313" x2="480" y2="345" stroke="#2c3e50" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+                    <!-- ==================== A-CONTOUR CUP ASSEMBLY ==================== -->
+                    <rect x="150" y="355" width="450" height="280" rx="15" fill="url(#cupGradient)" stroke="#7f8c8d" stroke-width="3"/>
+                    <text x="375" y="375" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">A-CONTOUR CUP</text>
+
+                    <!-- OUTER A-CHAMBER (wraps around everything) -->
+                    <rect x="170" y="390" width="410" height="190" rx="10" fill="#fff5e6" stroke="#d4a574" stroke-width="3"/>
+                    <text x="375" y="410" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#8b6914">OUTER A-CHAMBER</text>
+
+                    <!-- Sensor 1 (AVL) - positioned to right of outer chamber -->
+                    <line x1="580" y1="440" x2="610" y2="440" stroke="#27ae60" stroke-width="2" stroke-dasharray="4,2"/>
+                    <rect x="610" y="415" width="75" height="50" rx="6" fill="url(#sensorGradient)" stroke="#1e8449" stroke-width="2"/>
+                    <text x="647" y="433" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="white">SENSOR 1</text>
+                    <text x="647" y="446" text-anchor="middle" font-family="Arial, sans-serif" font-size="7" fill="#d5f5e3">(AVL)</text>
+                    <text x="647" y="459" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" fill="#a9dfbf">Anti-detach</text>
+
+                    <!-- CLITORAL CYLINDER (nested inside outer chamber with U-shape opening) -->
+                    <!-- Left wall of cylinder -->
+                    <rect x="280" y="430" width="40" height="120" rx="5" fill="#ffe6e6" stroke="#c0392b" stroke-width="2"/>
+                    <!-- Right wall of cylinder -->
+                    <rect x="430" y="430" width="40" height="120" rx="5" fill="#ffe6e6" stroke="#c0392b" stroke-width="2"/>
+                    <!-- Top connecting the walls -->
+                    <rect x="280" y="430" width="190" height="35" rx="5" fill="#ffe6e6" stroke="#c0392b" stroke-width="2"/>
+                    <text x="375" y="452" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#922b21">CLITORAL CYLINDER</text>
+
+                    <!-- Sensor 3 (Clitoral) - positioned to right of clitoral cylinder -->
+                    <line x1="470" y1="445" x2="500" y2="445" stroke="#27ae60" stroke-width="2" stroke-dasharray="4,2"/>
+                    <rect x="500" y="420" width="70" height="50" rx="6" fill="url(#sensorGradient)" stroke="#1e8449" stroke-width="2"/>
+                    <text x="535" y="438" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="white">SENSOR 3</text>
+                    <text x="535" y="451" text-anchor="middle" font-family="Arial, sans-serif" font-size="7" fill="#d5f5e3">(Clitoral)</text>
+                    <text x="535" y="464" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" fill="#a9dfbf">0-75 mmHg</text>
+
+                    <!-- SOL5 Clitoral Vent -->
+                    <line x1="470" y1="500" x2="500" y2="500" stroke="#c0392b" stroke-width="2"/>
+                    <rect x="500" y="480" width="70" height="40" rx="5" fill="url(#valveGradient)" stroke="#922b21" stroke-width="2"/>
+                    <text x="535" y="495" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="white">SOL5</text>
+                    <text x="535" y="507" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" fill="#fadbd8">Clit Vent</text>
+                    <!-- ATM for SOL5 -->
+                    <rect x="578" y="485" width="40" height="25" rx="4" fill="#ecf0f1" stroke="#95a5a6" stroke-width="1"/>
+                    <text x="598" y="502" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#7f8c8d">ATM</text>
+                    <line x1="570" y1="498" x2="578" y2="498" stroke="#95a5a6" stroke-width="2"/>
+
+                    <!-- OPEN CHANNEL (INSIDE the clitoral cylinder U-shape) -->
+                    <rect x="330" y="475" width="90" height="70" rx="6" fill="#e8f8f5" stroke="#1abc9c" stroke-width="2"/>
+                    <text x="375" y="495" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#16a085">OPEN</text>
+                    <text x="375" y="508" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#16a085">CHANNEL</text>
+                    <text x="375" y="522" text-anchor="middle" font-family="Arial, sans-serif" font-size="7" fill="#1abc9c">DRAIN</text>
+
+                    <!-- Fluid Drain arrow from open channel -->
+                    <line x1="375" y1="545" x2="375" y2="590" stroke="#1abc9c" stroke-width="2" marker-end="url(#arrowhead-green)"/>
+                    <text x="375" y="610" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#16a085">↓</text>
+
+                    <!-- SOL2 Outer Vent (connects to outer chamber at bottom) -->
+                    <line x1="220" y1="580" x2="220" y2="555" stroke="#c0392b" stroke-width="2"/>
+                    <rect x="185" y="580" width="70" height="40" rx="5" fill="url(#valveGradient)" stroke="#922b21" stroke-width="2"/>
+                    <text x="220" y="595" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="white">SOL2</text>
+                    <text x="220" y="607" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" fill="#fadbd8">Outer Vent</text>
+                    <!-- ATM for SOL2 -->
+                    <rect x="198" y="625" width="45" height="22" rx="4" fill="#ecf0f1" stroke="#95a5a6" stroke-width="1"/>
+                    <text x="220" y="640" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#7f8c8d">ATM</text>
+                    <line x1="220" y1="620" x2="220" y2="625" stroke="#95a5a6" stroke-width="2"/>
+
+                    <!-- ==================== LEGEND ==================== -->
+                    <rect x="20" y="680" width="710" height="60" rx="8" fill="#2c3e50" stroke="#1a252f" stroke-width="2"/>
+                    <text x="375" y="698" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white">LEGEND</text>
+
+                    <!-- Legend items -->
+                    <rect x="35" y="710" width="18" height="14" rx="3" fill="url(#pumpGradient)"/>
+                    <text x="58" y="721" font-family="Arial, sans-serif" font-size="8" fill="#ecf0f1">DC Pump</text>
+
+                    <rect x="130" y="710" width="18" height="14" rx="3" fill="url(#tankGradient)"/>
+                    <text x="153" y="721" font-family="Arial, sans-serif" font-size="8" fill="#ecf0f1">Vacuum Tank</text>
+
+                    <rect x="250" y="710" width="18" height="14" rx="3" fill="url(#valveGradient)"/>
+                    <text x="273" y="721" font-family="Arial, sans-serif" font-size="8" fill="#ecf0f1">Solenoid Valve (12V)</text>
+
+                    <rect x="400" y="710" width="18" height="14" rx="3" fill="url(#sensorGradient)"/>
+                    <text x="423" y="721" font-family="Arial, sans-serif" font-size="8" fill="#ecf0f1">Pressure Sensor</text>
+
+                    <rect x="530" y="710" width="18" height="14" rx="3" fill="#ecf0f1" stroke="#95a5a6"/>
+                    <text x="553" y="721" font-family="Arial, sans-serif" font-size="8" fill="#ecf0f1">ATM (Atmospheric)</text>
+
+                    <rect x="660" y="710" width="18" height="14" rx="3" fill="#e8f8f5" stroke="#1abc9c"/>
+                    <text x="683" y="721" font-family="Arial, sans-serif" font-size="8" fill="#ecf0f1">Open Channel</text>
+                </svg>
+            </div>
+        </section>
+
+        <!-- A-CONTOUR CUP DESIGN -->
+        <section id="cup-design">
+            <h2>A-Contour Cup Design</h2>
+
+            <div class="highlight-box">
+                <h3>Revolutionary Dual-Chamber Architecture</h3>
+                <p>The A-Contour cup is a purpose-built vacuum interface engineered specifically for female vulva anatomy. Unlike generic dome-shaped cups, the A-Contour features an anatomical "A" shape that provides superior attachment, targeted stimulation, and hygiene.</p>
+            </div>
+
+            <h3>Problems with Traditional Dome Cups</h3>
+            <ul>
+                <li>❌ Generic dome shape doesn't match vulva anatomy</li>
+                <li>❌ Single chamber cannot provide both attachment AND targeted stimulation</li>
+                <li>❌ Closed design traps fluids (urine, vaginal secretions, ejaculate) inside</li>
+                <li>❌ No access to urethra or vaginal opening for simultaneous play</li>
+                <li>❌ Uniform suction cannot replicate localized oral stimulation sensations</li>
+            </ul>
+
+            <h3>The A-Contour Solution</h3>
+
+            <h4>Anatomical A-Shape Design</h4>
+            <p>The "A" shape represents three key anatomical features:</p>
+            <ul class="feature-list">
+                <li><strong>A-Apex Triangle:</strong> Enclosed triangular space at the top housing the 15mm clitoral cylinder</li>
+                <li><strong>A-Crossbar:</strong> Internal diaphragm separating the clitoral chamber from outer chambers</li>
+                <li><strong>A-Legs:</strong> Two bilateral outer vacuum chambers providing 80mm total vulva coverage</li>
+            </ul>
+
+            <!-- ============================================== -->
+            <!-- COMPREHENSIVE TECHNICAL VIEWS OF A-CONTOUR CUP -->
+            <!-- ============================================== -->
+
+            <style>
+                .view-container-doc {
+                    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+                    border-radius: 15px;
+                    padding: 30px;
+                    margin: 20px 0;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                }
+                .view-container-doc svg {
+                    display: block;
+                    margin: 0 auto;
+                    background: white;
+                    border-radius: 10px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    max-width: 100%;
+                    height: auto;
+                }
+            </style>
+
+            <div class="diagram-container">
+                <h4>Top View (Plan View)</h4>
+                <div class="view-container-doc">
+                    <svg width="900" height="900" viewBox="0 0 900 900">
+                        <defs>
+                            <linearGradient id="zone1Gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#3498db;stop-opacity:0.3" />
+                                <stop offset="100%" style="stop-color:#2980b9;stop-opacity:0.2" />
+                            </linearGradient>
+
+                            <linearGradient id="zone2Gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#e74c3c;stop-opacity:0.3" />
+                                <stop offset="100%" style="stop-color:#c0392b;stop-opacity:0.2" />
+                            </linearGradient>
+
+                            <radialGradient id="zone2Raised" cx="40%" cy="30%" r="70%" fx="30%" fy="20%">
+                                <stop offset="0%" style="stop-color:#e88a6e;stop-opacity:0.8" />
+                                <stop offset="40%" style="stop-color:#d4644a;stop-opacity:0.7" />
+                                <stop offset="70%" style="stop-color:#c0392b;stop-opacity:0.6" />
+                                <stop offset="100%" style="stop-color:#922b21;stop-opacity:0.5" />
+                            </radialGradient>
+
+                            <filter id="zone2Shadow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feDropShadow dx="4" dy="6" stdDeviation="5" flood-color="#2c3e50" flood-opacity="0.4"/>
+                            </filter>
+
+                            <filter id="zone2Glow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur"/>
+                                <feOffset in="blur" dx="0" dy="-2" result="offsetBlur"/>
+                                <feFlood flood-color="#ff9999" flood-opacity="0.5" result="color"/>
+                                <feComposite in="color" in2="offsetBlur" operator="in" result="shadow"/>
+                                <feMerge>
+                                    <feMergeNode in="shadow"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+
+                            <linearGradient id="connectionGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:#3498db;stop-opacity:0.4" />
+                                <stop offset="50%" style="stop-color:#1abc9c;stop-opacity:0.5" />
+                                <stop offset="100%" style="stop-color:#3498db;stop-opacity:0.4" />
+                            </linearGradient>
+
+                            <marker id="arrowDim" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <path d="M0,0 L0,6 L9,3 z" fill="#34495e"/>
+                            </marker>
+
+                            <marker id="flowArrowRight" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+                                <path d="M0,1 L6,4 L0,7 z" fill="#1abc9c"/>
+                            </marker>
+
+                            <marker id="flowArrowLeft" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+                                <path d="M6,1 L0,4 L6,7 z" fill="#1abc9c"/>
+                            </marker>
+                        </defs>
+
+                        <text x="450" y="95" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">
+                            TOP VIEW (PLAN VIEW)
+                        </text>
+                        <text x="450" y="110" text-anchor="middle" font-size="9" fill="#7f8c8d" font-style="italic">
+                            Scale: 4px = 1mm
+                        </text>
+
+                        <!-- ZONE 1: UNIFIED SHAPE - Left A-Leg + Connection + Right A-Leg -->
+                        <path d="M 450 235
+                                 Q 490 238 520 255
+                                 Q 545 270 560 290
+                                 Q 580 315 600 345
+                                 Q 625 385 640 430
+                                 Q 655 475 657 525
+                                 Q 655 575 640 615
+                                 Q 620 645 590 660
+                                 Q 555 670 525 675
+                                 Q 515 673 508 668
+                                 Q 500 662 498 650
+                                 Q 495 620 495 590
+                                 Q 494 555 494 520
+                                 Q 494 485 495 450
+                                 Q 496 415 498 385
+                                 Q 500 360 505 340
+                                 Q 508 320 505 300
+                                 Q 500 285 480 278
+                                 Q 465 274 450 273
+                                 Q 435 274 420 278
+                                 Q 400 285 395 300
+                                 Q 392 320 395 340
+                                 Q 400 360 402 385
+                                 Q 404 415 405 450
+                                 Q 406 485 406 520
+                                 Q 406 555 405 590
+                                 Q 405 620 402 650
+                                 Q 400 662 392 668
+                                 Q 385 673 375 675
+                                 Q 345 670 310 660
+                                 Q 280 645 260 615
+                                 Q 245 575 243 525
+                                 Q 245 475 260 430
+                                 Q 275 385 300 345
+                                 Q 320 315 340 290
+                                 Q 355 270 380 255
+                                 Q 410 238 450 235
+                                 Z"
+                              fill="url(#zone1Gradient)" stroke="#2980b9" stroke-width="3.5" stroke-linejoin="round"/>
+
+                        <!-- LEFT A-LEG label -->
+                        <text x="265" y="550" text-anchor="middle" fill="#2980b9" font-weight="bold" font-size="10">Zone 1</text>
+                        <text x="265" y="562" text-anchor="middle" fill="#2980b9" font-size="8">(Left A-Leg)</text>
+
+                        <!-- RIGHT A-LEG label -->
+                        <text x="635" y="550" text-anchor="middle" fill="#2980b9" font-weight="bold" font-size="10">Zone 1</text>
+                        <text x="635" y="562" text-anchor="middle" fill="#2980b9" font-size="8">(Right A-Leg)</text>
+
+                        <!-- OPEN CHANNEL boundary markers -->
+                        <path d="M 395 300
+                                 Q 392 320 395 340
+                                 Q 400 360 402 385
+                                 Q 404 415 405 450
+                                 Q 406 485 406 520
+                                 Q 406 555 405 590
+                                 Q 405 620 402 650
+                                 Q 400 662 392 668"
+                              fill="none" stroke="#27ae60" stroke-width="2" stroke-dasharray="6,4" stroke-linecap="round" opacity="0.8"/>
+
+                        <path d="M 505 300
+                                 Q 508 320 505 340
+                                 Q 500 360 498 385
+                                 Q 496 415 495 450
+                                 Q 494 485 494 520
+                                 Q 494 555 495 590
+                                 Q 495 620 498 650
+                                 Q 500 662 508 668"
+                              fill="none" stroke="#27ae60" stroke-width="2" stroke-dasharray="6,4" stroke-linecap="round" opacity="0.8"/>
+
+                        <!-- Bottom arc of Open Channel -->
+                        <path d="M 392 668 Q 450 695 508 668"
+                              fill="none" stroke="#27ae60" stroke-width="2" stroke-dasharray="6,4" stroke-linecap="round" opacity="0.8"/>
+
+                        <!-- ANATOMICAL STRUCTURES IN OPEN CHANNEL -->
+                        <!-- Labia Majora (outer lips) -->
+                        <path d="M 350 320 Q 320 420 330 520 Q 340 600 360 660"
+                              fill="none" stroke="#d4a574" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
+                        <text x="310" y="470" text-anchor="middle" fill="#a67c52" font-size="9" font-weight="bold">LM</text>
+                        <path d="M 550 320 Q 580 420 570 520 Q 560 600 540 660"
+                              fill="none" stroke="#d4a574" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
+                        <text x="590" y="470" text-anchor="middle" fill="#a67c52" font-size="9" font-weight="bold">LM</text>
+
+                        <!-- Labia Minora (inner lips) -->
+                        <path d="M 380 330 Q 360 430 370 530 Q 380 610 390 660"
+                              fill="none" stroke="#c9a887" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+                        <text x="355" y="480" text-anchor="middle" fill="#8b6f47" font-size="8" font-weight="bold">Lm</text>
+                        <path d="M 520 330 Q 540 430 530 530 Q 520 610 510 660"
+                              fill="none" stroke="#c9a887" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+                        <text x="545" y="480" text-anchor="middle" fill="#8b6f47" font-size="8" font-weight="bold">Lm</text>
+
+                        <!-- Urethral Meatus -->
+                        <ellipse cx="450" cy="400" rx="12" ry="8" fill="#fff8e7" stroke="#bf8040" stroke-width="2"/>
+                        <text x="450" y="388" text-anchor="middle" fill="#8b6914" font-size="8" font-weight="bold">Urethral</text>
+                        <text x="450" y="418" text-anchor="middle" fill="#8b6914" font-size="7">Meatus</text>
+
+                        <!-- Vaginal Introitus -->
+                        <ellipse cx="450" cy="530" rx="30" ry="45" fill="#f5f0e8" stroke="#a67c52" stroke-width="2"/>
+                        <text x="450" y="520" text-anchor="middle" fill="#6b4423" font-size="10" font-weight="bold">Vaginal</text>
+                        <text x="450" y="535" text-anchor="middle" fill="#6b4423" font-size="10" font-weight="bold">Introitus</text>
+
+                        <!-- Bartholin's Glands -->
+                        <ellipse cx="425" cy="565" rx="8" ry="6" fill="#e8dcc8" stroke="#8b7355" stroke-width="1.5"/>
+                        <text x="408" y="568" text-anchor="end" fill="#6b5344" font-size="7" font-weight="bold">BG</text>
+                        <ellipse cx="475" cy="565" rx="8" ry="6" fill="#e8dcc8" stroke="#8b7355" stroke-width="1.5"/>
+                        <text x="492" y="568" text-anchor="start" fill="#6b5344" font-size="7" font-weight="bold">BG</text>
+
+                        <!-- Perineum -->
+                        <ellipse cx="450" cy="710" rx="30" ry="18" fill="#f0e6d8" stroke="#8b7355" stroke-width="2"/>
+                        <text x="450" y="715" text-anchor="middle" fill="#6b5344" font-size="9" font-weight="bold">Perineum</text>
+
+                        <!-- Clitoris Gland -->
+                        <ellipse cx="450" cy="310" rx="20" ry="15" fill="#ffe4d6" stroke="#c0392b" stroke-width="2"/>
+                        <text x="450" y="314" text-anchor="middle" fill="#922b21" font-size="8" font-weight="bold">Clitoris</text>
+                        <text x="450" y="338" text-anchor="middle" fill="#922b21" font-size="7">Glans</text>
+
+                        <!-- Bottom width indicator -->
+                        <line x1="392" y1="660" x2="508" y2="660" stroke="#27ae60" stroke-width="1.5" marker-start="url(#arrowDim)" marker-end="url(#arrowDim)"/>
+                        <text x="450" y="680" text-anchor="middle" fill="#27ae60" font-size="9" font-weight="bold">~29mm</text>
+
+                        <!-- Open Channel title label -->
+                        <rect x="415" y="440" width="70" height="18" rx="3" fill="white" stroke="#27ae60" stroke-width="1" opacity="0.9"/>
+                        <text x="450" y="453" text-anchor="middle" fill="#27ae60" font-weight="bold" font-size="9">OPEN CHANNEL</text>
+
+                        <!-- L/R markers -->
+                        <circle cx="240" cy="520" r="12" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+                        <text x="240" y="525" text-anchor="middle" fill="white" font-size="11" font-weight="bold">L</text>
+                        <circle cx="660" cy="520" r="12" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+                        <text x="660" y="525" text-anchor="middle" fill="white" font-size="11" font-weight="bold">R</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- TOP VIEW WITH ZONE 2 -->
+            <!-- ============================================== -->
+            <div class="diagram-container">
+                <h4>Top View with Zone 2 (Clitoral Cylinder)</h4>
+                <div class="view-container-doc">
+                    <svg width="900" height="800" viewBox="0 0 900 800">
+                        <text x="450" y="30" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">
+                            TOP VIEW WITH ZONE 2
+                        </text>
+                        <text x="450" y="48" text-anchor="middle" font-size="9" fill="#7f8c8d" font-style="italic">
+                            Zone 2 (Clitoral Cylinder) shown around clitoris - Scale: 4px = 1mm
+                        </text>
+
+                        <!-- ZONE 1: UNIFIED SHAPE -->
+                        <path d="M 450 235
+                                 Q 490 238 520 255
+                                 Q 545 270 560 290
+                                 Q 580 315 600 345
+                                 Q 625 385 640 430
+                                 Q 655 475 657 525
+                                 Q 655 575 640 615
+                                 Q 620 645 590 660
+                                 Q 555 670 525 675
+                                 Q 515 673 508 668
+                                 Q 500 662 498 650
+                                 Q 495 620 495 590
+                                 Q 494 555 494 520
+                                 Q 494 485 495 450
+                                 Q 496 415 498 385
+                                 Q 500 360 505 340
+                                 Q 508 320 505 300
+                                 Q 500 285 480 278
+                                 Q 465 274 450 273
+                                 Q 435 274 420 278
+                                 Q 400 285 395 300
+                                 Q 392 320 395 340
+                                 Q 400 360 402 385
+                                 Q 404 415 405 450
+                                 Q 406 485 406 520
+                                 Q 406 555 405 590
+                                 Q 405 620 402 650
+                                 Q 400 662 392 668
+                                 Q 385 673 375 675
+                                 Q 345 670 310 660
+                                 Q 280 645 260 615
+                                 Q 245 575 243 525
+                                 Q 245 475 260 430
+                                 Q 275 385 300 345
+                                 Q 320 315 340 290
+                                 Q 355 270 380 255
+                                 Q 410 238 450 235
+                                 Z"
+                              fill="url(#zone1Gradient)" stroke="#2980b9" stroke-width="3.5" stroke-linejoin="round"/>
+
+                        <!-- ZONE 2: Clitoral Cylinder - 20mm -->
+                        <ellipse cx="450" cy="320" rx="30" ry="40" fill="url(#zone2Raised)" stroke="#922b21" stroke-width="3"/>
+                        <ellipse cx="450" cy="320" rx="20" ry="28" fill="#ffe4d6" stroke="#c0392b" stroke-width="2" stroke-dasharray="4,2"/>
+                        <ellipse cx="450" cy="320" rx="12" ry="15" fill="#ffd6c4" stroke="#c0392b" stroke-width="2"/>
+                        <text x="450" y="324" text-anchor="middle" fill="#922b21" font-size="7" font-weight="bold">Clitoris</text>
+                        <text x="450" y="270" text-anchor="middle" fill="#c0392b" font-size="10" font-weight="bold">ZONE 2</text>
+                        <text x="488" y="320" text-anchor="start" fill="#922b21" font-size="7">~20mm</text>
+
+                        <!-- Urethral Meatus -->
+                        <ellipse cx="450" cy="400" rx="12" ry="8" fill="#fff8e7" stroke="#bf8040" stroke-width="2"/>
+                        <text x="450" y="388" text-anchor="middle" fill="#8b6914" font-size="8" font-weight="bold">Urethral</text>
+                        <text x="450" y="418" text-anchor="middle" fill="#8b6914" font-size="7">Meatus</text>
+
+                        <!-- Vaginal Introitus -->
+                        <ellipse cx="450" cy="470" rx="30" ry="45" fill="#f5f0e8" stroke="#a67c52" stroke-width="2"/>
+                        <text x="450" y="460" text-anchor="middle" fill="#6b4423" font-size="10" font-weight="bold">Vaginal</text>
+                        <text x="450" y="475" text-anchor="middle" fill="#6b4423" font-size="10" font-weight="bold">Introitus</text>
+
+                        <!-- Bartholin's Glands -->
+                        <ellipse cx="425" cy="505" rx="8" ry="6" fill="#e8dcc8" stroke="#8b7355" stroke-width="1.5"/>
+                        <text x="408" y="508" text-anchor="end" fill="#6b5344" font-size="7" font-weight="bold">BG</text>
+                        <ellipse cx="475" cy="505" rx="8" ry="6" fill="#e8dcc8" stroke="#8b7355" stroke-width="1.5"/>
+                        <text x="492" y="508" text-anchor="start" fill="#6b5344" font-size="7" font-weight="bold">BG</text>
+
+                        <!-- Labia Majora -->
+                        <path d="M 350 320 Q 320 420 330 520 Q 340 600 360 660" fill="none" stroke="#d4a574" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
+                        <text x="310" y="470" text-anchor="middle" fill="#a67c52" font-size="9" font-weight="bold">LM</text>
+                        <path d="M 550 320 Q 580 420 570 520 Q 560 600 540 660" fill="none" stroke="#d4a574" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
+                        <text x="590" y="470" text-anchor="middle" fill="#a67c52" font-size="9" font-weight="bold">LM</text>
+
+                        <!-- Labia Minora -->
+                        <path d="M 380 330 Q 360 430 370 530 Q 380 610 390 660" fill="none" stroke="#c9a887" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+                        <text x="355" y="480" text-anchor="middle" fill="#8b6f47" font-size="8" font-weight="bold">Lm</text>
+                        <path d="M 520 330 Q 540 430 530 530 Q 520 610 510 660" fill="none" stroke="#c9a887" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+                        <text x="545" y="480" text-anchor="middle" fill="#8b6f47" font-size="8" font-weight="bold">Lm</text>
+
+                        <!-- Perineum -->
+                        <ellipse cx="450" cy="650" rx="30" ry="18" fill="#f0e6d8" stroke="#8b7355" stroke-width="2"/>
+                        <text x="450" y="655" text-anchor="middle" fill="#6b5344" font-size="9" font-weight="bold">Perineum</text>
+
+                        <!-- Zone 1 labels -->
+                        <text x="265" y="490" text-anchor="middle" fill="#2980b9" font-weight="bold" font-size="10">Zone 1</text>
+                        <text x="265" y="502" text-anchor="middle" fill="#2980b9" font-size="8">(Left A-Leg)</text>
+                        <text x="635" y="490" text-anchor="middle" fill="#2980b9" font-weight="bold" font-size="10">Zone 1</text>
+                        <text x="635" y="502" text-anchor="middle" fill="#2980b9" font-size="8">(Right A-Leg)</text>
+
+                        <!-- Open Channel label -->
+                        <rect x="415" y="560" width="70" height="18" rx="3" fill="white" stroke="#27ae60" stroke-width="1" opacity="0.9"/>
+                        <text x="450" y="573" text-anchor="middle" fill="#27ae60" font-weight="bold" font-size="9">OPEN CHANNEL</text>
+
+                        <!-- L/R markers -->
+                        <circle cx="240" cy="460" r="12" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+                        <text x="240" y="465" text-anchor="middle" fill="white" font-size="11" font-weight="bold">L</text>
+                        <circle cx="660" cy="460" r="12" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+                        <text x="660" y="465" text-anchor="middle" fill="white" font-size="11" font-weight="bold">R</text>
+                    </svg>
+                </div>
+
+            <!-- ============================================== -->
+            <!-- SIDE VIEW -->
+            <!-- ============================================== -->
+            <div class="diagram-container">
+                <h4>Side View (Cross-Section)</h4>
+                <div class="view-container-doc">
+                    <svg width="900" height="500" viewBox="0 0 900 500">
+                        <defs>
+                            <linearGradient id="sideZone1Grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#3498db;stop-opacity:0.4"/>
+                                <stop offset="100%" style="stop-color:#2980b9;stop-opacity:0.6"/>
+                            </linearGradient>
+                            <linearGradient id="sideZone2Grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#e74c3c;stop-opacity:0.4"/>
+                                <stop offset="100%" style="stop-color:#c0392b;stop-opacity:0.6"/>
+                            </linearGradient>
+                        </defs>
+
+                        <text x="450" y="30" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">
+                            SIDE VIEW (CROSS-SECTION)
+                        </text>
+                        <text x="450" y="48" text-anchor="middle" font-size="9" fill="#7f8c8d" font-style="italic">
+                            Showing cup depth and zone separation - Scale: 4px = 1mm
+                        </text>
+
+                        <!-- Cup outer profile -->
+                        <path d="M 200 100
+                                 Q 200 80 250 70
+                                 Q 350 55 450 50
+                                 Q 550 55 650 70
+                                 Q 700 80 700 100
+                                 L 700 350
+                                 Q 700 380 650 390
+                                 Q 550 405 450 410
+                                 Q 350 405 250 390
+                                 Q 200 380 200 350
+                                 Z"
+                              fill="#f8f9fa" stroke="#34495e" stroke-width="3"/>
+
+                        <!-- Zone 2 (Clitoral Cylinder) - Top section -->
+                        <path d="M 350 100
+                                 Q 350 70 400 65
+                                 Q 450 60 500 65
+                                 Q 550 70 550 100
+                                 L 550 160
+                                 Q 550 180 500 185
+                                 Q 450 190 400 185
+                                 Q 350 180 350 160
+                                 Z"
+                              fill="url(#sideZone2Grad)" stroke="#c0392b" stroke-width="2.5"/>
+                        <text x="450" y="130" text-anchor="middle" fill="#c0392b" font-size="11" font-weight="bold">ZONE 2</text>
+                        <text x="450" y="145" text-anchor="middle" fill="#922b21" font-size="9">Clitoral Cylinder</text>
+
+                        <!-- A-Crossbar (Diaphragm) -->
+                        <line x1="250" y1="180" x2="350" y2="180" stroke="#34495e" stroke-width="4" stroke-dasharray="8,4"/>
+                        <line x1="550" y1="180" x2="650" y2="180" stroke="#34495e" stroke-width="4" stroke-dasharray="8,4"/>
+                        <text x="300" y="200" text-anchor="middle" fill="#34495e" font-size="9" font-weight="bold">A-Crossbar</text>
+                        <text x="600" y="200" text-anchor="middle" fill="#34495e" font-size="9" font-weight="bold">A-Crossbar</text>
+
+                        <!-- Zone 1 (A-Legs) - Left side -->
+                        <path d="M 200 100
+                                 L 200 350
+                                 Q 200 370 250 375
+                                 Q 300 380 350 375
+                                 L 350 180
+                                 L 350 100
+                                 Q 300 95 250 100
+                                 Q 200 105 200 100
+                                 Z"
+                              fill="url(#sideZone1Grad)" stroke="#2980b9" stroke-width="2.5"/>
+                        <text x="275" y="250" text-anchor="middle" fill="#2980b9" font-size="11" font-weight="bold">ZONE 1</text>
+                        <text x="275" y="265" text-anchor="middle" fill="#2980b9" font-size="9">(Left A-Leg)</text>
+
+                        <!-- Zone 1 (A-Legs) - Right side -->
+                        <path d="M 700 100
+                                 L 700 350
+                                 Q 700 370 650 375
+                                 Q 600 380 550 375
+                                 L 550 180
+                                 L 550 100
+                                 Q 600 95 650 100
+                                 Q 700 105 700 100
+                                 Z"
+                              fill="url(#sideZone1Grad)" stroke="#2980b9" stroke-width="2.5"/>
+                        <text x="625" y="250" text-anchor="middle" fill="#2980b9" font-size="11" font-weight="bold">ZONE 1</text>
+                        <text x="625" y="265" text-anchor="middle" fill="#2980b9" font-size="9">(Right A-Leg)</text>
+
+                        <!-- Open Channel (Center) -->
+                        <rect x="350" y="180" width="200" height="220" fill="#f0fff4" stroke="#27ae60" stroke-width="2" stroke-dasharray="6,4" rx="5"/>
+                        <text x="450" y="290" text-anchor="middle" fill="#27ae60" font-size="11" font-weight="bold">OPEN CHANNEL</text>
+                        <text x="450" y="305" text-anchor="middle" fill="#27ae60" font-size="9">(Vaginal Access)</text>
+
+                        <!-- Anatomical structures in open channel -->
+                        <ellipse cx="450" cy="230" rx="15" ry="10" fill="#fff8e7" stroke="#bf8040" stroke-width="1.5"/>
+                        <text x="450" y="234" text-anchor="middle" fill="#8b6914" font-size="7">Urethra</text>
+
+                        <ellipse cx="450" cy="340" rx="35" ry="40" fill="#f5f0e8" stroke="#a67c52" stroke-width="1.5"/>
+                        <text x="450" y="345" text-anchor="middle" fill="#6b4423" font-size="9" font-weight="bold">Vaginal</text>
+
+                        <!-- Dimension annotations -->
+                        <line x1="180" y1="100" x2="180" y2="350" stroke="#7f8c8d" stroke-width="1"/>
+                        <line x1="175" y1="100" x2="185" y2="100" stroke="#7f8c8d" stroke-width="1"/>
+                        <line x1="175" y1="350" x2="185" y2="350" stroke="#7f8c8d" stroke-width="1"/>
+                        <text x="170" y="230" text-anchor="end" fill="#7f8c8d" font-size="9" font-weight="bold">~62mm</text>
+                        <text x="170" y="245" text-anchor="end" fill="#7f8c8d" font-size="8">(depth)</text>
+
+                        <line x1="200" y1="420" x2="700" y2="420" stroke="#7f8c8d" stroke-width="1"/>
+                        <line x1="200" y1="415" x2="200" y2="425" stroke="#7f8c8d" stroke-width="1"/>
+                        <line x1="700" y1="415" x2="700" y2="425" stroke="#7f8c8d" stroke-width="1"/>
+                        <text x="450" y="440" text-anchor="middle" fill="#7f8c8d" font-size="9" font-weight="bold">~125mm (total width)</text>
+
+                        <!-- Vacuum flow arrows -->
+                        <path d="M 275 320 L 275 280" stroke="#2980b9" stroke-width="2" marker-end="url(#arrowBlue)"/>
+                        <text x="275" y="340" text-anchor="middle" fill="#2980b9" font-size="8">Vacuum</text>
+                        <path d="M 625 320 L 625 280" stroke="#2980b9" stroke-width="2" marker-end="url(#arrowBlue)"/>
+                        <text x="625" y="340" text-anchor="middle" fill="#2980b9" font-size="8">Vacuum</text>
+                        <path d="M 450 150 L 450 110" stroke="#c0392b" stroke-width="2" marker-end="url(#arrowRed)"/>
+                        <text x="450" y="165" text-anchor="middle" fill="#c0392b" font-size="8">Air Pulse</text>
+
+                        <!-- Arrow markers -->
+                        <defs>
+                            <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                                <path d="M0,0 L0,6 L9,3 z" fill="#2980b9"/>
+                            </marker>
+                            <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                                <path d="M0,0 L0,6 L9,3 z" fill="#c0392b"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+            </div>
+
+            <h3>Dual-Chamber Architecture</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Zone</th>
+                        <th>Name</th>
+                        <th>Function</th>
+                        <th>Vacuum Type</th>
+                        <th>Valve Control</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Zone 1</strong></td>
+                        <td>Outer A-Seal Chamber (A-legs)</td>
+                        <td>Attachment, engorgement, labia stimulation</td>
+                        <td>Constant/slow variation</td>
+                        <td>SOL1/SOL2</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Zone 2</strong></td>
+                        <td>Clitoral Cylinder (A-apex)</td>
+                        <td>Targeted clitoral air-pulse stimulation</td>
+                        <td>Rapid pulsing (5-13 Hz) OR sustained</td>
+                        <td>SOL4/SOL5</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Zone 1: Outer A-Seal Chamber (A-Legs)</h4>
+            <ul class="feature-list">
+                <li>Two A-legs create peripheral seal around vulva (labia majora/minora)</li>
+                <li>Maintains sustained vacuum (30-50 mmHg continuous) for blood engorgement</li>
+                <li>Causes active tissue engorgement → increased sensitivity and clitoral erection</li>
+                <li>Anti-detachment system monitors this zone only</li>
+                <li>80mm total coverage area</li>
+            </ul>
+
+            <h4>Zone 2: Clitoral Cylinder (A-Apex)</h4>
+            <ul class="feature-list">
+                <li>Small 15mm cylinder positioned at A-apex triangle, over clitoral glans</li>
+                <li>Separated from outer chambers by A-crossbar (internal diaphragm)</li>
+                <li>Independent vacuum supply enables two operating modes:</li>
+                <li style="margin-left: 30px;"><strong>Sustained vacuum mode:</strong> Continuous negative pressure for clitoral engorgement</li>
+                <li style="margin-left: 30px;"><strong>Air-pulse mode:</strong> Rapid pressure oscillation (5-13 Hz) for stimulation</li>
+                <li>Replicates "air pulse" sensation (like Womanizer/Satisfyer) at industrial scale</li>
+            </ul>
+
+            <div class="success-box">
+                <h4>🔑 CRITICAL DIFFERENTIATOR: Active Engorgement Capability</h4>
+                <p><strong>Commercial air-pulse toys (Womanizer, Satisfyer, LELO) only provide oscillating pressure waves for stimulation—they CANNOT create sustained vacuum for tissue engorgement.</strong> They rely on natural arousal to engorge the clitoris before/during use.</p>
+                <p>The A-Contour dual-chamber system separates these functions:</p>
+                <ul>
+                    <li><strong>Outer A-seal (A-legs):</strong> Sustained vacuum for vulva/labia engorgement</li>
+                    <li><strong>Clitoral cylinder (A-apex):</strong> Sustained vacuum for clitoral engorgement OR oscillating air-pulse for stimulation</li>
+                </ul>
+                <p><strong>This allows the A-Contour to actively induce clitoral erection/engorgement, rather than waiting for natural arousal to occur.</strong></p>
+            </div>
+
+            <h4>Active Engorgement Benefits:</h4>
+            <ul class="feature-list">
+                <li><strong>Faster arousal:</strong> Engorge the clitoris BEFORE beginning air-pulse stimulation</li>
+                <li><strong>Maintained engorgement:</strong> Sustained outer vacuum keeps tissue engorged throughout session</li>
+                <li><strong>Faster orgasm:</strong> Optimal clitoral erection from the start reduces time to climax</li>
+                <li><strong>Enhanced sensitivity:</strong> Engorged tissue has ~8,000 nerve endings more exposed</li>
+                <li><strong>Consistent response:</strong> Does not rely on the user's natural arousal state</li>
+                <li><strong>Dual-mode flexibility:</strong> Can switch between engorgement and stimulation dynamically</li>
+            </ul>
+
+            <h3>Open-Channel Design Benefits</h3>
+            <p>The A-shape creates an <strong>open channel</strong> by sealing around the periphery of the vulva while leaving the urethra and vaginal opening completely exposed between the two A-legs. See the detailed <strong>Side View (Cross-Section)</strong> diagram above for visual representation.</p>
+
+            <h4>Open-Channel Advantages:</h4>
+            <ul class="feature-list">
+                <li><strong>Hygiene:</strong> Fluids (urine, vaginal lubrication, ejaculate) drain away from vacuum system</li>
+                <li><strong>Squirting-Compatible:</strong> Female ejaculation doesn't contaminate vacuum lines</li>
+                <li><strong>Urethral Access:</strong> Enables simultaneous urethral sounding while vacuum active</li>
+                <li><strong>Vaginal Access:</strong> Allows insertable toys during vacuum therapy</li>
+                <li><strong>Easy Cleanup:</strong> Vacuum hoses remain dry; only cup exterior needs cleaning</li>
+            </ul>
+
+            <div class="diagram-container">
+                <h4>A-Contour Cup 3D Render</h4>
+                <img src="apps-main/docs/images/a-contour-cup-render.png" alt="A-Contour Cup 3D Render" style="max-width: 600px;">
+                <p><em>3D rendering showing the anatomical A-shape design with dual chambers</em></p>
+            </div>
+        </section>
+
+        <!-- SAFETY FEATURES -->
+        <section id="safety">
+            <h2>Safety Features</h2>
+
+            <div class="warning-box">
+                <h3>⚠️ Medical-Grade Safety Systems</h3>
+                <p>The V-Contour system implements multiple redundant safety layers designed to meet medical device standards (IEC 60601-1 considerations). Safety is the highest priority in all system operations.</p>
+            </div>
+
+            <h3>1. Anti-Detachment Monitoring System</h3>
+            <p>The most critical safety feature prevents cup detachment during use, especially during arousal and orgasm when involuntary body movements occur.</p>
+
+            <div class="spec-card">
+                <h4>How It Works</h4>
+                <ul class="feature-list">
+                    <li><strong>Monitoring Rate:</strong> 100 Hz (10ms intervals)</li>
+                    <li><strong>Sensor:</strong> AVL pressure sensor (outer chamber only)</li>
+                    <li><strong>Detection:</strong> Pressure drop indicates seal breaking</li>
+                    <li><strong>Response:</strong> Immediately increases vacuum via SOL1 to re-establish seal</li>
+                </ul>
+
+                <h4>Response Modes</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mode</th>
+                            <th>Response Time</th>
+                            <th>Used During</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Standard</td>
+                            <td>100ms</td>
+                            <td>Initial phases (arousal build-up)</td>
+                        </tr>
+                        <tr>
+                            <td>Enhanced</td>
+                            <td>25ms</td>
+                            <td>Climax phase (critical timing)</td>
+                        </tr>
+                        <tr>
+                            <td>Gentle</td>
+                            <td>150ms</td>
+                            <td>Recovery periods</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p><strong>During climax phase, the system responds in 25ms - fast enough to maintain seal through involuntary body movements.</strong></p>
+            </div>
+
+            <h3>2. Pressure Limits & Monitoring</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Outer Chamber (A-legs)</th>
+                        <th>Clitoral Cylinder (A-apex)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Operating Range</strong></td>
+                        <td>30-60 mmHg</td>
+                        <td>20-75 mmHg</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Warning Threshold</strong></td>
+                        <td>65 mmHg</td>
+                        <td>70 mmHg</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Maximum Safe Limit</strong></td>
+                        <td>75 mmHg (hard-coded)</td>
+                        <td>80 mmHg (hard-coded)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Monitoring Rate</strong></td>
+                        <td>50 Hz</td>
+                        <td>100 Hz</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="highlight-box">
+                <h4>Pressure Safety Actions</h4>
+                <ul class="feature-list">
+                    <li><strong>Warning Level:</strong> Visual/audio alert, pattern intensity reduced</li>
+                    <li><strong>Maximum Level:</strong> Automatic vent valve opening (SOL2 or SOL5)</li>
+                    <li><strong>Sensor Timeout:</strong> Emergency stop if no valid readings for 2 seconds</li>
+                    <li><strong>Overpressure Protection:</strong> Independent for each chamber</li>
+                </ul>
+            </div>
+
+            <h3>3. Emergency Stop System</h3>
+            <div class="spec-grid">
+                <div class="spec-card">
+                    <h4>Hardware Emergency Stop</h4>
+                    <ul>
+                        <li>Physical button on GPIO 21</li>
+                        <li>Interrupt-driven (immediate response)</li>
+                        <li>Stops pump, opens all vent valves</li>
+                        <li>Releases all vacuum pressure</li>
+                        <li>Cannot be overridden by software</li>
+                    </ul>
+                </div>
+
+                <div class="spec-card">
+                    <h4>Software Emergency Stop</h4>
+                    <ul>
+                        <li>ESC key on keyboard</li>
+                        <li>Large touch button on GUI</li>
+                        <li>Automatic triggers on critical errors</li>
+                        <li>Sensor failures</li>
+                        <li>Communication timeouts</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>4. Sensor Error Detection</h3>
+            <ul class="feature-list">
+                <li><strong>Range Validation:</strong> Readings outside 0-100 mmHg trigger error</li>
+                <li><strong>Timeout Detection:</strong> No valid reading for 2 seconds = emergency stop</li>
+                <li><strong>Noise Filtering:</strong> Moving average filter removes electrical noise</li>
+                <li><strong>Calibration Checks:</strong> Automatic zero-point calibration on startup</li>
+                <li><strong>Redundancy:</strong> Multiple sensors provide cross-validation</li>
+            </ul>
+
+            <h3>5. Fail-Safe Design Principles</h3>
+            <div class="success-box">
+                <h4>✓ System Fails to Safe State</h4>
+                <ul class="feature-list">
+                    <li><strong>Power Loss:</strong> All valves close, pump stops (normally-closed valves)</li>
+                    <li><strong>Software Crash:</strong> Watchdog timer triggers emergency stop</li>
+                    <li><strong>Sensor Failure:</strong> System assumes worst-case and vents all pressure</li>
+                    <li><strong>Communication Loss:</strong> Hardware timeout circuits activate safety shutdown</li>
+                </ul>
+            </div>
+
+            <h3>6. Safety Monitoring Threads</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Thread</th>
+                        <th>Rate</th>
+                        <th>Function</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Data Acquisition</td>
+                        <td>50 Hz</td>
+                        <td>Sensor sampling, basic safety checks</td>
+                    </tr>
+                    <tr>
+                        <td>Anti-Detachment</td>
+                        <td>100 Hz</td>
+                        <td>Seal integrity monitoring, vacuum correction</td>
+                    </tr>
+                    <tr>
+                        <td>Safety Manager</td>
+                        <td>10 Hz</td>
+                        <td>Pressure limits, emergency stop coordination</td>
+                    </tr>
+                    <tr>
+                        <td>GUI Update</td>
+                        <td>30 FPS</td>
+                        <td>Display updates, user alerts</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- SOFTWARE ARCHITECTURE -->
+        <section id="software">
+            <h2>Software Architecture</h2>
+
+            <h3>Technology Stack</h3>
+            <div class="spec-grid">
+                <div class="spec-card">
+                    <h4>Core Technologies</h4>
+                    <ul>
+                        <li><strong>Language:</strong> C++17</li>
+                        <li><strong>Framework:</strong> Qt 5 (Core, Widgets, Charts)</li>
+                        <li><strong>Build System:</strong> CMake 3.16+</li>
+                        <li><strong>Platform:</strong> Raspberry Pi OS (32-bit)</li>
+                    </ul>
+                </div>
+
+                <div class="spec-card">
+                    <h4>Hardware Libraries</h4>
+                    <ul>
+                        <li><strong>GPIO Control:</strong> libgpiod v2.2.1 (modern, future-proof)</li>
+                        <li><strong>SPI Communication:</strong> Linux /dev/spidev interface</li>
+                        <li><strong>Threading:</strong> Qt threading framework + pthread</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>System Architecture Overview</h3>
+            <div class="diagram-container">
+                <h4>Initialization Flow</h4>
+                <pre style="text-align: left; background: white; color: #2c3e50; font-family: monospace; font-size: 0.85em;">
+main()
+  └─> QApplication (High DPI, touch support)
+  └─> ModernMedicalStyle (medical device UI theme)
+  └─> VacuumController::initialize()
+        └─> HardwareManager     (GPIO, SPI, sensors, actuators)
+        └─> SafetyManager       (pressure limits, emergency stop)
+        └─> PatternEngine       (stimulation patterns)
+        └─> AntiDetachmentMonitor (seal integrity)
+        └─> ThreadManager       (real-time threads)
+        └─> CalibrationManager  (sensor calibration)
+  └─> MainWindow (50-inch touch GUI)
+  └─> startMonitoringThreads()
+                </pre>
+            </div>
+
+            <h3>Subsystem Responsibilities</h3>
+
+            <h4>HardwareManager (src/hardware/)</h4>
+            <ul class="feature-list">
+                <li><strong>MCP3008.cpp:</strong> SPI communication with ADC, sensor calibration</li>
+                <li><strong>SensorInterface.cpp:</strong> Pressure readings with noise filtering</li>
+                <li><strong>ActuatorControl.cpp:</strong> Pump PWM, valve control via libgpiod v2.x</li>
+                <li><strong>ClitoralOscillator.cpp:</strong> High-speed air-pulse generation (5-13 Hz)</li>
+            </ul>
+
+            <h4>SafetyManager (src/safety/)</h4>
+            <ul class="feature-list">
+                <li>10Hz monitoring loop for pressure limits</li>
+                <li>Emergency stop coordination across all subsystems</li>
+                <li>Sensor timeout detection (2-second threshold)</li>
+                <li>Automatic recovery from transient errors</li>
+            </ul>
+
+            <h4>PatternEngine (src/patterns/)</h4>
+            <ul class="feature-list">
+                <li>Pattern step execution with precise timing</li>
+                <li>Speed multipliers for pattern customization</li>
+                <li>Anti-detachment mode switching per phase</li>
+                <li>Infinite loop support for continuous patterns</li>
+                <li>Dual-chamber coordination (outer + clitoral)</li>
+            </ul>
+
+            <h4>AntiDetachmentMonitor (src/safety/)</h4>
+            <ul class="feature-list">
+                <li>100Hz pressure monitoring (10ms intervals)</li>
+                <li>Automatic vacuum correction via SOL1</li>
+                <li>Phase-specific sensitivity adjustment</li>
+                <li>Configurable response delay (25-150ms)</li>
+            </ul>
+
+            <h4>ThreadManager (src/threading/)</h4>
+            <ul class="feature-list">
+                <li><strong>DataAcquisitionThread:</strong> 50Hz sensor sampling</li>
+                <li><strong>GuiUpdateThread:</strong> 30 FPS display updates</li>
+                <li><strong>SafetyThread:</strong> Integrated safety checks</li>
+                <li>Thread-safe communication via Qt signals/slots</li>
+            </ul>
+
+            <h3>GUI Components (src/gui/)</h3>
+            <p>Designed for 50-inch medical touch displays with large, accessible controls:</p>
+
+            <div class="spec-grid">
+                <div class="spec-card">
+                    <h4>Main Interface</h4>
+                    <ul>
+                        <li><strong>MainWindow:</strong> Stacked panel navigation</li>
+                        <li><strong>PressureMonitor:</strong> Real-time dual-gauge display</li>
+                        <li><strong>PatternSelector:</strong> One-touch pattern start</li>
+                        <li><strong>SafetyPanel:</strong> Emergency controls</li>
+                    </ul>
+                </div>
+
+                <div class="spec-card">
+                    <h4>Advanced Features</h4>
+                    <ul>
+                        <li><strong>SettingsPanel:</strong> System configuration</li>
+                        <li><strong>CustomPatternEditor:</strong> User pattern creation</li>
+                        <li><strong>SystemDiagnosticsPanel:</strong> Hardware testing</li>
+                        <li><strong>CalibrationInterface:</strong> Sensor calibration</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Keyboard Shortcuts</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Key</th>
+                        <th>Function</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>ESC</strong></td><td>Emergency Stop</td></tr>
+                    <tr><td><strong>F1</strong></td><td>Main Control Panel</td></tr>
+                    <tr><td><strong>F2</strong></td><td>Safety Panel</td></tr>
+                    <tr><td><strong>F3</strong></td><td>Settings</td></tr>
+                    <tr><td><strong>F4</strong></td><td>Diagnostics</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- TECHNICAL SPECIFICATIONS -->
+        <section id="specifications">
+            <h2>Technical Specifications</h2>
+
+            <h3>System Specifications</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th>Specification</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Platform</strong></td><td>Raspberry Pi 4 (8GB RAM recommended)</td></tr>
+                    <tr><td><strong>Display</strong></td><td>50-inch HDMI touch display (1920x1080 minimum)</td></tr>
+                    <tr><td><strong>Framework</strong></td><td>Qt 5, C++17</td></tr>
+                    <tr><td><strong>GPIO Library</strong></td><td>libgpiod v2.2.1 (modern, kernel-based)</td></tr>
+                    <tr><td><strong>ADC</strong></td><td>MCP3008 (10-bit, 8-channel, SPI)</td></tr>
+                    <tr><td><strong>Pressure Sensors</strong></td><td>3× MPX5010DP (0-75 mmHg differential)</td></tr>
+                    <tr><td><strong>Pump Control</strong></td><td>PWM via L293D motor driver (5000 Hz)</td></tr>
+                    <tr><td><strong>Solenoid Valves</strong></td><td>5× 12V DC normally-closed</td></tr>
+                    <tr><td><strong>Vacuum Chambers</strong></td><td>2 (Outer A-seal + Clitoral cylinder)</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Performance Specifications</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Sensor Sampling Rate</strong></td><td>50 Hz (AVL/Tank), 100 Hz (Clitoral)</td></tr>
+                    <tr><td><strong>Safety Monitoring Rate</strong></td><td>100 Hz (anti-detachment), 10 Hz (general)</td></tr>
+                    <tr><td><strong>GUI Update Rate</strong></td><td>30 FPS</td></tr>
+                    <tr><td><strong>PWM Frequency</strong></td><td>5000 Hz (pump speed control)</td></tr>
+                    <tr><td><strong>SPI Speed</strong></td><td>1 MHz</td></tr>
+                    <tr><td><strong>Air-Pulse Frequency Range</strong></td><td>5-13 Hz (optimal for orgasm induction)</td></tr>
+                    <tr><td><strong>Anti-Detachment Response</strong></td><td>25ms (enhanced mode during climax)</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Pressure Specifications by Chamber</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Outer A-Seal Chamber</th>
+                        <th>Clitoral Cylinder</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Purpose</strong></td><td>Attachment + engorgement</td><td>Air-pulse stimulation</td></tr>
+                    <tr><td><strong>Operating Range</strong></td><td>30-60 mmHg</td><td>20-75 mmHg</td></tr>
+                    <tr><td><strong>Attachment Threshold</strong></td><td>35 mmHg minimum</td><td>N/A</td></tr>
+                    <tr><td><strong>Warning Threshold</strong></td><td>65 mmHg</td><td>70 mmHg</td></tr>
+                    <tr><td><strong>Maximum Safe Limit</strong></td><td>75 mmHg (hard-coded)</td><td>80 mmHg (hard-coded)</td></tr>
+                    <tr><td><strong>Typical Operating</strong></td><td>40-55 mmHg (constant)</td><td>30-70 mmHg (pulsing)</td></tr>
+                </tbody>
+            </table>
+
+            <h3>GPIO Pin Assignments</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>GPIO Pin</th>
+                        <th>Function</th>
+                        <th>Component</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>GPIO 17</strong></td><td>SOL1 - Outer chamber vacuum valve</td><td>Outer A-seal</td></tr>
+                    <tr><td><strong>GPIO 27</strong></td><td>SOL2 - Outer chamber vent valve</td><td>Outer A-seal</td></tr>
+                    <tr><td><strong>GPIO 22</strong></td><td>SOL3 - Tank vent valve</td><td>Safety</td></tr>
+                    <tr><td><strong>GPIO 23</strong></td><td>SOL4 - Clitoral cylinder vacuum valve</td><td>Clitoral cylinder</td></tr>
+                    <tr><td><strong>GPIO 24</strong></td><td>SOL5 - Clitoral cylinder vent valve</td><td>Clitoral cylinder</td></tr>
+                    <tr><td><strong>GPIO 25</strong></td><td>Pump enable</td><td>L293D motor driver</td></tr>
+                    <tr><td><strong>GPIO 18</strong></td><td>Pump PWM</td><td>L293D motor driver</td></tr>
+                    <tr><td><strong>GPIO 21</strong></td><td>Emergency stop button</td><td>Safety</td></tr>
+                    <tr><td><strong>GPIO 11</strong></td><td>SPI SCK</td><td>MCP3008 ADC</td></tr>
+                    <tr><td><strong>GPIO 10</strong></td><td>SPI MOSI</td><td>MCP3008 ADC</td></tr>
+                    <tr><td><strong>GPIO 9</strong></td><td>SPI MISO</td><td>MCP3008 ADC</td></tr>
+                    <tr><td><strong>GPIO 8</strong></td><td>SPI CS</td><td>MCP3008 ADC</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Complete Parts List</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th>Quantity</th>
+                        <th>Specifications</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Raspberry Pi 4</td><td>1</td><td>8GB RAM recommended</td></tr>
+                    <tr><td>50-inch HDMI Touch Display</td><td>1</td><td>1920x1080 minimum</td></tr>
+                    <tr><td>MCP3008 ADC</td><td>1</td><td>8-channel, 10-bit, SPI</td></tr>
+                    <tr><td>MPX5010DP Pressure Sensor</td><td>3</td><td>0-10 kPa (0-75 mmHg)</td></tr>
+                    <tr><td>12V DC Solenoid Valve</td><td>5</td><td>Normally closed, fast response</td></tr>
+                    <tr><td>DC Vacuum Pump</td><td>1</td><td>12V, diaphragm type</td></tr>
+                    <tr><td>L293D Motor Driver IC</td><td>1</td><td>Dual H-bridge, 600mA per channel</td></tr>
+                    <tr><td>Vacuum Storage Tank</td><td>1</td><td>Reservoir for stable vacuum supply</td></tr>
+                    <tr><td>Silicone Tubing</td><td>As needed</td><td>3mm ID / 5mm OD</td></tr>
+                    <tr><td>T-Connectors</td><td>As needed</td><td>For vacuum line routing</td></tr>
+                    <tr><td>Emergency Stop Button</td><td>1</td><td>Normally open, momentary</td></tr>
+                    <tr><td>5V Power Supply</td><td>1</td><td>USB-C, 3A minimum (for Pi)</td></tr>
+                    <tr><td>12V Power Supply</td><td>1</td><td>3A minimum (for pump/valves)</td></tr>
+                    <tr><td>A-Contour Vacuum Cup</td><td>1</td><td>Custom dual-chamber design</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- STIMULATION PATTERNS -->
+        <section id="patterns">
+            <h2>Stimulation Patterns</h2>
+
+            <div class="highlight-box">
+                <h3>Physiologically-Optimized Pattern Design</h3>
+                <p>All patterns are designed based on observed physiological arousal response data, optimized for inducing and maintaining sexual arousal through to orgasm.</p>
+            </div>
+
+            <h3>Available Pattern Modes</h3>
+
+            <h4>1. Automated Orgasm Pattern (Flagship Feature)</h4>
+            <p>A complete 7-phase automated arousal-to-climax-to-recovery sequence (~6.5 minutes):</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Phase</th>
+                        <th>Time Range</th>
+                        <th>Intensity</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Phase 0: Engorgement</strong></td>
+                        <td>0:00-0:30</td>
+                        <td>Sustained vacuum (no pulse)</td>
+                        <td>Actively induce clitoral erection before stimulation</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phase 1: Initial Sensitivity</strong></td>
+                        <td>0:30-1:30</td>
+                        <td>35% → 55%</td>
+                        <td>Gentle air-pulse introduction on engorged tissue</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phase 2: Adaptation Period</strong></td>
+                        <td>1:30-3:00</td>
+                        <td>60% ± 8%</td>
+                        <td>Body adaptation, muscle tension decreases</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phase 3: Arousal Build-up</strong></td>
+                        <td>3:00-4:30</td>
+                        <td>60% → 85%</td>
+                        <td>Match building arousal, 8-10 Hz frequency</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phase 4: Pre-Climax Tension</strong></td>
+                        <td>4:30-5:15</td>
+                        <td>85% ± 8%</td>
+                        <td>Full body tension, 10-12 Hz optimal frequency</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phase 5: Climax/Orgasm</strong></td>
+                        <td>5:15-5:45</td>
+                        <td>90% (maximum)</td>
+                        <td>Maintain stimulation through contractions, 11-13 Hz</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phase 6: Recovery</strong></td>
+                        <td>5:45-6:30</td>
+                        <td>30% → 0%</td>
+                        <td>Gentle cooldown, prevent overstimulation</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="highlight-box">
+                <h4>Orgasm Detection</h4>
+                <p>The system automatically detects orgasm onset via:</p>
+                <ul class="feature-list">
+                    <li><strong>Contraction Band Power:</strong> 0.8-1.2 Hz rhythmic pressure oscillations</li>
+                    <li><strong>Pressure Variance:</strong> Arousal-related fluctuations in vacuum readings</li>
+                    <li><strong>Heart Rate Data:</strong> Optional HR sensor for acceleration detection</li>
+                </ul>
+            </div>
+
+            <h4>2. Triple Orgasm Pattern</h4>
+            <p>Three complete 7-phase orgasm cycles with recovery periods (~20 minutes):</p>
+            <ul class="feature-list">
+                <li><strong>Cycle 1:</strong> Full 7-phase progression starting at 35% (~6.5 minutes)</li>
+                <li><strong>Recovery 1:</strong> 45 seconds at 30% (reduced sensitivity after first orgasm)</li>
+                <li><strong>Cycle 2:</strong> Starts at 40% (faster progression, ~5.5 minutes)</li>
+                <li><strong>Recovery 2:</strong> 60 seconds at 25%</li>
+                <li><strong>Cycle 3:</strong> Starts at 45%, extended climax phase (75s vs 30s standard)</li>
+                <li><strong>Final Cooldown:</strong> 90 seconds at 20%</li>
+            </ul>
+
+            <h4>3. Continuous Marathon Mode</h4>
+            <p>Infinite 4-minute orgasm loops for extended sessions:</p>
+            <ul class="feature-list">
+                <li>Faster ramp-up (already aroused from previous cycles)</li>
+                <li>Higher base pressures (40% start, 65% adaptation)</li>
+                <li>Extended 90-second climax phase at 88%</li>
+                <li>Brief 30-second recovery at 45% (maintains arousal)</li>
+                <li>Loops forever until manually stopped</li>
+            </ul>
+
+            <h4>4. Air-Pulse Patterns</h4>
+            <p>High-frequency clitoral stimulation (replicates commercial air-pulse toys):</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Pattern</th>
+                        <th>Frequency</th>
+                        <th>Outer Chamber</th>
+                        <th>Clitoral Cylinder</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Gentle Pulse</td><td>4 Hz</td><td>45% constant</td><td>40% pulsing</td></tr>
+                    <tr><td>Medium Pulse</td><td>8 Hz</td><td>50% constant</td><td>50-70% pulsing</td></tr>
+                    <tr><td>Intense Pulse</td><td>12 Hz</td><td>50% constant</td><td>70% pulsing</td></tr>
+                    <tr><td>Variable Pulse</td><td>5-13 Hz sweep</td><td>45-55% wave</td><td>40-75% pulsing</td></tr>
+                </tbody>
+            </table>
+
+            <h4>5. Basic Patterns</h4>
+            <div class="spec-grid">
+                <div class="spec-card">
+                    <h4>Pulse Patterns</h4>
+                    <ul>
+                        <li><strong>Slow Pulse:</strong> 2s on/2s off at 60%</li>
+                        <li><strong>Medium Pulse:</strong> 1s on/1s off at 70%</li>
+                        <li><strong>Fast Pulse:</strong> 0.5s on/0.5s off at 75%</li>
+                    </ul>
+                </div>
+
+                <div class="spec-card">
+                    <h4>Wave Patterns</h4>
+                    <ul>
+                        <li><strong>Slow Wave:</strong> 10s gradual waves (30-70%)</li>
+                        <li><strong>Medium Wave:</strong> 5s waves (40-80%)</li>
+                        <li><strong>Fast Wave:</strong> 2s waves (50-85%)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h4>6. Edging Mode</h4>
+            <p>Builds to the brink of orgasm, then backs off (for prolonged arousal):</p>
+            <ul class="feature-list">
+                <li>Outer chamber maintains constant 50% engorgement</li>
+                <li>Clitoral cylinder builds intensity: 40% → 75%</li>
+                <li>Detects impending orgasm via pressure/timing analysis</li>
+                <li>Pauses clitoral stimulation before climax</li>
+                <li>Recovery period allows arousal to subside</li>
+                <li>Repeats build cycle (3 cycles default)</li>
+            </ul>
+
+            <h4>7. Milking Pattern</h4>
+            <p>Stroke-like suction waves (7 strokes):</p>
+            <ul class="feature-list">
+                <li>Rhythmic tugging pattern for blood flow stimulation</li>
+                <li>Mimics manual "milking" technique</li>
+                <li>Gradual pressure increase per stroke</li>
+                <li>Optimized for tissue engorgement</li>
+            </ul>
+
+            <h3>Pattern Customization</h3>
+            <div class="highlight-box">
+                <h4>Real-time Adjustments</h4>
+                <ul class="feature-list">
+                    <li><strong>Intensity Slider:</strong> Adjust overall pattern intensity (0-100%)</li>
+                    <li><strong>Speed Control:</strong> Modify pattern timing (0.1x to 3.0x speed)</li>
+                    <li><strong>Pressure Offset:</strong> Add/subtract pressure from base pattern (-20% to +20%)</li>
+                    <li><strong>Emergency Stop:</strong> Immediately halt pattern execution</li>
+                </ul>
+            </div>
+
+            <h3>Custom Pattern Editor</h3>
+            <p>Users can create and save custom patterns:</p>
+            <ul class="feature-list">
+                <li>Step-by-step pattern definition (pressure, duration, action)</li>
+                <li>Visual drag-and-drop pattern designer</li>
+                <li>Pattern validation ensures safety before saving</li>
+                <li>Save/load custom patterns for future use</li>
+                <li>Share patterns via JSON export/import</li>
+            </ul>
+        </section>
+
+        <!-- VACUUM SYSTEM DIAGRAM -->
+        <section>
+            <h2>Valve Operation Logic</h2>
+
+            <h3>Valve States by Operation Mode</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Operation</th>
+                        <th>SOL1</th>
+                        <th>SOL2</th>
+                        <th>SOL3</th>
+                        <th>SOL4</th>
+                        <th>SOL5</th>
+                        <th>Pump</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Idle (Safe State)</strong></td>
+                        <td>Closed</td>
+                        <td>Open</td>
+                        <td>Open</td>
+                        <td>Closed</td>
+                        <td>Open</td>
+                        <td>Off</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Build Tank Vacuum</strong></td>
+                        <td>Closed</td>
+                        <td>Closed</td>
+                        <td>Closed</td>
+                        <td>Closed</td>
+                        <td>Closed</td>
+                        <td>On</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Apply Outer Vacuum</strong></td>
+                        <td>Open</td>
+                        <td>Closed</td>
+                        <td>Closed</td>
+                        <td>Closed</td>
+                        <td>Closed</td>
+                        <td>On</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Apply Clitoral Vacuum</strong></td>
+                        <td>Open</td>
+                        <td>Closed</td>
+                        <td>Closed</td>
+                        <td>Open</td>
+                        <td>Closed</td>
+                        <td>On</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Air-Pulse (Suction Phase)</strong></td>
+                        <td>Open</td>
+                        <td>Closed</td>
+                        <td>Closed</td>
+                        <td>Open</td>
+                        <td>Closed</td>
+                        <td>On</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Air-Pulse (Vent Phase)</strong></td>
+                        <td>Open</td>
+                        <td>Closed</td>
+                        <td>Closed</td>
+                        <td>Closed</td>
+                        <td>Open</td>
+                        <td>On</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Emergency Stop</strong></td>
+                        <td>Closed</td>
+                        <td>Open</td>
+                        <td>Open</td>
+                        <td>Closed</td>
+                        <td>Open</td>
+                        <td>Off</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- FOOTER -->
+        <footer>
+            <h3>V-Contour Dual-Therapy System</h3>
+            <p><strong>Status:</strong> <span class="badge badge-success">Production Ready</span></p>
+            <p>Advanced Automated Vacuum Stimulation Device</p>
+            <p style="margin-top: 20px; color: var(--text-light);">
+                Built with Qt 5 on Raspberry Pi 4 | Modern libgpiod v2.2.1 GPIO Control<br>
+                Medical-Grade Safety Systems | Dual-Chamber Architecture<br>
+                © 2024 V-Contour Systems | All Rights Reserved
+            </p>
+            <p style="margin-top: 20px; font-size: 0.9em; color: var(--text-light);">
+                <strong>⚠️ Medical Device Notice:</strong> This system is designed for personal use only.
+                Consult with a healthcare professional before use if you have any medical conditions.
+                Follow all safety guidelines and operating instructions.
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
+
