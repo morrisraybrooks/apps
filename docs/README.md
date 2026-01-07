@@ -1,8 +1,21 @@
-# A-Contour Dual-Therapy System
+# V-Contour Dual-Therapy System
 
 A sophisticated **Automated Vacuum Stimulation Device** - an electromechanical system that applies controlled vacuum pressure to the vulva/clitoris for inducing sexual arousal and orgasm. Designed as a "hands-free" device that automatically brings a user to climax through precisely controlled vacuum patterns.
 
-For a complete and detailed explanation of the system, please see the [detailed explanation](explanation.md).
+---
+
+## 📖 [**View Full Documentation →**](https://morrisraybrooks.github.io/apps/v-contour-documentation.html)
+
+The complete system documentation is available as an interactive webpage with:
+- Detailed hardware specifications and diagrams
+- Complete 7-phase Automated Orgasm Pattern breakdowns
+- Safety systems and pressure monitoring
+- Software architecture and GPIO configuration
+- Pattern customization and creation guides
+
+---
+
+## Quick Overview
 
 Built with Qt on Raspberry Pi 4 with a 50-inch HDMI display and modern **libgpiod v2.2.1** for reliable, future-proof GPIO control.
 
