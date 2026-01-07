@@ -2,7 +2,7 @@
 
 ## Overview
 
-The automated orgasm patterns are designed to replicate natural physiological arousal and climax cycles based on observed response patterns. These patterns provide complete 5-minute arousal-to-climax sequences with intelligent anti-detachment integration and multi-cycle support.
+The automated orgasm patterns are designed to replicate natural physiological arousal and climax cycles based on observed response patterns. These patterns provide complete ~6.5-minute arousal-to-climax-to-recovery sequences with intelligent anti-detachment integration and multi-cycle support.
 
 ### 🔑 Key Advantage: Active Engorgement
 
@@ -18,10 +18,10 @@ Unlike commercial air-pulse toys (Womanizer, Satisfyer) that only provide oscill
 ## Pattern Types
 
 ### Single Automated Orgasm
-- **Duration**: 5 minutes
-- **Cycles**: 1 complete arousal-to-climax sequence
+- **Duration**: ~6.5 minutes (including recovery)
+- **Cycles**: 1 complete arousal-to-climax-to-recovery sequence
 - **Activation**: Single button press
-- **Description**: Complete physiological progression through 4 distinct phases
+- **Description**: Complete physiological progression through 7 distinct phases (0-6)
 
 ### Triple Automated Orgasm
 - **Duration**: ~18 minutes total
@@ -91,17 +91,94 @@ Unlike commercial air-pulse toys (Womanizer, Satisfyer) that only provide oscill
 
 **Rationale**: Matches the observed period of increasing effectiveness, natural lubrication, and physical responses (squirming, head movement). Research indicates 8-13 Hz is the optimal "orgasm frequency band."
 
-### Phase 4: Pre-climax Tension (4.5-5.5 minutes)
-**Purpose**: Maintain precise positioning and consistent stimulation
+### Phase 4: Pre-Climax Tension (4.5-5.5 minutes)
+**Purpose**: Build tension immediately preceding orgasm
 
 - **Outer Chamber**: Maintains 55 mmHg sustained (maximum engorgement)
 - **Clitoral Cylinder**: Air-pulse at 10-12 Hz (optimal orgasm frequency), 85% intensity
 - **Pressure**: 85% sustained level
-- **Duration**: 60 seconds (75 seconds for final cycle in multi-cycle patterns)
+- **Duration**: 45 seconds
 - **Variation**: ±8% rapid oscillation (1.5-second periods)
 - **Anti-detachment**: Maximum sensitivity mode (25ms response time)
 
-**Rationale**: Addresses the critical point where full body tension returns and precise positioning becomes essential for reaching climax. The 10-12 Hz frequency matches the 8-13 Hz involuntary muscle contraction frequency observed during orgasm.
+**Rationale**: Addresses the critical point where full body tension returns and precise positioning becomes essential for reaching climax.
+
+**What Happens Physiologically**:
+- Full body muscle tension increases (particularly pelvic floor, thighs, abdomen)
+- Breathing becomes shallow and rapid
+- Heart rate peaks at 150-180 BPM
+- Clitoral glans reaches maximum engorgement and sensitivity
+- Subject may experience "point of no return" sensation
+
+### Phase 5: Climax/Orgasm (5.5-6 minutes)
+**Purpose**: Maintain optimal stimulation through orgasmic contractions
+
+- **Outer Chamber**: Maintains 55-60 mmHg sustained (compensates for involuntary movement)
+- **Clitoral Cylinder**: Air-pulse at 11-13 Hz (peak orgasm frequency), 90% intensity
+- **Pressure**: 90% maximum sustained level
+- **Duration**: 30-45 seconds (action: `climax_maintain`)
+- **Variation**: ±5% minimal variation (consistency is critical)
+- **Anti-detachment**: MAXIMUM sensitivity (25ms response, aggressive correction)
+
+**Rationale**: The 11-13 Hz frequency matches the 0.8-1.2 Hz involuntary pelvic floor contraction frequency observed during orgasm (8-13 contractions over ~10 seconds). Maintaining consistent stimulation through these contractions prolongs and intensifies the orgasm.
+
+**What Happens Physiologically**:
+- Rhythmic contractions of pelvic floor muscles (0.8-1.2 Hz)
+- Uterine contractions (internal)
+- Potential female ejaculation (squirting) - drains through open channel
+- Involuntary vocalizations and body movements
+- Intense pleasure sensation radiating from clitoris
+- Heart rate may spike to 180+ BPM briefly
+
+**Orgasm Detection (Automatic)**:
+The system uses the `OrgasmControlAlgorithm` to detect orgasm onset via:
+- Pressure variance analysis (arousal fluctuations)
+- Contraction band power detection (0.8-1.2 Hz rhythmic pressure oscillations)
+- Rate of pressure change
+- Optional heart rate sensor data (HR acceleration, HRV changes)
+
+When contractions are detected AND arousal level exceeds threshold, the system:
+1. Emits `orgasmDetected` signal with count and timestamp
+2. Applies `THROUGH_ORGASM_BOOST` to maintain intensity
+3. Records event for fluid tracking (if enabled)
+
+### Phase 6: Post-Climax Recovery (6-7 minutes)
+**Purpose**: Gentle cooldown to prevent overstimulation of hypersensitive tissue
+
+- **Outer Chamber**: Reduces to 30-35 mmHg (maintains light seal without pressure)
+- **Clitoral Cylinder**: Reduces to 4-5 Hz, 25-30% intensity OR stops oscillation entirely
+- **Pressure**: 30% gentle level
+- **Duration**: 45-60 seconds (action: `post_climax_recovery`)
+- **Variation**: ±3% minimal fluctuation
+- **Anti-detachment**: Gentle mode (150ms response time)
+
+**Rationale**: Post-orgasm, the clitoris becomes hypersensitive and continued high-intensity stimulation causes discomfort rather than pleasure. This phase provides a gentle wind-down while maintaining the vacuum seal.
+
+**What Happens Physiologically**:
+- Pelvic floor muscles relax
+- Heart rate begins returning to baseline
+- Clitoral hypersensitivity peaks then gradually subsides
+- Blood begins draining from engorged tissue
+- Subject experiences post-orgasmic relaxation and warmth
+
+**Recovery Modes**:
+- **Single Cycle**: 45 seconds at 30% → pattern complete
+- **Multi-Cycle**: 45-60 seconds at 25-30% → transition to next cycle with adapted sensitivity
+- **Continuous Marathon**: 30 seconds minimal recovery → immediate restart
+
+## Complete Phase Timeline Summary
+
+| Phase | Time Range | Duration | Outer Chamber | Clitoral Cylinder | Intensity |
+|-------|------------|----------|---------------|-------------------|-----------|
+| **0: Engorgement** | 0:00-0:30 | 30s | 45 mmHg sustained | 40 mmHg sustained (no pulse) | N/A |
+| **1: Sensitivity** | 0:30-1:30 | 60s | 45 mmHg sustained | 5-6 Hz air-pulse | 35%→55% |
+| **2: Adaptation** | 1:30-3:00 | 90s | 45-50 mmHg sustained | 6-8 Hz air-pulse | 60% |
+| **3: Build-up** | 3:00-4:30 | 90s | 50 mmHg sustained | 8-10 Hz air-pulse | 60%→85% |
+| **4: Pre-Climax** | 4:30-5:15 | 45s | 55 mmHg sustained | 10-12 Hz air-pulse | 85% |
+| **5: Climax** | 5:15-5:45 | 30s | 55-60 mmHg sustained | 11-13 Hz air-pulse | 90% |
+| **6: Recovery** | 5:45-6:30 | 45s | 30 mmHg sustained | 4-5 Hz or OFF | 30%→0% |
+
+**Total Single Cycle Duration**: ~6.5 minutes (includes recovery)
 
 ## Multi-Cycle Adaptations
 
@@ -194,8 +271,8 @@ double initialIntensity = 35.0 + (cycle * 10.0);
 ### Single Cycle Activation
 1. Select "Single Automated Orgasm" pattern
 2. Single button press to start
-3. System automatically progresses through all 4 phases
-4. 5-minute complete cycle with automatic conclusion
+3. System automatically progresses through all 7 phases (0-6)
+4. ~6.5-minute complete cycle with automatic recovery and conclusion
 
 ### Multi-Cycle Activation
 1. Select "Triple Automated Orgasm" pattern

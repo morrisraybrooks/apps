@@ -211,19 +211,23 @@ This project implements comprehensive industry-standard practices for embedded s
 The vacuum controller now includes advanced **Automated Orgasm Patterns** that provide complete physiological arousal-to-climax cycles:
 
 ### **Available Automated Patterns**
-1. **Single Automated Orgasm** (5 minutes)
-   - Complete arousal-to-climax cycle with physiological progression
+1. **Single Automated Orgasm** (~6.5 minutes)
+   - Complete 7-phase arousal-to-climax-to-recovery cycle
+   - Phases: Engorgement → Sensitivity → Adaptation → Build-up → Pre-Climax → Climax → Recovery
    - Intelligent intensity ramping based on natural response patterns
-   - Automatic climax detection and post-orgasm recovery phase
+   - Automatic climax detection via contraction band power (0.8-1.2 Hz)
+   - Post-orgasm recovery phase with gentle cooldown
 
-2. **Triple Automated Orgasm** (18 minutes)
-   - Three complete orgasm cycles with recovery periods
-   - Progressive intensity increase across cycles
+2. **Triple Automated Orgasm** (~20 minutes)
+   - Three complete 7-phase orgasm cycles with recovery periods
+   - Progressive intensity increase across cycles (35% → 40% → 45% start)
+   - Extended final climax phase (75s vs 30s standard)
    - Optimized timing for multiple climax experiences
 
 3. **Continuous Orgasm Marathon** (Infinite)
    - **Endless cycling pattern** for extended sessions
    - Optimized 4-minute cycles with enhanced anti-detachment monitoring
+   - Minimal 30-second recovery between cycles
    - Runs continuously until manually stopped
    - Perfect for extended pleasure sessions
 

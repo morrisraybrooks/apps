@@ -368,9 +368,9 @@ The A-shape creates an **open channel** by sealing around the periphery of the v
 │                          (Clitoral Cylinder)                    │
 │                                   │                             │
 │                                   ▼                             │
-│                               ╭─────╮                          │
-│                               │~~~~~│ ← Clitoral Gland (15mm)  │
-│                               │~~~~~│                          │
+│                               ╭─────╮                           │
+│                               │~~~~~│ ← Clitoral Gland (15mm)   │
+│                               │~~~~~│                           │
 │                      ═════════╧═════╧═══════ ← A-CROSSBAR       │
 │    A-Cup Outer Wall │                       │   (Diaphragm)     │
 │            │        │                       │                   │
