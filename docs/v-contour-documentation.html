@@ -2034,11 +2034,21 @@ main()
 
             <div class="highlight-box">
                 <h4>Orgasm Detection</h4>
-                <p>The system automatically detects orgasm onset via:</p>
+                <p>The system automatically detects orgasm onset by monitoring pressure changes in the sealed chambers. <strong>Note:</strong> The vaginal canal remains open (open-channel design), so detection relies on clitoral and vulvar tissue responses only.</p>
+
+                <h5>Detection Mechanism</h5>
+                <p>During orgasm, rhythmic contractions occur in the erectile tissue under the sealed chambers:</p>
                 <ul class="feature-list">
-                    <li><strong>Contraction Band Power:</strong> 0.8-1.2 Hz rhythmic pressure oscillations</li>
-                    <li><strong>Pressure Variance:</strong> Arousal-related fluctuations in vacuum readings</li>
-                    <li><strong>Heart Rate Data:</strong> Optional HR sensor for acceleration detection</li>
+                    <li><strong>Clitoral Tissue Pulsing (Inner Cylinder):</strong> The clitoral glans, body, and internal crura contract rhythmically during orgasm. This tissue is sealed inside the clitoral cylinder, so its pulsing directly causes pressure oscillations detected by the inner chamber sensor.</li>
+                    <li><strong>Vestibular Bulb Contractions (Outer Chamber):</strong> The vestibular bulbs are erectile tissue located beneath the labia minora. During orgasm, they contract rhythmically. Since the labia are sealed by the outer A-seal, these contractions cause detectable pressure changes in the outer chamber.</li>
+                    <li><strong>Labial Engorgement Pulses:</strong> Blood vessels in the labia pulse with orgasm rhythms, contributing to outer chamber pressure fluctuations.</li>
+                </ul>
+
+                <h5>Detection Signals</h5>
+                <ul class="feature-list">
+                    <li><strong>Contraction Band Power:</strong> 0.8-1.2 Hz rhythmic pressure oscillations (the signature frequency of orgasmic contractions)</li>
+                    <li><strong>Pressure Variance:</strong> Increased fluctuation amplitude in vacuum readings during arousal peak</li>
+                    <li><strong>Heart Rate Data:</strong> Optional HR sensor for heart rate acceleration detection</li>
                 </ul>
             </div>
 
