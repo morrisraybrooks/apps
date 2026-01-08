@@ -208,7 +208,9 @@ void TENSController::start()
 
     // Enable hardware
     m_enabled = true;
-    // TODO: Set GPIO_TENS_ENABLE HIGH via HardwareManager
+    if (m_hardware) {
+        m_hardware->setTENSOutputEnable(true);
+    }
 
     // Start timers
     m_phaseTimer.start();
@@ -247,7 +249,10 @@ void TENSController::stop()
 
     // Disable hardware
     m_enabled = false;
-    // TODO: Set GPIO_TENS_ENABLE LOW via HardwareManager
+    if (m_hardware) {
+        m_hardware->setTENSOutputEnable(false);
+        m_hardware->setTENSPWMDutyCycle(0);
+    }
 
     locker.unlock();
     emit stimulationStopped();
@@ -272,7 +277,11 @@ void TENSController::emergencyStop()
     // Set to idle immediately
     setOutputPhase(OutputPhase::IDLE);
 
-    // TODO: Set GPIO_TENS_ENABLE LOW immediately via HardwareManager
+    // Immediately disable TENS hardware
+    if (m_hardware) {
+        m_hardware->setTENSOutputEnable(false);
+        m_hardware->setTENSPWMDutyCycle(0);
+    }
 
     locker.unlock();
     emit stimulationStopped();
@@ -498,22 +507,29 @@ void TENSController::setOutputPhase(OutputPhase phase)
 
     m_outputPhase = phase;
 
-    // Set GPIO states based on phase
-    // TODO: Implement via HardwareManager GPIO control
-    switch (phase) {
-        case OutputPhase::POSITIVE:
-            // GPIO_TENS_PHASE = HIGH, GPIO_TENS_ENABLE = HIGH
-            qDebug() << "TENS: Positive phase";
-            break;
-        case OutputPhase::NEGATIVE:
-            // GPIO_TENS_PHASE = LOW, GPIO_TENS_ENABLE = HIGH
-            qDebug() << "TENS: Negative phase";
-            break;
-        case OutputPhase::INTER_PULSE:
-        case OutputPhase::IDLE:
-        default:
-            // GPIO_TENS_ENABLE = LOW (or both low)
-            break;
+    // Set GPIO states based on phase via HardwareManager
+    if (m_hardware) {
+        switch (phase) {
+            case OutputPhase::POSITIVE:
+                // GPIO_TENS_PHASE = HIGH (positive polarity), enable active
+                m_hardware->setTENSPhasePolarity(true);
+                m_hardware->setTENSOutputEnable(true);
+                break;
+            case OutputPhase::NEGATIVE:
+                // GPIO_TENS_PHASE = LOW (negative polarity), enable active
+                m_hardware->setTENSPhasePolarity(false);
+                m_hardware->setTENSOutputEnable(true);
+                break;
+            case OutputPhase::INTER_PULSE:
+                // Brief pause between pulses - disable output but keep phase
+                m_hardware->setTENSOutputEnable(false);
+                break;
+            case OutputPhase::IDLE:
+            default:
+                // Fully disabled
+                m_hardware->setTENSOutputEnable(false);
+                break;
+        }
     }
 
     emit phaseChanged(phase);
@@ -521,19 +537,21 @@ void TENSController::setOutputPhase(OutputPhase phase)
 
 void TENSController::updatePWMAmplitude()
 {
-    // Convert amplitude percentage to PWM duty cycle
-    // TODO: Implement via HardwareManager PWM control
-    int pwmValue = static_cast<int>(m_amplitudePercent * 10.24);  // 0-1024 range
-    Q_UNUSED(pwmValue);
-    // m_hardware->setTENSPWM(pwmValue);
+    // Convert amplitude percentage to PWM duty cycle (0-1024 range)
+    int pwmValue = static_cast<int>(m_amplitudePercent * 10.24);
+
+    if (m_hardware) {
+        m_hardware->setTENSPWMDutyCycle(pwmValue);
+    }
 }
 
 void TENSController::checkFaultStatus()
 {
-    // TODO: Read GPIO_TENS_FAULT input via HardwareManager
-    // For now, assume no fault
-    // bool faultPin = m_hardware->readTENSFault();
+    // Read GPIO_TENS_FAULT input via HardwareManager
     bool faultPin = false;
+    if (m_hardware) {
+        faultPin = m_hardware->readTENSFaultPin();
+    }
 
     if (faultPin && !m_faultDetected) {
         m_faultDetected = true;

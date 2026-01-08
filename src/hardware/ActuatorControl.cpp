@@ -9,6 +9,7 @@
 // Constants
 const double ActuatorControl::MAX_PUMP_SPEED = 100.0;
 const double ActuatorControl::MIN_PUMP_SPEED = 5.0;
+const int ActuatorControl::PWM_RANGE;
 
 ActuatorControl::ActuatorControl(QObject *parent)
     : QObject(parent)
@@ -442,4 +443,75 @@ void ActuatorControl::safeShutdownAll()
     }
 
     qDebug() << "All actuators set to safe state (both chambers vented)";
+}
+
+// Generic GPIO control for TENS and other accessories
+
+void ActuatorControl::setGPIO(int pin, bool state)
+{
+    QMutexLocker locker(&m_stateMutex);
+
+    if (m_emergencyStop && state) {
+        qWarning() << "Cannot set GPIO" << pin << "HIGH: Emergency stop active";
+        return;
+    }
+
+    setGPIOOutput(pin, state);
+}
+
+bool ActuatorControl::readGPIO(int pin) const
+{
+    QMutexLocker locker(&m_stateMutex);
+
+    if (!m_outputRequest) {
+        qWarning() << "GPIO not initialized for reading pin" << pin;
+        return false;
+    }
+
+    try {
+        // Note: For input pins, we'd need a separate line request configured as input
+        // This implementation reads the current output state or input value
+        gpiod::line::value value = m_outputRequest->get_value(pin);
+        return value == gpiod::line::value::ACTIVE;
+
+    } catch (const std::exception& e) {
+        qWarning() << "Failed to read GPIO pin" << pin << ":" << e.what();
+        return false;
+    }
+}
+
+void ActuatorControl::setPWM(int pin, int dutyCycle)
+{
+    QMutexLocker locker(&m_stateMutex);
+
+    if (m_emergencyStop) {
+        qWarning() << "Cannot set PWM on GPIO" << pin << ": Emergency stop active";
+        return;
+    }
+
+    // Clamp duty cycle to valid range
+    dutyCycle = std::clamp(dutyCycle, 0, PWM_RANGE);
+
+    // For now, implement as simple on/off based on threshold
+    // For proper PWM, this would need hardware PWM support or software PWM timer
+    // Hardware PWM is available on GPIO 12 and 13 (PWM0) and GPIO 18 and 19 (PWM1)
+
+    if (pin == 12 || pin == 13 || pin == 18 || pin == 19) {
+        // These are hardware PWM capable pins
+        // For production, use /sys/class/pwm or pigpio for hardware PWM
+        // For now, we use a simplified approach
+
+        // Store the PWM value for software PWM implementation
+        // A proper implementation would write to /sys/class/pwm/pwmchipX/pwmY/
+
+        qDebug() << "Setting PWM on GPIO" << pin << "to duty cycle:" << dutyCycle << "/" << PWM_RANGE;
+
+        // Simple threshold approach for demonstration
+        bool state = (dutyCycle > PWM_RANGE / 2);
+        setGPIOOutput(pin, state);
+    } else {
+        qWarning() << "GPIO" << pin << "does not support hardware PWM";
+        // Fall back to simple on/off
+        setGPIOOutput(pin, dutyCycle > 0);
+    }
 }

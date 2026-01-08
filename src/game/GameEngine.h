@@ -4,6 +4,7 @@
 #include "GameTypes.h"
 #include "GameDefinition.h"
 #include "../hardware/MotionSensor.h"
+#include "../hardware/CameraManager.h"
 #include <QObject>
 #include <QTimer>
 #include <QElapsedTimer>
@@ -86,6 +87,7 @@ public:
     void setAchievementSystem(AchievementSystem* achievements);
     void setProgressTracker(ProgressTracker* tracker);
     void setMotionSensor(MotionSensor* sensor);
+    void setCameraManager(CameraManager* cameraManager);
 
 Q_SIGNALS:
     // State signals
@@ -129,6 +131,13 @@ private Q_SLOTS:
     void onMotionWarning(const QString& message);
     void onStillnessChanged(bool isStill, double score);
 
+    // Camera-based motion slots
+    void onCameraMotionViolation(CameraMotionSensor::CameraRole source,
+                                 CameraMotionSensor::MotionLevel level, double intensity);
+    void onCameraStillnessChanged(bool isStill, double score);
+    void onOrgasmStateChanged(CameraManager::OrgasmState state, double confidence);
+    void onCameraOrgasmDetected(double intensity, qint64 durationMs);
+
 private:
     void setState(GameState newState);
     void evaluateObjectives();
@@ -149,6 +158,7 @@ private:
     FluidSensor* m_fluidSensor;
     TENSController* m_tensController;
     MotionSensor* m_motionSensor;
+    CameraManager* m_cameraManager;
 
     // Sub-systems
     ConsequenceEngine* m_consequenceEngine;
@@ -181,6 +191,11 @@ private:
     int m_motionWarnings;
     double m_averageStillness;
     bool m_stillnessRequired;
+
+    // Camera-based motion tracking
+    int m_cameraMotionViolations;
+    CameraManager::OrgasmState m_lastOrgasmState;
+    bool m_cameraOrgasmDetectionEnabled;
 
     // Configuration
     SubscriptionTier m_subscriptionTier;

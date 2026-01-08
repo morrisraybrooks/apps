@@ -279,11 +279,14 @@ void ClitoralOscillator::executePhase(Phase phase)
 {
     if (!m_hardware) return;
 
+    bool isSuctionPhase = false;
+
     switch (phase) {
         case Phase::SUCTION:
             // Open vacuum valve, close vent - build vacuum rapidly
             m_hardware->setSOL5(false);  // Close vent first (safety)
             m_hardware->setSOL4(true);   // Open vacuum
+            isSuctionPhase = true;
             break;
 
         case Phase::HOLD:
@@ -292,12 +295,14 @@ void ClitoralOscillator::executePhase(Phase phase)
             m_hardware->setSOL5(false);
             // Measure peak pressure for amplitude adjustment
             m_measuredPeakPressure = getCurrentPressure();
+            isSuctionPhase = true;  // Still in "suction" phase for TENS sync
             break;
 
         case Phase::VENT:
             // Close vacuum, open vent - release pressure rapidly
             m_hardware->setSOL4(false);  // Close vacuum first (safety)
             m_hardware->setSOL5(true);   // Open vent
+            isSuctionPhase = false;
             break;
 
         case Phase::TRANSITION:
@@ -306,16 +311,19 @@ void ClitoralOscillator::executePhase(Phase phase)
             m_hardware->setSOL5(false);
             // Measure trough pressure
             m_measuredTroughPressure = getCurrentPressure();
+            isSuctionPhase = false;  // Still in "vent" phase for TENS sync
             break;
 
         case Phase::IDLE:
             // Safety: vent and close
             m_hardware->setSOL4(false);
             m_hardware->setSOL5(true);
+            isSuctionPhase = false;
             break;
     }
 
     emit phaseChanged(phase);
+    emit vacuumPhaseChanged(isSuctionPhase);
 }
 
 void ClitoralOscillator::advancePhase()

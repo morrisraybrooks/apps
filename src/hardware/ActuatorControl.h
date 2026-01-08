@@ -70,6 +70,11 @@ public:
     void setPWMFrequency(int frequency);
     int getPWMFrequency() const { return m_pwmFrequency; }
 
+    // Generic GPIO control (for TENS and other accessories)
+    void setGPIO(int pin, bool state);
+    bool readGPIO(int pin) const;
+    void setPWM(int pin, int dutyCycle);  // 0-1024 range
+
 Q_SIGNALS:
     void actuatorError(const QString& actuator, const QString& error);
     void emergencyStopActivated();

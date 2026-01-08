@@ -6,6 +6,8 @@
 #include "FluidSensor.h"
 #include "MotionSensor.h"
 #include "ClitoralOscillator.h"
+#include "CameraManager.h"
+#include "ConsentManager.h"
 
 #include <QDebug>
 #include <QMutexLocker>
@@ -24,6 +26,9 @@ HardwareManager::HardwareManager(QObject *parent)
     , m_sol3State(false)
     , m_sol4State(false)
     , m_sol5State(false)
+    , m_tensEnableState(false)
+    , m_tensPhaseState(false)
+    , m_tensPWMValue(0)
     , m_simulationMode(false)
     , m_simulatedAVLPressure(0.0)
     , m_simulatedTankPressure(0.0)
@@ -139,6 +144,36 @@ bool HardwareManager::initialize()
         // Create and initialize clitoral oscillator (for air-pulse stimulation)
         m_clitoralOscillator = std::make_unique<ClitoralOscillator>(this, this);
         qDebug() << "Clitoral Oscillator initialized";
+
+        // Connect ClitoralOscillator vacuum phases to TENSController for synchronization
+        // This enables SYNC_SUCTION, SYNC_VENT, and ALTERNATING modes
+        if (m_tensController && m_clitoralOscillator) {
+            connect(m_clitoralOscillator.get(), &ClitoralOscillator::vacuumPhaseChanged,
+                    m_tensController.get(), &TENSController::onVacuumPhaseChanged);
+            qDebug() << "TENS/Vacuum synchronization connected";
+        }
+
+        // Create consent manager (must be before camera manager)
+        m_consentManager = std::make_unique<ConsentManager>(this);
+        qDebug() << "Consent Manager initialized";
+
+        // Create and initialize camera manager (for visual motion detection)
+        m_cameraManager = std::make_unique<CameraManager>(this);
+        if (m_consentManager->hasConsent(ConsentManager::ConsentType::CAMERA_BODY) ||
+            m_consentManager->hasConsent(ConsentManager::ConsentType::CAMERA_CUP)) {
+            if (!m_cameraManager->initialize()) {
+                qWarning() << "Camera Manager initialization failed - continuing without camera motion detection";
+            } else {
+                connect(m_cameraManager.get(), &CameraManager::cameraError,
+                        this, [this](CameraMotionSensor::CameraRole role, const QString& error) {
+                    QString roleStr = (role == CameraMotionSensor::CameraRole::BODY_CAMERA) ? "Body" : "Cup";
+                    emit hardwareError(QString("%1 camera error: %2").arg(roleStr, error));
+                });
+                qDebug() << "Camera Manager initialized";
+            }
+        } else {
+            qDebug() << "Camera Manager created but not initialized (no consent)";
+        }
 
         // Perform hardware validation
         if (!validateHardware()) {
@@ -677,4 +712,69 @@ bool HardwareManager::isTENSRunning() const
 bool HardwareManager::isTENSFault() const
 {
     return m_tensController && m_tensController->isFaultDetected();
+}
+
+// Low-level TENS GPIO Control Methods
+
+void HardwareManager::setTENSOutputEnable(bool enabled)
+{
+    QMutexLocker locker(&m_stateMutex);
+
+    if (m_emergencyStop && enabled) {
+        qWarning() << "Cannot enable TENS output: Emergency stop active";
+        return;
+    }
+
+    m_tensEnableState = enabled;
+
+    if (!m_simulationMode && m_actuatorControl) {
+        // Use ActuatorControl to set GPIO_TENS_ENABLE (GPIO 5)
+        m_actuatorControl->setGPIO(GPIO_TENS_ENABLE, enabled);
+    }
+
+    qDebug() << "TENS output enable:" << (enabled ? "ON" : "OFF");
+}
+
+void HardwareManager::setTENSPhasePolarity(bool positive)
+{
+    QMutexLocker locker(&m_stateMutex);
+
+    m_tensPhaseState = positive;
+
+    if (!m_simulationMode && m_actuatorControl) {
+        // Use ActuatorControl to set GPIO_TENS_PHASE (GPIO 6)
+        // HIGH = positive phase, LOW = negative phase
+        m_actuatorControl->setGPIO(GPIO_TENS_PHASE, positive);
+    }
+}
+
+void HardwareManager::setTENSPWMDutyCycle(int pwmValue)
+{
+    QMutexLocker locker(&m_stateMutex);
+
+    // Clamp to valid range (0-1024 for 10-bit PWM)
+    m_tensPWMValue = std::clamp(pwmValue, 0, 1024);
+
+    if (!m_simulationMode && m_actuatorControl) {
+        // Use ActuatorControl to set hardware PWM on GPIO_TENS_PWM (GPIO 12)
+        // GPIO 12 is hardware PWM1 channel on Raspberry Pi
+        m_actuatorControl->setPWM(GPIO_TENS_PWM, m_tensPWMValue);
+    }
+}
+
+bool HardwareManager::readTENSFaultPin() const
+{
+    QMutexLocker locker(&m_stateMutex);
+
+    if (m_simulationMode) {
+        // In simulation mode, return fault if simulated
+        return m_simulatedFailures.contains("TENS");
+    }
+
+    if (m_actuatorControl) {
+        // Read GPIO_TENS_FAULT (GPIO 16) - active low fault signal
+        return m_actuatorControl->readGPIO(GPIO_TENS_FAULT);
+    }
+
+    return false;  // No fault if no actuator control
 }

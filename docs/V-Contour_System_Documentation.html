@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V-Contour System Documentation</title>
+    <style>
+        :root {
+            --primary: #6B4D8A;
+            --secondary: #9B7BB8;
+            --accent: #E8D5F0;
+            --dark: #2D2D2D;
+            --light: #F8F6FA;
+            --danger: #D64545;
+            --warning: #E8A838;
+            --success: #4CAF50;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--light); color: var(--dark); line-height: 1.6; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        header { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 40px 20px; text-align: center; }
+        header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        header p { opacity: 0.9; font-size: 1.1rem; }
+        nav { background: var(--dark); padding: 15px; position: sticky; top: 0; z-index: 100; }
+        nav ul { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+        nav a { color: white; text-decoration: none; padding: 8px 16px; border-radius: 4px; transition: background 0.3s; }
+        nav a:hover { background: var(--primary); }
+        section { background: white; margin: 20px 0; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h2 { color: var(--primary); border-bottom: 3px solid var(--accent); padding-bottom: 10px; margin-bottom: 20px; }
+        h3 { color: var(--secondary); margin: 20px 0 10px; }
+        h4 { color: var(--dark); margin: 15px 0 8px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: var(--light); padding: 20px; border-radius: 8px; border-left: 4px solid var(--primary); }
+        .card h4 { margin-top: 0; color: var(--primary); }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.8rem; margin: 2px; }
+        .badge-premium { background: #FFD700; color: #333; }
+        .badge-basic { background: var(--secondary); color: white; }
+        .badge-safety { background: var(--danger); color: white; }
+        .badge-game { background: var(--success); color: white; }
+        code { background: #E8E8E8; padding: 2px 6px; border-radius: 4px; font-family: 'Consolas', monospace; }
+        pre { background: var(--dark); color: #F8F8F2; padding: 15px; border-radius: 8px; overflow-x: auto; margin: 10px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--accent); }
+        th { background: var(--primary); color: white; }
+        tr:hover { background: var(--accent); }
+        .warning { background: #FFF3CD; border-left: 4px solid var(--warning); padding: 15px; margin: 15px 0; border-radius: 4px; }
+        .danger { background: #F8D7DA; border-left: 4px solid var(--danger); padding: 15px; margin: 15px 0; border-radius: 4px; }
+        .info { background: #D1ECF1; border-left: 4px solid #17A2B8; padding: 15px; margin: 15px 0; border-radius: 4px; }
+        .diagram { background: #F5F5F5; padding: 20px; border-radius: 8px; font-family: monospace; white-space: pre; overflow-x: auto; }
+        ul, ol { margin-left: 25px; margin-bottom: 15px; }
+        li { margin: 8px 0; }
+        .toc { background: var(--accent); padding: 20px; border-radius: 8px; }
+        .toc ul { list-style: none; margin: 0; }
+        .toc li { margin: 5px 0; }
+        .toc a { color: var(--primary); text-decoration: none; }
+        .toc a:hover { text-decoration: underline; }
+        footer { text-align: center; padding: 30px; color: #666; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🌸 V-Contour System Documentation</h1>
+        <p>Comprehensive Technical Reference for the Automated Pleasure Device Control System</p>
+        <p><em>Last Updated: January 2026</em></p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#architecture">Architecture</a></li>
+            <li><a href="#hardware">Hardware</a></li>
+            <li><a href="#games">Games</a></li>
+            <li><a href="#control">Control Algorithms</a></li>
+            <li><a href="#patterns">Patterns</a></li>
+            <li><a href="#tens">TENS</a></li>
+            <li><a href="#safety">Safety</a></li>
+            <li><a href="#networking">Networking</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <!-- Table of Contents -->
+        <section class="toc">
+            <h2>📑 Table of Contents</h2>
+            <ul>
+                <li><a href="#overview">1. System Overview</a></li>
+                <li><a href="#architecture">2. Software Architecture</a></li>
+                <li><a href="#hardware">3. Hardware Components</a></li>
+                <li><a href="#games">4. Game System (Gamification)</a></li>
+                <li><a href="#control">5. Orgasm Control Algorithm</a></li>
+                <li><a href="#patterns">6. Stimulation Patterns</a></li>
+                <li><a href="#tens">7. TENS Electrical Stimulation</a></li>
+                <li><a href="#safety">8. Safety Systems</a></li>
+                <li><a href="#networking">9. Multi-User & Networking</a></li>
+                <li><a href="#licensing">10. Licensing & Subscriptions</a></li>
+                <li><a href="#gui">11. User Interface</a></li>
+            </ul>
+        </section>
+
+        <!-- Section 1: Overview -->
+        <section id="overview">
+            <h2>1. System Overview</h2>
+            <p>V-Contour is a sophisticated automated pleasure device control system that combines:</p>
+            <ul>
+                <li><strong>Vacuum-based stimulation</strong> using a dual-chamber design (outer V-seal + clitoral cylinder)</li>
+                <li><strong>TENS integration</strong> for electrical stimulation via electrodes in the clitoral cup</li>
+                <li><strong>Sensor-driven arousal detection</strong> using pressure, heart rate, and motion sensors</li>
+                <li><strong>Gamification system</strong> with objectives, achievements, and consequences</li>
+                <li><strong>Multi-user control</strong> for DOM/sub dynamics with consent management</li>
+                <li><strong>Camera-based motion detection</strong> for stillness games and orgasm detection</li>
+            </ul>
+
+            <h3>Key Features</h3>
+            <div class="grid">
+                <div class="card">
+                    <h4>🎮 Gamification</h4>
+                    <p>15+ game types including edging, denial, forced orgasm, milking, and stillness challenges with scoring, achievements, and progress tracking.</p>
+                </div>
+                <div class="card">
+                    <h4>🧠 Adaptive Control</h4>
+                    <p>Real-time arousal estimation using multi-sensor fusion (pressure variance, heart rate, contractions) with automatic intensity adjustment.</p>
+                </div>
+                <div class="card">
+                    <h4>⚡ TENS Integration</h4>
+                    <p>Premium electrode stimulation synchronized with vacuum oscillation for enhanced sensations or punishment consequences.</p>
+                </div>
+                <div class="card">
+                    <h4>📹 Camera Motion</h4>
+                    <p>Dual-camera system for body stillness monitoring and cup-area orgasm detection with privacy consent management.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Architecture -->
+        <section id="architecture">
+            <h2>2. Software Architecture</h2>
+            
+            <h3>Directory Structure</h3>
+            <pre>
+apps-main/src/
+├── main.cpp                 # Application entry point
+├── VacuumController.cpp/h   # Main controller facade
+├── admin/                   # Account & device management
+├── calibration/             # Sensor calibration
+├── control/                 # Orgasm control algorithms
+├── core/                    # Shared utilities
+├── error/                   # Crash handling
+├── game/                    # Game engine & gamification
+├── gui/                     # Qt-based user interface
+├── hardware/                # Hardware abstraction layer
+├── licensing/               # License management
+├── logging/                 # Data logging
+├── network/                 # Multi-user control
+├── patterns/                # Stimulation patterns
+├── performance/             # Memory & performance monitoring
+├── reporting/               # Data export
+├── safety/                  # Safety systems
+├── testing/                 # Hardware testing
+└── threading/               # Thread management
+            </pre>
+
+            <h3>Core Components Diagram</h3>
+            <div class="diagram">
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           VacuumController                               │
+│                        (Main Application Facade)                         │
+└─────────────────────┬───────────────────────────────────────────────────┘
+                      │
+    ┌─────────────────┼─────────────────┬────────────────────┐
+    ▼                 ▼                 ▼                    ▼
+┌─────────┐    ┌────────────┐    ┌───────────┐    ┌──────────────┐
+│ GameEngine│    │PatternEngine│   │OrgasmControl│  │SafetyManager │
+│           │    │             │   │ Algorithm  │  │              │
+└─────┬─────┘    └──────┬─────┘   └──────┬─────┘  └───────┬──────┘
+      │                 │                │                 │
+      ▼                 ▼                ▼                 ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         HardwareManager                                  │
+│   (SensorInterface, ActuatorControl, TENSController, CameraManager...)  │
+└─────────────────────────────────────────────────────────────────────────┘
+            </div>
+        </section>
+
+        <!-- Section 3: Hardware -->
+        <section id="hardware">
+            <h2>3. Hardware Components</h2>
+
+            <h3>Hardware Manager (<code>HardwareManager.h</code>)</h3>
+            <p>Central hardware abstraction layer providing unified access to all physical components.</p>
+
+            <h4>Sensor Systems</h4>
+            <table>
+                <tr><th>Component</th><th>Class</th><th>Description</th></tr>
+                <tr><td>Pressure Sensors</td><td><code>SensorInterface</code></td><td>3x MPX5010DP sensors via MCP3008 ADC for AVL, tank, and clitoral pressure</td></tr>
+                <tr><td>Fluid Sensor</td><td><code>FluidSensor</code></td><td>HX711 load cell for reservoir volume measurement (mL)</td></tr>
+                <tr><td>Motion Sensor</td><td><code>MotionSensor</code></td><td>MPU6050 IMU for stillness detection via I2C</td></tr>
+                <tr><td>Heart Rate</td><td><code>HeartRateSensor</code></td><td>BLE heart rate monitor integration for arousal correlation</td></tr>
+                <tr><td>Camera Motion</td><td><code>CameraMotionSensor</code></td><td>USB/IP camera for visual motion and orgasm detection</td></tr>
+            </table>
+
+            <h4>Actuator Systems</h4>
+            <table>
+                <tr><th>Component</th><th>Class</th><th>Description</th></tr>
+                <tr><td>Vacuum Pump</td><td><code>ActuatorControl</code></td><td>PWM-controlled pump via L293D driver (GPIO 18, 25)</td></tr>
+                <tr><td>Solenoid Valves</td><td><code>HardwareManager</code></td><td>5 solenoid valves for vacuum/vent control</td></tr>
+                <tr><td>Clitoral Oscillator</td><td><code>ClitoralOscillator</code></td><td>5-13 Hz air-pulse via SOL4/SOL5 rapid switching</td></tr>
+                <tr><td>TENS Unit</td><td><code>TENSController</code></td><td>Biphasic electrode stimulation (1-100 Hz, 50-500 μs)</td></tr>
+            </table>
+
+            <h4>GPIO Pin Assignments</h4>
+            <pre>
+// Solenoid Valves (Outer V-seal Chamber)
+GPIO 17: SOL1 - Outer chamber vacuum valve
+GPIO 27: SOL2 - Outer chamber vent valve
+GPIO 22: SOL3 - Tank vent valve
+
+// Solenoid Valves (Clitoral Cylinder)
+GPIO 23: SOL4 - Clitoral cylinder vacuum
+GPIO 24: SOL5 - Clitoral cylinder vent
+
+// Pump Control
+GPIO 25: Pump Enable (L293D)
+GPIO 18: Pump PWM (speed control)
+
+// TENS Electrodes
+GPIO 5:  TENS Enable (master)
+GPIO 6:  TENS Phase (polarity)
+GPIO 12: TENS PWM (amplitude)
+GPIO 16: TENS Fault input
+            </pre>
+
+            <h4>Camera Manager</h4>
+            <p>Manages dual-camera setup for motion detection and orgasm detection:</p>
+            <ul>
+                <li><strong>Body Camera:</strong> Wide-angle monitoring of overall body movement for stillness games</li>
+                <li><strong>Cup Camera:</strong> Close-up view for detecting orgasm-related physiological responses</li>
+                <li><strong>Consent Manager:</strong> Privacy controls with explicit opt-in consent for all recording</li>
+            </ul>
+        </section>
+
+        <!-- Section 4: Games -->
+        <section id="games">
+            <h2>4. Game System (Gamification)</h2>
+
+            <p>The V-Contour game system transforms stimulation sessions into structured challenges with objectives, scoring, consequences, and progression. Games are defined in JSON and executed by the GameEngine with real-time feedback.</p>
+
+            <h3>4.1 Game Engine Overview (<code>GameEngine.h</code>)</h3>
+            <p>The GameEngine manages the complete game lifecycle from loading through results processing.</p>
+
+            <h4>Game State Machine</h4>
+            <div class="diagram">
+┌──────────────────────────────────────────────────────────────────────────┐
+│                           GAME STATE MACHINE                              │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  IDLE ──► INITIALIZING ──► COUNTDOWN ──► RUNNING ──┬──► VICTORY          │
+│                                            │       ├──► FAILURE          │
+│                                            ▼       ├──► TIMEOUT          │
+│                                          PAUSED    └──► SAFEWORD         │
+│                                            │                              │
+│                                            └──────► RUNNING              │
+│                                                                          │
+│  All terminal states (VICTORY/FAILURE/TIMEOUT/SAFEWORD) ──► POST_GAME   │
+│  POST_GAME ──► IDLE                                                      │
+└──────────────────────────────────────────────────────────────────────────┘
+            </div>
+
+            <h4>Game Lifecycle Flow</h4>
+            <ol>
+                <li><strong>Load Game:</strong> <code>loadGame(gameId)</code> - Load game definition from JSON</li>
+                <li><strong>Initialize:</strong> Configure stimulation parameters, connect sensors</li>
+                <li><strong>Countdown:</strong> 3-2-1 countdown before stimulation begins</li>
+                <li><strong>Running:</strong> Active gameplay with real-time objective tracking</li>
+                <li><strong>Evaluation:</strong> Every 100ms: check objectives, fail conditions, update score</li>
+                <li><strong>End Game:</strong> Victory, failure, timeout, or safeword triggers end</li>
+                <li><strong>Consequences:</strong> Apply reward or punishment based on result</li>
+                <li><strong>Record:</strong> Save session to database, update career stats, check achievements</li>
+            </ol>
+
+            <h3>4.2 Game Types</h3>
+
+            <h4>Edging Games</h4>
+            <table>
+                <tr><th>Type</th><th>Objective</th><th>Win Condition</th><th>Fail Condition</th></tr>
+                <tr>
+                    <td><code>EDGE_COUNT</code></td>
+                    <td>Reach edge N times without orgasm</td>
+                    <td>Achieve target edge count</td>
+                    <td>Orgasm before reaching target</td>
+                </tr>
+                <tr>
+                    <td><code>EDGE_ENDURANCE</code></td>
+                    <td>Maintain near-edge arousal for duration</td>
+                    <td>Stay in edge zone (0.85-0.95) for time limit</td>
+                    <td>Arousal drops below threshold or orgasm</td>
+                </tr>
+            </table>
+
+            <h4>Denial Games</h4>
+            <table>
+                <tr><th>Type</th><th>Objective</th><th>Win Condition</th><th>Fail Condition</th></tr>
+                <tr>
+                    <td><code>DENIAL_MAINTENANCE</code></td>
+                    <td>Stay above X% arousal for Y minutes</td>
+                    <td>Maintain arousal above threshold for duration</td>
+                    <td>Arousal drops below threshold</td>
+                </tr>
+                <tr>
+                    <td><code>DENIAL_LIMIT</code></td>
+                    <td>Don't exceed arousal threshold</td>
+                    <td>Complete duration without exceeding limit</td>
+                    <td>Arousal exceeds threshold</td>
+                </tr>
+            </table>
+
+            <h4>Production Games</h4>
+            <table>
+                <tr><th>Type</th><th>Objective</th><th>Win Condition</th><th>Fail Condition</th></tr>
+                <tr>
+                    <td><code>FLUID_PRODUCTION</code></td>
+                    <td>Produce X mL of fluid in time limit</td>
+                    <td>Fluid sensor reaches target volume</td>
+                    <td>Time expires before reaching target</td>
+                </tr>
+                <tr>
+                    <td><code>FLUID_RATE</code></td>
+                    <td>Maintain flow rate above threshold</td>
+                    <td>Sustain rate for duration</td>
+                    <td>Rate drops below threshold</td>
+                </tr>
+            </table>
+
+            <h4>Endurance Games</h4>
+            <table>
+                <tr><th>Type</th><th>Objective</th><th>Win Condition</th><th>Fail Condition</th></tr>
+                <tr>
+                    <td><code>PATTERN_ENDURANCE</code></td>
+                    <td>Complete N pattern cycles</td>
+                    <td>Pattern cycle count reached</td>
+                    <td>Orgasm or safeword</td>
+                </tr>
+                <tr>
+                    <td><code>STIMULATION_MARATHON</code></td>
+                    <td>Sustain stimulation for target duration</td>
+                    <td>Time limit reached</td>
+                    <td>Orgasm or safeword</td>
+                </tr>
+            </table>
+
+            <h4>Stillness Games</h4>
+            <table>
+                <tr><th>Type</th><th>Objective</th><th>Win Condition</th><th>Fail Condition</th></tr>
+                <tr>
+                    <td><code>STILLNESS_CHALLENGE</code></td>
+                    <td>Achieve orgasm while staying perfectly still</td>
+                    <td>Orgasm with no movement detected</td>
+                    <td>Excessive movement during orgasm</td>
+                </tr>
+                <tr>
+                    <td><code>FORCED_STILLNESS</code></td>
+                    <td>Endure stimulation without moving</td>
+                    <td>Complete duration with no movement</td>
+                    <td>Movement detected by camera/IMU</td>
+                </tr>
+            </table>
+
+            <h4>Premium Games <span class="badge badge-premium">Premium</span></h4>
+            <table>
+                <tr><th>Type</th><th>Objective</th><th>Description</th></tr>
+                <tr>
+                    <td><code>ELECTRODE_AVOIDANCE</code></td>
+                    <td>Avoid triggering TENS sensors</td>
+                    <td>Electrode contact triggers punishment; stay still to avoid</td>
+                </tr>
+                <tr>
+                    <td><code>SHOCK_ROULETTE</code></td>
+                    <td>Endure random shock intervals</td>
+                    <td>Random TENS shocks at unpredictable times; survive duration</td>
+                </tr>
+                <tr>
+                    <td><code>INTENSITY_CLIMB</code></td>
+                    <td>Survive escalating intensity</td>
+                    <td>Intensity increases over time; last as long as possible</td>
+                </tr>
+                <tr>
+                    <td><code>OBEDIENCE_TRIAL</code></td>
+                    <td>Follow machine commands</td>
+                    <td>Machine issues commands (edge, hold, etc.); obey to earn points</td>
+                </tr>
+                <tr>
+                    <td><code>PUNISHMENT_ENDURANCE</code></td>
+                    <td>Endure assigned punishment</td>
+                    <td>Survive intense stimulation for assigned duration</td>
+                </tr>
+            </table>
+
+            <h3>4.3 Game Definition Structure</h3>
+            <p>Games are defined in JSON with the following structure:</p>
+            <pre>
+{
+  "id": "edge_challenge_5",
+  "name": "Five Edge Challenge",
+  "description": "Edge 5 times without orgasm",
+  "type": "EDGE_COUNT",
+  "difficulty": 3,
+  "requiredTier": "BASIC",
+  "unlockedBy": "edge_challenge_3",
+  "unlocks": ["edge_challenge_10"],
+
+  "primaryObjective": {
+    "type": "edge_count",
+    "target": 5,
+    "timeLimitSeconds": 600,
+    "points": 500
+  },
+
+  "bonusObjectives": [
+    { "type": "avg_arousal_above", "threshold": 0.7, "points": 100 },
+    { "type": "fluid_above", "target": 5.0, "points": 50 }
+  ],
+
+  "failConditions": [
+    { "type": "orgasm", "immediateFail": true },
+    { "type": "arousal_drop", "threshold": 0.3, "immediateFail": false }
+  ],
+
+  "stimulation": {
+    "patternId": "adaptive_edging",
+    "initialIntensity": 0.4,
+    "maxIntensity": 0.85,
+    "edgeThreshold": 0.85,
+    "orgasmThreshold": 0.95,
+    "tensEnabled": false
+  },
+
+  "scoring": {
+    "basePoints": 100,
+    "perObjectiveBonus": 100,
+    "timeBonusPerSecond": 0.5,
+    "xpOnWin": 150,
+    "xpOnLoss": 15,
+    "streakMultiplierMax": 2.0
+  },
+
+  "winConsequence": {
+    "isReward": true,
+    "action": "BONUS_XP",
+    "intensity": 50
+  },
+
+  "failConsequence": {
+    "isReward": false,
+    "action": "DENIAL_EXTENSION",
+    "durationSeconds": 120
+  }
+}
+            </pre>
+
+            <h3>4.4 Scoring System</h3>
+            <p>Score calculation formula:</p>
+            <pre>
+Score = BasePoints
+      + (PerObjectiveBonus × Progress × Target)
+      + (RemainingSeconds × TimeBonusPerSecond)
+      + BonusPointsEarned
+      × StreakMultiplier (1.0 + winStreak × 0.05, max 2.0)
+            </pre>
+            <table>
+                <tr><th>Component</th><th>Default Value</th><th>Description</th></tr>
+                <tr><td>Base Points</td><td>100</td><td>Points for participating</td></tr>
+                <tr><td>Per Objective Bonus</td><td>25</td><td>Points per objective unit completed</td></tr>
+                <tr><td>Time Bonus</td><td>0.5/sec</td><td>Bonus for finishing early</td></tr>
+                <tr><td>XP on Win</td><td>100</td><td>Experience points for victory</td></tr>
+                <tr><td>XP on Loss</td><td>10</td><td>Experience points for losing</td></tr>
+                <tr><td>Streak Max</td><td>2.0x</td><td>Maximum score multiplier from streaks</td></tr>
+            </table>
+
+            <h3>4.5 Consequence Engine (<code>ConsequenceEngine.h</code>)</h3>
+            <p>Manages execution of rewards and punishments with safety limits and cooldowns.</p>
+
+            <h4>Consequence Actions</h4>
+            <div class="grid">
+                <div class="card">
+                    <h4>🎁 Rewards</h4>
+                    <table>
+                        <tr><th>Action</th><th>Effect</th></tr>
+                        <tr><td><code>UNLOCK_PATTERN</code></td><td>Unlock a new stimulation pattern</td></tr>
+                        <tr><td><code>UNLOCK_GAME</code></td><td>Unlock a new game type</td></tr>
+                        <tr><td><code>BONUS_XP</code></td><td>Award bonus experience points</td></tr>
+                        <tr><td><code>INTENSITY_DECREASE</code></td><td>Reduce stimulation intensity</td></tr>
+                        <tr><td><code>PLEASURE_BURST</code></td><td>Brief high-intensity pleasure pulse</td></tr>
+                    </table>
+                </div>
+                <div class="card">
+                    <h4>⚡ Basic Punishments</h4>
+                    <table>
+                        <tr><th>Action</th><th>Effect</th></tr>
+                        <tr><td><code>INTENSITY_INCREASE</code></td><td>Increase stimulation intensity (+30% max)</td></tr>
+                        <tr><td><code>DENIAL_EXTENSION</code></td><td>Extend denial period (10 min max)</td></tr>
+                        <tr><td><code>PATTERN_SWITCH</code></td><td>Switch to a more intense pattern</td></tr>
+                        <tr><td><code>AROUSAL_MAINTENANCE</code></td><td>Forced to maintain high arousal</td></tr>
+                        <tr><td><code>FORCED_EDGE</code></td><td>Stimulation to force an edge</td></tr>
+                    </table>
+                </div>
+                <div class="card">
+                    <h4>💀 Premium Punishments</h4>
+                    <table>
+                        <tr><th>Action</th><th>Effect</th></tr>
+                        <tr><td><code>TENS_SHOCK</code></td><td>Single TENS electrode shock</td></tr>
+                        <tr><td><code>TENS_BURST_SERIES</code></td><td>Multiple rapid TENS shocks (5 max)</td></tr>
+                        <tr><td><code>MAX_VACUUM_PULSE</code></td><td>Maximum vacuum pulse (3 sec max)</td></tr>
+                        <tr><td><code>COMBINED_ASSAULT</code></td><td>TENS + vacuum + intensity boost</td></tr>
+                        <tr><td><code>RANDOM_SHOCK_INTERVAL</code></td><td>Random shocks over duration</td></tr>
+                    </table>
+                </div>
+                <div class="card">
+                    <h4>🔊 Feedback Actions</h4>
+                    <table>
+                        <tr><th>Action</th><th>Effect</th></tr>
+                        <tr><td><code>MOTION_WARNING</code></td><td>Audio warning for detected movement</td></tr>
+                        <tr><td><code>AUDIO_WARNING</code></td><td>Play warning sound</td></tr>
+                        <tr><td><code>HAPTIC_PULSE</code></td><td>Vacuum oscillation for tactile feedback</td></tr>
+                        <tr><td><code>PROGRESSIVE_WARNING</code></td><td>Escalating: audio → haptic → shock</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <h4>Safety Limits</h4>
+            <div class="warning">
+                <strong>⚠️ Consequence Safety Limits</strong><br>
+                All punishments are subject to hard safety limits that cannot be exceeded.
+            </div>
+            <table>
+                <tr><th>Limit</th><th>Value</th><th>Description</th></tr>
+                <tr><td>Max TENS Amplitude</td><td>70%</td><td>Never exceed 70% TENS amplitude</td></tr>
+                <tr><td>Max TENS Burst Count</td><td>5</td><td>Maximum shocks in a single burst</td></tr>
+                <tr><td>Min TENS Cooldown</td><td>2000ms</td><td>Minimum time between shocks</td></tr>
+                <tr><td>Max TENS Duration</td><td>500ms</td><td>Maximum single shock duration</td></tr>
+                <tr><td>Max Vacuum</td><td>65 mmHg</td><td>Never exceed 65 mmHg vacuum</td></tr>
+                <tr><td>Max Vacuum Pulse</td><td>3000ms</td><td>Maximum pulse duration</td></tr>
+                <tr><td>Max Intensity Boost</td><td>+30%</td><td>Maximum intensity increase</td></tr>
+                <tr><td>Max Denial Extension</td><td>10 min</td><td>Maximum denial period extension</td></tr>
+                <tr><td>Max Punishments/Session</td><td>20</td><td>Prevent excessive punishment</td></tr>
+            </table>
+
+            <h3>4.6 Achievement System (<code>AchievementSystem.h</code>)</h3>
+            <p>Tracks milestones, unlocks content, and rewards players with XP bonuses.</p>
+
+            <h4>Achievement Categories</h4>
+            <table>
+                <tr><th>Category</th><th>Examples</th></tr>
+                <tr><td><code>GAMEPLAY</code></td><td>Win first game, Complete 10 games, Perfect score</td></tr>
+                <tr><td><code>CAREER</code></td><td>100 total edges, 1000 XP earned, 10 hour playtime</td></tr>
+                <tr><td><code>SKILL</code></td><td>5 edges in one session, Maintain edge for 5 min</td></tr>
+                <tr><td><code>COLLECTION</code></td><td>Unlock all patterns, Complete all basic games</td></tr>
+                <tr><td><code>SECRET</code></td><td>Hidden achievements discovered through gameplay</td></tr>
+            </table>
+
+            <h4>Achievement Conditions</h4>
+            <ul>
+                <li><code>edges</code> - Total edges achieved</li>
+                <li><code>wins</code> - Total game victories</li>
+                <li><code>games</code> - Total games played</li>
+                <li><code>streak</code> - Current or best win streak</li>
+                <li><code>fluid</code> - Total fluid produced (mL)</li>
+                <li><code>orgasms</code> - Total orgasms detected</li>
+                <li><code>playtime</code> - Total play time (seconds)</li>
+            </ul>
+
+            <h3>4.7 Progress Tracker (<code>ProgressTracker.h</code>)</h3>
+            <p>SQLite-based persistence for all user data.</p>
+
+            <h4>User Profile</h4>
+            <table>
+                <tr><th>Field</th><th>Description</th></tr>
+                <tr><td>Level</td><td>Player level (XP-based progression)</td></tr>
+                <tr><td>XP</td><td>Current/total experience points</td></tr>
+                <tr><td>Points Balance</td><td>Spendable points for commands/features</td></tr>
+                <tr><td>Privilege Tier</td><td>BEGINNER → INTERMEDIATE → ADVANCED → DOM_MASTER</td></tr>
+                <tr><td>Safe Word</td><td>User's chosen emergency stop word</td></tr>
+            </table>
+
+            <h4>Career Statistics</h4>
+            <table>
+                <tr><th>Stat</th><th>Description</th></tr>
+                <tr><td>Total Games</td><td>Number of games played</td></tr>
+                <tr><td>Win/Loss</td><td>Victory and failure counts</td></tr>
+                <tr><td>Win Streak</td><td>Current and best consecutive wins</td></tr>
+                <tr><td>Total Edges</td><td>Lifetime edge count</td></tr>
+                <tr><td>Total Orgasms</td><td>Lifetime orgasm count</td></tr>
+                <tr><td>Fluid Produced</td><td>Total mL produced</td></tr>
+                <tr><td>Play Time</td><td>Total session time (seconds)</td></tr>
+                <tr><td>Highest Arousal</td><td>Peak arousal level achieved</td></tr>
+                <tr><td>Longest Denial</td><td>Longest denial duration (seconds)</td></tr>
+            </table>
+
+            <h4>Points Economy</h4>
+            <p>Points are earned from games and spent on features or commands to other users.</p>
+            <table>
+                <tr><th>Privilege Tier</th><th>Points Required</th><th>Capabilities</th></tr>
+                <tr><td>BEGINNER</td><td>0</td><td>Local control only, no DOM commands</td></tr>
+                <tr><td>INTERMEDIATE</td><td>1,000</td><td>Can issue DOM commands to self</td></tr>
+                <tr><td>ADVANCED</td><td>5,000</td><td>Can control paired users, transfer points</td></tr>
+                <tr><td>DOM_MASTER</td><td>15,000</td><td>Room control, advanced patterns, any paired user</td></tr>
+            </table>
+
+            <h4>Point Transactions</h4>
+            <p>All point changes are logged for audit:</p>
+            <ul>
+                <li><strong>Earnings:</strong> Game completion, achievements, streaks, daily bonus, transfers, purchases</li>
+                <li><strong>Spending:</strong> Command costs, point transfers, feature unlocks</li>
+            </ul>
+
+            <h3>4.8 DOM Commands</h3>
+            <p>Commands that can be issued by DOMs to subs (requires consent and points):</p>
+            <table>
+                <tr><th>Command</th><th>Description</th></tr>
+                <tr><td><code>EDGE_NOW</code></td><td>"Edge for me" - Force an edge</td></tr>
+                <tr><td><code>HOLD_AROUSAL</code></td><td>"Stay at X% for Y seconds"</td></tr>
+                <tr><td><code>NO_MOVING</code></td><td>"Stay perfectly still"</td></tr>
+                <tr><td><code>COUNT_EDGES</code></td><td>"You will edge N times"</td></tr>
+                <tr><td><code>DENY_RELEASE</code></td><td>"You may not cum"</td></tr>
+                <tr><td><code>PRODUCE_FLUID</code></td><td>"Show me how wet you are"</td></tr>
+                <tr><td><code>ENDURE_PUNISHMENT</code></td><td>"Take your punishment"</td></tr>
+                <tr><td><code>RANDOM_CHALLENGE</code></td><td>Machine picks randomly</td></tr>
+            </table>
+
+            <h3>4.9 Safety Actions</h3>
+            <p>Players can trigger safety actions at any time:</p>
+            <table>
+                <tr><th>Level</th><th>Effect</th></tr>
+                <tr><td><code>YELLOW</code></td><td>Reduce intensity, pause consequences</td></tr>
+                <tr><td><code>RED</code></td><td>End game immediately, no penalties applied</td></tr>
+                <tr><td><code>EMERGENCY_STOP</code></td><td>Immediate halt of all stimulation and venting</td></tr>
+            </table>
+            <div class="info">
+                <strong>ℹ️ Safeword Priority</strong><br>
+                The safeword always works regardless of game state, DOM commands, or network connection.
+            </div>
+        </section>
+
+        <!-- Section 5: Control Algorithms -->
+        <section id="control">
+            <h2>5. Orgasm Control Algorithm</h2>
+
+            <h3>Overview (<code>OrgasmControlAlgorithm.h</code>)</h3>
+            <p>Adaptive multi-sensor arousal estimation and stimulation control with multiple operating modes.</p>
+
+            <h4>Arousal States</h4>
+            <table>
+                <tr><th>State</th><th>Range</th><th>Description</th></tr>
+                <tr><td>BASELINE</td><td>0.0 - 0.2</td><td>Resting state, minimal arousal</td></tr>
+                <tr><td>WARMING</td><td>0.2 - 0.5</td><td>Early arousal, building</td></tr>
+                <tr><td>PLATEAU</td><td>0.5 - 0.85</td><td>Sustained high arousal</td></tr>
+                <tr><td>PRE_ORGASM</td><td>0.85 - 0.95</td><td>Approaching climax (edge zone)</td></tr>
+                <tr><td>ORGASM</td><td>0.95 - 1.0</td><td>Active orgasm with contractions</td></tr>
+            </table>
+
+            <h4>Operating Modes</h4>
+            <div class="grid">
+                <div class="card">
+                    <h4>Adaptive Edging</h4>
+                    <p>Sensor-driven approach/deny cycles. Builds arousal to edge threshold, backs off to recovery, repeats for target cycles.</p>
+                    <code>startAdaptiveEdging(targetCycles = 5)</code>
+                </div>
+                <div class="card">
+                    <h4>Forced Orgasm</h4>
+                    <p>Relentless stimulation through multiple climaxes with anti-escape intensity boost.</p>
+                    <code>startForcedOrgasm(targetOrgasms = 3)</code>
+                </div>
+                <div class="card">
+                    <h4>Denial Mode</h4>
+                    <p>Extended teasing without release. Maintains high arousal but prevents orgasm.</p>
+                    <code>startDenial(durationMs = 600000)</code>
+                </div>
+                <div class="card">
+                    <h4>Milking Mode</h4>
+                    <p>Sustained sub-orgasmic stimulation. Orgasm = failure. Uses PID control to maintain arousal in target zone.</p>
+                    <code>startMilking(durationMs, failureMode)</code>
+                </div>
+            </div>
+
+            <h4>Arousal Calculation</h4>
+            <p>Multi-sensor fusion with configurable weights:</p>
+            <pre>
+// Pressure-based components (sum to ~0.70 when HR enabled)
+WEIGHT_DEVIATION    = 0.25  // Deviation from baseline
+WEIGHT_VARIANCE     = 0.15  // Pressure variance (engorgement)
+WEIGHT_CONTRACTION  = 0.20  // Contraction band power (0.5-2 Hz)
+WEIGHT_ROC          = 0.10  // Rate of change
+
+// Heart rate components (0.30 when enabled)
+WEIGHT_HR_ZONE      = 0.50  // HR zone contribution
+WEIGHT_HR_ACCEL     = 0.25  // HR acceleration
+WEIGHT_HRV          = 0.25  // HRV (inverted)
+
+// Smoothing
+AROUSAL_ALPHA       = 0.15  // Exponential smoothing factor
+            </pre>
+
+            <h4>Control State Machine</h4>
+            <div class="diagram">
+STOPPED ──► CALIBRATING ──► BUILDING ──┬──► BACKING_OFF ──► HOLDING ──► BUILDING
+                                       │
+                                       ├──► FORCING (forced orgasm mode)
+                                       │
+                                       ├──► MILKING ──► DANGER_REDUCTION
+                                       │
+                                       └──► COOLING_DOWN ──► STOPPED
+            </div>
+
+            <h4>Key Thresholds</h4>
+            <table>
+                <tr><th>Parameter</th><th>Default</th><th>Range</th></tr>
+                <tr><td>Edge Threshold</td><td>0.85</td><td>0.5 - 0.95</td></tr>
+                <tr><td>Orgasm Threshold</td><td>0.95</td><td>0.85 - 1.0</td></tr>
+                <tr><td>Recovery Threshold</td><td>0.70</td><td>0.3 - 0.8</td></tr>
+                <tr><td>Milking Zone Lower</td><td>0.75</td><td>-</td></tr>
+                <tr><td>Milking Zone Upper</td><td>0.90</td><td>-</td></tr>
+                <tr><td>Danger Threshold</td><td>0.92</td><td>-</td></tr>
+            </table>
+        </section>
+
+        <!-- Section 6: Patterns -->
+        <section id="patterns">
+            <h2>6. Stimulation Patterns</h2>
+
+            <h3>Pattern Engine (<code>PatternEngine.h</code>)</h3>
+            <p>State machine-based pattern execution with real-time parameter adjustment.</p>
+
+            <h4>Pattern Types</h4>
+            <table>
+                <tr><th>Type</th><th>Description</th><th>Parameters</th></tr>
+                <tr><td>PULSE</td><td>Rhythmic vacuum pulses (slow/medium/fast)</td><td>frequency, duty cycle</td></tr>
+                <tr><td>WAVE</td><td>Gradual pressure changes</td><td>amplitude, period</td></tr>
+                <tr><td>AIR_PULSE</td><td>Rapid air pulses with release phases</td><td>burst count, interval</td></tr>
+                <tr><td>MILKING</td><td>Rhythmic suction motion</td><td>depth, speed</td></tr>
+                <tr><td>CONSTANT</td><td>Steady pressure with variations</td><td>pressure level</td></tr>
+                <tr><td>DUAL_CHAMBER</td><td>Outer sustained + clitoral oscillation</td><td>outer pressure, clitoral freq</td></tr>
+                <tr><td>CLITORAL_ONLY</td><td>Clitoral oscillation only</td><td>frequency (5-13 Hz), amplitude</td></tr>
+                <tr><td>TENS_VACUUM</td><td>Combined TENS + vacuum</td><td>TENS freq, vacuum pattern</td></tr>
+                <tr><td>EDGING</td><td>Automated edge detection pattern</td><td>edge threshold, cycles</td></tr>
+            </table>
+
+            <h4>Real-Time Adjustments</h4>
+            <ul>
+                <li><strong>Intensity:</strong> 0-100% scaling of pressure targets</li>
+                <li><strong>Speed:</strong> 0.1-3.0x multiplier for step durations</li>
+                <li><strong>Pressure Offset:</strong> -20% to +20% adjustment</li>
+            </ul>
+
+            <h4>Clitoral Oscillator</h4>
+            <p>Rapid air-pulse oscillation via SOL4/SOL5 switching:</p>
+            <ul>
+                <li>Frequency: 5-13 Hz (configurable)</li>
+                <li>Amplitude: 5-75 mmHg</li>
+                <li>Waveform: Sinusoidal pressure variation</li>
+            </ul>
+        </section>
+
+        <!-- Section 7: TENS Electrical Stimulation -->
+        <section id="tens">
+            <h2>7. TENS Electrical Stimulation</h2>
+
+            <p>TENS (Transcutaneous Electrical Nerve Stimulation) is a premium feature that delivers controlled electrical pulses through electrodes integrated into the clitoral cup. This section provides comprehensive technical documentation of the electrical stimulation subsystem.</p>
+
+            <div class="info">
+                <strong>ℹ️ Premium Feature</strong><br>
+                TENS functionality requires a Premium subscription and explicit user consent before activation.
+            </div>
+
+            <h3>7.1 Technology Overview</h3>
+
+            <h4>What is TENS?</h4>
+            <p>TENS is a non-invasive neuromodulation technique that delivers controlled electrical pulses through skin-surface electrodes to stimulate nerves. Originally developed for pain management, TENS has emerged as a validated therapeutic approach for enhancing female sexual arousal through <strong>dorsal genital nerve stimulation (DGNS)</strong>.</p>
+
+            <h4>How It Works for Sexual Stimulation</h4>
+            <ol>
+                <li><strong>Activates afferent sensory fibers</strong> → Enhanced genital sensation</li>
+                <li><strong>Triggers sacral reflex arc (S2-S4)</strong> → Autonomic arousal response</li>
+                <li><strong>Increases genital blood flow</strong> → Engorgement and lubrication</li>
+                <li><strong>Modulates pudendal motor neurons</strong> → Pelvic floor activation</li>
+            </ol>
+            <p>The dorsal genital nerve is the <strong>primary sensory pathway</strong> for clitoral sensation and orgasm. Electrical stimulation at validated parameters (20 Hz, 400 μs) significantly improves Female Sexual Function Index (FSFI) scores in clinical studies.</p>
+
+            <h4>Synergy with Vacuum Stimulation</h4>
+            <p>The V-Contour system uniquely combines TENS with vacuum oscillation for synergistic effects:</p>
+            <div class="grid">
+                <div class="card">
+                    <h4>🌀 Vacuum Component</h4>
+                    <ul>
+                        <li>5-13 Hz air-pulse oscillation</li>
+                        <li>Mechanical tissue stimulation</li>
+                        <li>Blood engorgement enhancement</li>
+                        <li>Maintains electrode contact</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>⚡ TENS Component</h4>
+                    <ul>
+                        <li>20 Hz electrical pulses</li>
+                        <li>Direct nerve stimulation</li>
+                        <li>Arousal pathway activation</li>
+                        <li>Pelvic floor engagement</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>7.2 Clinical Background</h3>
+
+            <h4>Research-Validated Parameters</h4>
+            <table>
+                <tr><th>Parameter</th><th>Clinical Standard</th><th>V-Contour Range</th><th>Notes</th></tr>
+                <tr><td>Frequency</td><td>20 Hz</td><td>1-100 Hz</td><td>20 Hz optimal for arousal (Zimmerman 2018)</td></tr>
+                <tr><td>Pulse Width</td><td>400 μs</td><td>50-500 μs</td><td>Wider pulses recruit more nerve fibers</td></tr>
+                <tr><td>Amplitude</td><td>Up to 60 mA</td><td>0-80 mA</td><td>User-controlled, comfort-limited</td></tr>
+                <tr><td>Session Duration</td><td>30 minutes</td><td>Variable</td><td>Longer sessions show better outcomes</td></tr>
+                <tr><td>Waveform</td><td>Biphasic symmetric</td><td>Biphasic</td><td>Zero net charge; safe for prolonged use</td></tr>
+            </table>
+
+            <h4>Neural Pathways Targeted</h4>
+            <table>
+                <tr><th>Nerve</th><th>Origin</th><th>Function</th><th>Stimulation Effect</th></tr>
+                <tr><td>Dorsal Genital Nerve</td><td>S2-S4</td><td>Primary clitoral sensation</td><td>Enhanced arousal, lubrication, orgasm</td></tr>
+                <tr><td>Pudendal Nerve</td><td>S2-S4</td><td>Pelvic floor motor control</td><td>Muscle contraction, pelvic engagement</td></tr>
+                <tr><td>Pelvic Splanchnic</td><td>S2-S4</td><td>Autonomic (parasympathetic)</td><td>Vasodilation, secretion</td></tr>
+            </table>
+
+            <h4>Electrode Placement</h4>
+            <p>Two electrodes positioned on lateral sides of the clitoris (15-25mm spacing) target the dorsal genital nerve as it travels along the clitoral crura:</p>
+            <div class="diagram">
+┌────────────────────────────────────────────────────────────┐
+│                   CLITORAL CUP (TOP VIEW)                  │
+│                                                            │
+│                    ┌──────────────┐                        │
+│                    │   VACUUM     │                        │
+│    ┌─────────┐     │   CHAMBER    │     ┌─────────┐        │
+│    │  (-)    │     │              │     │  (+)    │        │
+│    │ELECTRODE│◄───►│   Clitoris   │◄───►│ELECTRODE│        │
+│    │  LEFT   │     │              │     │  RIGHT  │        │
+│    └─────────┘     │              │     └─────────┘        │
+│         ▲          └──────────────┘          ▲             │
+│         │                                    │             │
+│         └──────── 15-25mm spacing ───────────┘             │
+│                                                            │
+│    Targets: Dorsal genital nerve along clitoral crura      │
+└────────────────────────────────────────────────────────────┘
+            </div>
+
+            <h4>Clinical Evidence (DGNS)</h4>
+            <ul>
+                <li><strong>33% of subjects</strong> achieved FSFI scores above clinical FSD threshold (Zimmerman 2018)</li>
+                <li>Significant improvements in arousal, lubrication, and orgasm domains</li>
+                <li>Acute arousal enhancement demonstrated with 20 Hz / 400 μs parameters</li>
+                <li>DGNS is the <strong>only method</strong> with direct clinical evidence for increasing subjective sexual arousal</li>
+            </ul>
+
+            <h3>7.3 Hardware Implementation</h3>
+
+            <h4>GPIO Pin Assignments</h4>
+            <pre>
+// TENS Control Pins (Raspberry Pi)
+GPIO 5:  TENS_ENABLE    // Master enable for TENS output stage
+GPIO 6:  TENS_PHASE     // Polarity control (HIGH = positive, LOW = negative)
+GPIO 12: TENS_PWM       // Amplitude control via hardware PWM channel
+GPIO 16: TENS_FAULT     // Input: Overcurrent/fault detection from driver
+            </pre>
+
+            <h4>Hardware Block Diagram</h4>
+            <div class="diagram">
+┌─────────────────────────────────────────────────────────────────┐
+│                      RASPBERRY PI                                │
+│  ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐   │
+│  │ GPIO 5   │    │ GPIO 6   │    │ GPIO 12  │    │ GPIO 16  │   │
+│  │ (ENABLE) │    │ (PHASE)  │    │ (PWM)    │    │ (FAULT)  │   │
+│  └────┬─────┘    └────┬─────┘    └────┬─────┘    └────▲─────┘   │
+└───────┼───────────────┼───────────────┼───────────────┼─────────┘
+        │               │               │               │
+        ▼               ▼               ▼               │
+┌───────────────────────────────────────────────────────┼─────────┐
+│                  TENS DRIVER BOARD                     │         │
+│  ┌─────────┐   ┌─────────────┐   ┌─────────────────┐  │         │
+│  │  OPTO-  │   │  H-BRIDGE   │   │   ISOLATED DC   │  │ FAULT   │
+│  │ISOLATOR │──►│  DRIVER     │──►│   POWER SUPPLY  │  │ DETECT  │
+│  │ (IL716) │   │  (DRV8871)  │   │   (±60V, 100mA) │◄─┼─────────┤
+│  └─────────┘   └──────┬──────┘   └─────────────────┘  │         │
+│                       │                                │         │
+│                       ▼                                │         │
+│               ┌───────────────┐                        │         │
+│               │  CURRENT SENSE │                       │         │
+│               │  RESISTOR (1Ω) │───────────────────────┘         │
+│               └───────┬───────┘                                  │
+└───────────────────────┼──────────────────────────────────────────┘
+                        │
+                        ▼
+                ┌───────────────┐
+                │   ELECTRODES   │
+                │  (+)     (-)   │
+                └───────────────┘
+            </div>
+
+            <h4>Electrode Specifications</h4>
+            <table>
+                <tr><th>Parameter</th><th>Specification</th><th>Rationale</th></tr>
+                <tr><td>Material</td><td>316L stainless steel with gold plating</td><td>Biocompatible, corrosion-resistant, low impedance</td></tr>
+                <tr><td>Alternative</td><td>Conductive silicone (carbon-loaded)</td><td>Flexible, softer contact for comfort</td></tr>
+                <tr><td>Shape</td><td>Curved crescents (8mm × 4mm)</td><td>Conforms to cup interior; lateral clitoral placement</td></tr>
+                <tr><td>Spacing</td><td>10-15mm apart</td><td>Optimal for dorsal genital nerve stimulation</td></tr>
+                <tr><td>Mounting</td><td>Embedded flush with cup interior</td><td>No protrusion; maintains vacuum seal integrity</td></tr>
+                <tr><td>Surface</td><td>Smooth, polished (Ra < 0.8 μm)</td><td>Comfortable skin contact; easy cleaning</td></tr>
+            </table>
+
+            <h4>Waveform Generator Specifications</h4>
+            <table>
+                <tr><th>Parameter</th><th>Value</th><th>Notes</th></tr>
+                <tr><td>Waveform Type</td><td>Biphasic symmetric square</td><td>Zero net DC; prevents tissue damage</td></tr>
+                <tr><td>Frequency Range</td><td>1-100 Hz</td><td>Default: 20 Hz (clinical standard)</td></tr>
+                <tr><td>Pulse Width Range</td><td>50-500 μs</td><td>Default: 400 μs</td></tr>
+                <tr><td>Amplitude Range</td><td>0-80 mA peak</td><td>Adjustable; sensory threshold ~10-30 mA</td></tr>
+                <tr><td>Output Isolation</td><td>>1500V galvanic</td><td>Medical safety standard</td></tr>
+                <tr><td>Compliance Voltage</td><td>±60V</td><td>Sufficient for 1kΩ skin impedance</td></tr>
+            </table>
+
+            <h4>Biphasic Waveform Diagram</h4>
+            <div class="diagram">
+     CURRENT (mA)
+         ▲
+    +80 ─┤    ┌───┐           ┌───┐           ┌───┐
+         │    │   │           │   │           │   │
+      0 ─┼────┘   └───────────┘   └───────────┘   └────► TIME
+         │            │               │
+    -80 ─┤            └───┐           └───┐
+         │                │               │
+
+              ◄──────────────────────────►
+                     50ms (20 Hz)
+
+              ◄───────►
+              400μs pulse width
+            </div>
+            <p><strong>Biphasic symmetric waveforms</strong> deliver equal positive and negative phases, ensuring zero net charge transfer and preventing electrochemical tissue damage during prolonged use.</p>
+
+            <h3>7.4 Software Architecture</h3>
+
+            <h4>TENSController Class (<code>TENSController.h</code>)</h4>
+            <pre>
+class TENSController : public QObject {
+    Q_OBJECT
+public:
+    // Waveform types
+    enum class Waveform { BIPHASIC_SYMMETRIC, BIPHASIC_ASYMMETRIC, BURST };
+    enum class PhaseSync { CONTINUOUS, VACUUM_SYNC, PATTERN_SYNC };
+    enum class OutputPhase { IDLE, POSITIVE, NEGATIVE, INTER_PULSE };
+
+    // Configuration
+    void setFrequency(double hz);         // 1-100 Hz
+    void setPulseWidth(int microseconds); // 50-500 μs
+    void setAmplitude(double percent);    // 0-80% (maps to 0-80 mA)
+    void setWaveform(Waveform type);
+    void setPhaseSync(PhaseSync sync);
+    void setBurstParameters(int pulsesPerBurst, int burstFrequencyHz);
+
+    // Control
+    void start();
+    void stop();
+    void emergencyStop();
+    void pulse(int durationMs);           // Single timed pulse (max 5000ms)
+    bool isRunning() const;
+
+    // Presets (from clinical research)
+    void setPresetWarmup();   // 10 Hz, 200 μs, 20%
+    void setPresetArousal();  // 20 Hz, 400 μs, medium amplitude
+    void setPresetClimax();   // 30 Hz, 300 μs, higher amplitude
+    void setPresetPunishment(); // 50 Hz, 250 μs, brief high intensity
+
+    // Status
+    double getCurrentAmplitude() const;
+    double getElectrodeImpedance() const;
+    bool isFaultDetected() const;
+    bool isElectrodeContactVerified() const;
+
+signals:
+    void started();
+    void stopped();
+    void amplitudeChanged(double percent);
+    void phaseChanged(OutputPhase phase);
+    void pulseCompleted(int count);
+    void faultDetected(QString reason);
+    void electrodeContactLost();
+};
+            </pre>
+
+            <h4>Waveform State Machine</h4>
+            <div class="diagram">
+┌──────────────────────────────────────────────────────────────────┐
+│                     TENS OUTPUT STATE MACHINE                     │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  IDLE ──► POSITIVE ──► NEGATIVE ──► INTER_PULSE ──► POSITIVE    │
+│    ▲                                      │                      │
+│    └───────────────── stop() ─────────────┘                      │
+│                                                                  │
+│  Output Phase Timing (20 Hz, 400 μs example):                    │
+│  ├── POSITIVE:    400 μs (GPIO_PHASE = HIGH, ENABLE = HIGH)     │
+│  ├── NEGATIVE:    400 μs (GPIO_PHASE = LOW, ENABLE = HIGH)      │
+│  └── INTER_PULSE: 49.2 ms (ENABLE = LOW, wait for next cycle)   │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+            </div>
+
+            <h4>Timing Calculation</h4>
+            <pre>
+// Period in microseconds
+m_periodUs = 1,000,000 / m_frequencyHz;  // 50,000 μs at 20 Hz
+
+// For biphasic symmetric: equal positive and negative phases
+m_positiveDurationUs = m_pulseWidthUs;   // 400 μs
+m_negativeDurationUs = m_pulseWidthUs;   // 400 μs
+
+// Inter-pulse gap is the remainder of the period
+m_interPulseUs = m_periodUs - m_positiveDurationUs - m_negativeDurationUs;
+// = 50,000 - 400 - 400 = 49,200 μs
+            </pre>
+
+            <h3>7.5 Integration with Games</h3>
+
+            <h4>Premium Games Using TENS</h4>
+            <table>
+                <tr><th>Game Type</th><th>TENS Usage</th><th>Description</th></tr>
+                <tr>
+                    <td><code>ELECTRODE_AVOIDANCE</code></td>
+                    <td>Punishment trigger</td>
+                    <td>TENS activates when movement is detected; stay still to avoid</td>
+                </tr>
+                <tr>
+                    <td><code>SHOCK_ROULETTE</code></td>
+                    <td>Random intervals</td>
+                    <td>Unpredictable TENS shocks at random times; survive duration</td>
+                </tr>
+                <tr>
+                    <td><code>INTENSITY_CLIMB</code></td>
+                    <td>Escalating punishment</td>
+                    <td>TENS intensity increases over time; last as long as possible</td>
+                </tr>
+                <tr>
+                    <td><code>OBEDIENCE_TRIAL</code></td>
+                    <td>Consequence for disobedience</td>
+                    <td>TENS punishment for failing to follow machine commands</td>
+                </tr>
+                <tr>
+                    <td><code>PUNISHMENT_ENDURANCE</code></td>
+                    <td>Sustained stimulation</td>
+                    <td>Endure assigned TENS punishment for target duration</td>
+                </tr>
+            </table>
+
+            <h4>Consequence Actions</h4>
+            <div class="grid">
+                <div class="card">
+                    <h4>⚡ TENS_SHOCK</h4>
+                    <p>Single TENS electrode shock as punishment</p>
+                    <ul>
+                        <li>Duration: 100-500ms</li>
+                        <li>Amplitude: 30-70%</li>
+                        <li>Respects 2000ms cooldown</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>💥 TENS_BURST_SERIES</h4>
+                    <p>Multiple rapid TENS shocks (max 5)</p>
+                    <ul>
+                        <li>Pulses: 2-5 per burst</li>
+                        <li>Burst frequency: 1-10 Hz</li>
+                        <li>Total duration capped</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>🔥 COMBINED_ASSAULT</h4>
+                    <p>TENS + vacuum + intensity boost</p>
+                    <ul>
+                        <li>Simultaneous activation</li>
+                        <li>Maximum sensory impact</li>
+                        <li>Subject to all safety limits</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>🎲 RANDOM_SHOCK_INTERVAL</h4>
+                    <p>Random shocks over duration</p>
+                    <ul>
+                        <li>Unpredictable timing</li>
+                        <li>3-10 shocks over period</li>
+                        <li>Psychological anticipation</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h4>Coordination with Vacuum Patterns</h4>
+            <p>TENS can be synchronized with vacuum oscillation using <code>PhaseSync</code>:</p>
+            <table>
+                <tr><th>Sync Mode</th><th>Behavior</th><th>Use Case</th></tr>
+                <tr><td><code>CONTINUOUS</code></td><td>TENS runs independently at set frequency</td><td>Standard stimulation</td></tr>
+                <tr><td><code>VACUUM_SYNC</code></td><td>TENS pulses aligned with vacuum oscillation peaks</td><td>Enhanced combined sensation</td></tr>
+                <tr><td><code>PATTERN_SYNC</code></td><td>TENS intensity follows pattern intensity</td><td>Dynamic stimulation matching</td></tr>
+            </table>
+
+            <h3>7.6 Safety Systems</h3>
+
+            <div class="danger">
+                <strong>⚠️ Critical TENS Safety</strong><br>
+                TENS involves electrical current through sensitive tissue. All safety systems are hardware-enforced and cannot be bypassed by software.
+            </div>
+
+            <h4>TENSSafetyMonitor (<code>TENSSafetyMonitor.h</code>)</h4>
+            <p>Dedicated safety monitoring for electrical stimulation:</p>
+            <ul>
+                <li><strong>Electrode contact verification</strong> before activation</li>
+                <li><strong>Impedance monitoring</strong> during operation (1-10 kΩ valid range)</li>
+                <li><strong>Overcurrent detection</strong> via hardware fault line</li>
+                <li><strong>Automatic shutdown</strong> on fault detection</li>
+                <li><strong>Amplitude ramping</strong> for comfort (500ms soft start/stop)</li>
+            </ul>
+
+            <h4>Hard Safety Limits</h4>
+            <table>
+                <tr><th>Limit</th><th>Value</th><th>Enforcement</th><th>Rationale</th></tr>
+                <tr><td>Max TENS Amplitude</td><td>70% (consequence) / 80% (absolute)</td><td>Software + Hardware</td><td>Prevent tissue damage</td></tr>
+                <tr><td>Max Burst Count</td><td>5 pulses</td><td>Software</td><td>Limit punishment intensity</td></tr>
+                <tr><td>Min Cooldown</td><td>2000ms</td><td>Software</td><td>Prevent over-stimulation</td></tr>
+                <tr><td>Max Single Duration</td><td>500ms (consequence) / 5000ms (general)</td><td>Software</td><td>Time-limited exposure</td></tr>
+                <tr><td>Max Impedance</td><td>10 kΩ</td><td>Hardware</td><td>Ensure electrode contact</td></tr>
+                <tr><td>Min Seal Pressure</td><td>10 mmHg</td><td>Software</td><td>Verify tissue contact</td></tr>
+                <tr><td>Hardware Current Limit</td><td>85 mA</td><td>Hardware (fuse)</td><td>Absolute overcurrent protection</td></tr>
+            </table>
+
+            <h4>Safety Interlocks</h4>
+            <table>
+                <tr><th>Interlock</th><th>Condition</th><th>Action</th></tr>
+                <tr><td>Emergency Stop</td><td>Emergency button pressed</td><td>Disable TENS + all valves + pump immediately</td></tr>
+                <tr><td>Seal Integrity</td><td>Vacuum < 10 mmHg (seal broken)</td><td>Disable TENS immediately</td></tr>
+                <tr><td>Overcurrent</td><td>Current > 85 mA for > 100ms</td><td>Disable TENS, set fault flag</td></tr>
+                <tr><td>Open Circuit</td><td>Impedance > 10 kΩ</td><td>Reduce amplitude, warn user</td></tr>
+                <tr><td>Thermal</td><td>Driver temp > 60°C</td><td>Reduce duty cycle or disable</td></tr>
+            </table>
+
+            <h4>Hardware Safety Features</h4>
+            <ol>
+                <li><strong>Galvanic Isolation</strong>: 1500V isolation between Pi and output stage</li>
+                <li><strong>Current Limiting</strong>: Hardware current limit at 85 mA (fuse-backed)</li>
+                <li><strong>Charge Balance</strong>: Biphasic waveform ensures zero net DC current</li>
+                <li><strong>Soft Start</strong>: Amplitude ramps from 0 to target over 500ms</li>
+                <li><strong>Auto-Shutoff</strong>: If no control signal for 2 seconds, output disables</li>
+                <li><strong>Opto-Isolation</strong>: IL716 optocoupler isolates control signals</li>
+            </ol>
+
+            <h4>Software Safety Checks</h4>
+            <pre>
+bool TENSController::canEnable() const {
+    // Check emergency stop
+    if (m_hardware->isEmergencyStop()) return false;
+
+    // Check vacuum seal integrity (clitoral cup must be sealed)
+    double clitoralPressure = m_hardware->readClitoralPressure();
+    if (clitoralPressure < MIN_SEAL_PRESSURE_MMHG) return false;  // 10 mmHg
+
+    // Check electrode impedance (if measurable)
+    if (m_electrodeImpedance > MAX_IMPEDANCE_OHMS) return false;  // 10kΩ
+
+    // Check driver fault status
+    if (m_faultDetected) return false;
+
+    // Check user consent
+    if (!m_consentManager->hasTENSConsent()) return false;
+
+    return true;
+}
+            </pre>
+
+            <h4>Contraindications</h4>
+            <div class="warning">
+                <strong>⚠️ TENS Contraindications</strong><br>
+                TENS must NOT be used by users with:
+                <ul>
+                    <li>Cardiac pacemaker or implanted electrical device</li>
+                    <li>Pregnancy</li>
+                    <li>Active genital infection or open wounds</li>
+                    <li>Metal implants in pelvic region</li>
+                    <li>Epilepsy (without medical consultation)</li>
+                    <li>Blood clotting disorders</li>
+                </ul>
+            </div>
+
+            <h4>Regulatory Compliance</h4>
+            <table>
+                <tr><th>Standard</th><th>Description</th><th>Relevance</th></tr>
+                <tr><td>IEC 60601-1</td><td>Medical electrical equipment - General safety</td><td>Core safety requirements</td></tr>
+                <tr><td>IEC 60601-2-10</td><td>Nerve/muscle stimulators</td><td>TENS-specific requirements</td></tr>
+                <tr><td>IEC 62353</td><td>Medical electrical equipment testing</td><td>Recurrent testing</td></tr>
+                <tr><td>ISO 10993</td><td>Biological evaluation of medical devices</td><td>Electrode biocompatibility</td></tr>
+            </table>
+            <p><strong>Key compliance points:</strong> Patient leakage current < 100 μA normal; charge per pulse < 25 μC; electrode area minimum 1 cm²; applied part classification Type BF (body floating).</p>
+
+            <h3>7.7 Presets and Configuration</h3>
+
+            <h4>Clinical Presets</h4>
+            <table>
+                <tr><th>Preset</th><th>Frequency</th><th>Pulse Width</th><th>Amplitude</th><th>Use Case</th></tr>
+                <tr><td>Warmup</td><td>10 Hz</td><td>200 μs</td><td>20%</td><td>Gentle introduction; acclimatization</td></tr>
+                <tr><td>Arousal (Default)</td><td>20 Hz</td><td>400 μs</td><td>40-60%</td><td>Clinical standard for sexual arousal</td></tr>
+                <tr><td>Climax</td><td>30 Hz</td><td>300 μs</td><td>60-75%</td><td>Intensified stimulation for orgasm</td></tr>
+                <tr><td>Afterglow</td><td>10 Hz</td><td>500 μs</td><td>15%</td><td>Gentle post-orgasm; recovery</td></tr>
+                <tr><td>Punishment</td><td>50 Hz</td><td>250 μs</td><td>50-70%</td><td>Brief intense consequence</td></tr>
+            </table>
+
+            <h4>User Customization</h4>
+            <p>Users can create custom TENS profiles within safety limits:</p>
+            <ul>
+                <li><strong>Frequency:</strong> 1-100 Hz (higher = more "buzzing", lower = "thumping")</li>
+                <li><strong>Pulse Width:</strong> 50-500 μs (wider = deeper nerve recruitment)</li>
+                <li><strong>Amplitude:</strong> 0-80% (user should start low and gradually increase)</li>
+                <li><strong>Burst Mode:</strong> Groups of pulses for varied sensation</li>
+            </ul>
+        </section>
+
+        <!-- Section 8: Safety -->
+        <section id="safety">
+            <h2>8. Safety Systems</h2>
+
+            <div class="danger">
+                <strong>⚠️ Critical Safety Information</strong><br>
+                The safety system is designed to prevent tissue damage and ensure user wellbeing. Never bypass or disable safety features.
+            </div>
+
+            <h3>Safety Manager (<code>SafetyManager.h</code>)</h3>
+            <p>Core safety monitoring with 10Hz checks and automatic emergency response.</p>
+
+            <h4>Safety States</h4>
+            <table>
+                <tr><th>State</th><th>Description</th><th>Response</th></tr>
+                <tr><td>SAFE</td><td>All systems normal</td><td>Normal operation</td></tr>
+                <tr><td>WARNING</td><td>Warning condition detected</td><td>Alert user, reduce intensity</td></tr>
+                <tr><td>CRITICAL</td><td>Critical condition</td><td>Immediate action required</td></tr>
+                <tr><td>EMERGENCY_STOP</td><td>Emergency stop activated</td><td>All actuators disabled, venting</td></tr>
+            </table>
+
+            <h4>Safety Constants (<code>SafetyConstants.h</code>)</h4>
+            <table>
+                <tr><th>Parameter</th><th>Value</th><th>Description</th></tr>
+                <tr><td>MAX_PRESSURE_MMHG</td><td>75.0</td><td>Absolute maximum pressure (sensor full-scale)</td></tr>
+                <tr><td>MAX_PRESSURE_STIMULATION_MMHG</td><td>60.0</td><td>Maximum during stimulation</td></tr>
+                <tr><td>TISSUE_DAMAGE_RISK_MMHG</td><td>80.0</td><td>Tissue damage risk threshold</td></tr>
+                <tr><td>SEAL_LOST_THRESHOLD_MMHG</td><td>10.0</td><td>Seal integrity warning</td></tr>
+                <tr><td>MAX_SESSION_DURATION_MS</td><td>1,800,000</td><td>30 minute session limit</td></tr>
+                <tr><td>MAX_TENS_AMPLITUDE</td><td>0.80</td><td>80% maximum TENS amplitude</td></tr>
+            </table>
+
+            <h4>Emergency Stop Coordinator</h4>
+            <p>Centralized emergency stop handling with callback registration:</p>
+            <ul>
+                <li>Immediate pump shutdown</li>
+                <li>All valves opened for venting</li>
+                <li>TENS disabled</li>
+                <li>All patterns stopped</li>
+                <li>Safety event logged</li>
+            </ul>
+
+            <h4>Seal Integrity Monitoring</h4>
+            <p>Arousal-adaptive seal detection that differentiates tissue swelling from actual leaks:</p>
+            <ul>
+                <li>Compensates for natural pressure changes during arousal</li>
+                <li>Detects rapid pressure drops indicating seal failure</li>
+                <li>Automatic re-seal attempts before emergency stop</li>
+            </ul>
+
+            <h4>TENS Safety (<code>TENSSafetyMonitor.h</code>)</h4>
+            <ul>
+                <li>Electrode contact verification before activation</li>
+                <li>Impedance monitoring during operation</li>
+                <li>Automatic shutdown on fault detection</li>
+                <li>Amplitude ramping for comfort</li>
+            </ul>
+        </section>
+
+        <!-- Section 9: Networking -->
+        <section id="networking">
+            <h2>9. Multi-User & Networking</h2>
+
+            <h3>Network Manager (<code>NetworkManager.h</code>)</h3>
+            <p>Secure multi-user control with consent management and encrypted communication.</p>
+
+            <h4>User Roles</h4>
+            <table>
+                <tr><th>Role</th><th>Permissions</th></tr>
+                <tr><td>OWNER</td><td>Full device control, user management, all settings</td></tr>
+                <tr><td>DOM</td><td>Control commands, game selection, consequence triggers (with consent)</td></tr>
+                <tr><td>SUB</td><td>Safeword only, view own stats</td></tr>
+                <tr><td>VIEWER</td><td>Read-only access to status (with consent)</td></tr>
+            </table>
+
+            <h4>Consent Manager (<code>ConsentManager.h</code>)</h4>
+            <p>Explicit consent tracking with expiration:</p>
+            <ul>
+                <li>Camera consent (body/cup separately)</li>
+                <li>Control consent (per-user, time-limited)</li>
+                <li>TENS consent (explicit opt-in)</li>
+                <li>Data sharing consent</li>
+            </ul>
+
+            <h4>Remote Control Protocol</h4>
+            <ul>
+                <li>WebSocket-based real-time communication</li>
+                <li>TLS encryption for all connections</li>
+                <li>Command authentication and rate limiting</li>
+                <li>Safeword always available regardless of control state</li>
+            </ul>
+
+            <h4>Pairing System</h4>
+            <p>Secure device pairing with consent verification:</p>
+            <ol>
+                <li>Pairing request initiated by DOM</li>
+                <li>SUB receives notification with permissions list</li>
+                <li>SUB explicitly accepts with duration limit</li>
+                <li>Consent can be revoked at any time</li>
+            </ol>
+        </section>
+
+        <!-- Section 10: Licensing -->
+        <section id="licensing">
+            <h2>10. Licensing & Subscriptions</h2>
+
+            <h3>License Manager (<code>LicenseManager.h</code>)</h3>
+            <p>Feature-gated access with subscription tiers.</p>
+
+            <h4>Subscription Tiers</h4>
+            <table>
+                <tr><th>Tier</th><th>Features</th><th>Price</th></tr>
+                <tr>
+                    <td><span class="badge badge-basic">Basic</span></td>
+                    <td>Core patterns, basic games, local control</td>
+                    <td>Free</td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-premium">Premium</span></td>
+                    <td>TENS integration, advanced games, remote control, camera features</td>
+                    <td>Subscription</td>
+                </tr>
+            </table>
+
+            <h4>Feature Flags</h4>
+            <ul>
+                <li><code>FEATURE_TENS</code> - TENS electrode control</li>
+                <li><code>FEATURE_REMOTE_CONTROL</code> - Multi-user networking</li>
+                <li><code>FEATURE_CAMERA_MOTION</code> - Camera-based detection</li>
+                <li><code>FEATURE_ADVANCED_GAMES</code> - Premium game types</li>
+                <li><code>FEATURE_DATA_EXPORT</code> - Session data export</li>
+            </ul>
+        </section>
+
+        <!-- Section 11: GUI -->
+        <section id="gui">
+            <h2>11. User Interface</h2>
+
+            <h3>Main Window (<code>MainWindow.h</code>)</h3>
+            <p>Qt-based GUI with tabbed interface for all system functions.</p>
+
+            <h4>UI Components</h4>
+            <div class="grid">
+                <div class="card">
+                    <h4>Control Panel</h4>
+                    <p>Real-time pressure display, pattern selection, intensity controls, emergency stop button.</p>
+                </div>
+                <div class="card">
+                    <h4>Game Interface</h4>
+                    <p>Game selection, objective display, progress tracking, consequence notifications.</p>
+                </div>
+                <div class="card">
+                    <h4>Arousal Monitor</h4>
+                    <p>Real-time arousal graph, state indicators, sensor readings, heart rate display.</p>
+                </div>
+                <div class="card">
+                    <h4>Settings Panel</h4>
+                    <p>Calibration, safety limits, user preferences, network configuration.</p>
+                </div>
+            </div>
+
+            <h4>Arousal Visualization (<code>ArousalVisualization.h</code>)</h4>
+            <p>Real-time graphing of arousal level with threshold indicators:</p>
+            <ul>
+                <li>Scrolling time-series graph</li>
+                <li>Edge/orgasm threshold lines</li>
+                <li>State color coding</li>
+                <li>Heart rate overlay (when enabled)</li>
+            </ul>
+
+            <h4>Accessibility</h4>
+            <ul>
+                <li>High-contrast mode</li>
+                <li>Large touch targets for emergency stop</li>
+                <li>Audio feedback for state changes</li>
+                <li>Keyboard navigation support</li>
+            </ul>
+        </section>
+
+        <!-- Quick Reference -->
+        <section id="reference">
+            <h2>Quick Reference</h2>
+
+            <h3>Key Classes</h3>
+            <table>
+                <tr><th>Class</th><th>File</th><th>Purpose</th></tr>
+                <tr><td>VacuumController</td><td>VacuumController.h</td><td>Main application facade</td></tr>
+                <tr><td>HardwareManager</td><td>hardware/HardwareManager.h</td><td>Hardware abstraction layer</td></tr>
+                <tr><td>GameEngine</td><td>game/GameEngine.h</td><td>Game lifecycle management</td></tr>
+                <tr><td>OrgasmControlAlgorithm</td><td>control/OrgasmControlAlgorithm.h</td><td>Arousal detection & control</td></tr>
+                <tr><td>PatternEngine</td><td>patterns/PatternEngine.h</td><td>Pattern execution</td></tr>
+                <tr><td>SafetyManager</td><td>safety/SafetyManager.h</td><td>Safety monitoring</td></tr>
+                <tr><td>ConsequenceEngine</td><td>game/ConsequenceEngine.h</td><td>Rewards & punishments</td></tr>
+                <tr><td>ProgressTracker</td><td>game/ProgressTracker.h</td><td>User progress & unlocks</td></tr>
+                <tr><td>NetworkManager</td><td>network/NetworkManager.h</td><td>Multi-user control</td></tr>
+                <tr><td>CameraManager</td><td>hardware/CameraManager.h</td><td>Camera motion detection</td></tr>
+            </table>
+
+            <h3>Important Signals</h3>
+            <pre>
+// Arousal & Control
+arousalLevelChanged(double level)
+arousalStateChanged(ArousalState state)
+edgeDetected(int edgeNumber, double intensity)
+orgasmDetected(int orgasmNumber, qint64 timeMs)
+
+// Games
+gameStarted(QString gameId)
+objectiveProgress(QString objectiveId, double progress)
+consequenceTriggered(ConsequenceType type)
+gameEnded(GameResult result)
+
+// Safety
+emergencyStopTriggered(QString reason)
+overpressureDetected(double pressure)
+sealIntegrityWarning(double pressure)
+tensFaultDetected(QString reason)
+            </pre>
+        </section>
+    </div>
+
+    <footer>
+        <p>V-Contour System Documentation | Version 1.0 | Confidential</p>
+        <p>For technical support, refer to the source code comments and Doxygen documentation.</p>
+    </footer>
+</body>
+</html>
+

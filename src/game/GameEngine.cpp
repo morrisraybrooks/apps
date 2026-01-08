@@ -345,6 +345,22 @@ void GameEngine::setMotionSensor(MotionSensor* sensor)
     m_motionSensor = sensor;
 }
 
+void GameEngine::setCameraManager(CameraManager* cameraManager)
+{
+    m_cameraManager = cameraManager;
+
+    if (m_cameraManager) {
+        connect(m_cameraManager, &CameraManager::violationDetected,
+                this, &GameEngine::onCameraMotionViolation);
+        connect(m_cameraManager, &CameraManager::combinedStillnessChanged,
+                this, &GameEngine::onCameraStillnessChanged);
+        connect(m_cameraManager, &CameraManager::orgasmStateChanged,
+                this, &GameEngine::onOrgasmStateChanged);
+        connect(m_cameraManager, &CameraManager::orgasmDetected,
+                this, &GameEngine::onCameraOrgasmDetected);
+    }
+}
+
 // ============================================================================
 // Timer Callbacks
 // ============================================================================

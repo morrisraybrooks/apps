@@ -88,6 +88,11 @@ Q_SIGNALS:
     void oscillationStarted();
     void oscillationStopped();
     void phaseChanged(Phase newPhase);
+    /**
+     * @brief Emitted when vacuum phase changes (for TENS synchronization)
+     * @param isSuctionPhase True during SUCTION/HOLD phases, false during VENT/TRANSITION
+     */
+    void vacuumPhaseChanged(bool isSuctionPhase);
     void cycleCompleted(int cycleCount);
     void amplitudeReached(double pressure);
     void error(const QString& message);

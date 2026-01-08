@@ -14,6 +14,8 @@ class TENSController;
 class FluidSensor;
 class MotionSensor;
 class ClitoralOscillator;
+class CameraManager;
+class ConsentManager;
 
 /**
  * @brief Hardware abstraction layer for the vacuum controller
@@ -68,6 +70,8 @@ public:
     FluidSensor* getFluidSensor() const { return m_fluidSensor.get(); }
     MotionSensor* getMotionSensor() const { return m_motionSensor.get(); }
     ClitoralOscillator* getClitoralOscillator() const { return m_clitoralOscillator.get(); }
+    CameraManager* getCameraManager() const { return m_cameraManager.get(); }
+    ConsentManager* getConsentManager() const { return m_consentManager.get(); }
 
     // Fluid sensor readings
     double readFluidVolumeMl();           // Current volume in reservoir
@@ -81,6 +85,12 @@ public:
     void setTENSAmplitude(double percent);
     bool isTENSRunning() const;
     bool isTENSFault() const;
+
+    // Low-level TENS GPIO control (for TENSController use)
+    void setTENSOutputEnable(bool enabled);
+    void setTENSPhasePolarity(bool positive);
+    void setTENSPWMDutyCycle(int pwmValue);  // 0-1024
+    bool readTENSFaultPin() const;
 
     // Emergency controls
     void emergencyStop();
@@ -127,6 +137,8 @@ private:
     std::unique_ptr<FluidSensor> m_fluidSensor;
     std::unique_ptr<MotionSensor> m_motionSensor;
     std::unique_ptr<ClitoralOscillator> m_clitoralOscillator;
+    std::unique_ptr<CameraManager> m_cameraManager;
+    std::unique_ptr<ConsentManager> m_consentManager;
 
     // System state
     bool m_initialized;
@@ -143,6 +155,11 @@ private:
     // Clitoral cylinder
     bool m_sol4State;    // SOL4 (GPIO 23): Clitoral cylinder vacuum
     bool m_sol5State;    // SOL5 (GPIO 24): Clitoral cylinder vent valve
+
+    // TENS electrode states (integrated into clitoral cup)
+    bool m_tensEnableState;      // GPIO 5: Master enable
+    bool m_tensPhaseState;       // GPIO 6: Polarity (true=positive, false=negative)
+    int m_tensPWMValue;          // GPIO 12: PWM duty cycle (0-1024)
 
     // Error tracking
     QString m_lastError;
