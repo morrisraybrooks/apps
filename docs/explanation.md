@@ -283,7 +283,7 @@ Standard vacuum cups have fundamental design flaws:
 ### 1.2 The A-Contour Solution: Anatomical A-Shape Design
 
 The A-Contour is a purpose-built vacuum interface engineered for the female vulva. The "A" shape represents:
-- **A-apex triangle**: The enclosed triangular space at the top housing the 15mm clitoral cylinder
+- **A-apex triangle**: The enclosed triangular space at the top housing the 1" × 2" (25mm × 51mm) clitoral cylinder
 - **A-crossbar**: The internal diaphragm separating the clitoral chamber from outer chambers
 - **A-legs**: The two bilateral outer vacuum chambers (80mm total coverage)
 
@@ -294,7 +294,7 @@ The A-Contour is a purpose-built vacuum interface engineered for the female vulv
 │                            ╱╲                                     │
 │                           ╱╱╲╲                                    │
 │                          ╱╱  ╲╲  ← A-APEX TRIANGLE                │
-│                         ╱╱clit╲╲    (15mm Clitoral Cylinder)      │
+│                         ╱╱clit╲╲    (1"×2" Clitoral Cylinder)      │
 │                        ╱╱──────╲╲ ← A-CROSSBAR (Divide between    │
 │                       ╱╱────────╲╲   Clitoral Cylinder & Outer)   │
 │                      ╱╱   OPEN   ╲╲ ← A-LEGS (Bilateral Outer     │
@@ -304,7 +304,7 @@ The A-Contour is a purpose-built vacuum interface engineered for the female vulv
 │                  └┘      Access      └┘                           │
 │                                                                   │
 │  Legend:                                                          │
-│  • A-Apex Triangle: 15mm clitoral cylinder chamber                │
+│  • A-Apex Triangle: 1"×2" clitoral cylinder chamber               │
 │  • A-Crossbar: Internal diaphragm separating chambers             │
 │  • A-Legs: Bilateral outer chambers sealing around labia          │
 │  • Open Channel: Fluid drainage + vaginal/urethral access         │
@@ -369,7 +369,7 @@ The A-shape creates an **open channel** by sealing around the periphery of the v
 │                                   │                             │
 │                                   ▼                             │
 │                               ╭─────╮                           │
-│                               │~~~~~│ ← Clitoral Gland (15mm)   │
+│                               │~~~~~│ ← Clitoral Gland (1"×2")  │
 │                               │~~~~~│                           │
 │                      ═════════╧═════╧═══════ ← A-CROSSBAR       │
 │    A-Cup Outer Wall │                       │   (Diaphragm)     │

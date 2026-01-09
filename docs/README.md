@@ -65,7 +65,7 @@ The "A" shape represents the cup's anatomy, creating an **open-channel design** 
 
                          ╱╲
                         ╱╱╲╲
-                       ╱╱  ╲╲  ← A-APEX TRIANGLE (15mm Clitoral Cylinder)
+                       ╱╱  ╲╲  ← A-APEX TRIANGLE (1"×2" Clitoral Cylinder)
                       ╱╱clit╲╲
                      ╱╱──────╲╲ ← A-CROSSBAR (Divide between Clitoral Cylinder and Outer Chamber)
                     ╱╱────────╲╲
@@ -80,7 +80,7 @@ The "A" shape represents the cup's anatomy, creating an **open-channel design** 
 
 | Component | Description | Function |
 |-----------|-------------|----------|
-| **A-apex triangle** | Enclosed triangular space at top of "A" | Houses the 15mm clitoral cylinder for focused stimulation |
+| **A-apex triangle** | Enclosed triangular space at top of "A" | Houses the 1" × 2" clitoral cylinder for focused stimulation |
 | **A-crossbar** | Internal diaphragm separating chambers | Creates pressure isolation between clitoral and outer chambers |
 | **A-legs** | Two bilateral outer vacuum chambers | Seal against labia for attachment + engorgement (80mm total coverage) |
 | **Open channel** | Space between the A-legs | Allows vaginal/urethral access and fluid drainage |
@@ -118,7 +118,7 @@ The A-shape's open channel provides unique advantages over closed dome designs:
 | Parameter | Value | Notes |
 |-----------|-------|-------|
 | Overall dome diameter | 80mm | Full vulva coverage |
-| Clitoral cylinder diameter | 15mm | Focused clitoral stimulation |
+| Clitoral cylinder size | 1" × 2" (25mm × 51mm) | Focused clitoral stimulation |
 | Dome height | 50mm | |
 | Wall thickness | 2.0mm | |
 | Chamber separation height | 8mm | |

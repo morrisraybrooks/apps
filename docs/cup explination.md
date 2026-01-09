@@ -25,7 +25,7 @@ The A-Contour uses two independent vacuum zones:
 - Maintains sustained vacuum for blood engorgement of vulva and labia
 
 ### Inner Chamber (Clitoral Zone)
-- **Diameter**: 15mm (focused stimulation)
+- **Dimensions**: 1" × 2" (25mm wide × 51mm tall)
 - **Function**: Variable patterns + air pulse stimulation
 - **Pressure**: 0 to -60 kPa variable
 - **Connected to**: SOL3 valve (or SOL4/SOL5 in 5-valve configuration)
@@ -38,7 +38,7 @@ The A-Contour uses two independent vacuum zones:
 | Parameter | Value | Notes |
 |-----------|-------|-------|
 | Overall dome diameter | 80mm | Full vulva coverage |
-| Clitoral cylinder diameter | 15mm | Focused clitoral stimulation |
+| Clitoral cylinder size | 1" × 2" (25mm × 51mm) | Focused clitoral stimulation |
 | Dome height | 50mm | |
 | Wall thickness | 2.0mm | |
 | Chamber separation height | 8mm | |
@@ -78,7 +78,7 @@ The A-Contour's defining feature is its **A-shaped geometry** that creates an op
 ### Understanding the A-Shape Geometry
 
 The "A" shape represents the cup's anatomy:
-- **A-apex triangle**: The enclosed triangular space at the top of the "A" houses the 15mm clitoral cylinder
+- **A-apex triangle**: The enclosed triangular space at the top of the "A" houses the 1" × 2" clitoral cylinder
 - **A-crossbar**: The internal diaphragm that separates the clitoral chamber from the outer chambers
 - **A-legs**: The two bilateral outer vacuum chambers (80mm total coverage) that seal against the labia
 - **Open channel**: The space between the A-legs for vaginal/urethral access
@@ -90,7 +90,7 @@ The "A" shape represents the cup's anatomy:
 
                          ╱╲
                         ╱╱╲╲
-                       ╱╱  ╲╲  ← A-APEX TRIANGLE (15mm Clitoral Cylinder)
+                       ╱╱  ╲╲  ← A-APEX TRIANGLE (1"×2" Clitoral Cylinder)
                       ╱╱clit╲╲
                      ╱╱──────╲╲ ← A-CROSSBAR (Divide between Clitoral Cylinder and Outer Chamber)
                     ╱╱────────╲╲
@@ -111,7 +111,7 @@ The "A" shape represents the cup's anatomy:
                                    │
                                    ▼
                                 ╭─────╮
-                                │~~~~~│ ← Clitoral Gland (15mm)
+                                │~~~~~│ ← Clitoral Gland (1"×2")
                                 │~~~~~│
                       ══════════╧═════╧══════ ← A-CROSSBAR
     A-Cup Outer Wall │                       │   (Diaphragm)

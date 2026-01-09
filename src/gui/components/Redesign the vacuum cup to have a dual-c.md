@@ -21,7 +21,7 @@ Redesign the vacuum cup to have a dual-chamber system with two separate ports an
 - Internal barrier/diaphragm separating the two chambers
 - Ensure proper sealing between chambers to prevent cross-contamination of vacuum zones
 - Outer chamber diameter: ~80mm (vulva coverage)
-- Inner chamber diameter: ~15mm (clitoral focus)
+- Inner chamber size: 1" × 2" (25mm × 51mm) (clitoral focus)
 - Both chambers must be visible through transparent shell material
 
 **Functional Requirements:**
