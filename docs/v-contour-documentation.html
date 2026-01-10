@@ -1468,6 +1468,15 @@ GPIO 18 (PWM)    ---> IN1
                         <!-- Dome back edge -->
                         <path d="M 405 251 Q 450 206 495 251" fill="#8b4545" stroke="#6d2020" stroke-width="1" opacity="0.4"/>
 
+                        <!-- Cylinder top visible above bridge - showing it protrudes through -->
+                        <!-- Top ellipse showing cylinder opening from above -->
+                        <ellipse cx="450" cy="246" rx="50" ry="12" fill="#e8f4fc" stroke="#c0392b" stroke-width="2.5" opacity="0.8"/>
+                        <ellipse cx="450" cy="246" rx="42" ry="10" fill="none" stroke="#a93226" stroke-width="1.5" stroke-dasharray="3,2" opacity="0.6"/>
+
+                        <!-- Annotation showing this is visible from top -->
+                        <rect x="515" y="238" width="95" height="14" fill="white" opacity="0.9" rx="3"/>
+                        <text x="520" y="248" text-anchor="start" fill="#a93226" font-size="9" font-weight="bold">Visible from top →</text>
+
                         <!-- Cylinder sealing rim with 3D thickness -->
                         <path d="M 408 450 Q 429 455 450 455 Q 471 455 492 450" fill="#c0392b" stroke="#922b21" stroke-width="2" opacity="0.7"/>
                         <path d="M 410 455 Q 431 460 450 460 Q 469 460 490 455" fill="#922b21" stroke="#6d2020" stroke-width="1" opacity="0.5"/>
@@ -1527,15 +1536,24 @@ GPIO 18 (PWM)    ---> IN1
                         <text x="517" y="364" text-anchor="start" fill="#c0392b" font-size="9">(51mm)</text>
 
                         <!-- ========== A-APEX BRIDGE (CONNECTING LEFT AND RIGHT) - 3D PERSPECTIVE ========== -->
+                        <!-- Bridge now has opening for Zone 2 cylinder to protrude through -->
 
                         <!-- TOP BRIDGE - connects left and right A-legs with upward dome -->
 
-                        <!-- Back surface of bridge (receding into depth) -->
-                        <path d="M 255 255 Q 450 220 645 255 L 645 285 Q 450 250 255 285 Z"
+                        <!-- Back surface of bridge (receding into depth) - LEFT SECTION -->
+                        <path d="M 255 255 Q 320 230 395 248 L 395 285 Q 320 265 255 285 Z"
                               fill="#5a6d7f" stroke="#34495e" stroke-width="1" opacity="0.5"/>
 
-                        <!-- Interior chamber space with depth -->
-                        <path d="M 258 255 Q 450 240 642 255 L 642 280 Q 450 265 258 280 Z"
+                        <!-- Back surface of bridge - RIGHT SECTION -->
+                        <path d="M 505 248 Q 580 230 645 255 L 645 285 Q 580 265 505 285 Z"
+                              fill="#5a6d7f" stroke="#34495e" stroke-width="1" opacity="0.5"/>
+
+                        <!-- Interior chamber space with depth - LEFT -->
+                        <path d="M 258 255 Q 320 245 395 255 L 395 280 Q 320 270 258 280 Z"
+                              fill="url(#chamberShadow)" stroke="none" opacity="0.3"/>
+
+                        <!-- Interior chamber space with depth - RIGHT -->
+                        <path d="M 505 255 Q 580 245 642 255 L 642 280 Q 580 270 505 280 Z"
                               fill="url(#chamberShadow)" stroke="none" opacity="0.3"/>
 
                         <!-- Left outer wall with 3D depth -->
@@ -1550,12 +1568,20 @@ GPIO 18 (PWM)    ---> IN1
                         <path d="M 650 250 L 650 280"
                               fill="url(#wall3D)" stroke="#2980b9" stroke-width="3"/>
 
-                        <!-- Top surface - upward dome connecting left to right (front face) -->
-                        <path d="M 250 250 Q 450 210 650 250"
+                        <!-- Top surface - LEFT SECTION (stops at cylinder opening) -->
+                        <path d="M 250 250 Q 320 225 395 246"
                               fill="url(#wall3D)" stroke="#2980b9" stroke-width="3"/>
 
-                        <!-- Bottom surface - upward dome (inner surface front) -->
-                        <path d="M 258 280 Q 450 240 642 280"
+                        <!-- Top surface - RIGHT SECTION (starts after cylinder opening) -->
+                        <path d="M 505 246 Q 580 225 650 250"
+                              fill="url(#wall3D)" stroke="#2980b9" stroke-width="3"/>
+
+                        <!-- Bottom surface - LEFT SECTION -->
+                        <path d="M 258 280 Q 320 250 395 270"
+                              fill="url(#wall3D)" stroke="#2980b9" stroke-width="2"/>
+
+                        <!-- Bottom surface - RIGHT SECTION -->
+                        <path d="M 505 270 Q 580 250 642 280"
                               fill="url(#wall3D)" stroke="#2980b9" stroke-width="2"/>
 
                         <!-- Left side wall (front edge) -->
@@ -1566,17 +1592,48 @@ GPIO 18 (PWM)    ---> IN1
                         <path d="M 650 250 L 642 280"
                               fill="url(#wall3D)" stroke="#2980b9" stroke-width="2"/>
 
+                        <!-- Opening edges where cylinder passes through - LEFT -->
+                        <path d="M 395 246 L 395 280"
+                              fill="url(#wall3D)" stroke="#2980b9" stroke-width="2.5"/>
+
+                        <!-- Opening edges where cylinder passes through - RIGHT -->
+                        <path d="M 505 246 L 505 280"
+                              fill="url(#wall3D)" stroke="#2980b9" stroke-width="2.5"/>
+
+                        <!-- Visual connection showing cylinder passes through bridge -->
+                        <!-- Left side connection -->
+                        <path d="M 400 246 L 395 246" stroke="#c0392b" stroke-width="2" opacity="0.8"/>
+                        <!-- Right side connection -->
+                        <path d="M 500 246 L 505 246" stroke="#c0392b" stroke-width="2" opacity="0.8"/>
+
+                        <!-- Shadow/depth indicator inside opening -->
+                        <rect x="395" y="246" width="110" height="8" fill="#34495e" opacity="0.15"/>
+                        <rect x="395" y="272" width="110" height="8" fill="#34495e" opacity="0.1"/>
+
                         <!-- Vacuum chamber visualization (left side) with depth -->
-                        <path d="M 258 255 Q 350 260 400 275 L 258 275 Z"
+                        <path d="M 258 255 Q 320 260 390 270 L 258 275 Z"
                               fill="#3498db" fill-opacity="0.25" stroke="none"/>
-                        <path d="M 263 260 Q 355 265 405 280 L 263 280 Z"
+                        <path d="M 263 260 Q 325 265 395 275 L 263 280 Z"
                               fill="#2980b9" fill-opacity="0.15" stroke="none"/>
 
                         <!-- Vacuum chamber visualization (right side) with depth -->
-                        <path d="M 642 255 Q 550 260 500 275 L 642 275 Z"
+                        <path d="M 642 255 Q 580 260 510 270 L 642 275 Z"
                               fill="#3498db" fill-opacity="0.25" stroke="none"/>
-                        <path d="M 637 260 Q 545 265 495 280 L 637 280 Z"
+                        <path d="M 637 260 Q 575 265 505 275 L 637 280 Z"
                               fill="#2980b9" fill-opacity="0.15" stroke="none"/>
+
+                        <!-- Cylinder protrusion indicators -->
+                        <!-- Left edge of opening -->
+                        <line x1="395" y1="246" x2="395" y2="235" stroke="#c0392b" stroke-width="2" stroke-dasharray="4,2"/>
+                        <line x1="395" y1="235" x2="385" y2="235" stroke="#c0392b" stroke-width="1.5" marker-end="url(#arrowRed)"/>
+
+                        <!-- Right edge of opening -->
+                        <line x1="505" y1="246" x2="505" y2="235" stroke="#c0392b" stroke-width="2" stroke-dasharray="4,2"/>
+                        <line x1="505" y1="235" x2="515" y2="235" stroke="#c0392b" stroke-width="1.5" marker-end="url(#arrowRed)"/>
+
+                        <!-- Opening annotation -->
+                        <rect x="360" y="218" width="180" height="14" fill="white" opacity="0.9" rx="3"/>
+                        <text x="450" y="228" text-anchor="middle" fill="#a93226" font-size="9" font-weight="bold">← Cylinder protrudes through bridge →</text>
 
                         <!-- Bridge labels with background -->
                         <rect x="385" y="192" width="130" height="20" fill="white" opacity="0.85" rx="4"/>
