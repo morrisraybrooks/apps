@@ -1289,6 +1289,13 @@ GPIO 18 (PWM)    ---> IN1
                                 <stop offset="70%" style="stop-color:#bdc3c7;stop-opacity:1"/>
                                 <stop offset="100%" style="stop-color:#7f8c8d;stop-opacity:1"/>
                             </linearGradient>
+
+                            <!-- Text background filter for better readability -->
+                            <filter id="textBackground" x="-0.1" y="-0.5" width="1.2" height="2">
+                                <feFlood flood-color="white" flood-opacity="0.85"/>
+                                <feComposite in="SourceGraphic"/>
+                            </filter>
+
                             <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
                                 <path d="M0,0 L0,6 L9,3 z" fill="#2980b9"/>
                             </marker>
@@ -1300,27 +1307,34 @@ GPIO 18 (PWM)    ---> IN1
                             </marker>
                         </defs>
 
-                        <text x="450" y="30" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">
+                        <!-- Clean white background (removes grey) -->
+                        <rect x="0" y="0" width="900" height="600" fill="white"/>
+
+                        <!-- Title with enhanced readability -->
+                        <text x="450" y="32" text-anchor="middle" font-size="18" font-weight="bold" fill="#1a252f" letter-spacing="0.5">
                             3D CUTAWAY VIEW (CROSS-SECTION)
                         </text>
-                        <text x="450" y="48" text-anchor="middle" font-size="9" fill="#7f8c8d" font-style="italic">
+                        <text x="450" y="52" text-anchor="middle" font-size="11" fill="#34495e" font-style="italic">
                             Perspective view showing internal chamber depth and structure - Scale: 4px = 1mm
                         </text>
 
                         <!-- ========== BODY SURFACE LINE (REFERENCE) ========== -->
-                        <line x1="100" y1="450" x2="800" y2="450" stroke="#8e44ad" stroke-width="3" stroke-dasharray="8,4"/>
-                        <text x="100" y="470" text-anchor="start" fill="#8e44ad" font-size="10" font-weight="bold">BODY SURFACE</text>
-                        <text x="800" y="470" text-anchor="end" fill="#8e44ad" font-size="10" font-weight="bold">BODY SURFACE</text>
+                        <line x1="100" y1="450" x2="800" y2="450" stroke="#8e44ad" stroke-width="4" stroke-dasharray="10,5"/>
+                        <!-- Text backgrounds for contrast -->
+                        <rect x="95" y="456" width="110" height="20" fill="white" opacity="0.9" rx="3"/>
+                        <rect x="695" y="456" width="110" height="20" fill="white" opacity="0.9" rx="3"/>
+                        <text x="100" y="470" text-anchor="start" fill="#7d3c98" font-size="12" font-weight="bold">BODY SURFACE</text>
+                        <text x="800" y="470" text-anchor="end" fill="#7d3c98" font-size="12" font-weight="bold">BODY SURFACE</text>
 
                         <!-- ========== LEFT A-LEG: LABIA ANATOMY ========== -->
                         <!-- Labia Majora (outer lip) -->
-                        <ellipse cx="200" cy="430" rx="35" ry="60" fill="#e8c9a0" stroke="#c9a86c" stroke-width="2"/>
-                        <text x="200" y="425" text-anchor="middle" fill="#a67c52" font-size="8" font-weight="bold">Labia</text>
-                        <text x="200" y="437" text-anchor="middle" fill="#a67c52" font-size="8" font-weight="bold">Majora</text>
+                        <ellipse cx="200" cy="430" rx="35" ry="60" fill="#e8c9a0" stroke="#c9a86c" stroke-width="2.5"/>
+                        <text x="200" y="426" text-anchor="middle" fill="#7d5a3a" font-size="10" font-weight="bold">Labia</text>
+                        <text x="200" y="439" text-anchor="middle" fill="#7d5a3a" font-size="10" font-weight="bold">Majora</text>
 
                         <!-- Labia Minora (inner lip) -->
-                        <ellipse cx="220" cy="435" rx="18" ry="40" fill="#f0d4b8" stroke="#d4a574" stroke-width="1.5"/>
-                        <text x="220" y="440" text-anchor="middle" fill="#a67c52" font-size="7">LM</text>
+                        <ellipse cx="220" cy="435" rx="18" ry="40" fill="#f0d4b8" stroke="#d4a574" stroke-width="2"/>
+                        <text x="220" y="441" text-anchor="middle" fill="#7d5a3a" font-size="9" font-weight="bold">LM</text>
 
                         <!-- LEFT A-LEG CUP STRUCTURE - 3D PERSPECTIVE -->
                         <!-- 50mm height = 200px at 4px/mm -->
@@ -1352,20 +1366,21 @@ GPIO 18 (PWM)    ---> IN1
                         <path d="M 150 450 Q 175 455 200 455 Q 225 455 250 450" fill="#2980b9" stroke="#1a5276" stroke-width="2" opacity="0.7"/>
                         <path d="M 155 455 Q 180 460 205 460 Q 230 460 255 455" fill="#1a5276" stroke="#0d3a52" stroke-width="1" opacity="0.5"/>
 
-                        <!-- Zone 1 label -->
-                        <text x="195" y="340" text-anchor="middle" fill="#2980b9" font-size="11" font-weight="bold">ZONE 1</text>
-                        <text x="195" y="355" text-anchor="middle" fill="#2980b9" font-size="8">(Left A-Leg)</text>
-                        <text x="195" y="368" text-anchor="middle" fill="#2980b9" font-size="7">(~50mm)</text>
+                        <!-- Zone 1 label with background for contrast -->
+                        <rect x="155" y="325" width="80" height="55" fill="white" opacity="0.85" rx="4"/>
+                        <text x="195" y="343" text-anchor="middle" fill="#1a5490" font-size="14" font-weight="bold">ZONE 1</text>
+                        <text x="195" y="359" text-anchor="middle" fill="#2980b9" font-size="10">(Left A-Leg)</text>
+                        <text x="195" y="374" text-anchor="middle" fill="#34495e" font-size="9">(~50mm)</text>
 
                         <!-- ========== RIGHT A-LEG: LABIA ANATOMY ========== -->
                         <!-- Labia Majora (outer lip) -->
-                        <ellipse cx="700" cy="430" rx="35" ry="60" fill="#e8c9a0" stroke="#c9a86c" stroke-width="2"/>
-                        <text x="700" y="425" text-anchor="middle" fill="#a67c52" font-size="8" font-weight="bold">Labia</text>
-                        <text x="700" y="437" text-anchor="middle" fill="#a67c52" font-size="8" font-weight="bold">Majora</text>
+                        <ellipse cx="700" cy="430" rx="35" ry="60" fill="#e8c9a0" stroke="#c9a86c" stroke-width="2.5"/>
+                        <text x="700" y="426" text-anchor="middle" fill="#7d5a3a" font-size="10" font-weight="bold">Labia</text>
+                        <text x="700" y="439" text-anchor="middle" fill="#7d5a3a" font-size="10" font-weight="bold">Majora</text>
 
                         <!-- Labia Minora (inner lip) -->
-                        <ellipse cx="680" cy="435" rx="18" ry="40" fill="#f0d4b8" stroke="#d4a574" stroke-width="1.5"/>
-                        <text x="680" y="440" text-anchor="middle" fill="#a67c52" font-size="7">LM</text>
+                        <ellipse cx="680" cy="435" rx="18" ry="40" fill="#f0d4b8" stroke="#d4a574" stroke-width="2"/>
+                        <text x="680" y="441" text-anchor="middle" fill="#7d5a3a" font-size="9" font-weight="bold">LM</text>
 
                         <!-- RIGHT A-LEG CUP STRUCTURE - 3D PERSPECTIVE -->
                         <!-- 50mm height = 200px at 4px/mm -->
@@ -1397,10 +1412,11 @@ GPIO 18 (PWM)    ---> IN1
                         <path d="M 750 450 Q 725 455 700 455 Q 675 455 650 450" fill="#2980b9" stroke="#1a5276" stroke-width="2" opacity="0.7"/>
                         <path d="M 745 455 Q 720 460 695 460 Q 670 460 645 455" fill="#1a5276" stroke="#0d3a52" stroke-width="1" opacity="0.5"/>
 
-                        <!-- Zone 1 label -->
-                        <text x="705" y="340" text-anchor="middle" fill="#2980b9" font-size="11" font-weight="bold">ZONE 1</text>
-                        <text x="705" y="355" text-anchor="middle" fill="#2980b9" font-size="8">(Right A-Leg)</text>
-                        <text x="705" y="368" text-anchor="middle" fill="#2980b9" font-size="7">(~50mm)</text>
+                        <!-- Zone 1 label with background for contrast -->
+                        <rect x="665" y="325" width="80" height="55" fill="white" opacity="0.85" rx="4"/>
+                        <text x="705" y="343" text-anchor="middle" fill="#1a5490" font-size="14" font-weight="bold">ZONE 1</text>
+                        <text x="705" y="359" text-anchor="middle" fill="#2980b9" font-size="10">(Right A-Leg)</text>
+                        <text x="705" y="374" text-anchor="middle" fill="#34495e" font-size="9">(~50mm)</text>
 
                         <!-- ========== OPEN CHANNEL: VAGINAL & URETHRAL ACCESS ========== -->
                         <!-- Left open channel area -->
@@ -1410,19 +1426,23 @@ GPIO 18 (PWM)    ---> IN1
                         <rect x="530" y="300" width="112" height="150" fill="#f0fff4" stroke="#27ae60" stroke-width="2" stroke-dasharray="6,4" rx="5" opacity="0.3"/>
 
                         <!-- Urethra (on body surface, just below clitoris) -->
-                        <ellipse cx="450" cy="465" rx="10" ry="7" fill="#fff8e7" stroke="#bf8040" stroke-width="2"/>
-                        <text x="485" y="468" text-anchor="start" fill="#8b6914" font-size="8" font-weight="bold">Urethra</text>
+                        <ellipse cx="450" cy="465" rx="10" ry="7" fill="#fff8e7" stroke="#bf8040" stroke-width="2.5"/>
+                        <rect x="483" y="457" width="60" height="16" fill="white" opacity="0.85" rx="3"/>
+                        <text x="485" y="468" text-anchor="start" fill="#6d4c0f" font-size="10" font-weight="bold">Urethra</text>
 
                         <!-- Vaginal Opening (on body surface, below urethra in open channel) -->
-                        <ellipse cx="450" cy="490" rx="28" ry="18" fill="#f5e6d3" stroke="#a67c52" stroke-width="2"/>
-                        <text x="485" y="493" text-anchor="start" fill="#8b6914" font-size="8" font-weight="bold">Vaginal</text>
-                        <text x="485" y="503" text-anchor="start" fill="#8b6914" font-size="8" font-weight="bold">Opening</text>
+                        <ellipse cx="450" cy="490" rx="28" ry="18" fill="#f5e6d3" stroke="#a67c52" stroke-width="2.5"/>
+                        <rect x="483" y="480" width="70" height="28" fill="white" opacity="0.85" rx="3"/>
+                        <text x="485" y="492" text-anchor="start" fill="#6d4c0f" font-size="10" font-weight="bold">Vaginal</text>
+                        <text x="485" y="505" text-anchor="start" fill="#6d4c0f" font-size="10" font-weight="bold">Opening</text>
 
-                        <!-- Open channel labels -->
-                        <text x="314" y="330" text-anchor="middle" fill="#27ae60" font-size="9" font-weight="bold">OPEN</text>
-                        <text x="314" y="343" text-anchor="middle" fill="#27ae60" font-size="9" font-weight="bold">CHANNEL</text>
-                        <text x="586" y="330" text-anchor="middle" fill="#27ae60" font-size="9" font-weight="bold">OPEN</text>
-                        <text x="586" y="343" text-anchor="middle" fill="#27ae60" font-size="9" font-weight="bold">CHANNEL</text>
+                        <!-- Open channel labels with backgrounds -->
+                        <rect x="284" y="318" width="60" height="32" fill="white" opacity="0.85" rx="3"/>
+                        <text x="314" y="332" text-anchor="middle" fill="#1e8449" font-size="11" font-weight="bold">OPEN</text>
+                        <text x="314" y="346" text-anchor="middle" fill="#1e8449" font-size="11" font-weight="bold">CHANNEL</text>
+                        <rect x="556" y="318" width="60" height="32" fill="white" opacity="0.85" rx="3"/>
+                        <text x="586" y="332" text-anchor="middle" fill="#1e8449" font-size="11" font-weight="bold">OPEN</text>
+                        <text x="586" y="346" text-anchor="middle" fill="#1e8449" font-size="11" font-weight="bold">CHANNEL</text>
 
                         <!-- ========== CLITORAL CYLINDER (ZONE 2) - 3D PERSPECTIVE ========== -->
                         <!-- 2" height (51mm = 204px at 4px/mm) × 1" diameter (25mm = 100px at 4px/mm) -->
@@ -1474,32 +1494,37 @@ GPIO 18 (PWM)    ---> IN1
                               fill="#e8f4fc" stroke="none" opacity="0.5"/>
 
                         <!-- Vacuum pressure indicators in empty space -->
-                        <text x="450" y="220" text-anchor="middle" fill="#c0392b" font-size="8" font-weight="bold">Vacuum Space</text>
-                        <text x="450" y="232" text-anchor="middle" fill="#c0392b" font-size="7" font-style="italic">(~40% of cylinder)</text>
+                        <rect x="405" y="208" width="90" height="30" fill="white" opacity="0.85" rx="3"/>
+                        <text x="450" y="221" text-anchor="middle" fill="#a93226" font-size="10" font-weight="bold">Vacuum Space</text>
+                        <text x="450" y="234" text-anchor="middle" fill="#c0392b" font-size="9" font-style="italic">(~40% of cylinder)</text>
 
-                        <!-- Clitoris label -->
-                        <text x="390" y="360" text-anchor="end" fill="#a67c7c" font-size="9" font-weight="bold">Engorged</text>
-                        <text x="390" y="373" text-anchor="end" fill="#a67c7c" font-size="9" font-weight="bold">Clitoris</text>
-                        <text x="390" y="386" text-anchor="end" fill="#a67c7c" font-size="7" font-style="italic">(fills ~60%</text>
-                        <text x="390" y="396" text-anchor="end" fill="#a67c7c" font-size="7" font-style="italic">of height)</text>
+                        <!-- Clitoris label with background -->
+                        <rect x="285" y="348" width="100" height="58" fill="white" opacity="0.85" rx="3"/>
+                        <text x="390" y="363" text-anchor="end" fill="#8b5a5a" font-size="11" font-weight="bold">Engorged</text>
+                        <text x="390" y="378" text-anchor="end" fill="#8b5a5a" font-size="11" font-weight="bold">Clitoris</text>
+                        <text x="390" y="392" text-anchor="end" fill="#a67c7c" font-size="9" font-style="italic">(fills ~60%</text>
+                        <text x="390" y="404" text-anchor="end" fill="#a67c7c" font-size="9" font-style="italic">of height)</text>
 
-                        <!-- Zone 2 label -->
-                        <text x="510" y="300" text-anchor="start" fill="#c0392b" font-size="11" font-weight="bold">ZONE 2</text>
-                        <text x="510" y="315" text-anchor="start" fill="#922b21" font-size="8">Clitoral Cylinder</text>
-                        <text x="510" y="328" text-anchor="start" fill="#922b21" font-size="7">1" dia × 2" height</text>
-                        <text x="510" y="339" text-anchor="start" fill="#922b21" font-size="7">(25mm × 51mm)</text>
+                        <!-- Zone 2 label with background -->
+                        <rect x="508" y="285" width="125" height="62" fill="white" opacity="0.85" rx="4"/>
+                        <text x="512" y="302" text-anchor="start" fill="#a93226" font-size="14" font-weight="bold">ZONE 2</text>
+                        <text x="512" y="318" text-anchor="start" fill="#c0392b" font-size="10">Clitoral Cylinder</text>
+                        <text x="512" y="332" text-anchor="start" fill="#922b21" font-size="9">1" dia × 2" height</text>
+                        <text x="512" y="344" text-anchor="start" fill="#922b21" font-size="9">(25mm × 51mm)</text>
 
                         <!-- Vacuum/engorgement arrows showing expansion -->
-                        <path d="M 415 380 L 425 380" stroke="#c0392b" stroke-width="1.5" marker-end="url(#arrowRed)"/>
-                        <path d="M 485 380 L 475 380" stroke="#c0392b" stroke-width="1.5" marker-end="url(#arrowRed)"/>
-                        <text x="450" y="485" text-anchor="middle" fill="#c0392b" font-size="7" font-style="italic">← Fills cylinder width at base →</text>
+                        <path d="M 415 380 L 425 380" stroke="#c0392b" stroke-width="2.5" marker-end="url(#arrowRed)"/>
+                        <path d="M 485 380 L 475 380" stroke="#c0392b" stroke-width="2.5" marker-end="url(#arrowRed)"/>
+                        <rect x="385" y="477" width="130" height="14" fill="white" opacity="0.85" rx="3"/>
+                        <text x="450" y="487" text-anchor="middle" fill="#a93226" font-size="9" font-style="italic">← Fills cylinder width at base →</text>
 
                         <!-- Height dimension indicator -->
-                        <line x1="505" y1="246" x2="505" y2="450" stroke="#c0392b" stroke-width="1" stroke-dasharray="2,2"/>
-                        <line x1="502" y1="246" x2="508" y2="246" stroke="#c0392b" stroke-width="1"/>
-                        <line x1="502" y1="450" x2="508" y2="450" stroke="#c0392b" stroke-width="1"/>
-                        <text x="515" y="350" text-anchor="start" fill="#c0392b" font-size="7">2"</text>
-                        <text x="515" y="360" text-anchor="start" fill="#c0392b" font-size="7">(51mm)</text>
+                        <line x1="505" y1="246" x2="505" y2="450" stroke="#c0392b" stroke-width="2" stroke-dasharray="3,3"/>
+                        <line x1="500" y1="246" x2="510" y2="246" stroke="#c0392b" stroke-width="2"/>
+                        <line x1="500" y1="450" x2="510" y2="450" stroke="#c0392b" stroke-width="2"/>
+                        <rect x="513" y="340" width="35" height="28" fill="white" opacity="0.85" rx="3"/>
+                        <text x="517" y="352" text-anchor="start" fill="#a93226" font-size="10" font-weight="bold">2"</text>
+                        <text x="517" y="364" text-anchor="start" fill="#c0392b" font-size="9">(51mm)</text>
 
                         <!-- ========== A-APEX BRIDGE (CONNECTING LEFT AND RIGHT) - 3D PERSPECTIVE ========== -->
 
@@ -1553,79 +1578,95 @@ GPIO 18 (PWM)    ---> IN1
                         <path d="M 637 260 Q 545 265 495 280 L 637 280 Z"
                               fill="#2980b9" fill-opacity="0.15" stroke="none"/>
 
-                        <!-- Bridge labels -->
-                        <text x="450" y="205" text-anchor="middle" fill="#2980b9" font-size="10" font-weight="bold">A-APEX BRIDGE</text>
-                        <text x="300" y="268" text-anchor="middle" fill="#2980b9" font-size="8">Zone 1</text>
-                        <text x="600" y="268" text-anchor="middle" fill="#2980b9" font-size="8">Zone 1</text>
+                        <!-- Bridge labels with background -->
+                        <rect x="385" y="192" width="130" height="20" fill="white" opacity="0.85" rx="4"/>
+                        <text x="450" y="207" text-anchor="middle" fill="#1a5490" font-size="13" font-weight="bold">A-APEX BRIDGE</text>
+                        <rect x="275" y="257" width="50" height="16" fill="white" opacity="0.85" rx="3"/>
+                        <text x="300" y="269" text-anchor="middle" fill="#2980b9" font-size="10" font-weight="bold">Zone 1</text>
+                        <rect x="575" y="257" width="50" height="16" fill="white" opacity="0.85" rx="3"/>
+                        <text x="600" y="269" text-anchor="middle" fill="#2980b9" font-size="10" font-weight="bold">Zone 1</text>
 
                         <!-- Vacuum flow arrows -->
-                        <path d="M 280 265 L 380 265" stroke="#2980b9" stroke-width="2" marker-end="url(#arrowBlue)"/>
-                        <path d="M 620 265 L 520 265" stroke="#2980b9" stroke-width="2" marker-end="url(#arrowBlue)"/>
-                        <text x="450" y="263" text-anchor="middle" fill="#2980b9" font-size="7">← Vacuum flows freely →</text>
-                        <text x="329" y="242" text-anchor="middle" fill="#34495e" font-size="7">Crossbar</text>
-                        <text x="571" y="242" text-anchor="middle" fill="#34495e" font-size="7">Crossbar</text>
+                        <path d="M 280 265 L 380 265" stroke="#2980b9" stroke-width="3" marker-end="url(#arrowBlue)"/>
+                        <path d="M 620 265 L 520 265" stroke="#2980b9" stroke-width="3" marker-end="url(#arrowBlue)"/>
+                        <rect x="385" y="250" width="130" height="14" fill="white" opacity="0.85" rx="3"/>
+                        <text x="450" y="260" text-anchor="middle" fill="#1a5490" font-size="9" font-weight="bold">← Vacuum flows freely →</text>
+                        <rect x="299" y="230" width="60" height="14" fill="white" opacity="0.85" rx="3"/>
+                        <text x="329" y="240" text-anchor="middle" fill="#34495e" font-size="9">Crossbar</text>
+                        <rect x="541" y="230" width="60" height="14" fill="white" opacity="0.85" rx="3"/>
+                        <text x="571" y="240" text-anchor="middle" fill="#34495e" font-size="9">Crossbar</text>
 
                         <!-- ========== VACUUM FLOW ARROWS ========== -->
-                        <path d="M 195 380 L 195 320" stroke="#2980b9" stroke-width="2.5" marker-end="url(#arrowBlue)"/>
-                        <text x="180" y="350" text-anchor="end" fill="#2980b9" font-size="9" font-weight="bold">Vacuum</text>
+                        <path d="M 195 380 L 195 320" stroke="#2980b9" stroke-width="3.5" marker-end="url(#arrowBlue)"/>
+                        <rect x="130" y="340" width="60" height="16" fill="white" opacity="0.85" rx="3"/>
+                        <text x="180" y="352" text-anchor="end" fill="#1a5490" font-size="11" font-weight="bold">Vacuum</text>
 
-                        <path d="M 705 380 L 705 320" stroke="#2980b9" stroke-width="2.5" marker-end="url(#arrowBlue)"/>
-                        <text x="720" y="350" text-anchor="start" fill="#2980b9" font-size="9" font-weight="bold">Vacuum</text>
+                        <path d="M 705 380 L 705 320" stroke="#2980b9" stroke-width="3.5" marker-end="url(#arrowBlue)"/>
+                        <rect x="710" y="340" width="60" height="16" fill="white" opacity="0.85" rx="3"/>
+                        <text x="720" y="352" text-anchor="start" fill="#1a5490" font-size="11" font-weight="bold">Vacuum</text>
 
-                        <path d="M 450 280 L 450 220" stroke="#c0392b" stroke-width="2.5" marker-end="url(#arrowRed)"/>
-                        <text x="465" y="250" text-anchor="start" fill="#c0392b" font-size="9" font-weight="bold">Air Pulse</text>
+                        <path d="M 450 280 L 450 220" stroke="#c0392b" stroke-width="3.5" marker-end="url(#arrowRed)"/>
+                        <rect x="463" y="238" width="70" height="16" fill="white" opacity="0.85" rx="3"/>
+                        <text x="467" y="250" text-anchor="start" fill="#a93226" font-size="11" font-weight="bold">Air Pulse</text>
 
                         <!-- ========== DIMENSIONS ========== -->
-                        <line x1="110" y1="100" x2="110" y2="450" stroke="#7f8c8d" stroke-width="1"/>
-                        <line x1="105" y1="100" x2="115" y2="100" stroke="#7f8c8d" stroke-width="1"/>
-                        <line x1="105" y1="450" x2="115" y2="450" stroke="#7f8c8d" stroke-width="1"/>
-                        <text x="100" y="280" text-anchor="end" fill="#7f8c8d" font-size="9" font-weight="bold">~87mm</text>
-                        <text x="100" y="293" text-anchor="end" fill="#7f8c8d" font-size="7">(cup depth)</text>
+                        <line x1="110" y1="100" x2="110" y2="450" stroke="#5a6c7d" stroke-width="2.5"/>
+                        <line x1="103" y1="100" x2="117" y2="100" stroke="#5a6c7d" stroke-width="2.5"/>
+                        <line x1="103" y1="450" x2="117" y2="450" stroke="#5a6c7d" stroke-width="2.5"/>
+                        <rect x="30" y="268" width="65" height="30" fill="white" opacity="0.9" rx="3"/>
+                        <text x="95" y="281" text-anchor="end" fill="#34495e" font-size="11" font-weight="bold">~87mm</text>
+                        <text x="95" y="294" text-anchor="end" fill="#5a6c7d" font-size="9">(cup depth)</text>
 
-                        <line x1="140" y1="75" x2="760" y2="75" stroke="#7f8c8d" stroke-width="1"/>
-                        <line x1="140" y1="70" x2="140" y2="80" stroke="#7f8c8d" stroke-width="1"/>
-                        <line x1="760" y1="70" x2="760" y2="80" stroke="#7f8c8d" stroke-width="1"/>
-                        <text x="450" y="68" text-anchor="middle" fill="#7f8c8d" font-size="9" font-weight="bold">~155mm (total width)</text>
+                        <line x1="140" y1="75" x2="760" y2="75" stroke="#5a6c7d" stroke-width="2.5"/>
+                        <line x1="140" y1="68" x2="140" y2="82" stroke="#5a6c7d" stroke-width="2.5"/>
+                        <line x1="760" y1="68" x2="760" y2="82" stroke="#5a6c7d" stroke-width="2.5"/>
+                        <rect x="385" y="54" width="130" height="18" fill="white" opacity="0.9" rx="3"/>
+                        <text x="450" y="67" text-anchor="middle" fill="#34495e" font-size="11" font-weight="bold">~155mm (total width)</text>
 
                         <!-- ========== ORIENTATION ARROWS ========== -->
-                        <line x1="80" y1="270" x2="80" y2="430" stroke="#8e44ad" stroke-width="2.5" marker-end="url(#arrowBody)"/>
-                        <text x="70" y="355" text-anchor="end" fill="#8e44ad" font-size="9" font-weight="bold">TO</text>
-                        <text x="70" y="368" text-anchor="end" fill="#8e44ad" font-size="9" font-weight="bold">BODY</text>
+                        <line x1="80" y1="270" x2="80" y2="430" stroke="#7d3c98" stroke-width="3.5" marker-end="url(#arrowBody)"/>
+                        <rect x="30" y="342" width="45" height="30" fill="white" opacity="0.9" rx="3"/>
+                        <text x="70" y="356" text-anchor="end" fill="#6c3483" font-size="11" font-weight="bold">TO</text>
+                        <text x="70" y="370" text-anchor="end" fill="#6c3483" font-size="11" font-weight="bold">BODY</text>
 
-                        <line x1="820" y1="270" x2="820" y2="430" stroke="#8e44ad" stroke-width="2.5" marker-end="url(#arrowBody)"/>
-                        <text x="830" y="355" text-anchor="start" fill="#8e44ad" font-size="9" font-weight="bold">TO</text>
-                        <text x="830" y="368" text-anchor="start" fill="#8e44ad" font-size="9" font-weight="bold">BODY</text>
+                        <line x1="820" y1="270" x2="820" y2="430" stroke="#7d3c98" stroke-width="3.5" marker-end="url(#arrowBody)"/>
+                        <rect x="825" y="342" width="45" height="30" fill="white" opacity="0.9" rx="3"/>
+                        <text x="830" y="356" text-anchor="start" fill="#6c3483" font-size="11" font-weight="bold">TO</text>
+                        <text x="830" y="370" text-anchor="start" fill="#6c3483" font-size="11" font-weight="bold">BODY</text>
 
                         <!-- ========== 3D DEPTH INDICATORS ========== -->
                         <!-- Subtle perspective lines showing depth -->
-                        <line x1="145" y1="255" x2="155" y2="265" stroke="#34495e" stroke-width="0.5" stroke-dasharray="2,2" opacity="0.3"/>
-                        <line x1="755" y1="255" x2="745" y2="265" stroke="#34495e" stroke-width="0.5" stroke-dasharray="2,2" opacity="0.3"/>
-                        <line x1="405" y1="251" x2="410" y2="256" stroke="#6d2020" stroke-width="0.5" stroke-dasharray="2,2" opacity="0.3"/>
-                        <line x1="495" y1="251" x2="490" y2="256" stroke="#6d2020" stroke-width="0.5" stroke-dasharray="2,2" opacity="0.3"/>
+                        <line x1="145" y1="255" x2="155" y2="265" stroke="#34495e" stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
+                        <line x1="755" y1="255" x2="745" y2="265" stroke="#34495e" stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
+                        <line x1="405" y1="251" x2="410" y2="256" stroke="#6d2020" stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
+                        <line x1="495" y1="251" x2="490" y2="256" stroke="#6d2020" stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
 
-                        <!-- Depth annotation -->
-                        <text x="450" y="185" text-anchor="middle" fill="#34495e" font-size="8" font-style="italic" opacity="0.7">
+                        <!-- Depth annotation with background -->
+                        <rect x="330" y="172" width="240" height="18" fill="white" opacity="0.9" rx="3"/>
+                        <text x="450" y="185" text-anchor="middle" fill="#34495e" font-size="10" font-style="italic" font-weight="500">
                             ← 3D Cutaway View: Looking into chamber depth →
                         </text>
 
                         <!-- ========== LEGEND ========== -->
-                        <rect x="230" y="520" width="440" height="70" fill="#f8f9fa" stroke="#34495e" stroke-width="2" rx="5"/>
-                        <text x="450" y="540" text-anchor="middle" fill="#2c3e50" font-size="10" font-weight="bold">3D Cross-Section View Legend</text>
+                        <rect x="200" y="515" width="500" height="80" fill="#ffffff" stroke="#2c3e50" stroke-width="3" rx="6"/>
+                        <text x="450" y="536" text-anchor="middle" fill="#1a252f" font-size="13" font-weight="bold" letter-spacing="0.5">3D Cross-Section View Legend</text>
 
-                        <rect x="240" y="552" width="18" height="10" fill="url(#wall3D)" stroke="#2980b9" stroke-width="2"/>
-                        <text x="263" y="560" text-anchor="start" fill="#2c3e50" font-size="9">Front walls (Zone 1 - Blue)</text>
+                        <!-- Row 1 -->
+                        <rect x="215" y="548" width="22" height="12" fill="url(#wall3D)" stroke="#2980b9" stroke-width="2.5"/>
+                        <text x="243" y="558" text-anchor="start" fill="#1a252f" font-size="10.5" font-weight="500">Front walls (Zone 1 - Blue)</text>
 
-                        <rect x="240" y="568" width="18" height="10" fill="url(#wall3D)" stroke="#c0392b" stroke-width="2"/>
-                        <text x="263" y="576" text-anchor="start" fill="#2c3e50" font-size="9">Front walls (Zone 2 - Red)</text>
+                        <rect x="430" y="548" width="22" height="12" fill="#5a6d7f" stroke="#34495e" stroke-width="1.5" opacity="0.7"/>
+                        <text x="458" y="558" text-anchor="start" fill="#1a252f" font-size="10.5" font-weight="500">Back walls (depth)</text>
 
-                        <rect x="420" y="552" width="18" height="10" fill="#5a6d7f" stroke="#34495e" stroke-width="1" opacity="0.7"/>
-                        <text x="443" y="560" text-anchor="start" fill="#2c3e50" font-size="9">Back walls (depth)</text>
+                        <!-- Row 2 -->
+                        <rect x="215" y="568" width="22" height="12" fill="url(#wall3D)" stroke="#c0392b" stroke-width="2.5"/>
+                        <text x="243" y="578" text-anchor="start" fill="#1a252f" font-size="10.5" font-weight="500">Front walls (Zone 2 - Red)</text>
 
-                        <ellipse cx="450" cy="573" rx="9" ry="6" fill="#e8c9a0" stroke="#c9a86c" stroke-width="1.5"/>
-                        <text x="465" y="576" text-anchor="start" fill="#2c3e50" font-size="9">Vulvar anatomy</text>
+                        <ellipse cx="465" cy="574" rx="10" ry="7" fill="#e8c9a0" stroke="#c9a86c" stroke-width="2"/>
+                        <text x="480" y="578" text-anchor="start" fill="#1a252f" font-size="10.5" font-weight="500">Vulvar anatomy</text>
 
-                        <rect x="462" y="568" width="18" height="10" fill="#f0fff4" stroke="#27ae60" stroke-width="2" stroke-dasharray="3,2"/>
-                        <text x="485" y="576" text-anchor="start" fill="#2c3e50" font-size="9">Open channel area</text>
+                        <rect x="610" y="568" width="22" height="12" fill="#f0fff4" stroke="#27ae60" stroke-width="2" stroke-dasharray="4,2"/>
+                        <text x="638" y="578" text-anchor="start" fill="#1a252f" font-size="10.5" font-weight="500">Open channel</text>
 
                     </svg>
                 </div>
