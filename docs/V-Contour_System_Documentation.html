@@ -1169,7 +1169,7 @@ GPIO 16: TENS Fault input
 
             <h4>Game State Machine</h4>
             <div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 15px; padding: 30px; margin: 20px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                <svg width="1000" height="600" viewBox="0 0 1000 600" style="display: block; margin: 0 auto; background: white; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 100%; height: auto;">
+                <svg width="1100" height="550" viewBox="0 0 1100 550" style="display: block; margin: 0 auto; background: white; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 100%; height: auto;">
                     <defs>
                         <!-- Arrow markers -->
                         <marker id="arrowState" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
@@ -1209,109 +1209,128 @@ GPIO 16: TENS Fault input
                     </defs>
 
                     <!-- Title -->
-                    <text x="500" y="35" text-anchor="middle" font-size="24" font-weight="bold" fill="#2D2D2D">Game State Machine</text>
+                    <text x="550" y="35" text-anchor="middle" font-size="24" font-weight="bold" fill="#2D2D2D">Game State Machine</text>
+                    <text x="550" y="55" text-anchor="middle" font-size="11" fill="#7f8c8d" font-style="italic">(Verified against GameEngine.cpp implementation)</text>
+
+                    <!-- ========== ROW 1: STARTUP FLOW ========== -->
 
                     <!-- IDLE State -->
-                    <rect x="50" y="80" width="120" height="60" rx="10" fill="url(#gradIdle)" stroke="#6B4D8A" stroke-width="2"/>
-                    <text x="110" y="115" text-anchor="middle" font-size="16" font-weight="bold" fill="white">IDLE</text>
+                    <rect x="50" y="90" width="120" height="60" rx="10" fill="url(#gradIdle)" stroke="#6B4D8A" stroke-width="3"/>
+                    <text x="110" y="125" text-anchor="middle" font-size="16" font-weight="bold" fill="white">IDLE</text>
 
                     <!-- INITIALIZING State -->
-                    <rect x="220" y="80" width="140" height="60" rx="10" fill="url(#gradActive)" stroke="#6B4D8A" stroke-width="2"/>
-                    <text x="290" y="115" text-anchor="middle" font-size="16" font-weight="bold" fill="white">INITIALIZING</text>
+                    <rect x="220" y="90" width="140" height="60" rx="10" fill="url(#gradActive)" stroke="#6B4D8A" stroke-width="2"/>
+                    <text x="290" y="125" text-anchor="middle" font-size="16" font-weight="bold" fill="white">INITIALIZING</text>
 
                     <!-- COUNTDOWN State -->
-                    <rect x="410" y="80" width="140" height="60" rx="10" fill="url(#gradActive)" stroke="#6B4D8A" stroke-width="2"/>
-                    <text x="480" y="115" text-anchor="middle" font-size="16" font-weight="bold" fill="white">COUNTDOWN</text>
+                    <rect x="410" y="90" width="140" height="60" rx="10" fill="url(#gradActive)" stroke="#6B4D8A" stroke-width="2"/>
+                    <text x="480" y="125" text-anchor="middle" font-size="16" font-weight="bold" fill="white">COUNTDOWN</text>
 
                     <!-- RUNNING State (main) -->
-                    <rect x="600" y="80" width="120" height="60" rx="10" fill="url(#gradActive)" stroke="#6B4D8A" stroke-width="3"/>
-                    <text x="660" y="115" text-anchor="middle" font-size="16" font-weight="bold" fill="white">RUNNING</text>
+                    <rect x="600" y="90" width="120" height="60" rx="10" fill="url(#gradActive)" stroke="#6B4D8A" stroke-width="3"/>
+                    <text x="660" y="125" text-anchor="middle" font-size="16" font-weight="bold" fill="white">RUNNING</text>
+
+                    <!-- ========== ROW 2: PAUSED STATE ========== -->
 
                     <!-- PAUSED State -->
                     <rect x="600" y="220" width="120" height="60" rx="10" fill="url(#gradWarning)" stroke="#E8A838" stroke-width="2"/>
                     <text x="660" y="255" text-anchor="middle" font-size="16" font-weight="bold" fill="white">PAUSED</text>
 
-                    <!-- Terminal States -->
+                    <!-- ========== ROW 3: TERMINAL STATES (HORIZONTAL LAYOUT) ========== -->
+
                     <!-- VICTORY -->
-                    <rect x="800" y="80" width="120" height="50" rx="10" fill="url(#gradSuccess)" stroke="#4CAF50" stroke-width="2"/>
-                    <text x="860" y="110" text-anchor="middle" font-size="15" font-weight="bold" fill="white">VICTORY</text>
+                    <rect x="150" y="370" width="130" height="55" rx="10" fill="url(#gradSuccess)" stroke="#4CAF50" stroke-width="2"/>
+                    <text x="215" y="403" text-anchor="middle" font-size="15" font-weight="bold" fill="white">VICTORY</text>
 
                     <!-- FAILURE -->
-                    <rect x="800" y="150" width="120" height="50" rx="10" fill="url(#gradDanger)" stroke="#D64545" stroke-width="2"/>
-                    <text x="860" y="180" text-anchor="middle" font-size="15" font-weight="bold" fill="white">FAILURE</text>
+                    <rect x="330" y="370" width="130" height="55" rx="10" fill="url(#gradDanger)" stroke="#D64545" stroke-width="2"/>
+                    <text x="395" y="403" text-anchor="middle" font-size="15" font-weight="bold" fill="white">FAILURE</text>
 
                     <!-- TIMEOUT -->
-                    <rect x="800" y="220" width="120" height="50" rx="10" fill="url(#gradWarning)" stroke="#E8A838" stroke-width="2"/>
-                    <text x="860" y="250" text-anchor="middle" font-size="15" font-weight="bold" fill="white">TIMEOUT</text>
+                    <rect x="510" y="370" width="130" height="55" rx="10" fill="url(#gradWarning)" stroke="#E8A838" stroke-width="2"/>
+                    <text x="575" y="403" text-anchor="middle" font-size="15" font-weight="bold" fill="white">TIMEOUT</text>
 
                     <!-- SAFEWORD -->
-                    <rect x="800" y="290" width="120" height="50" rx="10" fill="url(#gradDanger)" stroke="#D64545" stroke-width="2"/>
-                    <text x="860" y="320" text-anchor="middle" font-size="15" font-weight="bold" fill="white">SAFEWORD</text>
+                    <rect x="690" y="370" width="130" height="55" rx="10" fill="url(#gradDanger)" stroke="#D64545" stroke-width="2"/>
+                    <text x="755" y="403" text-anchor="middle" font-size="15" font-weight="bold" fill="white">SAFEWORD</text>
 
-                    <!-- POST_GAME State -->
-                    <rect x="600" y="400" width="140" height="60" rx="10" fill="url(#gradActive)" stroke="#6B4D8A" stroke-width="2"/>
-                    <text x="670" y="435" text-anchor="middle" font-size="16" font-weight="bold" fill="white">POST_GAME</text>
+                    <!-- ========== FLOW ARROWS ========== -->
 
-                    <!-- Flow Arrows -->
-                    <!-- IDLE to INITIALIZING -->
-                    <path d="M 170 110 L 220 110" stroke="#6B4D8A" stroke-width="2.5" fill="none" marker-end="url(#arrowState)"/>
+                    <!-- Startup flow: IDLE → INITIALIZING → COUNTDOWN → RUNNING -->
+                    <path d="M 170 120 L 220 120" stroke="#6B4D8A" stroke-width="2.5" fill="none" marker-end="url(#arrowState)"/>
+                    <path d="M 360 120 L 410 120" stroke="#6B4D8A" stroke-width="2.5" fill="none" marker-end="url(#arrowState)"/>
+                    <path d="M 550 120 L 600 120" stroke="#6B4D8A" stroke-width="2.5" fill="none" marker-end="url(#arrowState)"/>
 
-                    <!-- INITIALIZING to COUNTDOWN -->
-                    <path d="M 360 110 L 410 110" stroke="#6B4D8A" stroke-width="2.5" fill="none" marker-end="url(#arrowState)"/>
+                    <!-- RUNNING ↔ PAUSED (bidirectional) -->
+                    <path d="M 660 150 L 660 220" stroke="#E8A838" stroke-width="2.5" fill="none" marker-end="url(#arrowWarning)"/>
+                    <text x="675" y="190" font-size="11" fill="#E8A838" font-style="italic">pause()</text>
 
-                    <!-- COUNTDOWN to RUNNING -->
-                    <path d="M 550 110 L 600 110" stroke="#6B4D8A" stroke-width="2.5" fill="none" marker-end="url(#arrowState)"/>
+                    <path d="M 640 220 Q 580 185 640 150" stroke="#6B4D8A" stroke-width="2.5" fill="none" marker-end="url(#arrowState)" stroke-dasharray="5,3"/>
+                    <text x="555" y="185" font-size="11" fill="#6B4D8A" font-style="italic">resume()</text>
 
-                    <!-- RUNNING to PAUSED -->
-                    <path d="M 660 140 L 660 220" stroke="#E8A838" stroke-width="2.5" fill="none" marker-end="url(#arrowWarning)"/>
-                    <text x="675" y="185" font-size="11" fill="#E8A838" font-style="italic">pause</text>
+                    <!-- RUNNING → Terminal States (clean curved paths) -->
 
-                    <!-- PAUSED back to RUNNING -->
-                    <path d="M 640 220 Q 580 180 640 140" stroke="#6B4D8A" stroke-width="2.5" fill="none" marker-end="url(#arrowState)" stroke-dasharray="5,3"/>
-                    <text x="560" y="175" font-size="11" fill="#6B4D8A" font-style="italic">resume</text>
+                    <!-- RUNNING → VICTORY -->
+                    <path d="M 640 150 Q 500 260 215 370" stroke="#4CAF50" stroke-width="2.5" fill="none" marker-end="url(#arrowSuccess)"/>
+                    <text x="480" y="240" font-size="10" fill="#4CAF50" font-style="italic">objective complete</text>
 
-                    <!-- RUNNING to VICTORY -->
-                    <path d="M 720 105 L 800 105" stroke="#4CAF50" stroke-width="2.5" fill="none" marker-end="url(#arrowSuccess)"/>
+                    <!-- RUNNING → FAILURE -->
+                    <path d="M 660 150 Q 520 260 395 370" stroke="#D64545" stroke-width="2.5" fill="none" marker-end="url(#arrowDanger)"/>
+                    <text x="540" y="260" font-size="10" fill="#D64545" font-style="italic">fail condition</text>
 
-                    <!-- RUNNING to FAILURE -->
-                    <path d="M 720 115 L 780 155 L 800 175" stroke="#D64545" stroke-width="2.5" fill="none" marker-end="url(#arrowDanger)"/>
+                    <!-- RUNNING → TIMEOUT -->
+                    <path d="M 660 150 L 660 310 L 575 370" stroke="#E8A838" stroke-width="2.5" fill="none" marker-end="url(#arrowWarning)"/>
+                    <text x="675" y="260" font-size="10" fill="#E8A838" font-style="italic">time limit</text>
 
-                    <!-- RUNNING to TIMEOUT -->
-                    <path d="M 720 125 L 760 200 L 800 245" stroke="#E8A838" stroke-width="2.5" fill="none" marker-end="url(#arrowWarning)"/>
+                    <!-- RUNNING → SAFEWORD -->
+                    <path d="M 680 150 Q 780 260 755 370" stroke="#D64545" stroke-width="2.5" fill="none" marker-end="url(#arrowDanger)"/>
+                    <text x="790" y="260" font-size="10" fill="#D64545" font-style="italic">safety stop</text>
 
-                    <!-- RUNNING to SAFEWORD -->
-                    <path d="M 700 140 L 700 315 L 800 315" stroke="#D64545" stroke-width="2.5" fill="none" marker-end="url(#arrowDanger)"/>
+                    <!-- Terminal States → IDLE (return paths) -->
+                    <path d="M 215 370 Q 110 300 110 150" stroke="#6B4D8A" stroke-width="2.5" fill="none" marker-end="url(#arrowState)" stroke-dasharray="5,3"/>
+                    <path d="M 395 370 Q 320 300 110 150" stroke="#6B4D8A" stroke-width="2.5" fill="none" marker-end="url(#arrowState)" stroke-dasharray="5,3"/>
+                    <path d="M 575 370 Q 480 300 110 150" stroke="#6B4D8A" stroke-width="2.5" fill="none" marker-end="url(#arrowState)" stroke-dasharray="5,3"/>
+                    <path d="M 755 370 Q 640 300 110 150" stroke="#6B4D8A" stroke-width="2.5" fill="none" marker-end="url(#arrowState)" stroke-dasharray="5,3"/>
 
-                    <!-- All terminal states to POST_GAME -->
-                    <path d="M 860 130 L 860 370 L 740 370 L 740 400" stroke="#6B4D8A" stroke-width="2.5" fill="none" marker-end="url(#arrowState)"/>
-                    <text x="870" y="250" font-size="11" fill="#6B4D8A">All terminal</text>
-                    <text x="870" y="265" font-size="11" fill="#6B4D8A">states</text>
+                    <text x="40" y="240" font-size="11" fill="#6B4D8A" font-style="italic">All terminal</text>
+                    <text x="40" y="255" font-size="11" fill="#6B4D8A" font-style="italic">states →</text>
+                    <text x="40" y="270" font-size="11" fill="#6B4D8A" font-style="italic">IDLE</text>
 
-                    <!-- POST_GAME to IDLE -->
-                    <path d="M 600 430 Q 110 500 110 140" stroke="#6B4D8A" stroke-width="2.5" fill="none" marker-end="url(#arrowState)" stroke-dasharray="5,3"/>
-                    <text x="300" y="520" font-size="11" fill="#6B4D8A" font-style="italic">reset/new game</text>
+                    <!-- ========== LEGEND ========== -->
+                    <rect x="850" y="90" width="220" height="335" rx="8" fill="#F8F6FA" stroke="#6B4D8A" stroke-width="1.5"/>
+                    <text x="960" y="115" text-anchor="middle" font-size="13" font-weight="bold" fill="#2D2D2D">State Types</text>
 
-                    <!-- Legend -->
-                    <rect x="50" y="520" width="900" height="60" rx="8" fill="#F8F6FA" stroke="#6B4D8A" stroke-width="1.5"/>
-                    <text x="500" y="545" text-anchor="middle" font-size="13" font-weight="bold" fill="#2D2D2D">State Types</text>
+                    <!-- Legend items -->
+                    <rect x="870" y="135" width="90" height="22" rx="4" fill="url(#gradIdle)" stroke="#6B4D8A" stroke-width="1"/>
+                    <text x="915" y="151" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Initial</text>
 
-                    <rect x="80" y="555" width="80" height="18" rx="4" fill="url(#gradIdle)" stroke="#6B4D8A" stroke-width="1"/>
-                    <text x="125" y="568" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Initial</text>
+                    <rect x="870" y="170" width="90" height="22" rx="4" fill="url(#gradActive)" stroke="#6B4D8A" stroke-width="1"/>
+                    <text x="915" y="186" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Active</text>
 
-                    <rect x="200" y="555" width="80" height="18" rx="4" fill="url(#gradActive)" stroke="#6B4D8A" stroke-width="1"/>
-                    <text x="245" y="568" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Active</text>
+                    <rect x="870" y="205" width="90" height="22" rx="4" fill="url(#gradSuccess)" stroke="#4CAF50" stroke-width="1"/>
+                    <text x="915" y="221" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Success</text>
 
-                    <rect x="320" y="555" width="80" height="18" rx="4" fill="url(#gradSuccess)" stroke="#4CAF50" stroke-width="1"/>
-                    <text x="365" y="568" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Success</text>
+                    <rect x="870" y="240" width="90" height="22" rx="4" fill="url(#gradDanger)" stroke="#D64545" stroke-width="1"/>
+                    <text x="915" y="256" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Failure</text>
 
-                    <rect x="440" y="555" width="80" height="18" rx="4" fill="url(#gradDanger)" stroke="#D64545" stroke-width="1"/>
-                    <text x="485" y="568" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Failure</text>
+                    <rect x="870" y="275" width="90" height="22" rx="4" fill="url(#gradWarning)" stroke="#E8A838" stroke-width="1"/>
+                    <text x="915" y="291" text-anchor="middle" font-size="11" fill="white" font-weight="bold">Warning</text>
 
-                    <rect x="560" y="555" width="80" height="18" rx="4" fill="url(#gradWarning)" stroke="#E8A838" stroke-width="1"/>
-                    <text x="605" y="568" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Warning</text>
+                    <!-- Arrow types -->
+                    <text x="960" y="325" text-anchor="middle" font-size="12" font-weight="bold" fill="#2D2D2D">Flow Types</text>
 
-                    <line x1="680" y1="560" x2="720" y2="560" stroke="#6B4D8A" stroke-width="2" stroke-dasharray="5,3"/>
-                    <text x="765" y="568" text-anchor="middle" font-size="10" fill="#2D2D2D">Return Path</text>
+                    <line x1="870" y1="340" x2="920" y2="340" stroke="#6B4D8A" stroke-width="2.5"/>
+                    <path d="M 920 340 L 915 337 L 915 343 Z" fill="#6B4D8A"/>
+                    <text x="930" y="345" font-size="10" fill="#2D2D2D">Forward</text>
+
+                    <line x1="870" y1="360" x2="920" y2="360" stroke="#6B4D8A" stroke-width="2.5" stroke-dasharray="5,3"/>
+                    <path d="M 920 360 L 915 357 L 915 363 Z" fill="#6B4D8A"/>
+                    <text x="930" y="365" font-size="10" fill="#2D2D2D">Return</text>
+
+                    <!-- Code reference -->
+                    <text x="960" y="395" text-anchor="middle" font-size="9" fill="#7f8c8d" font-style="italic">See GameEngine.cpp</text>
+                    <text x="960" y="408" text-anchor="middle" font-size="9" fill="#7f8c8d" font-style="italic">setState() calls for</text>
+                    <text x="960" y="421" text-anchor="middle" font-size="9" fill="#7f8c8d" font-style="italic">implementation details</text>
                 </svg>
             </div>
 
