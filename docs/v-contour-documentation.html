@@ -1436,13 +1436,11 @@ GPIO 18 (PWM)    ---> IN1
                         <text x="485" y="492" text-anchor="start" fill="#6d4c0f" font-size="10" font-weight="bold">Vaginal</text>
                         <text x="485" y="505" text-anchor="start" fill="#6d4c0f" font-size="10" font-weight="bold">Opening</text>
 
-                        <!-- Open channel labels with backgrounds -->
-                        <rect x="284" y="318" width="60" height="32" fill="white" opacity="0.85" rx="3"/>
-                        <text x="314" y="332" text-anchor="middle" fill="#1e8449" font-size="11" font-weight="bold">OPEN</text>
-                        <text x="314" y="346" text-anchor="middle" fill="#1e8449" font-size="11" font-weight="bold">CHANNEL</text>
-                        <rect x="556" y="318" width="60" height="32" fill="white" opacity="0.85" rx="3"/>
-                        <text x="586" y="332" text-anchor="middle" fill="#1e8449" font-size="11" font-weight="bold">OPEN</text>
-                        <text x="586" y="346" text-anchor="middle" fill="#1e8449" font-size="11" font-weight="bold">CHANNEL</text>
+                        <!-- Open channel label - simplified -->
+                        <rect x="284" y="325" width="60" height="18" fill="white" opacity="0.9" rx="3"/>
+                        <text x="314" y="338" text-anchor="middle" fill="#1e8449" font-size="10" font-weight="bold">OPEN CHANNEL</text>
+                        <rect x="556" y="325" width="60" height="18" fill="white" opacity="0.9" rx="3"/>
+                        <text x="586" y="338" text-anchor="middle" fill="#1e8449" font-size="10" font-weight="bold">OPEN CHANNEL</text>
 
                         <!-- ========== CLITORAL CYLINDER (ZONE 2) - 3D PERSPECTIVE ========== -->
                         <!-- 2" height (51mm = 204px at 4px/mm) × 1" diameter (25mm = 100px at 4px/mm) -->
@@ -1473,10 +1471,6 @@ GPIO 18 (PWM)    ---> IN1
                         <ellipse cx="450" cy="246" rx="50" ry="12" fill="#e8f4fc" stroke="#c0392b" stroke-width="2.5" opacity="0.8"/>
                         <ellipse cx="450" cy="246" rx="42" ry="10" fill="none" stroke="#a93226" stroke-width="1.5" stroke-dasharray="3,2" opacity="0.6"/>
 
-                        <!-- Annotation showing this is visible from top -->
-                        <rect x="515" y="238" width="95" height="14" fill="white" opacity="0.9" rx="3"/>
-                        <text x="520" y="248" text-anchor="start" fill="#a93226" font-size="9" font-weight="bold">Visible from top →</text>
-
                         <!-- Cylinder sealing rim with 3D thickness -->
                         <path d="M 408 450 Q 429 455 450 455 Q 471 455 492 450" fill="#c0392b" stroke="#922b21" stroke-width="2" opacity="0.7"/>
                         <path d="M 410 455 Q 431 460 450 460 Q 469 460 490 455" fill="#922b21" stroke="#6d2020" stroke-width="1" opacity="0.5"/>
@@ -1502,11 +1496,6 @@ GPIO 18 (PWM)    ---> IN1
                         <path d="M 408 246 L 408 260 Q 450 250 492 260 L 492 246 Q 450 196 408 246 Z"
                               fill="#e8f4fc" stroke="none" opacity="0.5"/>
 
-                        <!-- Vacuum pressure indicators in empty space -->
-                        <rect x="405" y="208" width="90" height="30" fill="white" opacity="0.85" rx="3"/>
-                        <text x="450" y="221" text-anchor="middle" fill="#a93226" font-size="10" font-weight="bold">Vacuum Space</text>
-                        <text x="450" y="234" text-anchor="middle" fill="#c0392b" font-size="9" font-style="italic">(~40% of cylinder)</text>
-
                         <!-- Clitoris label with background -->
                         <rect x="285" y="348" width="100" height="58" fill="white" opacity="0.85" rx="3"/>
                         <text x="390" y="363" text-anchor="end" fill="#8b5a5a" font-size="11" font-weight="bold">Engorged</text>
@@ -1514,12 +1503,11 @@ GPIO 18 (PWM)    ---> IN1
                         <text x="390" y="392" text-anchor="end" fill="#a67c7c" font-size="9" font-style="italic">(fills ~60%</text>
                         <text x="390" y="404" text-anchor="end" fill="#a67c7c" font-size="9" font-style="italic">of height)</text>
 
-                        <!-- Zone 2 label with background -->
-                        <rect x="508" y="285" width="125" height="62" fill="white" opacity="0.85" rx="4"/>
-                        <text x="512" y="302" text-anchor="start" fill="#a93226" font-size="14" font-weight="bold">ZONE 2</text>
-                        <text x="512" y="318" text-anchor="start" fill="#c0392b" font-size="10">Clitoral Cylinder</text>
-                        <text x="512" y="332" text-anchor="start" fill="#922b21" font-size="9">1" dia × 2" height</text>
-                        <text x="512" y="344" text-anchor="start" fill="#922b21" font-size="9">(25mm × 51mm)</text>
+                        <!-- Zone 2 label with background - simplified -->
+                        <rect x="508" y="300" width="125" height="48" fill="white" opacity="0.9" rx="4"/>
+                        <text x="512" y="318" text-anchor="start" fill="#a93226" font-size="14" font-weight="bold">ZONE 2</text>
+                        <text x="512" y="334" text-anchor="start" fill="#c0392b" font-size="10">Clitoral Cylinder</text>
+                        <text x="512" y="346" text-anchor="start" fill="#922b21" font-size="9">1" × 2" (25×51mm)</text>
 
                         <!-- Vacuum/engorgement arrows showing expansion -->
                         <path d="M 415 380 L 425 380" stroke="#c0392b" stroke-width="2.5" marker-end="url(#arrowRed)"/>
@@ -1622,36 +1610,23 @@ GPIO 18 (PWM)    ---> IN1
                         <path d="M 637 260 Q 575 265 505 275 L 637 280 Z"
                               fill="#2980b9" fill-opacity="0.15" stroke="none"/>
 
-                        <!-- Cylinder protrusion indicators -->
-                        <!-- Left edge of opening -->
-                        <line x1="395" y1="246" x2="395" y2="235" stroke="#c0392b" stroke-width="2" stroke-dasharray="4,2"/>
-                        <line x1="395" y1="235" x2="385" y2="235" stroke="#c0392b" stroke-width="1.5" marker-end="url(#arrowRed)"/>
+                        <!-- Bridge label - simplified -->
+                        <rect x="360" y="218" width="180" height="18" fill="white" opacity="0.9" rx="4"/>
+                        <text x="450" y="232" text-anchor="middle" fill="#1a5490" font-size="13" font-weight="bold">A-APEX BRIDGE</text>
 
-                        <!-- Right edge of opening -->
-                        <line x1="505" y1="246" x2="505" y2="235" stroke="#c0392b" stroke-width="2" stroke-dasharray="4,2"/>
-                        <line x1="505" y1="235" x2="515" y2="235" stroke="#c0392b" stroke-width="1.5" marker-end="url(#arrowRed)"/>
+                        <!-- Cylinder protrusion annotation - moved higher to avoid overlap -->
+                        <rect x="340" y="195" width="220" height="14" fill="white" opacity="0.9" rx="3"/>
+                        <text x="450" y="205" text-anchor="middle" fill="#a93226" font-size="9" font-weight="bold">← Cylinder protrudes through bridge →</text>
 
-                        <!-- Opening annotation -->
-                        <rect x="360" y="218" width="180" height="14" fill="white" opacity="0.9" rx="3"/>
-                        <text x="450" y="228" text-anchor="middle" fill="#a93226" font-size="9" font-weight="bold">← Cylinder protrudes through bridge →</text>
+                        <!-- Crossbar labels - simplified -->
+                        <rect x="280" y="240" width="60" height="14" fill="white" opacity="0.85" rx="3"/>
+                        <text x="310" y="250" text-anchor="middle" fill="#34495e" font-size="9">Crossbar</text>
+                        <rect x="560" y="240" width="60" height="14" fill="white" opacity="0.85" rx="3"/>
+                        <text x="590" y="250" text-anchor="middle" fill="#34495e" font-size="9">Crossbar</text>
 
-                        <!-- Bridge labels with background -->
-                        <rect x="385" y="192" width="130" height="20" fill="white" opacity="0.85" rx="4"/>
-                        <text x="450" y="207" text-anchor="middle" fill="#1a5490" font-size="13" font-weight="bold">A-APEX BRIDGE</text>
-                        <rect x="275" y="257" width="50" height="16" fill="white" opacity="0.85" rx="3"/>
-                        <text x="300" y="269" text-anchor="middle" fill="#2980b9" font-size="10" font-weight="bold">Zone 1</text>
-                        <rect x="575" y="257" width="50" height="16" fill="white" opacity="0.85" rx="3"/>
-                        <text x="600" y="269" text-anchor="middle" fill="#2980b9" font-size="10" font-weight="bold">Zone 1</text>
-
-                        <!-- Vacuum flow arrows -->
-                        <path d="M 280 265 L 380 265" stroke="#2980b9" stroke-width="3" marker-end="url(#arrowBlue)"/>
-                        <path d="M 620 265 L 520 265" stroke="#2980b9" stroke-width="3" marker-end="url(#arrowBlue)"/>
-                        <rect x="385" y="250" width="130" height="14" fill="white" opacity="0.85" rx="3"/>
-                        <text x="450" y="260" text-anchor="middle" fill="#1a5490" font-size="9" font-weight="bold">← Vacuum flows freely →</text>
-                        <rect x="299" y="230" width="60" height="14" fill="white" opacity="0.85" rx="3"/>
-                        <text x="329" y="240" text-anchor="middle" fill="#34495e" font-size="9">Crossbar</text>
-                        <rect x="541" y="230" width="60" height="14" fill="white" opacity="0.85" rx="3"/>
-                        <text x="571" y="240" text-anchor="middle" fill="#34495e" font-size="9">Crossbar</text>
+                        <!-- Vacuum flow arrows - simplified -->
+                        <path d="M 280 265 L 370 265" stroke="#2980b9" stroke-width="3" marker-end="url(#arrowBlue)"/>
+                        <path d="M 620 265 L 530 265" stroke="#2980b9" stroke-width="3" marker-end="url(#arrowBlue)"/>
 
                         <!-- ========== VACUUM FLOW ARROWS ========== -->
                         <path d="M 195 380 L 195 320" stroke="#2980b9" stroke-width="3.5" marker-end="url(#arrowBlue)"/>
