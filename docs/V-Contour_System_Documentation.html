@@ -69,6 +69,7 @@
             <li><a href="#overview">Overview</a></li>
             <li><a href="#architecture">Architecture</a></li>
             <li><a href="#hardware">Hardware</a></li>
+            <li><a href="#cup-design">Cup Design</a></li>
             <li><a href="#games">Games</a></li>
             <li><a href="#control">Control Algorithms</a></li>
             <li><a href="#patterns">Patterns</a></li>
@@ -86,6 +87,7 @@
                 <li><a href="#overview">1. System Overview</a></li>
                 <li><a href="#architecture">2. Software Architecture</a></li>
                 <li><a href="#hardware">3. Hardware Components</a></li>
+                <li><a href="#cup-design">3.5. A-Contour Cup Design</a></li>
                 <li><a href="#games">4. Game System (Gamification)</a></li>
                 <li><a href="#control">5. Orgasm Control Algorithm</a></li>
                 <li><a href="#patterns">6. Stimulation Patterns</a></li>
@@ -236,6 +238,924 @@ GPIO 16: TENS Fault input
                 <li><strong>Cup Camera:</strong> Close-up view for detecting orgasm-related physiological responses</li>
                 <li><strong>Consent Manager:</strong> Privacy controls with explicit opt-in consent for all recording</li>
             </ul>
+        </section>
+
+        <!-- Section 3.5: Cup Design -->
+        <section id="cup-design">
+            <h2>3.5. A-Contour Cup Design</h2>
+
+            <div class="highlight-box">
+                <h3>Revolutionary Dual-Chamber Architecture</h3>
+                <p>The A-Contour cup is a purpose-built vacuum interface engineered specifically for female vulva anatomy. Unlike generic dome-shaped cups, the A-Contour features an anatomical "A" shape that provides superior attachment, targeted stimulation, and hygiene.</p>
+            </div>
+
+            <h3>Problems with Traditional Dome Cups</h3>
+            <ul>
+                <li>❌ Generic dome shape doesn't match vulva anatomy</li>
+                <li>❌ Single chamber cannot provide both attachment AND targeted stimulation</li>
+                <li>❌ Closed design traps fluids (urine, vaginal secretions, ejaculate) inside</li>
+                <li>❌ No access to urethra or vaginal opening for simultaneous play</li>
+                <li>❌ Uniform suction cannot replicate localized oral stimulation sensations</li>
+            </ul>
+
+            <h3>The A-Contour Solution</h3>
+
+            <h4>Anatomical A-Shape Design</h4>
+            <p>The "A" shape represents three key anatomical features:</p>
+            <ul class="feature-list">
+                <li><strong>A-Apex Triangle:</strong> Enclosed triangular space at the top housing the 1" diameter (25mm) circular clitoral cylinder</li>
+                <li><strong>A-Crossbar:</strong> Internal diaphragm separating the clitoral chamber from outer chambers</li>
+                <li><strong>A-Legs:</strong> Two bilateral outer vacuum chambers providing 80mm total vulva coverage</li>
+            </ul>
+
+            <!-- ============================================== -->
+            <!-- COMPREHENSIVE TECHNICAL VIEWS OF A-CONTOUR CUP -->
+            <!-- ============================================== -->
+
+            <style>
+                .view-container-doc {
+                    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+                    border-radius: 15px;
+                    padding: 30px;
+                    margin: 20px 0;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                }
+                .view-container-doc svg {
+                    display: block;
+                    margin: 0 auto;
+                    background: white;
+                    border-radius: 10px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    max-width: 100%;
+                    height: auto;
+                }
+            </style>
+
+            <div class="diagram-container">
+                <h4>Top View (Plan View)</h4>
+                <div class="view-container-doc">
+                    <svg width="900" height="900" viewBox="0 0 900 900">
+                        <defs>
+                            <linearGradient id="zone1Gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#3498db;stop-opacity:0.3" />
+                                <stop offset="100%" style="stop-color:#2980b9;stop-opacity:0.2" />
+                            </linearGradient>
+
+                            <linearGradient id="zone2Gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#e74c3c;stop-opacity:0.3" />
+                                <stop offset="100%" style="stop-color:#c0392b;stop-opacity:0.2" />
+                            </linearGradient>
+
+                            <radialGradient id="zone2Raised" cx="40%" cy="30%" r="70%" fx="30%" fy="20%">
+                                <stop offset="0%" style="stop-color:#e88a6e;stop-opacity:0.8" />
+                                <stop offset="40%" style="stop-color:#d4644a;stop-opacity:0.7" />
+                                <stop offset="70%" style="stop-color:#c0392b;stop-opacity:0.6" />
+                                <stop offset="100%" style="stop-color:#922b21;stop-opacity:0.5" />
+                            </radialGradient>
+
+                            <filter id="zone2Shadow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feDropShadow dx="4" dy="6" stdDeviation="5" flood-color="#2c3e50" flood-opacity="0.4"/>
+                            </filter>
+
+                            <filter id="zone2Glow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur"/>
+                                <feOffset in="blur" dx="0" dy="-2" result="offsetBlur"/>
+                                <feFlood flood-color="#ff9999" flood-opacity="0.5" result="color"/>
+                                <feComposite in="color" in2="offsetBlur" operator="in" result="shadow"/>
+                                <feMerge>
+                                    <feMergeNode in="shadow"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+
+                            <linearGradient id="connectionGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:#3498db;stop-opacity:0.4" />
+                                <stop offset="50%" style="stop-color:#1abc9c;stop-opacity:0.5" />
+                                <stop offset="100%" style="stop-color:#3498db;stop-opacity:0.4" />
+                            </linearGradient>
+
+                            <marker id="arrowDim" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                                <path d="M0,0 L0,6 L9,3 z" fill="#34495e"/>
+                            </marker>
+
+                            <marker id="flowArrowRight" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+                                <path d="M0,1 L6,4 L0,7 z" fill="#1abc9c"/>
+                            </marker>
+
+                            <marker id="flowArrowLeft" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+                                <path d="M6,1 L0,4 L6,7 z" fill="#1abc9c"/>
+                            </marker>
+                        </defs>
+
+                        <text x="450" y="95" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">
+                            TOP VIEW (PLAN VIEW)
+                        </text>
+                        <text x="450" y="110" text-anchor="middle" font-size="9" fill="#7f8c8d" font-style="italic">
+                            Scale: 4px = 1mm
+                        </text>
+
+                        <!-- ZONE 1: UNIFIED SHAPE - Left A-Leg + Connection + Right A-Leg -->
+                        <path d="M 450 203
+                                 Q 490 206 520 223
+                                 Q 545 238 560 258
+                                 Q 580 283 600 345
+                                 Q 625 385 640 430
+                                 Q 655 475 657 525
+                                 Q 655 575 640 615
+                                 Q 620 645 590 660
+                                 Q 555 670 525 675
+                                 Q 515 673 508 668
+                                 Q 500 662 498 650
+                                 Q 495 620 495 590
+                                 Q 494 555 494 520
+                                 Q 494 485 495 450
+                                 Q 496 415 498 385
+                                 Q 500 360 505 324
+                                 Q 508 304 505 284
+                                 Q 500 269 480 262
+                                 Q 465 258 450 257
+                                 Q 435 258 420 262
+                                 Q 400 269 395 284
+                                 Q 392 304 395 324
+                                 Q 400 360 402 385
+                                 Q 404 415 405 450
+                                 Q 406 485 406 520
+                                 Q 406 555 405 590
+                                 Q 405 620 402 650
+                                 Q 400 662 392 668
+                                 Q 385 673 375 675
+                                 Q 345 670 310 660
+                                 Q 280 645 260 615
+                                 Q 245 575 243 525
+                                 Q 245 475 260 430
+                                 Q 275 385 300 345
+                                 Q 320 283 340 258
+                                 Q 355 238 380 223
+                                 Q 410 206 450 203
+                                 Z"
+                              fill="url(#zone1Gradient)" stroke="#2980b9" stroke-width="3.5" stroke-linejoin="round"/>
+
+                        <!-- LEFT A-LEG label -->
+                        <text x="265" y="550" text-anchor="middle" fill="#2980b9" font-weight="bold" font-size="10">Zone 1</text>
+                        <text x="265" y="562" text-anchor="middle" fill="#2980b9" font-size="8">(Left A-Leg)</text>
+
+                        <!-- RIGHT A-LEG label -->
+                        <text x="635" y="550" text-anchor="middle" fill="#2980b9" font-weight="bold" font-size="10">Zone 1</text>
+                        <text x="635" y="562" text-anchor="middle" fill="#2980b9" font-size="8">(Right A-Leg)</text>
+
+                        <!-- OPEN CHANNEL boundary markers -->
+                        <path d="M 395 284
+                                 Q 392 304 395 324
+                                 Q 400 360 402 385
+                                 Q 404 415 405 450
+                                 Q 406 485 406 520
+                                 Q 406 555 405 590
+                                 Q 405 620 402 650
+                                 Q 400 662 392 668"
+                              fill="none" stroke="#27ae60" stroke-width="2" stroke-dasharray="6,4" stroke-linecap="round" opacity="0.8"/>
+
+                        <path d="M 505 284
+                                 Q 508 304 505 324
+                                 Q 500 360 498 385
+                                 Q 496 415 495 450
+                                 Q 494 485 494 520
+                                 Q 494 555 495 590
+                                 Q 495 620 498 650
+                                 Q 500 662 508 668"
+                              fill="none" stroke="#27ae60" stroke-width="2" stroke-dasharray="6,4" stroke-linecap="round" opacity="0.8"/>
+
+                        <!-- Bottom arc of Open Channel -->
+                        <path d="M 392 668 Q 450 695 508 668"
+                              fill="none" stroke="#27ae60" stroke-width="2" stroke-dasharray="6,4" stroke-linecap="round" opacity="0.8"/>
+
+                        <!-- ANATOMICAL STRUCTURES IN OPEN CHANNEL -->
+                        <!-- Labia Majora (outer lips) -->
+                        <path d="M 350 320 Q 320 420 330 520 Q 340 600 360 660"
+                              fill="none" stroke="#d4a574" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
+                        <text x="310" y="470" text-anchor="middle" fill="#a67c52" font-size="9" font-weight="bold">LM</text>
+                        <path d="M 550 320 Q 580 420 570 520 Q 560 600 540 660"
+                              fill="none" stroke="#d4a574" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
+                        <text x="590" y="470" text-anchor="middle" fill="#a67c52" font-size="9" font-weight="bold">LM</text>
+
+                        <!-- Labia Minora (inner lips) -->
+                        <path d="M 380 330 Q 360 430 370 530 Q 380 610 390 660"
+                              fill="none" stroke="#c9a887" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+                        <text x="355" y="480" text-anchor="middle" fill="#8b6f47" font-size="8" font-weight="bold">Lm</text>
+                        <path d="M 520 330 Q 540 430 530 530 Q 520 610 510 660"
+                              fill="none" stroke="#c9a887" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+                        <text x="545" y="480" text-anchor="middle" fill="#8b6f47" font-size="8" font-weight="bold">Lm</text>
+
+                        <!-- Urethral Meatus -->
+                        <ellipse cx="450" cy="400" rx="12" ry="8" fill="#fff8e7" stroke="#bf8040" stroke-width="2"/>
+                        <text x="450" y="388" text-anchor="middle" fill="#8b6914" font-size="8" font-weight="bold">Urethral</text>
+                        <text x="450" y="418" text-anchor="middle" fill="#8b6914" font-size="7">Meatus</text>
+
+                        <!-- Vaginal Introitus -->
+                        <ellipse cx="450" cy="530" rx="30" ry="45" fill="#f5f0e8" stroke="#a67c52" stroke-width="2"/>
+                        <text x="450" y="520" text-anchor="middle" fill="#6b4423" font-size="10" font-weight="bold">Vaginal</text>
+                        <text x="450" y="535" text-anchor="middle" fill="#6b4423" font-size="10" font-weight="bold">Introitus</text>
+
+                        <!-- Bartholin's Glands -->
+                        <ellipse cx="425" cy="565" rx="8" ry="6" fill="#e8dcc8" stroke="#8b7355" stroke-width="1.5"/>
+                        <text x="408" y="568" text-anchor="end" fill="#6b5344" font-size="7" font-weight="bold">BG</text>
+                        <ellipse cx="475" cy="565" rx="8" ry="6" fill="#e8dcc8" stroke="#8b7355" stroke-width="1.5"/>
+                        <text x="492" y="568" text-anchor="start" fill="#6b5344" font-size="7" font-weight="bold">BG</text>
+
+                        <!-- Perineum -->
+                        <ellipse cx="450" cy="710" rx="30" ry="18" fill="#f0e6d8" stroke="#8b7355" stroke-width="2"/>
+                        <text x="450" y="715" text-anchor="middle" fill="#6b5344" font-size="9" font-weight="bold">Perineum</text>
+
+                        <!-- Clitoris Gland -->
+                        <ellipse cx="450" cy="310" rx="20" ry="15" fill="#ffe4d6" stroke="#c0392b" stroke-width="2"/>
+                        <text x="450" y="314" text-anchor="middle" fill="#922b21" font-size="8" font-weight="bold">Clitoris</text>
+                        <text x="450" y="338" text-anchor="middle" fill="#922b21" font-size="7">Glans</text>
+
+                        <!-- Bottom width indicator -->
+                        <line x1="392" y1="660" x2="508" y2="660" stroke="#27ae60" stroke-width="1.5" marker-start="url(#arrowDim)" marker-end="url(#arrowDim)"/>
+                        <text x="450" y="680" text-anchor="middle" fill="#27ae60" font-size="9" font-weight="bold">~29mm</text>
+
+                        <!-- Open Channel title label -->
+                        <rect x="415" y="440" width="70" height="18" rx="3" fill="white" stroke="#27ae60" stroke-width="1" opacity="0.9"/>
+                        <text x="450" y="453" text-anchor="middle" fill="#27ae60" font-weight="bold" font-size="9">OPEN CHANNEL</text>
+
+                        <!-- L/R markers -->
+                        <circle cx="240" cy="520" r="12" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+                        <text x="240" y="525" text-anchor="middle" fill="white" font-size="11" font-weight="bold">L</text>
+                        <circle cx="660" cy="520" r="12" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+                        <text x="660" y="525" text-anchor="middle" fill="white" font-size="11" font-weight="bold">R</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- TOP VIEW WITH ZONE 2 -->
+            <!-- ============================================== -->
+            <div class="diagram-container">
+                <h4>Top View with Zone 2 (Clitoral Cylinder)</h4>
+                <div class="view-container-doc">
+                    <svg width="900" height="800" viewBox="0 0 900 800">
+                        <text x="450" y="30" text-anchor="middle" font-size="14" font-weight="bold" fill="#2c3e50">
+                            TOP VIEW WITH ZONE 2
+                        </text>
+                        <text x="450" y="48" text-anchor="middle" font-size="9" fill="#7f8c8d" font-style="italic">
+                            Zone 2 (Clitoral Cylinder) shown around clitoris - Scale: 4px = 1mm
+                        </text>
+
+                        <!-- ZONE 1: UNIFIED SHAPE -->
+                        <path d="M 450 203
+                                 Q 490 206 520 223
+                                 Q 545 238 560 258
+                                 Q 580 283 600 345
+                                 Q 625 385 640 430
+                                 Q 655 475 657 525
+                                 Q 655 575 640 615
+                                 Q 620 645 590 660
+                                 Q 555 670 525 675
+                                 Q 515 673 508 668
+                                 Q 500 662 498 650
+                                 Q 495 620 495 590
+                                 Q 494 555 494 520
+                                 Q 494 485 495 450
+                                 Q 496 415 498 385
+                                 Q 500 360 505 324
+                                 Q 508 304 505 284
+                                 Q 500 269 480 262
+                                 Q 465 258 450 257
+                                 Q 435 258 420 262
+                                 Q 400 269 395 284
+                                 Q 392 304 395 324
+                                 Q 400 360 402 385
+                                 Q 404 415 405 450
+                                 Q 406 485 406 520
+                                 Q 406 555 405 590
+                                 Q 405 620 402 650
+                                 Q 400 662 392 668
+                                 Q 385 673 375 675
+                                 Q 345 670 310 660
+                                 Q 280 645 260 615
+                                 Q 245 575 243 525
+                                 Q 245 475 260 430
+                                 Q 275 385 300 345
+                                 Q 320 283 340 258
+                                 Q 355 238 380 223
+                                 Q 410 206 450 203
+                                 Z"
+                              fill="url(#zone1Gradient)" stroke="#2980b9" stroke-width="3.5" stroke-linejoin="round"/>
+
+                        <!-- ZONE 2: Clitoral Cylinder - 1" diameter (25mm) circular -->
+                        <circle cx="450" cy="322" r="50" fill="url(#zone2Raised)" stroke="#922b21" stroke-width="3"/>
+                        <circle cx="450" cy="322" r="40" fill="#ffe4d6" stroke="#c0392b" stroke-width="2" stroke-dasharray="4,2"/>
+                        <circle cx="450" cy="322" r="15" fill="#ffd6c4" stroke="#c0392b" stroke-width="2"/>
+                        <text x="450" y="326" text-anchor="middle" fill="#922b21" font-size="7" font-weight="bold">Clitoris</text>
+                        <text x="450" y="257" text-anchor="middle" fill="#c0392b" font-size="10" font-weight="bold">ZONE 2</text>
+                        <text x="510" y="322" text-anchor="start" fill="#922b21" font-size="7">1" ⌀</text>
+
+                        <!-- Urethral Meatus -->
+                        <ellipse cx="450" cy="400" rx="12" ry="8" fill="#fff8e7" stroke="#bf8040" stroke-width="2"/>
+                        <text x="450" y="388" text-anchor="middle" fill="#8b6914" font-size="8" font-weight="bold">Urethral</text>
+                        <text x="450" y="418" text-anchor="middle" fill="#8b6914" font-size="7">Meatus</text>
+
+                        <!-- Vaginal Introitus -->
+                        <ellipse cx="450" cy="470" rx="30" ry="45" fill="#f5f0e8" stroke="#a67c52" stroke-width="2"/>
+                        <text x="450" y="460" text-anchor="middle" fill="#6b4423" font-size="10" font-weight="bold">Vaginal</text>
+                        <text x="450" y="475" text-anchor="middle" fill="#6b4423" font-size="10" font-weight="bold">Introitus</text>
+
+                        <!-- Bartholin's Glands -->
+                        <ellipse cx="425" cy="505" rx="8" ry="6" fill="#e8dcc8" stroke="#8b7355" stroke-width="1.5"/>
+                        <text x="408" y="508" text-anchor="end" fill="#6b5344" font-size="7" font-weight="bold">BG</text>
+                        <ellipse cx="475" cy="505" rx="8" ry="6" fill="#e8dcc8" stroke="#8b7355" stroke-width="1.5"/>
+                        <text x="492" y="508" text-anchor="start" fill="#6b5344" font-size="7" font-weight="bold">BG</text>
+
+                        <!-- Labia Majora -->
+                        <path d="M 350 320 Q 320 420 330 520 Q 340 600 360 660" fill="none" stroke="#d4a574" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
+                        <text x="310" y="470" text-anchor="middle" fill="#a67c52" font-size="9" font-weight="bold">LM</text>
+                        <path d="M 550 320 Q 580 420 570 520 Q 560 600 540 660" fill="none" stroke="#d4a574" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
+                        <text x="590" y="470" text-anchor="middle" fill="#a67c52" font-size="9" font-weight="bold">LM</text>
+
+                        <!-- Labia Minora -->
+                        <path d="M 380 330 Q 360 430 370 530 Q 380 610 390 660" fill="none" stroke="#c9a887" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+                        <text x="355" y="480" text-anchor="middle" fill="#8b6f47" font-size="8" font-weight="bold">Lm</text>
+                        <path d="M 520 330 Q 540 430 530 530 Q 520 610 510 660" fill="none" stroke="#c9a887" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+                        <text x="545" y="480" text-anchor="middle" fill="#8b6f47" font-size="8" font-weight="bold">Lm</text>
+
+                        <!-- Perineum -->
+                        <ellipse cx="450" cy="650" rx="30" ry="18" fill="#f0e6d8" stroke="#8b7355" stroke-width="2"/>
+                        <text x="450" y="655" text-anchor="middle" fill="#6b5344" font-size="9" font-weight="bold">Perineum</text>
+
+                        <!-- Zone 1 labels -->
+                        <text x="265" y="490" text-anchor="middle" fill="#2980b9" font-weight="bold" font-size="10">Zone 1</text>
+                        <text x="265" y="502" text-anchor="middle" fill="#2980b9" font-size="8">(Left A-Leg)</text>
+                        <text x="635" y="490" text-anchor="middle" fill="#2980b9" font-weight="bold" font-size="10">Zone 1</text>
+                        <text x="635" y="502" text-anchor="middle" fill="#2980b9" font-size="8">(Right A-Leg)</text>
+
+                        <!-- Open Channel label -->
+                        <rect x="415" y="560" width="70" height="18" rx="3" fill="white" stroke="#27ae60" stroke-width="1" opacity="0.9"/>
+                        <text x="450" y="573" text-anchor="middle" fill="#27ae60" font-weight="bold" font-size="9">OPEN CHANNEL</text>
+
+                        <!-- L/R markers -->
+                        <circle cx="240" cy="460" r="12" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+                        <text x="240" y="465" text-anchor="middle" fill="white" font-size="11" font-weight="bold">L</text>
+                        <circle cx="660" cy="460" r="12" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+                        <text x="660" y="465" text-anchor="middle" fill="white" font-size="11" font-weight="bold">R</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- 3D RENDER - DESIGN ITERATION -->
+            <!-- ============================================== -->
+            <div class="diagram-container">
+                <h4>A-Contour Cup - Current Design Iteration</h4>
+                <div class="view-container-doc" style="text-align: center; padding: 20px;">
+                    <img src="images/a-contour-cup-render.png"
+                         alt="A-Contour Cup 3D Render - Design Prototype"
+                         style="max-width: 540px; width: 90%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <p style="margin-top: 15px; font-size: 14px; color: #555; font-style: italic; max-width: 700px; margin-left: auto; margin-right: auto;">
+                        <strong>3D Render:</strong> Current design iteration showing the A-shaped vacuum chamber structure with
+                        the clitoral cylinder at the apex. This prototype demonstrates the dual-chamber architecture with
+                        transparent walls for visualization of the internal vacuum zones and open channel design.
+                    </p>
+                </div>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- SIDE VIEW -->
+            <!-- ============================================== -->
+            <div class="diagram-container">
+                <h4>Side View (3D Cross-Section)</h4>
+                <div class="view-container-doc">
+                    <svg width="900" height="600" viewBox="0 0 900 600">
+                        <defs>
+                            <!-- Enhanced 3D depth gradients -->
+                            <linearGradient id="wallGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:#7f8c8d;stop-opacity:0.9"/>
+                                <stop offset="50%" style="stop-color:#95a5a6;stop-opacity:0.9"/>
+                                <stop offset="100%" style="stop-color:#7f8c8d;stop-opacity:0.9"/>
+                            </linearGradient>
+
+                            <!-- Depth gradient for receding chambers -->
+                            <linearGradient id="depthGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#b0c4de;stop-opacity:0.8"/>
+                                <stop offset="50%" style="stop-color:#87a8d0;stop-opacity:0.6"/>
+                                <stop offset="100%" style="stop-color:#6a8fb8;stop-opacity:0.4"/>
+                            </linearGradient>
+
+                            <!-- Inner chamber shadow gradient -->
+                            <radialGradient id="chamberShadow" cx="50%" cy="50%">
+                                <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.3"/>
+                                <stop offset="70%" style="stop-color:#2980b9;stop-opacity:0.2"/>
+                                <stop offset="100%" style="stop-color:#1a5276;stop-opacity:0.4"/>
+                            </radialGradient>
+
+                            <!-- 3D wall shading -->
+                            <linearGradient id="wall3D" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:#5a6d7f;stop-opacity:1"/>
+                                <stop offset="30%" style="stop-color:#95a5a6;stop-opacity:1"/>
+                                <stop offset="70%" style="stop-color:#bdc3c7;stop-opacity:1"/>
+                                <stop offset="100%" style="stop-color:#7f8c8d;stop-opacity:1"/>
+                            </linearGradient>
+
+                            <!-- Text background filter for better readability -->
+                            <filter id="textBackground" x="-0.1" y="-0.5" width="1.2" height="2">
+                                <feFlood flood-color="white" flood-opacity="0.85"/>
+                                <feComposite in="SourceGraphic"/>
+                            </filter>
+
+                            <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                                <path d="M0,0 L0,6 L9,3 z" fill="#2980b9"/>
+                            </marker>
+                            <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                                <path d="M0,0 L0,6 L9,3 z" fill="#c0392b"/>
+                            </marker>
+                            <marker id="arrowBody" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                                <path d="M0,0 L0,6 L9,3 z" fill="#8e44ad"/>
+                            </marker>
+                        </defs>
+
+                        <!-- Clean white background (removes grey) -->
+                        <rect x="0" y="0" width="900" height="600" fill="white"/>
+
+                        <!-- Title with enhanced readability -->
+                        <text x="450" y="32" text-anchor="middle" font-size="18" font-weight="bold" fill="#1a252f" letter-spacing="0.5">
+                            3D CUTAWAY VIEW (CROSS-SECTION)
+                        </text>
+                        <text x="450" y="52" text-anchor="middle" font-size="11" fill="#34495e" font-style="italic">
+                            Perspective view showing internal chamber depth and structure - Scale: 4px = 1mm
+                        </text>
+
+                        <!-- ========== BODY SURFACE LINE (REFERENCE) ========== -->
+                        <line x1="100" y1="450" x2="800" y2="450" stroke="#8e44ad" stroke-width="4" stroke-dasharray="10,5"/>
+                        <!-- Text backgrounds for contrast -->
+                        <rect x="95" y="456" width="110" height="20" fill="white" opacity="0.9" rx="3"/>
+                        <rect x="695" y="456" width="110" height="20" fill="white" opacity="0.9" rx="3"/>
+                        <text x="100" y="470" text-anchor="start" fill="#7d3c98" font-size="12" font-weight="bold">BODY SURFACE</text>
+                        <text x="800" y="470" text-anchor="end" fill="#7d3c98" font-size="12" font-weight="bold">BODY SURFACE</text>
+
+                        <!-- ========== LEFT A-LEG: LABIA ANATOMY ========== -->
+                        <!-- Labia Majora (outer lip) -->
+                        <ellipse cx="200" cy="430" rx="35" ry="60" fill="#e8c9a0" stroke="#c9a86c" stroke-width="2.5"/>
+                        <text x="200" y="426" text-anchor="middle" fill="#7d5a3a" font-size="10" font-weight="bold">Labia</text>
+                        <text x="200" y="439" text-anchor="middle" fill="#7d5a3a" font-size="10" font-weight="bold">Majora</text>
+
+                        <!-- Labia Minora (inner lip) -->
+                        <ellipse cx="220" cy="435" rx="18" ry="40" fill="#f0d4b8" stroke="#d4a574" stroke-width="2"/>
+                        <text x="220" y="441" text-anchor="middle" fill="#7d5a3a" font-size="9" font-weight="bold">LM</text>
+
+                        <!-- LEFT A-LEG CUP STRUCTURE - 3D PERSPECTIVE -->
+                        <!-- 50mm height = 200px at 4px/mm -->
+
+                        <!-- Back wall (receding into depth) - darker to show distance -->
+                        <path d="M 145 255 L 155 265 L 155 455 L 145 450 Z"
+                              fill="#5a6d7f" stroke="#34495e" stroke-width="1" opacity="0.7"/>
+
+                        <!-- Inner back wall -->
+                        <path d="M 245 285 L 255 295 L 255 455 L 245 450 Z"
+                              fill="#6a7d8f" stroke="#34495e" stroke-width="1" opacity="0.6"/>
+
+                        <!-- Chamber interior with depth gradient -->
+                        <path d="M 155 265 L 255 295 L 255 455 L 155 455 Z"
+                              fill="url(#chamberShadow)" stroke="none" opacity="0.4"/>
+
+                        <!-- Outer wall (front face) - 3D shaded -->
+                        <rect x="140" y="250" width="10" height="200" fill="url(#wall3D)" stroke="#2980b9" stroke-width="3" rx="2"/>
+
+                        <!-- Inner wall (front face) - 3D shaded -->
+                        <rect x="250" y="280" width="8" height="170" fill="url(#wall3D)" stroke="#2980b9" stroke-width="2" rx="2"/>
+
+                        <!-- Top cap with 3D depth -->
+                        <path d="M 140 250 Q 195 230 250 250" fill="url(#wall3D)" stroke="#2980b9" stroke-width="3"/>
+                        <!-- Top cap back edge -->
+                        <path d="M 145 255 Q 200 240 255 255" fill="#7f8c8d" stroke="#34495e" stroke-width="1" opacity="0.5"/>
+
+                        <!-- Sealing rim with 3D thickness -->
+                        <path d="M 150 450 Q 175 455 200 455 Q 225 455 250 450" fill="#2980b9" stroke="#1a5276" stroke-width="2" opacity="0.7"/>
+                        <path d="M 155 455 Q 180 460 205 460 Q 230 460 255 455" fill="#1a5276" stroke="#0d3a52" stroke-width="1" opacity="0.5"/>
+
+                        <!-- Zone 1 label with background for contrast -->
+                        <rect x="155" y="325" width="80" height="55" fill="white" opacity="0.85" rx="4"/>
+                        <text x="195" y="343" text-anchor="middle" fill="#1a5490" font-size="14" font-weight="bold">ZONE 1</text>
+                        <text x="195" y="359" text-anchor="middle" fill="#2980b9" font-size="10">(Left A-Leg)</text>
+                        <text x="195" y="374" text-anchor="middle" fill="#34495e" font-size="9">(~50mm)</text>
+
+                        <!-- ========== RIGHT A-LEG: LABIA ANATOMY ========== -->
+                        <!-- Labia Majora (outer lip) -->
+                        <ellipse cx="700" cy="430" rx="35" ry="60" fill="#e8c9a0" stroke="#c9a86c" stroke-width="2.5"/>
+                        <text x="700" y="426" text-anchor="middle" fill="#7d5a3a" font-size="10" font-weight="bold">Labia</text>
+                        <text x="700" y="439" text-anchor="middle" fill="#7d5a3a" font-size="10" font-weight="bold">Majora</text>
+
+                        <!-- Labia Minora (inner lip) -->
+                        <ellipse cx="680" cy="435" rx="18" ry="40" fill="#f0d4b8" stroke="#d4a574" stroke-width="2"/>
+                        <text x="680" y="441" text-anchor="middle" fill="#7d5a3a" font-size="9" font-weight="bold">LM</text>
+
+                        <!-- RIGHT A-LEG CUP STRUCTURE - 3D PERSPECTIVE -->
+                        <!-- 50mm height = 200px at 4px/mm -->
+
+                        <!-- Back wall (receding into depth) - darker to show distance -->
+                        <path d="M 755 255 L 745 265 L 745 455 L 755 450 Z"
+                              fill="#5a6d7f" stroke="#34495e" stroke-width="1" opacity="0.7"/>
+
+                        <!-- Inner back wall -->
+                        <path d="M 655 285 L 645 295 L 645 455 L 655 450 Z"
+                              fill="#6a7d8f" stroke="#34495e" stroke-width="1" opacity="0.6"/>
+
+                        <!-- Chamber interior with depth gradient -->
+                        <path d="M 745 265 L 645 295 L 645 455 L 745 455 Z"
+                              fill="url(#chamberShadow)" stroke="none" opacity="0.4"/>
+
+                        <!-- Outer wall (front face) - 3D shaded -->
+                        <rect x="750" y="250" width="10" height="200" fill="url(#wall3D)" stroke="#2980b9" stroke-width="3" rx="2"/>
+
+                        <!-- Inner wall (front face) - 3D shaded -->
+                        <rect x="642" y="280" width="8" height="170" fill="url(#wall3D)" stroke="#2980b9" stroke-width="2" rx="2"/>
+
+                        <!-- Top cap with 3D depth -->
+                        <path d="M 760 250 Q 705 230 650 250" fill="url(#wall3D)" stroke="#2980b9" stroke-width="3"/>
+                        <!-- Top cap back edge -->
+                        <path d="M 755 255 Q 700 240 645 255" fill="#7f8c8d" stroke="#34495e" stroke-width="1" opacity="0.5"/>
+
+                        <!-- Sealing rim with 3D thickness -->
+                        <path d="M 750 450 Q 725 455 700 455 Q 675 455 650 450" fill="#2980b9" stroke="#1a5276" stroke-width="2" opacity="0.7"/>
+                        <path d="M 745 455 Q 720 460 695 460 Q 670 460 645 455" fill="#1a5276" stroke="#0d3a52" stroke-width="1" opacity="0.5"/>
+
+                        <!-- Zone 1 label with background for contrast -->
+                        <rect x="665" y="325" width="80" height="55" fill="white" opacity="0.85" rx="4"/>
+                        <text x="705" y="343" text-anchor="middle" fill="#1a5490" font-size="14" font-weight="bold">ZONE 1</text>
+                        <text x="705" y="359" text-anchor="middle" fill="#2980b9" font-size="10">(Right A-Leg)</text>
+                        <text x="705" y="374" text-anchor="middle" fill="#34495e" font-size="9">(~50mm)</text>
+
+                        <!-- ========== OPEN CHANNEL: VAGINAL & URETHRAL ACCESS ========== -->
+                        <!-- Left open channel area -->
+                        <rect x="258" y="300" width="112" height="150" fill="#f0fff4" stroke="#27ae60" stroke-width="2" stroke-dasharray="6,4" rx="5" opacity="0.3"/>
+
+                        <!-- Right open channel area -->
+                        <rect x="530" y="300" width="112" height="150" fill="#f0fff4" stroke="#27ae60" stroke-width="2" stroke-dasharray="6,4" rx="5" opacity="0.3"/>
+
+                        <!-- Urethra (on body surface, just below clitoris) -->
+                        <ellipse cx="450" cy="465" rx="10" ry="7" fill="#fff8e7" stroke="#bf8040" stroke-width="2.5"/>
+                        <rect x="483" y="457" width="60" height="16" fill="white" opacity="0.85" rx="3"/>
+                        <text x="485" y="468" text-anchor="start" fill="#6d4c0f" font-size="10" font-weight="bold">Urethra</text>
+
+                        <!-- Vaginal Opening (on body surface, below urethra in open channel) -->
+                        <ellipse cx="450" cy="490" rx="28" ry="18" fill="#f5e6d3" stroke="#a67c52" stroke-width="2.5"/>
+                        <rect x="483" y="480" width="70" height="28" fill="white" opacity="0.85" rx="3"/>
+                        <text x="485" y="492" text-anchor="start" fill="#6d4c0f" font-size="10" font-weight="bold">Vaginal</text>
+                        <text x="485" y="505" text-anchor="start" fill="#6d4c0f" font-size="10" font-weight="bold">Opening</text>
+
+                        <!-- Open channel label - simplified -->
+                        <rect x="284" y="325" width="60" height="18" fill="white" opacity="0.9" rx="3"/>
+                        <text x="314" y="338" text-anchor="middle" fill="#1e8449" font-size="10" font-weight="bold">OPEN CHANNEL</text>
+                        <rect x="556" y="325" width="60" height="18" fill="white" opacity="0.9" rx="3"/>
+                        <text x="586" y="338" text-anchor="middle" fill="#1e8449" font-size="10" font-weight="bold">OPEN CHANNEL</text>
+
+                        <!-- ========== CLITORAL CYLINDER (ZONE 2) - 3D PERSPECTIVE ========== -->
+                        <!-- 2" height (51mm = 204px at 4px/mm) × 1" diameter (25mm = 100px at 4px/mm) -->
+
+                        <!-- Back walls showing depth -->
+                        <path d="M 405 251 L 410 256 L 410 455 L 405 450 Z"
+                              fill="#8b4545" stroke="#6d2020" stroke-width="1" opacity="0.6"/>
+                        <path d="M 495 251 L 490 256 L 490 455 L 495 450 Z"
+                              fill="#8b4545" stroke="#6d2020" stroke-width="1" opacity="0.6"/>
+
+                        <!-- Interior chamber with radial depth -->
+                        <ellipse cx="450" cy="350" rx="40" ry="100"
+                                 fill="url(#chamberShadow)" stroke="none" opacity="0.3"/>
+
+                        <!-- Cylinder left wall - 2 inches tall (front face) -->
+                        <rect x="400" y="246" width="8" height="204" fill="url(#wall3D)" stroke="#c0392b" stroke-width="3" rx="2"/>
+
+                        <!-- Cylinder right wall - 2 inches tall (front face) -->
+                        <rect x="492" y="246" width="8" height="204" fill="url(#wall3D)" stroke="#c0392b" stroke-width="3" rx="2"/>
+
+                        <!-- Cylinder dome (1" diameter = 25mm = 100px) with 3D depth -->
+                        <path d="M 400 246 Q 450 196 500 246" fill="url(#wall3D)" stroke="#c0392b" stroke-width="3"/>
+                        <!-- Dome back edge -->
+                        <path d="M 405 251 Q 450 206 495 251" fill="#8b4545" stroke="#6d2020" stroke-width="1" opacity="0.4"/>
+
+                        <!-- Cylinder top visible above bridge - showing it protrudes through -->
+                        <!-- Top ellipse showing cylinder opening from above -->
+                        <ellipse cx="450" cy="246" rx="50" ry="12" fill="#e8f4fc" stroke="#c0392b" stroke-width="2.5" opacity="0.8"/>
+                        <ellipse cx="450" cy="246" rx="42" ry="10" fill="none" stroke="#a93226" stroke-width="1.5" stroke-dasharray="3,2" opacity="0.6"/>
+
+                        <!-- Cylinder sealing rim with 3D thickness -->
+                        <path d="M 408 450 Q 429 455 450 455 Q 471 455 492 450" fill="#c0392b" stroke="#922b21" stroke-width="2" opacity="0.7"/>
+                        <path d="M 410 455 Q 431 460 450 460 Q 469 460 490 455" fill="#922b21" stroke="#6d2020" stroke-width="1" opacity="0.5"/>
+
+                        <!-- ENGORGED CLITORIS - filling bottom ~60% of 2-inch cylinder -->
+                        <path d="M 404 445
+                                 Q 404 425 407 400
+                                 Q 410 375 415 350
+                                 Q 420 325 427 305
+                                 Q 435 290 443 280
+                                 Q 447 275 450 273
+                                 Q 453 275 457 280
+                                 Q 465 290 473 305
+                                 Q 480 325 485 350
+                                 Q 490 375 493 400
+                                 Q 496 425 496 445
+                                 Q 493 450 450 450
+                                 Q 407 450 404 445
+                                 Z"
+                              fill="#f5c6c6" stroke="#d4a0a0" stroke-width="2.5"/>
+
+                        <!-- Empty space at top of cylinder (vacuum cavity) - larger now with 2" height -->
+                        <path d="M 408 246 L 408 260 Q 450 250 492 260 L 492 246 Q 450 196 408 246 Z"
+                              fill="#e8f4fc" stroke="none" opacity="0.5"/>
+
+                        <!-- Clitoris label with background -->
+                        <rect x="285" y="348" width="100" height="58" fill="white" opacity="0.85" rx="3"/>
+                        <text x="390" y="363" text-anchor="end" fill="#8b5a5a" font-size="11" font-weight="bold">Engorged</text>
+                        <text x="390" y="378" text-anchor="end" fill="#8b5a5a" font-size="11" font-weight="bold">Clitoris</text>
+                        <text x="390" y="392" text-anchor="end" fill="#a67c7c" font-size="9" font-style="italic">(fills ~60%</text>
+                        <text x="390" y="404" text-anchor="end" fill="#a67c7c" font-size="9" font-style="italic">of height)</text>
+
+                        <!-- Zone 2 label with background - simplified -->
+                        <rect x="508" y="300" width="125" height="48" fill="white" opacity="0.9" rx="4"/>
+                        <text x="512" y="318" text-anchor="start" fill="#a93226" font-size="14" font-weight="bold">ZONE 2</text>
+                        <text x="512" y="334" text-anchor="start" fill="#c0392b" font-size="10">Clitoral Cylinder</text>
+                        <text x="512" y="346" text-anchor="start" fill="#922b21" font-size="9">1" × 2" (25×51mm)</text>
+
+                        <!-- Vacuum/engorgement arrows showing expansion -->
+                        <path d="M 415 380 L 425 380" stroke="#c0392b" stroke-width="2.5" marker-end="url(#arrowRed)"/>
+                        <path d="M 485 380 L 475 380" stroke="#c0392b" stroke-width="2.5" marker-end="url(#arrowRed)"/>
+                        <rect x="385" y="477" width="130" height="14" fill="white" opacity="0.85" rx="3"/>
+                        <text x="450" y="487" text-anchor="middle" fill="#a93226" font-size="9" font-style="italic">← Fills cylinder width at base →</text>
+
+                        <!-- Height dimension indicator -->
+                        <line x1="505" y1="246" x2="505" y2="450" stroke="#c0392b" stroke-width="2" stroke-dasharray="3,3"/>
+                        <line x1="500" y1="246" x2="510" y2="246" stroke="#c0392b" stroke-width="2"/>
+                        <line x1="500" y1="450" x2="510" y2="450" stroke="#c0392b" stroke-width="2"/>
+                        <rect x="513" y="340" width="35" height="28" fill="white" opacity="0.85" rx="3"/>
+                        <text x="517" y="352" text-anchor="start" fill="#a93226" font-size="10" font-weight="bold">2"</text>
+                        <text x="517" y="364" text-anchor="start" fill="#c0392b" font-size="9">(51mm)</text>
+
+                        <!-- ========== A-APEX BRIDGE (CONNECTING LEFT AND RIGHT) - 3D PERSPECTIVE ========== -->
+                        <!-- Bridge now has opening for Zone 2 cylinder to protrude through -->
+
+                        <!-- TOP BRIDGE - connects left and right A-legs with upward dome -->
+
+                        <!-- Back surface of bridge (receding into depth) - LEFT SECTION -->
+                        <path d="M 255 255 Q 320 230 395 248 L 395 285 Q 320 265 255 285 Z"
+                              fill="#5a6d7f" stroke="#34495e" stroke-width="1" opacity="0.5"/>
+
+                        <!-- Back surface of bridge - RIGHT SECTION -->
+                        <path d="M 505 248 Q 580 230 645 255 L 645 285 Q 580 265 505 285 Z"
+                              fill="#5a6d7f" stroke="#34495e" stroke-width="1" opacity="0.5"/>
+
+                        <!-- Interior chamber space with depth - LEFT -->
+                        <path d="M 258 255 Q 320 245 395 255 L 395 280 Q 320 270 258 280 Z"
+                              fill="url(#chamberShadow)" stroke="none" opacity="0.3"/>
+
+                        <!-- Interior chamber space with depth - RIGHT -->
+                        <path d="M 505 255 Q 580 245 642 255 L 642 280 Q 580 270 505 280 Z"
+                              fill="url(#chamberShadow)" stroke="none" opacity="0.3"/>
+
+                        <!-- Left outer wall with 3D depth -->
+                        <path d="M 250 250 L 255 255 L 255 285 L 250 280 Z"
+                              fill="#6a7d8f" stroke="#34495e" stroke-width="1" opacity="0.7"/>
+                        <path d="M 250 250 L 250 280"
+                              fill="url(#wall3D)" stroke="#2980b9" stroke-width="3"/>
+
+                        <!-- Right outer wall with 3D depth -->
+                        <path d="M 650 250 L 645 255 L 645 285 L 650 280 Z"
+                              fill="#6a7d8f" stroke="#34495e" stroke-width="1" opacity="0.7"/>
+                        <path d="M 650 250 L 650 280"
+                              fill="url(#wall3D)" stroke="#2980b9" stroke-width="3"/>
+
+                        <!-- Top surface - LEFT SECTION (stops at cylinder opening) -->
+                        <path d="M 250 250 Q 320 225 395 246"
+                              fill="url(#wall3D)" stroke="#2980b9" stroke-width="3"/>
+
+                        <!-- Top surface - RIGHT SECTION (starts after cylinder opening) -->
+                        <path d="M 505 246 Q 580 225 650 250"
+                              fill="url(#wall3D)" stroke="#2980b9" stroke-width="3"/>
+
+                        <!-- Bottom surface - LEFT SECTION -->
+                        <path d="M 258 280 Q 320 250 395 270"
+                              fill="url(#wall3D)" stroke="#2980b9" stroke-width="2"/>
+
+                        <!-- Bottom surface - RIGHT SECTION -->
+                        <path d="M 505 270 Q 580 250 642 280"
+                              fill="url(#wall3D)" stroke="#2980b9" stroke-width="2"/>
+
+                        <!-- Left side wall (front edge) -->
+                        <path d="M 250 250 L 258 280"
+                              fill="url(#wall3D)" stroke="#2980b9" stroke-width="2"/>
+
+                        <!-- Right side wall (front edge) -->
+                        <path d="M 650 250 L 642 280"
+                              fill="url(#wall3D)" stroke="#2980b9" stroke-width="2"/>
+
+                        <!-- Opening edges where cylinder passes through - LEFT -->
+                        <path d="M 395 246 L 395 280"
+                              fill="url(#wall3D)" stroke="#2980b9" stroke-width="2.5"/>
+
+                        <!-- Opening edges where cylinder passes through - RIGHT -->
+                        <path d="M 505 246 L 505 280"
+                              fill="url(#wall3D)" stroke="#2980b9" stroke-width="2.5"/>
+
+                        <!-- Visual connection showing cylinder passes through bridge -->
+                        <!-- Left side connection -->
+                        <path d="M 400 246 L 395 246" stroke="#c0392b" stroke-width="2" opacity="0.8"/>
+                        <!-- Right side connection -->
+                        <path d="M 500 246 L 505 246" stroke="#c0392b" stroke-width="2" opacity="0.8"/>
+
+                        <!-- Shadow/depth indicator inside opening -->
+                        <rect x="395" y="246" width="110" height="8" fill="#34495e" opacity="0.15"/>
+                        <rect x="395" y="272" width="110" height="8" fill="#34495e" opacity="0.1"/>
+
+                        <!-- Vacuum chamber visualization (left side) with depth -->
+                        <path d="M 258 255 Q 320 260 390 270 L 258 275 Z"
+                              fill="#3498db" fill-opacity="0.25" stroke="none"/>
+                        <path d="M 263 260 Q 325 265 395 275 L 263 280 Z"
+                              fill="#2980b9" fill-opacity="0.15" stroke="none"/>
+
+                        <!-- Vacuum chamber visualization (right side) with depth -->
+                        <path d="M 642 255 Q 580 260 510 270 L 642 275 Z"
+                              fill="#3498db" fill-opacity="0.25" stroke="none"/>
+                        <path d="M 637 260 Q 575 265 505 275 L 637 280 Z"
+                              fill="#2980b9" fill-opacity="0.15" stroke="none"/>
+
+                        <!-- Bridge label - simplified -->
+                        <rect x="360" y="218" width="180" height="18" fill="white" opacity="0.9" rx="4"/>
+                        <text x="450" y="232" text-anchor="middle" fill="#1a5490" font-size="13" font-weight="bold">A-APEX BRIDGE</text>
+
+                        <!-- Cylinder protrusion annotation - moved higher to avoid overlap -->
+                        <rect x="340" y="195" width="220" height="14" fill="white" opacity="0.9" rx="3"/>
+                        <text x="450" y="205" text-anchor="middle" fill="#a93226" font-size="9" font-weight="bold">← Cylinder protrudes through bridge →</text>
+
+                        <!-- Crossbar labels - simplified -->
+                        <rect x="280" y="240" width="60" height="14" fill="white" opacity="0.85" rx="3"/>
+                        <text x="310" y="250" text-anchor="middle" fill="#34495e" font-size="9">Crossbar</text>
+                        <rect x="560" y="240" width="60" height="14" fill="white" opacity="0.85" rx="3"/>
+                        <text x="590" y="250" text-anchor="middle" fill="#34495e" font-size="9">Crossbar</text>
+
+                        <!-- Vacuum flow arrows - simplified -->
+                        <path d="M 280 265 L 370 265" stroke="#2980b9" stroke-width="3" marker-end="url(#arrowBlue)"/>
+                        <path d="M 620 265 L 530 265" stroke="#2980b9" stroke-width="3" marker-end="url(#arrowBlue)"/>
+
+                        <!-- ========== VACUUM FLOW ARROWS ========== -->
+                        <path d="M 195 380 L 195 320" stroke="#2980b9" stroke-width="3.5" marker-end="url(#arrowBlue)"/>
+                        <rect x="130" y="340" width="60" height="16" fill="white" opacity="0.85" rx="3"/>
+                        <text x="180" y="352" text-anchor="end" fill="#1a5490" font-size="11" font-weight="bold">Vacuum</text>
+
+                        <path d="M 705 380 L 705 320" stroke="#2980b9" stroke-width="3.5" marker-end="url(#arrowBlue)"/>
+                        <rect x="710" y="340" width="60" height="16" fill="white" opacity="0.85" rx="3"/>
+                        <text x="720" y="352" text-anchor="start" fill="#1a5490" font-size="11" font-weight="bold">Vacuum</text>
+
+                        <path d="M 450 280 L 450 220" stroke="#c0392b" stroke-width="3.5" marker-end="url(#arrowRed)"/>
+                        <rect x="463" y="238" width="70" height="16" fill="white" opacity="0.85" rx="3"/>
+                        <text x="467" y="250" text-anchor="start" fill="#a93226" font-size="11" font-weight="bold">Air Pulse</text>
+
+                        <!-- ========== DIMENSIONS ========== -->
+                        <!-- Cup depth dimension (from top of cup to body surface) -->
+                        <line x1="110" y1="250" x2="110" y2="450" stroke="#5a6c7d" stroke-width="2.5"/>
+                        <line x1="103" y1="250" x2="117" y2="250" stroke="#5a6c7d" stroke-width="2.5"/>
+                        <line x1="103" y1="450" x2="117" y2="450" stroke="#5a6c7d" stroke-width="2.5"/>
+                        <rect x="30" y="335" width="65" height="30" fill="white" opacity="0.9" rx="3"/>
+                        <text x="95" y="348" text-anchor="end" fill="#34495e" font-size="11" font-weight="bold">~50mm</text>
+                        <text x="95" y="361" text-anchor="end" fill="#5a6c7d" font-size="9">(cup depth)</text>
+
+                        <line x1="140" y1="75" x2="760" y2="75" stroke="#5a6c7d" stroke-width="2.5"/>
+                        <line x1="140" y1="68" x2="140" y2="82" stroke="#5a6c7d" stroke-width="2.5"/>
+                        <line x1="760" y1="68" x2="760" y2="82" stroke="#5a6c7d" stroke-width="2.5"/>
+                        <rect x="385" y="54" width="130" height="18" fill="white" opacity="0.9" rx="3"/>
+                        <text x="450" y="67" text-anchor="middle" fill="#34495e" font-size="11" font-weight="bold">~155mm (total width)</text>
+
+                        <!-- ========== ORIENTATION ARROWS ========== -->
+                        <line x1="80" y1="270" x2="80" y2="430" stroke="#7d3c98" stroke-width="3.5" marker-end="url(#arrowBody)"/>
+                        <rect x="30" y="342" width="45" height="30" fill="white" opacity="0.9" rx="3"/>
+                        <text x="70" y="356" text-anchor="end" fill="#6c3483" font-size="11" font-weight="bold">TO</text>
+                        <text x="70" y="370" text-anchor="end" fill="#6c3483" font-size="11" font-weight="bold">BODY</text>
+
+                        <line x1="820" y1="270" x2="820" y2="430" stroke="#7d3c98" stroke-width="3.5" marker-end="url(#arrowBody)"/>
+                        <rect x="825" y="342" width="45" height="30" fill="white" opacity="0.9" rx="3"/>
+                        <text x="830" y="356" text-anchor="start" fill="#6c3483" font-size="11" font-weight="bold">TO</text>
+                        <text x="830" y="370" text-anchor="start" fill="#6c3483" font-size="11" font-weight="bold">BODY</text>
+
+                        <!-- ========== 3D DEPTH INDICATORS ========== -->
+                        <!-- Subtle perspective lines showing depth -->
+                        <line x1="145" y1="255" x2="155" y2="265" stroke="#34495e" stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
+                        <line x1="755" y1="255" x2="745" y2="265" stroke="#34495e" stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
+                        <line x1="405" y1="251" x2="410" y2="256" stroke="#6d2020" stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
+                        <line x1="495" y1="251" x2="490" y2="256" stroke="#6d2020" stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
+
+                        <!-- Depth annotation with background -->
+                        <rect x="330" y="172" width="240" height="18" fill="white" opacity="0.9" rx="3"/>
+                        <text x="450" y="185" text-anchor="middle" fill="#34495e" font-size="10" font-style="italic" font-weight="500">
+                            ← 3D Cutaway View: Looking into chamber depth →
+                        </text>
+
+                        <!-- ========== LEGEND ========== -->
+                        <rect x="200" y="515" width="500" height="80" fill="#ffffff" stroke="#2c3e50" stroke-width="3" rx="6"/>
+                        <text x="450" y="536" text-anchor="middle" fill="#1a252f" font-size="13" font-weight="bold" letter-spacing="0.5">3D Cross-Section View Legend</text>
+
+                        <!-- Row 1 -->
+                        <rect x="215" y="548" width="22" height="12" fill="url(#wall3D)" stroke="#2980b9" stroke-width="2.5"/>
+                        <text x="243" y="558" text-anchor="start" fill="#1a252f" font-size="10.5" font-weight="500">Front walls (Zone 1 - Blue)</text>
+
+                        <rect x="430" y="548" width="22" height="12" fill="#5a6d7f" stroke="#34495e" stroke-width="1.5" opacity="0.7"/>
+                        <text x="458" y="558" text-anchor="start" fill="#1a252f" font-size="10.5" font-weight="500">Back walls (depth)</text>
+
+                        <!-- Row 2 -->
+                        <rect x="215" y="568" width="22" height="12" fill="url(#wall3D)" stroke="#c0392b" stroke-width="2.5"/>
+                        <text x="243" y="578" text-anchor="start" fill="#1a252f" font-size="10.5" font-weight="500">Front walls (Zone 2 - Red)</text>
+
+                        <ellipse cx="465" cy="574" rx="10" ry="7" fill="#e8c9a0" stroke="#c9a86c" stroke-width="2"/>
+                        <text x="480" y="578" text-anchor="start" fill="#1a252f" font-size="10.5" font-weight="500">Vulvar anatomy</text>
+
+                        <rect x="610" y="568" width="22" height="12" fill="#f0fff4" stroke="#27ae60" stroke-width="2" stroke-dasharray="4,2"/>
+                        <text x="638" y="578" text-anchor="start" fill="#1a252f" font-size="10.5" font-weight="500">Open channel</text>
+
+                    </svg>
+                </div>
+            </div>
+
+            <h3>Dual-Chamber Architecture</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Zone</th>
+                        <th>Name</th>
+                        <th>Function</th>
+                        <th>Vacuum Type</th>
+                        <th>Valve Control</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Zone 1</strong></td>
+                        <td>Outer A-Seal Chamber (A-legs)</td>
+                        <td>Attachment, engorgement, labia stimulation</td>
+                        <td>Constant/slow variation</td>
+                        <td>SOL1/SOL2</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Zone 2</strong></td>
+                        <td>Clitoral Cylinder (A-apex)</td>
+                        <td>Targeted clitoral air-pulse stimulation</td>
+                        <td>Rapid pulsing (5-13 Hz) OR sustained</td>
+                        <td>SOL4/SOL5</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Zone 1: Outer A-Seal Chamber (A-Legs)</h4>
+            <ul class="feature-list">
+                <li>Two A-legs create peripheral seal around vulva (labia majora/minora)</li>
+                <li>Maintains sustained vacuum (30-50 mmHg continuous) for blood engorgement</li>
+                <li>Causes active tissue engorgement → increased sensitivity and clitoral erection</li>
+                <li>Anti-detachment system monitors this zone only</li>
+                <li>80mm total coverage area</li>
+            </ul>
+
+            <h4>Zone 2: Clitoral Cylinder (A-Apex)</h4>
+            <ul class="feature-list">
+                <li>1" diameter circular cylinder (25mm) positioned at A-apex triangle, directly over clitoral glans only</li>
+                <li>Separated from outer chambers by A-crossbar (internal diaphragm)</li>
+                <li>Independent vacuum supply enables two operating modes:</li>
+                <li style="margin-left: 30px;"><strong>Sustained vacuum mode:</strong> Continuous negative pressure for clitoral engorgement</li>
+                <li style="margin-left: 30px;"><strong>Air-pulse mode:</strong> Rapid pressure oscillation (5-13 Hz) for stimulation</li>
+                <li>Replicates "air pulse" sensation (like Womanizer/Satisfyer) at industrial scale</li>
+            </ul>
+
+            <div class="success-box">
+                <h4>🔑 CRITICAL DIFFERENTIATOR: Active Engorgement Capability</h4>
+                <p><strong>Commercial air-pulse toys (Womanizer, Satisfyer, LELO) only provide oscillating pressure waves for stimulation—they CANNOT create sustained vacuum for tissue engorgement.</strong> They rely on natural arousal to engorge the clitoris before/during use.</p>
+                <p>The A-Contour dual-chamber system separates these functions:</p>
+                <ul>
+                    <li><strong>Outer A-seal (A-legs):</strong> Sustained vacuum for vulva/labia engorgement</li>
+                    <li><strong>Clitoral cylinder (A-apex):</strong> Sustained vacuum for clitoral engorgement OR oscillating air-pulse for stimulation</li>
+                </ul>
+                <p><strong>This allows the A-Contour to actively induce clitoral erection/engorgement, rather than waiting for natural arousal to occur.</strong></p>
+            </div>
+
+            <h4>Active Engorgement Benefits:</h4>
+            <ul class="feature-list">
+                <li><strong>Faster arousal:</strong> Engorge the clitoris BEFORE beginning air-pulse stimulation</li>
+                <li><strong>Maintained engorgement:</strong> Sustained outer vacuum keeps tissue engorged throughout session</li>
+                <li><strong>Faster orgasm:</strong> Optimal clitoral erection from the start reduces time to climax</li>
+                <li><strong>Enhanced sensitivity:</strong> Engorged tissue has ~8,000 nerve endings more exposed</li>
+                <li><strong>Consistent response:</strong> Does not rely on the user's natural arousal state</li>
+                <li><strong>Dual-mode flexibility:</strong> Can switch between engorgement and stimulation dynamically</li>
+            </ul>
+
+            <h3>Open-Channel Design Benefits</h3>
+            <p>The A-shape creates an <strong>open channel</strong> by sealing around the periphery of the vulva while leaving the urethra and vaginal opening completely exposed between the two A-legs. See the detailed <strong>Side View (Cross-Section)</strong> diagram above for visual representation.</p>
+
+            <h4>Open-Channel Advantages:</h4>
+            <ul class="feature-list">
+                <li><strong>Hygiene:</strong> Fluids (urine, vaginal lubrication, ejaculate) drain away from vacuum system</li>
+                <li><strong>Squirting-Compatible:</strong> Female ejaculation doesn't contaminate vacuum lines</li>
+                <li><strong>Urethral Access:</strong> Enables simultaneous urethral sounding while vacuum active</li>
+                <li><strong>Vaginal Access:</strong> Allows insertable toys during vacuum therapy</li>
+                <li><strong>Easy Cleanup:</strong> Vacuum hoses remain dry; only cup exterior needs cleaning</li>
+            </ul>
+
+            <div class="diagram-container">
+                <h4>A-Contour Cup 3D Render</h4>
+                <img src="apps-main/docs/images/a-contour-cup-render.png" alt="A-Contour Cup 3D Render" style="max-width: 600px;">
+                <p><em>3D rendering showing the anatomical A-shape design with dual chambers</em></p>
+            </div>
         </section>
 
         <!-- Section 4: Games -->
