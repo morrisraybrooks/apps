@@ -161,55 +161,250 @@ apps-main/src/
 └── threading/               # Thread management
             </pre>
 
-            <h3>Core Components Diagram</h3>
-            <svg width="800" height="400" viewBox="0 0 800 400" style="background: #f5f5f5; border-radius: 8px;">
-                <!-- VacuumController -->
-                <rect x="150" y="20" width="500" height="60" fill="#4A90E2" stroke="#2E5C8A" stroke-width="2" rx="5"/>
-                <text x="400" y="45" text-anchor="middle" fill="white" font-size="16" font-weight="bold">VacuumController</text>
-                <text x="400" y="65" text-anchor="middle" fill="white" font-size="12">(Main Application Facade)</text>
+            <h3>Component Interaction & Data Flow</h3>
+            <p>The V-Contour system follows a layered architecture with clear separation of concerns:</p>
 
-                <!-- Connection line down -->
-                <line x1="400" y1="80" x2="400" y2="120" stroke="#333" stroke-width="2"/>
+            <!-- Enhanced Architecture Diagram -->
+            <svg width="100%" height="700" viewBox="0 0 1200 700" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); border-radius: 12px; margin: 20px 0; box-shadow: 0 8px 16px rgba(0,0,0,0.3);">
+                <defs>
+                    <marker id="arrowArch" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="white"/>
+                    </marker>
+                    <marker id="arrowData" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#3498DB"/>
+                    </marker>
+                    <marker id="arrowControl" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#E74C3C"/>
+                    </marker>
+                    <filter id="glowArch">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
 
-                <!-- Horizontal distribution lines -->
-                <line x1="100" y1="120" x2="700" y2="120" stroke="#333" stroke-width="2"/>
-                <line x1="100" y1="120" x2="100" y2="140" stroke="#333" stroke-width="2"/>
-                <line x1="280" y1="120" x2="280" y2="140" stroke="#333" stroke-width="2"/>
-                <line x1="460" y1="120" x2="460" y2="140" stroke="#333" stroke-width="2"/>
-                <line x1="640" y1="120" x2="640" y2="140" stroke="#333" stroke-width="2"/>
+                <!-- Title -->
+                <text x="600" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="white" filter="url(#glowArch)">V-Contour Software Architecture</text>
+                <text x="600" y="50" text-anchor="middle" font-size="12" fill="#ECF0F1">Layered Design with Hardware Abstraction</text>
 
-                <!-- GameEngine -->
-                <rect x="30" y="140" width="140" height="60" fill="#50C878" stroke="#2E7D4E" stroke-width="2" rx="5"/>
-                <text x="100" y="165" text-anchor="middle" fill="white" font-size="14" font-weight="bold">GameEngine</text>
+                <!-- LAYER 1: User Interface -->
+                <rect x="50" y="70" width="1100" height="80" fill="rgba(52,152,219,0.3)" stroke="#3498DB" stroke-width="2" rx="8"/>
+                <text x="100" y="95" font-size="14" font-weight="bold" fill="white">LAYER 1: User Interface</text>
 
-                <!-- PatternEngine -->
-                <rect x="210" y="140" width="140" height="60" fill="#50C878" stroke="#2E7D4E" stroke-width="2" rx="5"/>
-                <text x="280" y="165" text-anchor="middle" fill="white" font-size="14" font-weight="bold">PatternEngine</text>
+                <rect x="100" y="105" width="200" height="35" fill="#3498DB" stroke="#2980B9" stroke-width="2" rx="5"/>
+                <text x="200" y="128" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Qt GUI (MainWindow)</text>
 
-                <!-- OrgasmControl -->
-                <rect x="390" y="140" width="140" height="60" fill="#50C878" stroke="#2E7D4E" stroke-width="2" rx="5"/>
-                <text x="460" y="160" text-anchor="middle" fill="white" font-size="14" font-weight="bold">OrgasmControl</text>
-                <text x="460" y="180" text-anchor="middle" fill="white" font-size="12">Algorithm</text>
+                <rect x="330" y="105" width="200" height="35" fill="#3498DB" stroke="#2980B9" stroke-width="2" rx="5"/>
+                <text x="430" y="128" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Network API (WebSocket)</text>
 
-                <!-- SafetyManager -->
-                <rect x="570" y="140" width="140" height="60" fill="#E74C3C" stroke="#A93226" stroke-width="2" rx="5"/>
-                <text x="640" y="165" text-anchor="middle" fill="white" font-size="14" font-weight="bold">SafetyManager</text>
+                <rect x="560" y="105" width="200" height="35" fill="#3498DB" stroke="#2980B9" stroke-width="2" rx="5"/>
+                <text x="660" y="128" text-anchor="middle" font-size="12" fill="white" font-weight="bold">REST API</text>
 
-                <!-- Connection lines down -->
-                <line x1="100" y1="200" x2="100" y2="240" stroke="#333" stroke-width="2"/>
-                <line x1="280" y1="200" x2="280" y2="240" stroke="#333" stroke-width="2"/>
-                <line x1="460" y1="200" x2="460" y2="240" stroke="#333" stroke-width="2"/>
-                <line x1="640" y1="200" x2="640" y2="240" stroke="#333" stroke-width="2"/>
+                <rect x="790" y="105" width="200" height="35" fill="#3498DB" stroke="#2980B9" stroke-width="2" rx="5"/>
+                <text x="890" y="128" text-anchor="middle" font-size="12" fill="white" font-weight="bold">CLI Interface</text>
 
-                <!-- Horizontal line to HardwareManager -->
-                <line x1="100" y1="240" x2="700" y2="240" stroke="#333" stroke-width="2"/>
-                <line x1="400" y1="240" x2="400" y2="260" stroke="#333" stroke-width="2"/>
+                <!-- Arrow down to Layer 2 -->
+                <line x1="600" y1="150" x2="600" y2="170" stroke="white" stroke-width="3" marker-end="url(#arrowArch)"/>
 
-                <!-- HardwareManager -->
-                <rect x="100" y="260" width="600" height="80" fill="#9B59B6" stroke="#6C3483" stroke-width="2" rx="5"/>
-                <text x="400" y="290" text-anchor="middle" fill="white" font-size="16" font-weight="bold">HardwareManager</text>
-                <text x="400" y="315" text-anchor="middle" fill="white" font-size="11">(SensorInterface, ActuatorControl, TENSController, CameraManager...)</text>
+                <!-- LAYER 2: Application Facade -->
+                <rect x="50" y="170" width="1100" height="80" fill="rgba(46,204,113,0.3)" stroke="#27AE60" stroke-width="2" rx="8"/>
+                <text x="100" y="195" font-size="14" font-weight="bold" fill="white">LAYER 2: Application Facade</text>
+
+                <rect x="350" y="205" width="500" height="35" fill="#27AE60" stroke="#229954" stroke-width="2" rx="5"/>
+                <text x="600" y="228" text-anchor="middle" font-size="13" fill="white" font-weight="bold">VacuumController (Main Coordinator)</text>
+
+                <!-- Arrow down to Layer 3 -->
+                <line x1="600" y1="250" x2="600" y2="270" stroke="white" stroke-width="3" marker-end="url(#arrowArch)"/>
+
+                <!-- LAYER 3: Business Logic -->
+                <rect x="50" y="270" width="1100" height="150" fill="rgba(155,89,182,0.3)" stroke="#9B59B6" stroke-width="2" rx="8"/>
+                <text x="100" y="295" font-size="14" font-weight="bold" fill="white">LAYER 3: Business Logic & Control</text>
+
+                <rect x="80" y="310" width="160" height="50" fill="#9B59B6" stroke="#8E44AD" stroke-width="2" rx="5"/>
+                <text x="160" y="330" text-anchor="middle" font-size="11" fill="white" font-weight="bold">GameEngine</text>
+                <text x="160" y="345" text-anchor="middle" font-size="9" fill="white">Objectives & Scoring</text>
+
+                <rect x="260" y="310" width="160" height="50" fill="#9B59B6" stroke="#8E44AD" stroke-width="2" rx="5"/>
+                <text x="340" y="330" text-anchor="middle" font-size="11" fill="white" font-weight="bold">PatternEngine</text>
+                <text x="340" y="345" text-anchor="middle" font-size="9" fill="white">Stimulation Patterns</text>
+
+                <rect x="440" y="310" width="160" height="50" fill="#9B59B6" stroke="#8E44AD" stroke-width="2" rx="5"/>
+                <text x="520" y="325" text-anchor="middle" font-size="11" fill="white" font-weight="bold">OrgasmControl</text>
+                <text x="520" y="340" text-anchor="middle" font-size="9" fill="white">Arousal Detection</text>
+                <text x="520" y="353" text-anchor="middle" font-size="9" fill="white">& Adaptive Control</text>
+
+                <rect x="620" y="310" width="160" height="50" fill="#E74C3C" stroke="#C0392B" stroke-width="2" rx="5"/>
+                <text x="700" y="330" text-anchor="middle" font-size="11" fill="white" font-weight="bold">SafetyManager</text>
+                <text x="700" y="345" text-anchor="middle" font-size="9" fill="white">10Hz Safety Checks</text>
+
+                <rect x="800" y="310" width="160" height="50" fill="#9B59B6" stroke="#8E44AD" stroke-width="2" rx="5"/>
+                <text x="880" y="330" text-anchor="middle" font-size="11" fill="white" font-weight="bold">NetworkManager</text>
+                <text x="880" y="345" text-anchor="middle" font-size="9" fill="white">Multi-user Control</text>
+
+                <rect x="980" y="310" width="160" height="50" fill="#9B59B6" stroke="#8E44AD" stroke-width="2" rx="5"/>
+                <text x="1060" y="330" text-anchor="middle" font-size="11" fill="white" font-weight="bold">ConsentManager</text>
+                <text x="1060" y="345" text-anchor="middle" font-size="9" fill="white">Permission Control</text>
+
+                <!-- Supporting Services -->
+                <rect x="80" y="370" width="140" height="40" fill="rgba(155,89,182,0.5)" stroke="#8E44AD" stroke-width="1" rx="5"/>
+                <text x="150" y="390" text-anchor="middle" font-size="10" fill="white">ProgressTracker</text>
+                <text x="150" y="403" text-anchor="middle" font-size="8" fill="white">XP & Achievements</text>
+
+                <rect x="240" y="370" width="140" height="40" fill="rgba(155,89,182,0.5)" stroke="#8E44AD" stroke-width="1" rx="5"/>
+                <text x="310" y="390" text-anchor="middle" font-size="10" fill="white">DataLogger</text>
+                <text x="310" y="403" text-anchor="middle" font-size="8" fill="white">Session Recording</text>
+
+                <rect x="400" y="370" width="140" height="40" fill="rgba(155,89,182,0.5)" stroke="#8E44AD" stroke-width="1" rx="5"/>
+                <text x="470" y="390" text-anchor="middle" font-size="10" fill="white">LicenseManager</text>
+                <text x="470" y="403" text-anchor="middle" font-size="8" fill="white">Feature Gating</text>
+
+                <rect x="560" y="370" width="140" height="40" fill="rgba(155,89,182,0.5)" stroke="#8E44AD" stroke-width="1" rx="5"/>
+                <text x="630" y="390" text-anchor="middle" font-size="10" fill="white">CalibrationMgr</text>
+                <text x="630" y="403" text-anchor="middle" font-size="8" fill="white">Sensor Calibration</text>
+
+                <!-- Arrow down to Layer 4 -->
+                <line x1="600" y1="420" x2="600" y2="440" stroke="white" stroke-width="3" marker-end="url(#arrowArch)"/>
+
+                <!-- LAYER 4: Hardware Abstraction -->
+                <rect x="50" y="440" width="1100" height="120" fill="rgba(241,196,15,0.3)" stroke="#F39C12" stroke-width="2" rx="8"/>
+                <text x="100" y="465" font-size="14" font-weight="bold" fill="white">LAYER 4: Hardware Abstraction Layer</text>
+
+                <rect x="200" y="480" width="800" height="50" fill="#F39C12" stroke="#E67E22" stroke-width="2" rx="5"/>
+                <text x="600" y="500" text-anchor="middle" font-size="13" fill="white" font-weight="bold">HardwareManager</text>
+                <text x="600" y="518" text-anchor="middle" font-size="10" fill="white">Unified Hardware Interface</text>
+
+                <!-- Arrow down to Layer 5 -->
+                <line x1="600" y1="560" x2="600" y2="580" stroke="white" stroke-width="3" marker-end="url(#arrowArch)"/>
+
+                <!-- LAYER 5: Physical Hardware -->
+                <rect x="50" y="580" width="1100" height="100" fill="rgba(231,76,60,0.3)" stroke="#E74C3C" stroke-width="2" rx="8"/>
+                <text x="100" y="605" font-size="14" font-weight="bold" fill="white">LAYER 5: Physical Hardware</text>
+
+                <rect x="80" y="620" width="130" height="40" fill="#E74C3C" stroke="#C0392B" stroke-width="2" rx="5"/>
+                <text x="145" y="640" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Pressure Sensors</text>
+                <text x="145" y="653" text-anchor="middle" font-size="8" fill="white">MPX5010DP × 3</text>
+
+                <rect x="230" y="620" width="130" height="40" fill="#E74C3C" stroke="#C0392B" stroke-width="2" rx="5"/>
+                <text x="295" y="640" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Vacuum Pump</text>
+                <text x="295" y="653" text-anchor="middle" font-size="8" fill="white">PWM Control</text>
+
+                <rect x="380" y="620" width="130" height="40" fill="#E74C3C" stroke="#C0392B" stroke-width="2" rx="5"/>
+                <text x="445" y="640" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Solenoid Valves</text>
+                <text x="445" y="653" text-anchor="middle" font-size="8" fill="white">5× Valves</text>
+
+                <rect x="530" y="620" width="130" height="40" fill="#E74C3C" stroke="#C0392B" stroke-width="2" rx="5"/>
+                <text x="595" y="640" text-anchor="middle" font-size="10" fill="white" font-weight="bold">TENS Unit</text>
+                <text x="595" y="653" text-anchor="middle" font-size="8" fill="white">Electrodes</text>
+
+                <rect x="680" y="620" width="130" height="40" fill="#E74C3C" stroke="#C0392B" stroke-width="2" rx="5"/>
+                <text x="745" y="640" text-anchor="middle" font-size="10" fill="white" font-weight="bold">IMU Sensor</text>
+                <text x="745" y="653" text-anchor="middle" font-size="8" fill="white">MPU6050</text>
+
+                <rect x="830" y="620" width="130" height="40" fill="#E74C3C" stroke="#C0392B" stroke-width="2" rx="5"/>
+                <text x="895" y="640" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Cameras</text>
+                <text x="895" y="653" text-anchor="middle" font-size="8" fill="white">Body + Cup</text>
+
+                <rect x="980" y="620" width="130" height="40" fill="#E74C3C" stroke="#C0392B" stroke-width="2" rx="5"/>
+                <text x="1045" y="640" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Heart Rate</text>
+                <text x="1045" y="653" text-anchor="middle" font-size="8" fill="white">BLE Monitor</text>
             </svg>
+
+            <h3>Data Flow Example: Adaptive Edging Session</h3>
+            <p>Typical data flow during an adaptive edging game session:</p>
+
+            <svg width="100%" height="400" viewBox="0 0 900 400" style="background: #F8F9FA; border-radius: 8px; margin: 20px 0;">
+                <defs>
+                    <marker id="arrowFlow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#3498DB"/>
+                    </marker>
+                </defs>
+
+                <!-- Title -->
+                <text x="450" y="25" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">Data Flow: Adaptive Edging Session</text>
+
+                <!-- Step 1: Sensor Reading -->
+                <rect x="50" y="50" width="150" height="60" fill="#E74C3C" stroke="#C0392B" stroke-width="2" rx="5"/>
+                <text x="125" y="75" text-anchor="middle" font-size="12" font-weight="bold" fill="white">1. Sensors</text>
+                <text x="125" y="93" text-anchor="middle" font-size="10" fill="white">Read pressure,</text>
+                <text x="125" y="106" text-anchor="middle" font-size="10" fill="white">HR, motion</text>
+
+                <!-- Arrow -->
+                <line x1="200" y1="80" x2="250" y2="80" stroke="#3498DB" stroke-width="2" marker-end="url(#arrowFlow)"/>
+                <text x="225" y="70" text-anchor="middle" font-size="9" fill="#666">Raw data</text>
+
+                <!-- Step 2: Arousal Calculation -->
+                <rect x="250" y="50" width="150" height="60" fill="#9B59B6" stroke="#8E44AD" stroke-width="2" rx="5"/>
+                <text x="325" y="75" text-anchor="middle" font-size="12" font-weight="bold" fill="white">2. OrgasmControl</text>
+                <text x="325" y="93" text-anchor="middle" font-size="10" fill="white">Calculate arousal</text>
+                <text x="325" y="106" text-anchor="middle" font-size="10" fill="white">(0.0 - 1.0)</text>
+
+                <!-- Arrow -->
+                <line x1="400" y1="80" x2="450" y2="80" stroke="#3498DB" stroke-width="2" marker-end="url(#arrowFlow)"/>
+                <text x="425" y="70" text-anchor="middle" font-size="9" fill="#666">Arousal: 0.87</text>
+
+                <!-- Step 3: Game Logic -->
+                <rect x="450" y="50" width="150" height="60" fill="#9B59B6" stroke="#8E44AD" stroke-width="2" rx="5"/>
+                <text x="525" y="75" text-anchor="middle" font-size="12" font-weight="bold" fill="white">3. GameEngine</text>
+                <text x="525" y="93" text-anchor="middle" font-size="10" fill="white">Check objectives</text>
+                <text x="525" y="106" text-anchor="middle" font-size="10" fill="white">Edge detected!</text>
+
+                <!-- Arrow -->
+                <line x1="600" y1="80" x2="650" y2="80" stroke="#3498DB" stroke-width="2" marker-end="url(#arrowFlow)"/>
+                <text x="625" y="70" text-anchor="middle" font-size="9" fill="#666">Edge count++</text>
+
+                <!-- Step 4: Pattern Adjustment -->
+                <rect x="650" y="50" width="150" height="60" fill="#9B59B6" stroke="#8E44AD" stroke-width="2" rx="5"/>
+                <text x="725" y="75" text-anchor="middle" font-size="12" font-weight="bold" fill="white">4. PatternEngine</text>
+                <text x="725" y="93" text-anchor="middle" font-size="10" fill="white">Reduce intensity</text>
+                <text x="725" y="106" text-anchor="middle" font-size="10" fill="white">to 40%</text>
+
+                <!-- Arrow down -->
+                <line x1="725" y1="110" x2="725" y2="150" stroke="#3498DB" stroke-width="2" marker-end="url(#arrowFlow)"/>
+                <text x="745" y="130" font-size="9" fill="#666">Command</text>
+
+                <!-- Step 5: Hardware Control -->
+                <rect x="650" y="150" width="150" height="60" fill="#F39C12" stroke="#E67E22" stroke-width="2" rx="5"/>
+                <text x="725" y="175" text-anchor="middle" font-size="12" font-weight="bold" fill="white">5. HardwareManager</text>
+                <text x="725" y="193" text-anchor="middle" font-size="10" fill="white">Adjust pump PWM</text>
+                <text x="725" y="206" text-anchor="middle" font-size="10" fill="white">Open vent valve</text>
+
+                <!-- Arrow down -->
+                <line x1="725" y1="210" x2="725" y2="250" stroke="#3498DB" stroke-width="2" marker-end="url(#arrowFlow)"/>
+                <text x="745" y="230" font-size="9" fill="#666">GPIO signals</text>
+
+                <!-- Step 6: Physical Response -->
+                <rect x="650" y="250" width="150" height="60" fill="#E74C3C" stroke="#C0392B" stroke-width="2" rx="5"/>
+                <text x="725" y="275" text-anchor="middle" font-size="12" font-weight="bold" fill="white">6. Actuators</text>
+                <text x="725" y="293" text-anchor="middle" font-size="10" fill="white">Pressure drops</text>
+                <text x="725" y="306" text-anchor="middle" font-size="10" fill="white">to 45 mmHg</text>
+
+                <!-- Safety Check (parallel) -->
+                <rect x="50" y="150" width="150" height="60" fill="#E74C3C" stroke="#C0392B" stroke-width="2" rx="5"/>
+                <text x="125" y="175" text-anchor="middle" font-size="12" font-weight="bold" fill="white">SafetyManager</text>
+                <text x="125" y="193" text-anchor="middle" font-size="10" fill="white">10Hz checks</text>
+                <text x="125" y="206" text-anchor="middle" font-size="10" fill="white">All systems OK</text>
+
+                <!-- Arrow from safety to hardware -->
+                <line x1="200" y1="180" x2="645" y2="180" stroke="#E74C3C" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrowFlow)"/>
+                <text x="420" y="170" text-anchor="middle" font-size="9" fill="#E74C3C">Continuous monitoring</text>
+
+                <!-- Feedback loop -->
+                <path d="M 725 310 Q 850 350 850 80 Q 850 50 205 50" fill="none" stroke="#27AE60" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrowFlow)"/>
+                <text x="850" y="180" font-size="10" fill="#27AE60" font-weight="bold">Feedback Loop</text>
+                <text x="850" y="195" font-size="9" fill="#27AE60">(100ms cycle)</text>
+
+                <!-- Legend -->
+                <rect x="50" y="330" width="800" height="50" fill="rgba(52,152,219,0.1)" stroke="#3498DB" stroke-width="1" rx="5"/>
+                <text x="450" y="350" text-anchor="middle" font-size="11" font-weight="bold" fill="#333">Cycle Time: ~100ms (10Hz)</text>
+                <text x="450" y="368" text-anchor="middle" font-size="10" fill="#666">This loop repeats continuously during the session, adapting stimulation based on real-time arousal feedback</text>
+            </svg>
+
+            <div class="info">
+                <strong>ℹ️ Architecture Benefits</strong><br>
+                The layered architecture provides clear separation of concerns, making the system maintainable and testable. The Hardware Abstraction Layer (HAL) allows the business logic to remain hardware-agnostic, enabling easy hardware upgrades or platform changes. The 10Hz control loop ensures responsive, real-time adaptation to user arousal state.
+            </div>
         </section>
 
         <!-- Section 3: Hardware -->
@@ -238,6 +433,132 @@ apps-main/src/
                 <tr><td>TENS Unit</td><td><code>TENSController</code></td><td>Biphasic electrode stimulation (1-100 Hz, 50-500 μs)</td></tr>
             </table>
 
+            <h4>Hardware Connection Diagram</h4>
+            <p>Complete system wiring showing Raspberry Pi connections to all sensors and actuators:</p>
+
+            <!-- Hardware Connection Diagram -->
+            <svg width="100%" height="600" viewBox="0 0 1200 600" style="background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%); border-radius: 12px; margin: 20px 0; box-shadow: 0 8px 16px rgba(0,0,0,0.3);">
+                <defs>
+                    <marker id="arrowHW" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#3498DB"/>
+                    </marker>
+                    <filter id="glowHW">
+                        <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                        <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+
+                <!-- Title -->
+                <text x="600" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="white" filter="url(#glowHW)">V-Contour Hardware Architecture</text>
+
+                <!-- Raspberry Pi (Center) -->
+                <rect x="450" y="250" width="300" height="100" fill="#27AE60" stroke="#2ECC71" stroke-width="3" rx="8" filter="url(#glowHW)"/>
+                <text x="600" y="280" text-anchor="middle" font-size="18" font-weight="bold" fill="white">Raspberry Pi 4</text>
+                <text x="600" y="300" text-anchor="middle" font-size="12" fill="white">40-pin GPIO Header</text>
+                <text x="600" y="318" text-anchor="middle" font-size="11" fill="#ECF0F1">I2C, SPI, PWM, Digital I/O</text>
+                <text x="600" y="335" text-anchor="middle" font-size="10" fill="#BDC3C7">USB, Ethernet, BLE</text>
+
+                <!-- LEFT SIDE: Sensors -->
+
+                <!-- Pressure Sensors -->
+                <rect x="50" y="80" width="180" height="70" fill="white" stroke="#3498DB" stroke-width="2" rx="6"/>
+                <text x="140" y="105" text-anchor="middle" font-size="13" font-weight="bold" fill="#3498DB">Pressure Sensors</text>
+                <text x="140" y="122" text-anchor="middle" font-size="10" fill="#666">3× MPX5010DP</text>
+                <text x="140" y="137" text-anchor="middle" font-size="9" fill="#888">via MCP3008 ADC (SPI)</text>
+                <line x1="230" y1="115" x2="445" y2="280" stroke="#3498DB" stroke-width="2" marker-end="url(#arrowHW)"/>
+                <text x="320" y="190" font-size="9" fill="#3498DB">SPI: CE0</text>
+
+                <!-- Fluid Sensor -->
+                <rect x="50" y="170" width="180" height="70" fill="white" stroke="#3498DB" stroke-width="2" rx="6"/>
+                <text x="140" y="195" text-anchor="middle" font-size="13" font-weight="bold" fill="#3498DB">Fluid Sensor</text>
+                <text x="140" y="212" text-anchor="middle" font-size="10" fill="#666">HX711 Load Cell</text>
+                <text x="140" y="227" text-anchor="middle" font-size="9" fill="#888">Digital (GPIO 20, 21)</text>
+                <line x1="230" y1="205" x2="445" y2="290" stroke="#3498DB" stroke-width="2" marker-end="url(#arrowHW)"/>
+                <text x="320" y="245" font-size="9" fill="#3498DB">GPIO 20/21</text>
+
+                <!-- IMU -->
+                <rect x="50" y="260" width="180" height="70" fill="white" stroke="#3498DB" stroke-width="2" rx="6"/>
+                <text x="140" y="285" text-anchor="middle" font-size="13" font-weight="bold" fill="#3498DB">Motion Sensor</text>
+                <text x="140" y="302" text-anchor="middle" font-size="10" fill="#666">MPU6050 IMU</text>
+                <text x="140" y="317" text-anchor="middle" font-size="9" fill="#888">I2C (SDA/SCL)</text>
+                <line x1="230" y1="295" x2="445" y2="300" stroke="#3498DB" stroke-width="2" marker-end="url(#arrowHW)"/>
+                <text x="320" y="300" font-size="9" fill="#3498DB">I2C</text>
+
+                <!-- Heart Rate -->
+                <rect x="50" y="350" width="180" height="70" fill="white" stroke="#3498DB" stroke-width="2" rx="6"/>
+                <text x="140" y="375" text-anchor="middle" font-size="13" font-weight="bold" fill="#3498DB">Heart Rate</text>
+                <text x="140" y="392" text-anchor="middle" font-size="10" fill="#666">BLE Monitor</text>
+                <text x="140" y="407" text-anchor="middle" font-size="9" fill="#888">Bluetooth LE</text>
+                <line x1="230" y1="385" x2="445" y2="310" stroke="#3498DB" stroke-width="2" marker-end="url(#arrowHW)"/>
+                <text x="320" y="350" font-size="9" fill="#3498DB">BLE</text>
+
+                <!-- Camera -->
+                <rect x="50" y="440" width="180" height="70" fill="white" stroke="#3498DB" stroke-width="2" rx="6"/>
+                <text x="140" y="465" text-anchor="middle" font-size="13" font-weight="bold" fill="#3498DB">Cameras</text>
+                <text x="140" y="482" text-anchor="middle" font-size="10" fill="#666">Body + Cup</text>
+                <text x="140" y="497" text-anchor="middle" font-size="9" fill="#888">USB / IP Camera</text>
+                <line x1="230" y1="475" x2="445" y2="320" stroke="#3498DB" stroke-width="2" marker-end="url(#arrowHW)"/>
+                <text x="320" y="400" font-size="9" fill="#3498DB">USB</text>
+
+                <!-- RIGHT SIDE: Actuators -->
+
+                <!-- Vacuum Pump -->
+                <rect x="970" y="80" width="180" height="70" fill="white" stroke="#E74C3C" stroke-width="2" rx="6"/>
+                <text x="1060" y="105" text-anchor="middle" font-size="13" font-weight="bold" fill="#E74C3C">Vacuum Pump</text>
+                <text x="1060" y="122" text-anchor="middle" font-size="10" fill="#666">PWM Controlled</text>
+                <text x="1060" y="137" text-anchor="middle" font-size="9" fill="#888">via L293D Driver</text>
+                <line x1="755" y1="280" x2="965" y2="115" stroke="#E74C3C" stroke-width="2" marker-end="url(#arrowHW)"/>
+                <text x="850" y="190" font-size="9" fill="#E74C3C">GPIO 18/25</text>
+
+                <!-- Solenoid Valves -->
+                <rect x="970" y="170" width="180" height="100" fill="white" stroke="#E74C3C" stroke-width="2" rx="6"/>
+                <text x="1060" y="195" text-anchor="middle" font-size="13" font-weight="bold" fill="#E74C3C">Solenoid Valves</text>
+                <text x="1060" y="212" text-anchor="middle" font-size="10" fill="#666">5× Valves</text>
+                <text x="1060" y="227" text-anchor="middle" font-size="9" fill="#888">SOL1-5 (GPIO 17,27,22,23,24)</text>
+                <text x="1060" y="242" text-anchor="middle" font-size="8" fill="#999">Vacuum/Vent Control</text>
+                <text x="1060" y="257" text-anchor="middle" font-size="8" fill="#999">Clitoral Oscillator (SOL4/5)</text>
+                <line x1="755" y1="290" x2="965" y2="220" stroke="#E74C3C" stroke-width="2" marker-end="url(#arrowHW)"/>
+                <text x="850" y="255" font-size="9" fill="#E74C3C">GPIO 17,27,22,23,24</text>
+
+                <!-- TENS Unit -->
+                <rect x="970" y="290" width="180" height="80" fill="white" stroke="#E74C3C" stroke-width="2" rx="6"/>
+                <text x="1060" y="315" text-anchor="middle" font-size="13" font-weight="bold" fill="#E74C3C">TENS Controller</text>
+                <text x="1060" y="332" text-anchor="middle" font-size="10" fill="#666">Biphasic Stimulation</text>
+                <text x="1060" y="347" text-anchor="middle" font-size="9" fill="#888">GPIO 5,6,12 + Fault(16)</text>
+                <text x="1060" y="362" text-anchor="middle" font-size="8" fill="#999">1-100 Hz, 50-500 μs</text>
+                <line x1="755" y1="300" x2="965" y2="330" stroke="#E74C3C" stroke-width="2" marker-end="url(#arrowHW)"/>
+                <text x="850" y="315" font-size="9" fill="#E74C3C">GPIO 5,6,12,16</text>
+
+                <!-- Power Supply -->
+                <rect x="970" y="390" width="180" height="70" fill="white" stroke="#F39C12" stroke-width="2" rx="6"/>
+                <text x="1060" y="415" text-anchor="middle" font-size="13" font-weight="bold" fill="#F39C12">Power Supply</text>
+                <text x="1060" y="432" text-anchor="middle" font-size="10" fill="#666">12V DC</text>
+                <text x="1060" y="447" text-anchor="middle" font-size="9" fill="#888">Pump, Valves, TENS</text>
+                <line x1="755" y1="310" x2="965" y2="425" stroke="#F39C12" stroke-width="2" marker-end="url(#arrowHW)"/>
+                <text x="850" y="370" font-size="9" fill="#F39C12">Power</text>
+
+                <!-- Network -->
+                <rect x="970" y="480" width="180" height="70" fill="white" stroke="#9B59B6" stroke-width="2" rx="6"/>
+                <text x="1060" y="505" text-anchor="middle" font-size="13" font-weight="bold" fill="#9B59B6">Network</text>
+                <text x="1060" y="522" text-anchor="middle" font-size="10" fill="#666">WiFi / Ethernet</text>
+                <text x="1060" y="537" text-anchor="middle" font-size="9" fill="#888">Multi-user control</text>
+                <line x1="755" y1="320" x2="965" y2="515" stroke="#9B59B6" stroke-width="2" marker-end="url(#arrowHW)"/>
+                <text x="850" y="425" font-size="9" fill="#9B59B6">WiFi/Eth</text>
+
+                <!-- Legend -->
+                <rect x="400" y="520" width="400" height="60" fill="rgba(255,255,255,0.1)" stroke="white" stroke-width="1" rx="5"/>
+                <text x="600" y="540" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Component Categories:</text>
+                <line x1="420" y1="555" x2="470" y2="555" stroke="#3498DB" stroke-width="3"/>
+                <text x="480" y="560" font-size="10" fill="white">Sensors (Input)</text>
+                <line x1="580" y1="555" x2="630" y2="555" stroke="#E74C3C" stroke-width="3"/>
+                <text x="640" y="560" font-size="10" fill="white">Actuators (Output)</text>
+                <line x1="750" y1="555" x2="800" y2="555" stroke="#F39C12" stroke-width="3"/>
+                <text x="810" y="560" font-size="10" fill="white">Power</text>
+            </svg>
+
             <h4>GPIO Pin Assignments</h4>
             <pre>
 // Solenoid Valves (Outer V-seal Chamber)
@@ -258,6 +579,12 @@ GPIO 5:  TENS Enable (master)
 GPIO 6:  TENS Phase (polarity)
 GPIO 12: TENS PWM (amplitude)
 GPIO 16: TENS Fault input
+
+// Sensor Interfaces
+SPI CE0: MCP3008 ADC (pressure sensors)
+I2C:     MPU6050 IMU (motion detection)
+GPIO 20: HX711 Data (fluid sensor)
+GPIO 21: HX711 Clock (fluid sensor)
             </pre>
 
             <h4>Camera Manager</h4>
@@ -1555,23 +1882,106 @@ GPIO 16: TENS Fault input
             </pre>
 
             <h3>4.4 Scoring System</h3>
-            <p>Score calculation formula:</p>
-            <pre>
-Score = BasePoints
-      + (PerObjectiveBonus × Progress × Target)
-      + (RemainingSeconds × TimeBonusPerSecond)
-      + BonusPointsEarned
-      × StreakMultiplier (1.0 + winStreak × 0.05, max 2.0)
-            </pre>
+            <p>Dynamic scoring system that rewards performance, speed, and consistency:</p>
+
+            <!-- Scoring Visualization -->
+            <svg width="100%" height="400" viewBox="0 0 1000 400" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; margin: 20px 0; box-shadow: 0 8px 16px rgba(0,0,0,0.3);">
+                <defs>
+                    <filter id="glowScore">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+
+                <!-- Title -->
+                <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="white" filter="url(#glowScore)">Score Calculation Formula</text>
+
+                <!-- Base Points -->
+                <rect x="50" y="60" width="180" height="80" fill="white" stroke="#FFD700" stroke-width="3" rx="8"/>
+                <text x="140" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#667eea">BASE POINTS</text>
+                <text x="140" y="105" text-anchor="middle" font-size="24" font-weight="bold" fill="#E74C3C">100</text>
+                <text x="140" y="125" text-anchor="middle" font-size="10" fill="#666">Participation reward</text>
+
+                <!-- Plus sign -->
+                <text x="250" y="105" text-anchor="middle" font-size="30" font-weight="bold" fill="white">+</text>
+
+                <!-- Objective Bonus -->
+                <rect x="280" y="60" width="200" height="80" fill="white" stroke="#FFD700" stroke-width="3" rx="8"/>
+                <text x="380" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#667eea">OBJECTIVE BONUS</text>
+                <text x="380" y="105" text-anchor="middle" font-size="18" font-weight="bold" fill="#E74C3C">25 × Progress × Target</text>
+                <text x="380" y="125" text-anchor="middle" font-size="10" fill="#666">Performance-based</text>
+
+                <!-- Plus sign -->
+                <text x="500" y="105" text-anchor="middle" font-size="30" font-weight="bold" fill="white">+</text>
+
+                <!-- Time Bonus -->
+                <rect x="530" y="60" width="200" height="80" fill="white" stroke="#FFD700" stroke-width="3" rx="8"/>
+                <text x="630" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#667eea">TIME BONUS</text>
+                <text x="630" y="105" text-anchor="middle" font-size="18" font-weight="bold" fill="#E74C3C">Remaining × 0.5</text>
+                <text x="630" y="125" text-anchor="middle" font-size="10" fill="#666">Speed reward</text>
+
+                <!-- Plus sign -->
+                <text x="750" y="105" text-anchor="middle" font-size="30" font-weight="bold" fill="white">+</text>
+
+                <!-- Bonus Points -->
+                <rect x="780" y="60" width="170" height="80" fill="white" stroke="#FFD700" stroke-width="3" rx="8"/>
+                <text x="865" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#667eea">BONUS PTS</text>
+                <text x="865" y="105" text-anchor="middle" font-size="18" font-weight="bold" fill="#E74C3C">Variable</text>
+                <text x="865" y="125" text-anchor="middle" font-size="10" fill="#666">Extra objectives</text>
+
+                <!-- Arrow down -->
+                <path d="M 500 150 L 500 180" stroke="white" stroke-width="4" fill="none"/>
+                <polygon points="500,180 490,165 510,165" fill="white"/>
+
+                <!-- Subtotal -->
+                <rect x="350" y="190" width="300" height="50" fill="rgba(255,255,255,0.3)" stroke="white" stroke-width="2" rx="8"/>
+                <text x="500" y="215" text-anchor="middle" font-size="16" font-weight="bold" fill="white">SUBTOTAL</text>
+                <text x="500" y="232" text-anchor="middle" font-size="12" fill="#FFD700">(Sum of all components)</text>
+
+                <!-- Multiply sign -->
+                <text x="500" y="270" text-anchor="middle" font-size="30" font-weight="bold" fill="white">×</text>
+
+                <!-- Streak Multiplier -->
+                <rect x="300" y="280" width="400" height="80" fill="white" stroke="#FFD700" stroke-width="3" rx="8"/>
+                <text x="500" y="305" text-anchor="middle" font-size="16" font-weight="bold" fill="#667eea">STREAK MULTIPLIER</text>
+                <text x="500" y="330" text-anchor="middle" font-size="20" font-weight="bold" fill="#E74C3C">1.0 + (winStreak × 0.05)</text>
+                <text x="500" y="350" text-anchor="middle" font-size="11" fill="#666">Maximum: 2.0x (20 win streak)</text>
+
+                <!-- Example calculation -->
+                <rect x="50" y="280" width="220" height="80" fill="rgba(255,255,255,0.2)" stroke="white" stroke-width="2" rx="5"/>
+                <text x="160" y="300" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Example:</text>
+                <text x="160" y="318" text-anchor="middle" font-size="10" fill="white">Base: 100</text>
+                <text x="160" y="333" text-anchor="middle" font-size="10" fill="white">Objective: 125 (5 edges)</text>
+                <text x="160" y="348" text-anchor="middle" font-size="10" fill="white">Time: 50 (100s left)</text>
+                <text x="160" y="363" text-anchor="middle" font-size="10" fill="#FFD700">Total: 275 × 1.25 = 344</text>
+
+                <!-- XP Rewards -->
+                <rect x="730" y="280" width="220" height="80" fill="rgba(255,255,255,0.2)" stroke="white" stroke-width="2" rx="5"/>
+                <text x="840" y="300" text-anchor="middle" font-size="12" font-weight="bold" fill="white">XP Rewards:</text>
+                <text x="840" y="318" text-anchor="middle" font-size="10" fill="white">Victory: +100 XP</text>
+                <text x="840" y="333" text-anchor="middle" font-size="10" fill="white">Defeat: +10 XP</text>
+                <text x="840" y="348" text-anchor="middle" font-size="10" fill="white">Bonus objectives:</text>
+                <text x="840" y="363" text-anchor="middle" font-size="10" fill="#FFD700">+50-100 XP each</text>
+            </svg>
+
             <table>
                 <tr><th>Component</th><th>Default Value</th><th>Description</th></tr>
-                <tr><td>Base Points</td><td>100</td><td>Points for participating</td></tr>
-                <tr><td>Per Objective Bonus</td><td>25</td><td>Points per objective unit completed</td></tr>
-                <tr><td>Time Bonus</td><td>0.5/sec</td><td>Bonus for finishing early</td></tr>
+                <tr><td>Base Points</td><td>100</td><td>Points for participating in any game</td></tr>
+                <tr><td>Per Objective Bonus</td><td>25</td><td>Points per objective unit completed (e.g., per edge)</td></tr>
+                <tr><td>Time Bonus</td><td>0.5/sec</td><td>Bonus for finishing early (remaining time × 0.5)</td></tr>
+                <tr><td>Bonus Objectives</td><td>50-100</td><td>Extra points for optional challenges</td></tr>
+                <tr><td>Streak Multiplier</td><td>1.0 - 2.0x</td><td>+5% per consecutive win (max 20 wins = 2.0x)</td></tr>
                 <tr><td>XP on Win</td><td>100</td><td>Experience points for victory</td></tr>
-                <tr><td>XP on Loss</td><td>10</td><td>Experience points for losing</td></tr>
-                <tr><td>Streak Max</td><td>2.0x</td><td>Maximum score multiplier from streaks</td></tr>
+                <tr><td>XP on Loss</td><td>10</td><td>Experience points for losing (consolation)</td></tr>
             </table>
+
+            <div class="info">
+                <strong>ℹ️ Scoring Strategy</strong><br>
+                The scoring system encourages both completion and efficiency. Players earn base points for participation, bonus points for achieving objectives, and time bonuses for quick completion. The streak multiplier rewards consistency, making consecutive wins increasingly valuable. Even losses grant small XP rewards to maintain progression.
+            </div>
 
             <h3>4.5 Consequence Engine (<code>ConsequenceEngine.h</code>)</h3>
             <p>Manages execution of rewards and punishments with safety limits and cooldowns.</p>
@@ -1876,41 +2286,329 @@ Score = BasePoints
             <p>Adaptive multi-sensor arousal estimation and stimulation control with multiple operating modes.</p>
 
             <h4>Arousal States</h4>
-            <table>
-                <tr><th>State</th><th>Range</th><th>Description</th></tr>
-                <tr><td>BASELINE</td><td>0.0 - 0.2</td><td>Resting state, minimal arousal</td></tr>
-                <tr><td>WARMING</td><td>0.2 - 0.5</td><td>Early arousal, building</td></tr>
-                <tr><td>PLATEAU</td><td>0.5 - 0.85</td><td>Sustained high arousal</td></tr>
-                <tr><td>PRE_ORGASM</td><td>0.85 - 0.95</td><td>Approaching climax (edge zone)</td></tr>
-                <tr><td>ORGASM</td><td>0.95 - 1.0</td><td>Active orgasm with contractions</td></tr>
-            </table>
+            <p>The system tracks arousal on a continuous 0.0-1.0 scale with five distinct states:</p>
+
+            <!-- Arousal States Visualization -->
+            <svg width="100%" height="200" viewBox="0 0 1000 200" style="background: #F8F9FA; border-radius: 8px; margin: 20px 0;">
+                <!-- Gradient bar -->
+                <defs>
+                    <linearGradient id="arousalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#3498DB;stop-opacity:1" />
+                        <stop offset="20%" style="stop-color:#1ABC9C;stop-opacity:1" />
+                        <stop offset="50%" style="stop-color:#F39C12;stop-opacity:1" />
+                        <stop offset="85%" style="stop-color:#E67E22;stop-opacity:1" />
+                        <stop offset="95%" style="stop-color:#E74C3C;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+
+                <!-- Main arousal bar -->
+                <rect x="50" y="60" width="900" height="50" fill="url(#arousalGradient)" rx="8"/>
+
+                <!-- State boundaries -->
+                <line x1="230" y1="50" x2="230" y2="120" stroke="#333" stroke-width="2" stroke-dasharray="5,5"/>
+                <line x1="500" y1="50" x2="500" y2="120" stroke="#333" stroke-width="2" stroke-dasharray="5,5"/>
+                <line x1="815" y1="50" x2="815" y2="120" stroke="#333" stroke-width="2" stroke-dasharray="5,5"/>
+                <line x1="905" y1="50" x2="905" y2="120" stroke="#333" stroke-width="2" stroke-dasharray="5,5"/>
+
+                <!-- State labels -->
+                <text x="140" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="white">BASELINE</text>
+                <text x="140" y="145" text-anchor="middle" font-size="11" fill="#666">0.0 - 0.2</text>
+                <text x="140" y="165" text-anchor="middle" font-size="10" fill="#888">Resting state</text>
+
+                <text x="365" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="white">WARMING</text>
+                <text x="365" y="145" text-anchor="middle" font-size="11" fill="#666">0.2 - 0.5</text>
+                <text x="365" y="165" text-anchor="middle" font-size="10" fill="#888">Early arousal</text>
+
+                <text x="657" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="white">PLATEAU</text>
+                <text x="657" y="145" text-anchor="middle" font-size="11" fill="#666">0.5 - 0.85</text>
+                <text x="657" y="165" text-anchor="middle" font-size="10" fill="#888">Sustained high arousal</text>
+
+                <text x="860" y="90" text-anchor="middle" font-size="13" font-weight="bold" fill="white">PRE_ORGASM</text>
+                <text x="860" y="145" text-anchor="middle" font-size="11" fill="#666">0.85 - 0.95</text>
+                <text x="860" y="165" text-anchor="middle" font-size="10" fill="#888">Edge zone ⚠️</text>
+
+                <text x="927" y="90" text-anchor="middle" font-size="12" font-weight="bold" fill="white">ORG</text>
+                <text x="927" y="145" text-anchor="middle" font-size="11" fill="#666">0.95+</text>
+                <text x="927" y="165" text-anchor="middle" font-size="10" fill="#888">Climax</text>
+
+                <!-- Scale markers -->
+                <text x="50" y="45" font-size="10" fill="#666">0.0</text>
+                <text x="230" y="45" font-size="10" fill="#666">0.2</text>
+                <text x="500" y="45" font-size="10" fill="#666">0.5</text>
+                <text x="815" y="45" font-size="10" fill="#666">0.85</text>
+                <text x="905" y="45" font-size="10" fill="#666">0.95</text>
+                <text x="940" y="45" font-size="10" fill="#666">1.0</text>
+            </svg>
 
             <h4>Operating Modes</h4>
-            <div class="grid">
-                <div class="card">
-                    <h4>Adaptive Edging</h4>
-                    <p>Sensor-driven approach/deny cycles. Builds arousal to edge threshold, backs off to recovery, repeats for target cycles.</p>
-                    <code>startAdaptiveEdging(targetCycles = 5)</code>
+            <p>Four primary control modes with distinct arousal management strategies:</p>
+
+            <style>
+                .mode-card {
+                    background: white;
+                    border-radius: 12px;
+                    padding: 20px;
+                    margin: 15px 0;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                    border-left: 6px solid;
+                }
+                .mode-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 15px;
+                }
+                .mode-title {
+                    font-size: 20px;
+                    font-weight: bold;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+                .mode-icon {
+                    font-size: 28px;
+                }
+                .mode-description {
+                    color: #555;
+                    margin-bottom: 15px;
+                    line-height: 1.6;
+                }
+                .mode-code {
+                    background: #2C3E50;
+                    color: #ECF0F1;
+                    padding: 10px 15px;
+                    border-radius: 6px;
+                    font-family: 'Consolas', monospace;
+                    font-size: 13px;
+                    margin-top: 10px;
+                }
+                .mode-graph {
+                    margin-top: 15px;
+                }
+            </style>
+
+            <!-- Adaptive Edging Mode -->
+            <div class="mode-card" style="border-left-color: #F39C12;">
+                <div class="mode-header">
+                    <div class="mode-title" style="color: #F39C12;">
+                        <span class="mode-icon">📈</span>
+                        <span>Adaptive Edging</span>
+                    </div>
+                    <span class="badge badge-basic">Core Mode</span>
                 </div>
-                <div class="card">
-                    <h4>Forced Orgasm</h4>
-                    <p>Relentless stimulation through multiple climaxes with anti-escape intensity boost.</p>
-                    <code>startForcedOrgasm(targetOrgasms = 3)</code>
+                <div class="mode-description">
+                    Sensor-driven approach/deny cycles. Builds arousal to edge threshold (0.85), backs off to recovery level (0.70), then repeats for target number of cycles. The system learns and adapts to user's response patterns.
                 </div>
-                <div class="card">
-                    <h4>Denial Mode</h4>
-                    <p>Extended teasing without release. Maintains high arousal but prevents orgasm.</p>
-                    <code>startDenial(durationMs = 600000)</code>
+                <svg width="100%" height="120" viewBox="0 0 800 120" class="mode-graph" style="background: #F8F9FA; border-radius: 6px;">
+                    <text x="10" y="20" font-size="11" fill="#666">Arousal</text>
+                    <line x1="50" y1="100" x2="750" y2="100" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="20" x2="50" y2="100" stroke="#999" stroke-width="1"/>
+
+                    <!-- Edge threshold line -->
+                    <line x1="50" y1="35" x2="750" y2="35" stroke="#E74C3C" stroke-width="1" stroke-dasharray="5,5"/>
+                    <text x="760" y="40" font-size="10" fill="#E74C3C">Edge (0.85)</text>
+
+                    <!-- Recovery line -->
+                    <line x1="50" y1="55" x2="750" y2="55" stroke="#3498DB" stroke-width="1" stroke-dasharray="5,5"/>
+                    <text x="760" y="60" font-size="10" fill="#3498DB">Recovery (0.70)</text>
+
+                    <!-- Edging pattern -->
+                    <path d="M 50 100 Q 100 70, 150 35 L 180 55 Q 230 70, 280 35 L 310 55 Q 360 70, 410 35 L 440 55 Q 490 70, 540 35 L 570 55 Q 620 70, 670 35"
+                          fill="none" stroke="#F39C12" stroke-width="3"/>
+
+                    <text x="150" y="25" font-size="9" fill="#E74C3C" font-weight="bold">Edge 1</text>
+                    <text x="280" y="25" font-size="9" fill="#E74C3C" font-weight="bold">Edge 2</text>
+                    <text x="410" y="25" font-size="9" fill="#E74C3C" font-weight="bold">Edge 3</text>
+                    <text x="540" y="25" font-size="9" fill="#E74C3C" font-weight="bold">Edge 4</text>
+                </svg>
+                <div class="mode-code">startAdaptiveEdging(targetCycles = 5, edgeThreshold = 0.85, recoveryThreshold = 0.70)</div>
+            </div>
+
+            <!-- Forced Orgasm Mode -->
+            <div class="mode-card" style="border-left-color: #E74C3C;">
+                <div class="mode-header">
+                    <div class="mode-title" style="color: #E74C3C;">
+                        <span class="mode-icon">🔥</span>
+                        <span>Forced Orgasm</span>
+                    </div>
+                    <span class="badge badge-basic">Core Mode</span>
                 </div>
-                <div class="card">
-                    <h4>Milking Mode</h4>
-                    <p>Sustained sub-orgasmic stimulation. Orgasm = failure. Uses PID control to maintain arousal in target zone.</p>
-                    <code>startMilking(durationMs, failureMode)</code>
+                <div class="mode-description">
+                    Relentless stimulation through multiple climaxes with anti-escape intensity boost. System maintains maximum intensity even after orgasm detection, forcing multiple consecutive orgasms until target count is reached.
                 </div>
+                <svg width="100%" height="120" viewBox="0 0 800 120" class="mode-graph" style="background: #F8F9FA; border-radius: 6px;">
+                    <text x="10" y="20" font-size="11" fill="#666">Arousal</text>
+                    <line x1="50" y1="100" x2="750" y2="100" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="20" x2="50" y2="100" stroke="#999" stroke-width="1"/>
+
+                    <!-- Orgasm threshold -->
+                    <line x1="50" y1="30" x2="750" y2="30" stroke="#E74C3C" stroke-width="1" stroke-dasharray="5,5"/>
+                    <text x="760" y="35" font-size="10" fill="#E74C3C">Orgasm (0.95)</text>
+
+                    <!-- Forced orgasm pattern -->
+                    <path d="M 50 100 Q 120 50, 180 25 L 200 40 Q 240 50, 280 25 L 300 40 Q 340 50, 380 25 L 400 40 Q 440 50, 480 25"
+                          fill="none" stroke="#E74C3C" stroke-width="3"/>
+
+                    <!-- Orgasm markers -->
+                    <circle cx="180" cy="25" r="6" fill="#E74C3C"/>
+                    <circle cx="280" cy="25" r="6" fill="#E74C3C"/>
+                    <circle cx="380" cy="25" r="6" fill="#E74C3C"/>
+                    <circle cx="480" cy="25" r="6" fill="#E74C3C"/>
+
+                    <text x="180" y="15" text-anchor="middle" font-size="9" fill="#E74C3C" font-weight="bold">O1</text>
+                    <text x="280" y="15" text-anchor="middle" font-size="9" fill="#E74C3C" font-weight="bold">O2</text>
+                    <text x="380" y="15" text-anchor="middle" font-size="9" fill="#E74C3C" font-weight="bold">O3</text>
+                    <text x="480" y="15" text-anchor="middle" font-size="9" fill="#E74C3C" font-weight="bold">O4</text>
+
+                    <text x="400" y="110" text-anchor="middle" font-size="9" fill="#666">Continuous high intensity - no backing off</text>
+                </svg>
+                <div class="mode-code">startForcedOrgasm(targetOrgasms = 3, intensityBoost = 1.2)</div>
+            </div>
+
+            <!-- Denial Mode -->
+            <div class="mode-card" style="border-left-color: #9B59B6;">
+                <div class="mode-header">
+                    <div class="mode-title" style="color: #9B59B6;">
+                        <span class="mode-icon">🚫</span>
+                        <span>Denial Mode</span>
+                    </div>
+                    <span class="badge badge-basic">Core Mode</span>
+                </div>
+                <div class="mode-description">
+                    Extended teasing without release. Maintains high arousal in the plateau zone (0.5-0.85) but actively prevents reaching orgasm threshold. Perfect for extended tease sessions and denial training.
+                </div>
+                <svg width="100%" height="120" viewBox="0 0 800 120" class="mode-graph" style="background: #F8F9FA; border-radius: 6px;">
+                    <text x="10" y="20" font-size="11" fill="#666">Arousal</text>
+                    <line x1="50" y1="100" x2="750" y2="100" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="20" x2="50" y2="100" stroke="#999" stroke-width="1"/>
+
+                    <!-- Edge threshold (danger zone) -->
+                    <line x1="50" y1="35" x2="750" y2="35" stroke="#E74C3C" stroke-width="1" stroke-dasharray="5,5"/>
+                    <text x="760" y="40" font-size="10" fill="#E74C3C">Edge (0.85)</text>
+
+                    <!-- Plateau zone -->
+                    <rect x="50" y="50" width="700" height="30" fill="#9B59B6" opacity="0.2"/>
+                    <text x="400" y="70" text-anchor="middle" font-size="10" fill="#9B59B6" font-weight="bold">Plateau Zone (0.5-0.85)</text>
+
+                    <!-- Denial pattern -->
+                    <path d="M 50 100 Q 100 80, 150 60 L 200 65 L 250 55 L 300 70 L 350 60 L 400 65 L 450 55 L 500 70 L 550 60 L 600 65 L 650 60 L 700 65"
+                          fill="none" stroke="#9B59B6" stroke-width="3"/>
+
+                    <text x="400" y="110" text-anchor="middle" font-size="9" fill="#666">Maintained in plateau - never allowed to orgasm</text>
+                </svg>
+                <div class="mode-code">startDenial(durationMs = 600000, maxArousal = 0.85)</div>
+            </div>
+
+            <!-- Milking Mode -->
+            <div class="mode-card" style="border-left-color: #16A085;">
+                <div class="mode-header">
+                    <div class="mode-title" style="color: #16A085;">
+                        <span class="mode-icon">💧</span>
+                        <span>Milking Mode</span>
+                    </div>
+                    <span class="badge badge-basic">Advanced Mode</span>
+                </div>
+                <div class="mode-description">
+                    Sustained sub-orgasmic stimulation where orgasm = failure. Uses PID control to maintain arousal in narrow target zone (0.75-0.90). Designed to maximize fluid production and pre-orgasmic pleasure without climax.
+                </div>
+                <svg width="100%" height="120" viewBox="0 0 800 120" class="mode-graph" style="background: #F8F9FA; border-radius: 6px;">
+                    <text x="10" y="20" font-size="11" fill="#666">Arousal</text>
+                    <line x1="50" y1="100" x2="750" y2="100" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="20" x2="50" y2="100" stroke="#999" stroke-width="1"/>
+
+                    <!-- Danger threshold -->
+                    <line x1="50" y1="30" x2="750" y2="30" stroke="#E74C3C" stroke-width="1" stroke-dasharray="5,5"/>
+                    <text x="760" y="35" font-size="10" fill="#E74C3C">Danger (0.92)</text>
+
+                    <!-- Milking zone -->
+                    <rect x="50" y="40" width="700" height="25" fill="#16A085" opacity="0.2"/>
+                    <text x="400" y="57" text-anchor="middle" font-size="10" fill="#16A085" font-weight="bold">Milking Zone (0.75-0.90)</text>
+
+                    <!-- Milking pattern (tight control) -->
+                    <path d="M 50 100 Q 100 70, 150 50 L 200 52 L 250 48 L 300 52 L 350 50 L 400 48 L 450 52 L 500 50 L 550 48 L 600 52 L 650 50 L 700 52"
+                          fill="none" stroke="#16A085" stroke-width="3"/>
+
+                    <text x="400" y="110" text-anchor="middle" font-size="9" fill="#666">PID control maintains tight arousal band - orgasm triggers failure</text>
+                </svg>
+                <div class="mode-code">startMilking(durationMs = 1200000, targetZoneLower = 0.75, targetZoneUpper = 0.90)</div>
             </div>
 
             <h4>Arousal Calculation</h4>
-            <p>Multi-sensor fusion with configurable weights:</p>
+            <p>Multi-sensor fusion algorithm combining pressure sensors and optional heart rate monitoring:</p>
+
+            <!-- Sensor Fusion Diagram -->
+            <svg width="100%" height="400" viewBox="0 0 1000 400" style="background: #F8F9FA; border-radius: 8px; margin: 20px 0;">
+                <!-- Title -->
+                <text x="500" y="25" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">Multi-Sensor Arousal Estimation</text>
+
+                <!-- Pressure Sensors Section -->
+                <rect x="50" y="50" width="400" height="300" fill="white" stroke="#3498DB" stroke-width="3" rx="8"/>
+                <text x="250" y="75" text-anchor="middle" font-size="14" font-weight="bold" fill="#3498DB">Pressure Sensors (70%)</text>
+
+                <!-- Pressure components -->
+                <rect x="70" y="95" width="360" height="50" fill="#ECF0F1" rx="4"/>
+                <text x="80" y="115" font-size="12" font-weight="bold" fill="#2C3E50">Deviation from Baseline</text>
+                <text x="80" y="132" font-size="11" fill="#666">Weight: 0.25 (25%)</text>
+                <rect x="320" y="105" width="100" height="30" fill="#3498DB" opacity="0.7" rx="4"/>
+                <text x="370" y="125" text-anchor="middle" font-size="11" fill="white" font-weight="bold">25%</text>
+
+                <rect x="70" y="155" width="360" height="50" fill="#ECF0F1" rx="4"/>
+                <text x="80" y="175" font-size="12" font-weight="bold" fill="#2C3E50">Pressure Variance</text>
+                <text x="80" y="192" font-size="11" fill="#666">Weight: 0.15 (engorgement)</text>
+                <rect x="320" y="165" width="60" height="30" fill="#3498DB" opacity="0.7" rx="4"/>
+                <text x="350" y="185" text-anchor="middle" font-size="11" fill="white" font-weight="bold">15%</text>
+
+                <rect x="70" y="215" width="360" height="50" fill="#ECF0F1" rx="4"/>
+                <text x="80" y="235" font-size="12" font-weight="bold" fill="#2C3E50">Contraction Band Power</text>
+                <text x="80" y="252" font-size="11" fill="#666">Weight: 0.20 (0.5-2 Hz)</text>
+                <rect x="320" y="225" width="80" height="30" fill="#3498DB" opacity="0.7" rx="4"/>
+                <text x="360" y="245" text-anchor="middle" font-size="11" fill="white" font-weight="bold">20%</text>
+
+                <rect x="70" y="275" width="360" height="50" fill="#ECF0F1" rx="4"/>
+                <text x="80" y="295" font-size="12" font-weight="bold" fill="#2C3E50">Rate of Change</text>
+                <text x="80" y="312" font-size="11" fill="#666">Weight: 0.10</text>
+                <rect x="320" y="285" width="40" height="30" fill="#3498DB" opacity="0.7" rx="4"/>
+                <text x="340" y="305" text-anchor="middle" font-size="11" fill="white" font-weight="bold">10%</text>
+
+                <!-- Heart Rate Section -->
+                <rect x="550" y="50" width="400" height="220" fill="white" stroke="#E74C3C" stroke-width="3" rx="8"/>
+                <text x="750" y="75" text-anchor="middle" font-size="14" font-weight="bold" fill="#E74C3C">Heart Rate (30%) - Optional</text>
+
+                <!-- HR components -->
+                <rect x="570" y="95" width="360" height="50" fill="#ECF0F1" rx="4"/>
+                <text x="580" y="115" font-size="12" font-weight="bold" fill="#2C3E50">HR Zone Contribution</text>
+                <text x="580" y="132" font-size="11" fill="#666">Weight: 0.50 (of HR total)</text>
+                <rect x="820" y="105" width="100" height="30" fill="#E74C3C" opacity="0.7" rx="4"/>
+                <text x="870" y="125" text-anchor="middle" font-size="11" fill="white" font-weight="bold">15%</text>
+
+                <rect x="570" y="155" width="360" height="50" fill="#ECF0F1" rx="4"/>
+                <text x="580" y="175" font-size="12" font-weight="bold" fill="#2C3E50">HR Acceleration</text>
+                <text x="580" y="192" font-size="11" fill="#666">Weight: 0.25</text>
+                <rect x="820" y="165" width="50" height="30" fill="#E74C3C" opacity="0.7" rx="4"/>
+                <text x="845" y="185" text-anchor="middle" font-size="11" fill="white" font-weight="bold">7.5%</text>
+
+                <rect x="570" y="215" width="360" height="50" fill="#ECF0F1" rx="4"/>
+                <text x="580" y="235" font-size="12" font-weight="bold" fill="#2C3E50">HRV (inverted)</text>
+                <text x="580" y="252" font-size="11" fill="#666">Weight: 0.25</text>
+                <rect x="820" y="225" width="50" height="30" fill="#E74C3C" opacity="0.7" rx="4"/>
+                <text x="845" y="245" text-anchor="middle" font-size="11" fill="white" font-weight="bold">7.5%</text>
+
+                <!-- Fusion Arrow -->
+                <path d="M 250 360 L 500 380 L 750 360" fill="none" stroke="#333" stroke-width="3" marker-end="url(#arrowBlack)"/>
+
+                <!-- Final Output -->
+                <rect x="400" y="385" width="200" height="10" fill="url(#arousalGradient)" rx="5"/>
+                <text x="500" y="375" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">Arousal Level (0.0 - 1.0)</text>
+
+                <!-- Smoothing note -->
+                <text x="500" y="395" text-anchor="middle" font-size="10" fill="#666">Exponential smoothing (α = 0.15)</text>
+            </svg>
+
+            <div class="info">
+                <strong>ℹ️ Sensor Fusion Details</strong><br>
+                The system combines multiple physiological signals to estimate arousal level. Pressure sensors provide the primary signal (70% weight), while heart rate monitoring (if available) adds 30%. Each component is normalized to 0.0-1.0 range before weighted combination. The final arousal value is smoothed using exponential moving average to reduce noise.
+            </div>
+
             <pre>
 // Pressure-based components (sum to ~0.70 when HR enabled)
 WEIGHT_DEVIATION    = 0.25  // Deviation from baseline
@@ -2024,18 +2722,320 @@ AROUSAL_ALPHA       = 0.15  // Exponential smoothing factor
             <p>State machine-based pattern execution with real-time parameter adjustment.</p>
 
             <h4>Pattern Types</h4>
-            <table>
-                <tr><th>Type</th><th>Description</th><th>Parameters</th></tr>
-                <tr><td>PULSE</td><td>Rhythmic vacuum pulses (slow/medium/fast)</td><td>frequency, duty cycle</td></tr>
-                <tr><td>WAVE</td><td>Gradual pressure changes</td><td>amplitude, period</td></tr>
-                <tr><td>AIR_PULSE</td><td>Rapid air pulses with release phases</td><td>burst count, interval</td></tr>
-                <tr><td>MILKING</td><td>Rhythmic suction motion</td><td>depth, speed</td></tr>
-                <tr><td>CONSTANT</td><td>Steady pressure with variations</td><td>pressure level</td></tr>
-                <tr><td>DUAL_CHAMBER</td><td>Outer sustained + clitoral oscillation</td><td>outer pressure, clitoral freq</td></tr>
-                <tr><td>CLITORAL_ONLY</td><td>Clitoral oscillation only</td><td>frequency (5-13 Hz), amplitude</td></tr>
-                <tr><td>TENS_VACUUM</td><td>Combined TENS + vacuum</td><td>TENS freq, vacuum pattern</td></tr>
-                <tr><td>EDGING</td><td>Automated edge detection pattern</td><td>edge threshold, cycles</td></tr>
-            </table>
+            <p>Each pattern type creates a unique pressure waveform for different sensations and effects:</p>
+
+            <style>
+                .pattern-card {
+                    background: white;
+                    border-radius: 12px;
+                    padding: 20px;
+                    margin: 20px 0;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                    border-left: 5px solid;
+                }
+                .pattern-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 15px;
+                }
+                .pattern-name {
+                    font-size: 18px;
+                    font-weight: bold;
+                    font-family: 'Consolas', monospace;
+                }
+                .pattern-badge {
+                    background: #ECF0F1;
+                    padding: 4px 12px;
+                    border-radius: 12px;
+                    font-size: 11px;
+                    font-weight: bold;
+                }
+                .pattern-description {
+                    color: #555;
+                    margin-bottom: 10px;
+                    font-size: 14px;
+                }
+                .pattern-params {
+                    background: #F8F9FA;
+                    padding: 10px;
+                    border-radius: 6px;
+                    font-size: 12px;
+                    color: #666;
+                    margin-top: 10px;
+                }
+            </style>
+
+            <!-- PULSE Pattern -->
+            <div class="pattern-card" style="border-left-color: #3498DB;">
+                <div class="pattern-header">
+                    <span class="pattern-name" style="color: #3498DB;">PULSE</span>
+                    <span class="pattern-badge">Basic</span>
+                </div>
+                <div class="pattern-description">Rhythmic vacuum pulses with adjustable frequency (slow/medium/fast)</div>
+                <svg width="100%" height="120" viewBox="0 0 800 120" style="background: #F8F9FA; border-radius: 6px;">
+                    <text x="10" y="20" font-size="11" fill="#666">Pressure</text>
+                    <text x="750" y="115" font-size="11" fill="#666">Time</text>
+
+                    <!-- Axes -->
+                    <line x1="50" y1="100" x2="750" y2="100" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="20" x2="50" y2="100" stroke="#999" stroke-width="1"/>
+
+                    <!-- Pulse waveform -->
+                    <path d="M 50 100 L 50 40 L 120 40 L 120 100 L 120 40 L 190 40 L 190 100 L 190 40 L 260 40 L 260 100 L 260 40 L 330 40 L 330 100 L 330 40 L 400 40 L 400 100 L 400 40 L 470 40 L 470 100 L 470 40 L 540 40 L 540 100 L 540 40 L 610 40 L 610 100 L 610 40 L 680 40 L 680 100"
+                          fill="none" stroke="#3498DB" stroke-width="3"/>
+
+                    <text x="400" y="70" text-anchor="middle" font-size="10" fill="#3498DB" font-weight="bold">ON</text>
+                    <text x="155" y="110" text-anchor="middle" font-size="10" fill="#95A5A6">OFF</text>
+                </svg>
+                <div class="pattern-params"><strong>Parameters:</strong> frequency (Hz), duty cycle (% on-time)</div>
+            </div>
+
+            <!-- WAVE Pattern -->
+            <div class="pattern-card" style="border-left-color: #9B59B6;">
+                <div class="pattern-header">
+                    <span class="pattern-name" style="color: #9B59B6;">WAVE</span>
+                    <span class="pattern-badge">Basic</span>
+                </div>
+                <div class="pattern-description">Gradual sinusoidal pressure changes for smooth, wave-like sensations</div>
+                <svg width="100%" height="120" viewBox="0 0 800 120" style="background: #F8F9FA; border-radius: 6px;">
+                    <text x="10" y="20" font-size="11" fill="#666">Pressure</text>
+                    <text x="750" y="115" font-size="11" fill="#666">Time</text>
+
+                    <!-- Axes -->
+                    <line x1="50" y1="100" x2="750" y2="100" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="20" x2="50" y2="100" stroke="#999" stroke-width="1"/>
+
+                    <!-- Sine wave -->
+                    <path d="M 50 60 Q 100 30, 150 60 T 250 60 T 350 60 T 450 60 T 550 60 T 650 60 T 750 60"
+                          fill="none" stroke="#9B59B6" stroke-width="3"/>
+
+                    <text x="400" y="45" text-anchor="middle" font-size="10" fill="#9B59B6" font-weight="bold">Smooth Oscillation</text>
+                </svg>
+                <div class="pattern-params"><strong>Parameters:</strong> amplitude (mmHg), period (seconds)</div>
+            </div>
+
+            <!-- AIR_PULSE Pattern -->
+            <div class="pattern-card" style="border-left-color: #E74C3C;">
+                <div class="pattern-header">
+                    <span class="pattern-name" style="color: #E74C3C;">AIR_PULSE</span>
+                    <span class="pattern-badge">Advanced</span>
+                </div>
+                <div class="pattern-description">Rapid air pulses with release phases - mimics commercial air-pulse toys</div>
+                <svg width="100%" height="120" viewBox="0 0 800 120" style="background: #F8F9FA; border-radius: 6px;">
+                    <text x="10" y="20" font-size="11" fill="#666">Pressure</text>
+                    <text x="750" y="115" font-size="11" fill="#666">Time</text>
+
+                    <!-- Axes -->
+                    <line x1="50" y1="100" x2="750" y2="100" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="20" x2="50" y2="100" stroke="#999" stroke-width="1"/>
+
+                    <!-- Burst pattern -->
+                    <g>
+                        <!-- Burst 1 -->
+                        <rect x="80" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+                        <rect x="100" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+                        <rect x="120" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+
+                        <!-- Burst 2 -->
+                        <rect x="250" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+                        <rect x="270" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+                        <rect x="290" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+
+                        <!-- Burst 3 -->
+                        <rect x="420" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+                        <rect x="440" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+                        <rect x="460" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+
+                        <!-- Burst 4 -->
+                        <rect x="590" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+                        <rect x="610" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+                        <rect x="630" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+                    </g>
+
+                    <text x="110" y="70" text-anchor="middle" font-size="9" fill="#E74C3C" font-weight="bold">BURST</text>
+                    <text x="180" y="90" text-anchor="middle" font-size="9" fill="#95A5A6">interval</text>
+                </svg>
+                <div class="pattern-params"><strong>Parameters:</strong> burst count (pulses per burst), interval (ms between bursts)</div>
+            </div>
+
+            <!-- MILKING Pattern -->
+            <div class="pattern-card" style="border-left-color: #F39C12;">
+                <div class="pattern-header">
+                    <span class="pattern-name" style="color: #F39C12;">MILKING</span>
+                    <span class="pattern-badge">Advanced</span>
+                </div>
+                <div class="pattern-description">Rhythmic suction motion with gradual ramp-up and release</div>
+                <svg width="100%" height="120" viewBox="0 0 800 120" style="background: #F8F9FA; border-radius: 6px;">
+                    <text x="10" y="20" font-size="11" fill="#666">Pressure</text>
+                    <text x="750" y="115" font-size="11" fill="#666">Time</text>
+
+                    <!-- Axes -->
+                    <line x1="50" y1="100" x2="750" y2="100" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="20" x2="50" y2="100" stroke="#999" stroke-width="1"/>
+
+                    <!-- Sawtooth wave (milking) -->
+                    <path d="M 50 100 L 120 30 L 120 100 L 190 30 L 190 100 L 260 30 L 260 100 L 330 30 L 330 100 L 400 30 L 400 100 L 470 30 L 470 100 L 540 30 L 540 100 L 610 30 L 610 100 L 680 30 L 680 100"
+                          fill="none" stroke="#F39C12" stroke-width="3"/>
+
+                    <text x="85" y="60" text-anchor="middle" font-size="9" fill="#F39C12" font-weight="bold">SUCK</text>
+                    <text x="120" y="110" text-anchor="middle" font-size="9" fill="#95A5A6">release</text>
+                </svg>
+                <div class="pattern-params"><strong>Parameters:</strong> depth (max pressure), speed (cycle frequency)</div>
+            </div>
+
+            <!-- CONSTANT Pattern -->
+            <div class="pattern-card" style="border-left-color: #16A085;">
+                <div class="pattern-header">
+                    <span class="pattern-name" style="color: #16A085;">CONSTANT</span>
+                    <span class="pattern-badge">Basic</span>
+                </div>
+                <div class="pattern-description">Steady pressure with minor variations for sustained stimulation</div>
+                <svg width="100%" height="120" viewBox="0 0 800 120" style="background: #F8F9FA; border-radius: 6px;">
+                    <text x="10" y="20" font-size="11" fill="#666">Pressure</text>
+                    <text x="750" y="115" font-size="11" fill="#666">Time</text>
+
+                    <!-- Axes -->
+                    <line x1="50" y1="100" x2="750" y2="100" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="20" x2="50" y2="100" stroke="#999" stroke-width="1"/>
+
+                    <!-- Constant with slight variation -->
+                    <path d="M 50 50 L 150 48 L 250 52 L 350 49 L 450 51 L 550 50 L 650 48 L 750 50"
+                          fill="none" stroke="#16A085" stroke-width="3"/>
+                    <line x1="50" y1="50" x2="750" y2="50" stroke="#16A085" stroke-width="1" stroke-dasharray="5,5" opacity="0.3"/>
+
+                    <text x="400" y="40" text-anchor="middle" font-size="10" fill="#16A085" font-weight="bold">Steady Pressure</text>
+                </svg>
+                <div class="pattern-params"><strong>Parameters:</strong> pressure level (mmHg), variation (±%)</div>
+            </div>
+
+            <!-- DUAL_CHAMBER Pattern -->
+            <div class="pattern-card" style="border-left-color: #8E44AD;">
+                <div class="pattern-header">
+                    <span class="pattern-name" style="color: #8E44AD;">DUAL_CHAMBER</span>
+                    <span class="pattern-badge">Advanced</span>
+                </div>
+                <div class="pattern-description">Outer chamber sustained pressure + clitoral cylinder rapid oscillation</div>
+                <svg width="100%" height="140" viewBox="0 0 800 140" style="background: #F8F9FA; border-radius: 6px;">
+                    <text x="10" y="20" font-size="11" fill="#666">Pressure</text>
+                    <text x="750" y="135" font-size="11" fill="#666">Time</text>
+
+                    <!-- Axes -->
+                    <line x1="50" y1="120" x2="750" y2="120" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="20" x2="50" y2="120" stroke="#999" stroke-width="1"/>
+
+                    <!-- Outer chamber (constant) -->
+                    <line x1="50" y1="70" x2="750" y2="70" stroke="#8E44AD" stroke-width="3" opacity="0.6"/>
+                    <text x="700" y="65" font-size="10" fill="#8E44AD" font-weight="bold">Outer Chamber</text>
+
+                    <!-- Clitoral oscillation (high frequency) -->
+                    <path d="M 50 70 Q 70 50, 90 70 T 130 70 T 170 70 T 210 70 T 250 70 T 290 70 T 330 70 T 370 70 T 410 70 T 450 70 T 490 70 T 530 70 T 570 70 T 610 70 T 650 70 T 690 70 T 730 70"
+                          fill="none" stroke="#E74C3C" stroke-width="2"/>
+                    <text x="400" y="45" text-anchor="middle" font-size="10" fill="#E74C3C" font-weight="bold">Clitoral Oscillation (5-13 Hz)</text>
+                </svg>
+                <div class="pattern-params"><strong>Parameters:</strong> outer pressure (mmHg), clitoral frequency (Hz), clitoral amplitude (mmHg)</div>
+            </div>
+
+            <!-- CLITORAL_ONLY Pattern -->
+            <div class="pattern-card" style="border-left-color: #E91E63;">
+                <div class="pattern-header">
+                    <span class="pattern-name" style="color: #E91E63;">CLITORAL_ONLY</span>
+                    <span class="pattern-badge">Advanced</span>
+                </div>
+                <div class="pattern-description">Rapid clitoral oscillation only (5-13 Hz) - mimics Womanizer/Satisfyer</div>
+                <svg width="100%" height="120" viewBox="0 0 800 120" style="background: #F8F9FA; border-radius: 6px;">
+                    <text x="10" y="20" font-size="11" fill="#666">Pressure</text>
+                    <text x="750" y="115" font-size="11" fill="#666">Time</text>
+
+                    <!-- Axes -->
+                    <line x1="50" y1="100" x2="750" y2="100" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="20" x2="50" y2="100" stroke="#999" stroke-width="1"/>
+
+                    <!-- High frequency sine wave -->
+                    <path d="M 50 60 Q 65 35, 80 60 T 110 60 T 140 60 T 170 60 T 200 60 T 230 60 T 260 60 T 290 60 T 320 60 T 350 60 T 380 60 T 410 60 T 440 60 T 470 60 T 500 60 T 530 60 T 560 60 T 590 60 T 620 60 T 650 60 T 680 60 T 710 60 T 740 60"
+                          fill="none" stroke="#E91E63" stroke-width="3"/>
+
+                    <text x="400" y="45" text-anchor="middle" font-size="10" fill="#E91E63" font-weight="bold">Rapid Air Pulse (5-13 Hz)</text>
+                    <text x="400" y="95" text-anchor="middle" font-size="9" fill="#666">SOL4/SOL5 rapid switching</text>
+                </svg>
+                <div class="pattern-params"><strong>Parameters:</strong> frequency (5-13 Hz), amplitude (5-75 mmHg)</div>
+            </div>
+
+            <!-- TENS_VACUUM Pattern -->
+            <div class="pattern-card" style="border-left-color: #FF5722;">
+                <div class="pattern-header">
+                    <span class="pattern-name" style="color: #FF5722;">TENS_VACUUM</span>
+                    <span class="pattern-badge" style="background: #FFD700; color: #333;">⭐ Premium</span>
+                </div>
+                <div class="pattern-description">Combined TENS electrical stimulation + vacuum pattern synchronization</div>
+                <svg width="100%" height="160" viewBox="0 0 800 160" style="background: #F8F9FA; border-radius: 6px;">
+                    <text x="10" y="20" font-size="11" fill="#666">Intensity</text>
+                    <text x="750" y="155" font-size="11" fill="#666">Time</text>
+
+                    <!-- Axes -->
+                    <line x1="50" y1="140" x2="750" y2="140" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="20" x2="50" y2="140" stroke="#999" stroke-width="1"/>
+
+                    <!-- Vacuum pattern (wave) -->
+                    <path d="M 50 90 Q 150 50, 250 90 T 450 90 T 650 90"
+                          fill="none" stroke="#3498DB" stroke-width="3" opacity="0.7"/>
+                    <text x="650" y="75" font-size="10" fill="#3498DB" font-weight="bold">Vacuum</text>
+
+                    <!-- TENS pulses (synchronized) -->
+                    <g>
+                        <rect x="100" y="60" width="8" height="80" fill="#FF5722" opacity="0.8"/>
+                        <rect x="150" y="50" width="8" height="90" fill="#FF5722" opacity="0.8"/>
+                        <rect x="200" y="60" width="8" height="80" fill="#FF5722" opacity="0.8"/>
+                        <rect x="300" y="70" width="8" height="70" fill="#FF5722" opacity="0.8"/>
+                        <rect x="350" y="60" width="8" height="80" fill="#FF5722" opacity="0.8"/>
+                        <rect x="400" y="70" width="8" height="70" fill="#FF5722" opacity="0.8"/>
+                        <rect x="500" y="60" width="8" height="80" fill="#FF5722" opacity="0.8"/>
+                        <rect x="550" y="50" width="8" height="90" fill="#FF5722" opacity="0.8"/>
+                        <rect x="600" y="60" width="8" height="80" fill="#FF5722" opacity="0.8"/>
+                    </g>
+                    <text x="150" y="35" font-size="10" fill="#FF5722" font-weight="bold">TENS Pulses</text>
+                </svg>
+                <div class="pattern-params"><strong>Parameters:</strong> TENS frequency (Hz), TENS amplitude (%), vacuum pattern type, sync mode</div>
+            </div>
+
+            <!-- EDGING Pattern -->
+            <div class="pattern-card" style="border-left-color: #00BCD4;">
+                <div class="pattern-header">
+                    <span class="pattern-name" style="color: #00BCD4;">EDGING</span>
+                    <span class="pattern-badge">Advanced</span>
+                </div>
+                <div class="pattern-description">Automated edge detection with adaptive intensity control</div>
+                <svg width="100%" height="140" viewBox="0 0 800 140" style="background: #F8F9FA; border-radius: 6px;">
+                    <text x="10" y="20" font-size="11" fill="#666">Arousal</text>
+                    <text x="750" y="135" font-size="11" fill="#666">Time</text>
+
+                    <!-- Axes -->
+                    <line x1="50" y1="120" x2="750" y2="120" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="20" x2="50" y2="120" stroke="#999" stroke-width="1"/>
+
+                    <!-- Edge threshold line -->
+                    <line x1="50" y1="40" x2="750" y2="40" stroke="#E74C3C" stroke-width="2" stroke-dasharray="5,5"/>
+                    <text x="760" y="45" font-size="10" fill="#E74C3C" font-weight="bold">Edge</text>
+
+                    <!-- Arousal curve with edges -->
+                    <path d="M 50 120 Q 100 80, 150 45 L 180 50 Q 220 90, 270 45 L 300 50 Q 340 85, 390 42 L 420 48 Q 460 80, 510 40 L 540 45 Q 580 75, 630 38"
+                          fill="none" stroke="#00BCD4" stroke-width="3"/>
+
+                    <!-- Edge markers -->
+                    <circle cx="150" cy="45" r="5" fill="#E74C3C"/>
+                    <circle cx="270" cy="45" r="5" fill="#E74C3C"/>
+                    <circle cx="390" cy="42" r="5" fill="#E74C3C"/>
+                    <circle cx="510" cy="40" r="5" fill="#E74C3C"/>
+
+                    <text x="150" y="30" text-anchor="middle" font-size="9" fill="#E74C3C" font-weight="bold">Edge 1</text>
+                    <text x="270" y="30" text-anchor="middle" font-size="9" fill="#E74C3C" font-weight="bold">Edge 2</text>
+                    <text x="390" y="30" text-anchor="middle" font-size="9" fill="#E74C3C" font-weight="bold">Edge 3</text>
+                    <text x="510" y="30" text-anchor="middle" font-size="9" fill="#E74C3C" font-weight="bold">Edge 4</text>
+
+                    <text x="400" y="110" text-anchor="middle" font-size="9" fill="#666">Automatic backing off when edge detected</text>
+                </svg>
+                <div class="pattern-params"><strong>Parameters:</strong> edge threshold (arousal level 0.85-0.95), target cycles, backing-off intensity</div>
+            </div>
 
             <h4>Real-Time Adjustments</h4>
             <ul>
@@ -2762,13 +3762,115 @@ bool TENSController::canEnable() const {
             <h3>Safety Manager (<code>SafetyManager.h</code>)</h3>
             <p>Core safety monitoring with 10Hz checks and automatic emergency response.</p>
 
-            <h4>Safety States</h4>
+            <h4>Safety States & Monitoring</h4>
+            <p>The Safety Manager runs continuous checks at 10Hz (every 100ms) to monitor all system parameters:</p>
+
+            <!-- Safety State Diagram -->
+            <svg width="100%" height="350" viewBox="0 0 1000 350" style="background: #F8F9FA; border-radius: 8px; margin: 20px 0;">
+                <defs>
+                    <marker id="arrowSafety" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#333"/>
+                    </marker>
+                </defs>
+
+                <!-- Title -->
+                <text x="500" y="25" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">Safety State Machine (10Hz Monitoring)</text>
+
+                <!-- SAFE State -->
+                <ellipse cx="200" cy="100" rx="80" ry="45" fill="#27AE60" stroke="#229954" stroke-width="3"/>
+                <text x="200" y="95" text-anchor="middle" font-size="16" font-weight="bold" fill="white">SAFE</text>
+                <text x="200" y="115" text-anchor="middle" font-size="11" fill="white">All systems normal</text>
+
+                <!-- WARNING State -->
+                <ellipse cx="500" cy="100" rx="80" ry="45" fill="#F39C12" stroke="#D68910" stroke-width="3"/>
+                <text x="500" y="95" text-anchor="middle" font-size="16" font-weight="bold" fill="white">WARNING</text>
+                <text x="500" y="115" text-anchor="middle" font-size="11" fill="white">Condition detected</text>
+
+                <!-- CRITICAL State -->
+                <ellipse cx="800" cy="100" rx="80" ry="45" fill="#E67E22" stroke="#CA6F1E" stroke-width="3"/>
+                <text x="800" y="95" text-anchor="middle" font-size="16" font-weight="bold" fill="white">CRITICAL</text>
+                <text x="800" y="115" text-anchor="middle" font-size="11" fill="white">Immediate action</text>
+
+                <!-- EMERGENCY_STOP State -->
+                <ellipse cx="500" cy="270" rx="100" ry="50" fill="#E74C3C" stroke="#C0392B" stroke-width="3"/>
+                <text x="500" y="265" text-anchor="middle" font-size="16" font-weight="bold" fill="white">EMERGENCY</text>
+                <text x="500" y="285" text-anchor="middle" font-size="16" font-weight="bold" fill="white">STOP</text>
+
+                <!-- Transitions -->
+                <!-- SAFE to WARNING -->
+                <line x1="280" y1="100" x2="415" y2="100" stroke="#333" stroke-width="2" marker-end="url(#arrowSafety)"/>
+                <text x="347" y="90" text-anchor="middle" font-size="10" fill="#666">P > 60 mmHg</text>
+                <text x="347" y="120" text-anchor="middle" font-size="10" fill="#666">Seal warning</text>
+
+                <!-- WARNING to SAFE -->
+                <path d="M 420 120 Q 350 150 280 120" fill="none" stroke="#27AE60" stroke-width="2" marker-end="url(#arrowSafety)"/>
+                <text x="350" y="165" text-anchor="middle" font-size="10" fill="#27AE60">Condition cleared</text>
+
+                <!-- WARNING to CRITICAL -->
+                <line x1="580" y1="100" x2="715" y2="100" stroke="#333" stroke-width="2" marker-end="url(#arrowSafety)"/>
+                <text x="647" y="90" text-anchor="middle" font-size="10" fill="#666">P > 70 mmHg</text>
+                <text x="647" y="120" text-anchor="middle" font-size="10" fill="#666">Rapid pressure rise</text>
+
+                <!-- CRITICAL to WARNING -->
+                <path d="M 720 120 Q 650 150 580 120" fill="none" stroke="#F39C12" stroke-width="2" marker-end="url(#arrowSafety)"/>
+                <text x="650" y="165" text-anchor="middle" font-size="10" fill="#F39C12">Reduced to safe level</text>
+
+                <!-- Any state to EMERGENCY_STOP -->
+                <line x1="200" y1="145" x2="450" y2="235" stroke="#E74C3C" stroke-width="3" marker-end="url(#arrowSafety)"/>
+                <text x="280" y="200" font-size="10" fill="#E74C3C" font-weight="bold">Safeword</text>
+
+                <line x1="500" y1="145" x2="500" y2="215" stroke="#E74C3C" stroke-width="3" marker-end="url(#arrowSafety)"/>
+                <text x="520" y="180" font-size="10" fill="#E74C3C" font-weight="bold">Fault detected</text>
+
+                <line x1="800" y1="145" x2="550" y2="235" stroke="#E74C3C" stroke-width="3" marker-end="url(#arrowSafety)"/>
+                <text x="720" y="200" font-size="10" fill="#E74C3C" font-weight="bold">P > 75 mmHg</text>
+
+                <!-- Monitoring checks -->
+                <rect x="50" y="180" width="120" height="140" fill="white" stroke="#3498DB" stroke-width="2" rx="5"/>
+                <text x="110" y="200" text-anchor="middle" font-size="11" font-weight="bold" fill="#3498DB">10Hz Checks:</text>
+                <text x="110" y="220" text-anchor="middle" font-size="9" fill="#666">• Pressure limits</text>
+                <text x="110" y="235" text-anchor="middle" font-size="9" fill="#666">• Seal integrity</text>
+                <text x="110" y="250" text-anchor="middle" font-size="9" fill="#666">• TENS faults</text>
+                <text x="110" y="265" text-anchor="middle" font-size="9" fill="#666">• Session duration</text>
+                <text x="110" y="280" text-anchor="middle" font-size="9" fill="#666">• Heart rate</text>
+                <text x="110" y="295" text-anchor="middle" font-size="9" fill="#666">• Safeword input</text>
+                <text x="110" y="310" text-anchor="middle" font-size="9" fill="#666">• Hardware faults</text>
+
+                <!-- Response actions -->
+                <rect x="830" y="180" width="140" height="140" fill="white" stroke="#E67E22" stroke-width="2" rx="5"/>
+                <text x="900" y="200" text-anchor="middle" font-size="11" font-weight="bold" fill="#E67E22">Responses:</text>
+                <text x="900" y="220" text-anchor="middle" font-size="9" fill="#666">SAFE:</text>
+                <text x="900" y="233" text-anchor="middle" font-size="8" fill="#666">Normal operation</text>
+                <text x="900" y="250" text-anchor="middle" font-size="9" fill="#666">WARNING:</text>
+                <text x="900" y="263" text-anchor="middle" font-size="8" fill="#666">Alert + reduce 20%</text>
+                <text x="900" y="280" text-anchor="middle" font-size="9" fill="#666">CRITICAL:</text>
+                <text x="900" y="293" text-anchor="middle" font-size="8" fill="#666">Reduce 50% + alarm</text>
+                <text x="900" y="310" text-anchor="middle" font-size="9" fill="#666">EMERGENCY:</text>
+                <text x="900" y="323" text-anchor="middle" font-size="8" fill="#666">Full shutdown</text>
+            </svg>
+
             <table>
-                <tr><th>State</th><th>Description</th><th>Response</th></tr>
-                <tr><td>SAFE</td><td>All systems normal</td><td>Normal operation</td></tr>
-                <tr><td>WARNING</td><td>Warning condition detected</td><td>Alert user, reduce intensity</td></tr>
-                <tr><td>CRITICAL</td><td>Critical condition</td><td>Immediate action required</td></tr>
-                <tr><td>EMERGENCY_STOP</td><td>Emergency stop activated</td><td>All actuators disabled, venting</td></tr>
+                <tr><th>State</th><th>Trigger Conditions</th><th>Automatic Response</th></tr>
+                <tr>
+                    <td><strong>SAFE</strong></td>
+                    <td>All parameters within normal range</td>
+                    <td>Normal operation continues</td>
+                </tr>
+                <tr>
+                    <td><strong>WARNING</strong></td>
+                    <td>Pressure 60-70 mmHg, seal pressure drop, session >25 min</td>
+                    <td>Visual/audio alert, reduce intensity by 20%, log event</td>
+                </tr>
+                <tr>
+                    <td><strong>CRITICAL</strong></td>
+                    <td>Pressure 70-75 mmHg, rapid pressure rise, TENS fault</td>
+                    <td>Alarm, reduce intensity by 50%, prepare for emergency stop</td>
+                </tr>
+                <tr>
+                    <td><strong>EMERGENCY_STOP</strong></td>
+                    <td>Safeword, pressure >75 mmHg, hardware fault, session >30 min</td>
+                    <td>Immediate shutdown: pump off, valves open, TENS disabled</td>
+                </tr>
             </table>
 
             <h4>Safety Constants (<code>SafetyConstants.h</code>)</h4>
@@ -2783,14 +3885,102 @@ bool TENSController::canEnable() const {
             </table>
 
             <h4>Emergency Stop Coordinator</h4>
-            <p>Centralized emergency stop handling with callback registration:</p>
-            <ul>
-                <li>Immediate pump shutdown</li>
-                <li>All valves opened for venting</li>
-                <li>TENS disabled</li>
-                <li>All patterns stopped</li>
-                <li>Safety event logged</li>
-            </ul>
+            <p>Centralized emergency stop handling with callback registration and immediate response:</p>
+
+            <!-- Emergency Stop Flowchart -->
+            <svg width="100%" height="500" viewBox="0 0 900 500" style="background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%); border-radius: 12px; margin: 20px 0; box-shadow: 0 8px 16px rgba(0,0,0,0.3);">
+                <defs>
+                    <marker id="arrowWhiteStop" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="white"/>
+                    </marker>
+                    <filter id="glowWhite">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+
+                <!-- Title -->
+                <text x="450" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="white" filter="url(#glowWhite)">⚠️ EMERGENCY STOP SEQUENCE ⚠️</text>
+                <text x="450" y="50" text-anchor="middle" font-size="12" fill="#FFD700">Response Time: <100ms</text>
+
+                <!-- Trigger -->
+                <ellipse cx="450" cy="90" rx="80" ry="30" fill="#FFD700" stroke="white" stroke-width="3" filter="url(#glowWhite)"/>
+                <text x="450" y="95" text-anchor="middle" font-size="14" font-weight="bold" fill="#C0392B">TRIGGER</text>
+                <text x="450" y="110" text-anchor="middle" font-size="10" fill="#C0392B">Safeword / Fault</text>
+
+                <!-- Arrow down -->
+                <line x1="450" y1="120" x2="450" y2="150" stroke="white" stroke-width="3" marker-end="url(#arrowWhiteStop)"/>
+
+                <!-- Step 1: Pump Shutdown -->
+                <rect x="50" y="150" width="180" height="70" fill="white" stroke="#FFD700" stroke-width="3" rx="8"/>
+                <text x="140" y="175" text-anchor="middle" font-size="13" font-weight="bold" fill="#E74C3C">1. PUMP SHUTDOWN</text>
+                <text x="140" y="195" text-anchor="middle" font-size="11" fill="#333">Immediate stop</text>
+                <text x="140" y="210" text-anchor="middle" font-size="10" fill="#666">GPIO LOW</text>
+
+                <!-- Step 2: Valve Venting -->
+                <rect x="260" y="150" width="180" height="70" fill="white" stroke="#FFD700" stroke-width="3" rx="8"/>
+                <text x="350" y="175" text-anchor="middle" font-size="13" font-weight="bold" fill="#E74C3C">2. VALVE VENTING</text>
+                <text x="350" y="195" text-anchor="middle" font-size="11" fill="#333">All valves open</text>
+                <text x="350" y="210" text-anchor="middle" font-size="10" fill="#666">Rapid pressure release</text>
+
+                <!-- Step 3: TENS Disable -->
+                <rect x="470" y="150" width="180" height="70" fill="white" stroke="#FFD700" stroke-width="3" rx="8"/>
+                <text x="560" y="175" text-anchor="middle" font-size="13" font-weight="bold" fill="#E74C3C">3. TENS DISABLE</text>
+                <text x="560" y="195" text-anchor="middle" font-size="11" fill="#333">Electrical cutoff</text>
+                <text x="560" y="210" text-anchor="middle" font-size="10" fill="#666">ENABLE = LOW</text>
+
+                <!-- Step 4: Pattern Stop -->
+                <rect x="680" y="150" width="180" height="70" fill="white" stroke="#FFD700" stroke-width="3" rx="8"/>
+                <text x="770" y="175" text-anchor="middle" font-size="13" font-weight="bold" fill="#E74C3C">4. PATTERN STOP</text>
+                <text x="770" y="195" text-anchor="middle" font-size="11" fill="#333">All patterns halt</text>
+                <text x="770" y="210" text-anchor="middle" font-size="10" fill="#666">State machine reset</text>
+
+                <!-- Arrows connecting steps -->
+                <line x1="140" y1="220" x2="140" y2="250" stroke="white" stroke-width="3" marker-end="url(#arrowWhiteStop)"/>
+                <line x1="350" y1="220" x2="350" y2="250" stroke="white" stroke-width="3" marker-end="url(#arrowWhiteStop)"/>
+                <line x1="560" y1="220" x2="560" y2="250" stroke="white" stroke-width="3" marker-end="url(#arrowWhiteStop)"/>
+                <line x1="770" y1="220" x2="770" y2="250" stroke="white" stroke-width="3" marker-end="url(#arrowWhiteStop)"/>
+
+                <!-- Step 5: Event Logging -->
+                <rect x="260" y="250" width="380" height="70" fill="white" stroke="#FFD700" stroke-width="3" rx="8"/>
+                <text x="450" y="275" text-anchor="middle" font-size="13" font-weight="bold" fill="#E74C3C">5. EVENT LOGGING</text>
+                <text x="450" y="295" text-anchor="middle" font-size="11" fill="#333">Timestamp, trigger source, system state</text>
+                <text x="450" y="310" text-anchor="middle" font-size="10" fill="#666">SQLite database + console output</text>
+
+                <!-- Arrow to final state -->
+                <line x1="450" y1="320" x2="450" y2="360" stroke="white" stroke-width="3" marker-end="url(#arrowWhiteStop)"/>
+
+                <!-- Final State: SAFE -->
+                <ellipse cx="450" cy="400" rx="100" ry="35" fill="#27AE60" stroke="white" stroke-width="3" filter="url(#glowWhite)"/>
+                <text x="450" y="400" text-anchor="middle" font-size="16" font-weight="bold" fill="white">SAFE STATE</text>
+                <text x="450" y="418" text-anchor="middle" font-size="11" fill="white">All actuators disabled</text>
+
+                <!-- Side notes -->
+                <rect x="50" y="360" width="180" height="100" fill="rgba(255,255,255,0.2)" stroke="white" stroke-width="2" rx="5"/>
+                <text x="140" y="380" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Trigger Sources:</text>
+                <text x="140" y="398" text-anchor="middle" font-size="10" fill="white">• Safeword detection</text>
+                <text x="140" y="413" text-anchor="middle" font-size="10" fill="white">• Pressure fault</text>
+                <text x="140" y="428" text-anchor="middle" font-size="10" fill="white">• TENS fault</text>
+                <text x="140" y="443" text-anchor="middle" font-size="10" fill="white">• Manual E-Stop button</text>
+
+                <rect x="670" y="360" width="180" height="100" fill="rgba(255,255,255,0.2)" stroke="white" stroke-width="2" rx="5"/>
+                <text x="760" y="380" text-anchor="middle" font-size="11" font-weight="bold" fill="white">Recovery:</text>
+                <text x="760" y="398" text-anchor="middle" font-size="10" fill="white">• User must acknowledge</text>
+                <text x="760" y="413" text-anchor="middle" font-size="10" fill="white">• System recalibration</text>
+                <text x="760" y="428" text-anchor="middle" font-size="10" fill="white">• Safety check passed</text>
+                <text x="760" y="443" text-anchor="middle" font-size="10" fill="white">• Manual restart only</text>
+
+                <!-- Timing indicator -->
+                <text x="450" y="480" text-anchor="middle" font-size="10" fill="#FFD700" font-weight="bold">Total Response Time: 50-100ms from trigger to safe state</text>
+            </svg>
+
+            <div class="danger">
+                <strong>⚠️ Emergency Stop Priority</strong><br>
+                The emergency stop sequence has the highest priority in the system and cannot be interrupted. All other operations are immediately suspended when triggered. The safeword is always active regardless of game state, network connection, or DOM control.
+            </div>
 
             <h4>Seal Integrity Monitoring</h4>
             <p>Arousal-adaptive seal detection that differentiates tissue swelling from actual leaks:</p>
@@ -2816,13 +4006,103 @@ bool TENSController::canEnable() const {
             <h3>Network Manager (<code>NetworkManager.h</code>)</h3>
             <p>Secure multi-user control with consent management and encrypted communication.</p>
 
-            <h4>User Roles</h4>
+            <!-- Network Architecture Diagram -->
+            <svg width="100%" height="500" viewBox="0 0 1100 500" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; margin: 20px 0; box-shadow: 0 8px 16px rgba(0,0,0,0.3);">
+                <defs>
+                    <marker id="arrowNet" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="white"/>
+                    </marker>
+                    <filter id="glowNet">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+
+                <!-- Title -->
+                <text x="550" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="white" filter="url(#glowNet)">Multi-User Network Architecture</text>
+
+                <!-- V-Contour Device (Center) -->
+                <rect x="425" y="200" width="250" height="100" fill="#27AE60" stroke="#2ECC71" stroke-width="3" rx="8" filter="url(#glowNet)"/>
+                <text x="550" y="230" text-anchor="middle" font-size="16" font-weight="bold" fill="white">V-Contour Device</text>
+                <text x="550" y="250" text-anchor="middle" font-size="12" fill="white">WebSocket Server</text>
+                <text x="550" y="268" text-anchor="middle" font-size="11" fill="#ECF0F1">TLS Encrypted</text>
+                <text x="550" y="285" text-anchor="middle" font-size="10" fill="#BDC3C7">Port: 8765 (configurable)</text>
+
+                <!-- OWNER (Top Left) -->
+                <rect x="50" y="50" width="180" height="90" fill="white" stroke="#E74C3C" stroke-width="3" rx="8"/>
+                <text x="140" y="75" text-anchor="middle" font-size="14" font-weight="bold" fill="#E74C3C">👑 OWNER</text>
+                <text x="140" y="95" text-anchor="middle" font-size="10" fill="#666">Full Control</text>
+                <text x="140" y="110" text-anchor="middle" font-size="9" fill="#888">• Device settings</text>
+                <text x="140" y="123" text-anchor="middle" font-size="9" fill="#888">• User management</text>
+                <text x="140" y="136" text-anchor="middle" font-size="9" fill="#888">• All permissions</text>
+                <line x1="230" y1="95" x2="420" y2="220" stroke="white" stroke-width="3" marker-end="url(#arrowNet)"/>
+                <text x="310" y="150" font-size="10" fill="white" font-weight="bold">Admin Access</text>
+
+                <!-- DOM (Top Right) -->
+                <rect x="870" y="50" width="180" height="90" fill="white" stroke="#9B59B6" stroke-width="3" rx="8"/>
+                <text x="960" y="75" text-anchor="middle" font-size="14" font-weight="bold" fill="#9B59B6">🎮 DOM</text>
+                <text x="960" y="95" text-anchor="middle" font-size="10" fill="#666">Control Access</text>
+                <text x="960" y="110" text-anchor="middle" font-size="9" fill="#888">• Game selection</text>
+                <text x="960" y="123" text-anchor="middle" font-size="9" fill="#888">• Intensity control</text>
+                <text x="960" y="136" text-anchor="middle" font-size="9" fill="#888">• Consequences</text>
+                <line x1="870" y1="95" x2="680" y2="220" stroke="white" stroke-width="3" marker-end="url(#arrowNet)"/>
+                <text x="790" y="150" font-size="10" fill="white" font-weight="bold">With Consent</text>
+
+                <!-- SUB (Bottom Left) -->
+                <rect x="50" y="360" width="180" height="90" fill="white" stroke="#3498DB" stroke-width="3" rx="8"/>
+                <text x="140" y="385" text-anchor="middle" font-size="14" font-weight="bold" fill="#3498DB">🔒 SUB</text>
+                <text x="140" y="405" text-anchor="middle" font-size="10" fill="#666">Limited Access</text>
+                <text x="140" y="420" text-anchor="middle" font-size="9" fill="#888">• Safeword (always)</text>
+                <text x="140" y="433" text-anchor="middle" font-size="9" fill="#888">• View own stats</text>
+                <text x="140" y="446" text-anchor="middle" font-size="9" fill="#888">• Grant/revoke consent</text>
+                <line x1="230" y1="405" x2="420" y2="280" stroke="white" stroke-width="3" marker-end="url(#arrowNet)"/>
+                <text x="310" y="350" font-size="10" fill="white" font-weight="bold">Safeword Priority</text>
+
+                <!-- VIEWER (Bottom Right) -->
+                <rect x="870" y="360" width="180" height="90" fill="white" stroke="#F39C12" stroke-width="3" rx="8"/>
+                <text x="960" y="385" text-anchor="middle" font-size="14" font-weight="bold" fill="#F39C12">👁️ VIEWER</text>
+                <text x="960" y="405" text-anchor="middle" font-size="10" fill="#666">Read-Only</text>
+                <text x="960" y="420" text-anchor="middle" font-size="9" fill="#888">• View status</text>
+                <text x="960" y="433" text-anchor="middle" font-size="9" fill="#888">• View stats</text>
+                <text x="960" y="446" text-anchor="middle" font-size="9" fill="#888">• No control</text>
+                <line x1="870" y1="405" x2="680" y2="280" stroke="white" stroke-width="3" marker-end="url(#arrowNet)"/>
+                <text x="790" y="350" font-size="10" fill="white" font-weight="bold">With Consent</text>
+
+                <!-- Security Features -->
+                <rect x="300" y="380" width="500" height="100" fill="rgba(255,255,255,0.2)" stroke="white" stroke-width="2" rx="8"/>
+                <text x="550" y="400" text-anchor="middle" font-size="13" font-weight="bold" fill="white">🔐 Security Features</text>
+                <text x="550" y="420" text-anchor="middle" font-size="10" fill="white">• TLS 1.3 encryption for all connections</text>
+                <text x="550" y="437" text-anchor="middle" font-size="10" fill="white">• JWT token authentication with expiration</text>
+                <text x="550" y="454" text-anchor="middle" font-size="10" fill="white">• Rate limiting: 10 commands/second per user</text>
+                <text x="550" y="471" text-anchor="middle" font-size="10" fill="white">• Consent verification on every control command</text>
+            </svg>
+
+            <h4>User Roles & Permissions</h4>
             <table>
-                <tr><th>Role</th><th>Permissions</th></tr>
-                <tr><td>OWNER</td><td>Full device control, user management, all settings</td></tr>
-                <tr><td>DOM</td><td>Control commands, game selection, consequence triggers (with consent)</td></tr>
-                <tr><td>SUB</td><td>Safeword only, view own stats</td></tr>
-                <tr><td>VIEWER</td><td>Read-only access to status (with consent)</td></tr>
+                <tr><th>Role</th><th>Permissions</th><th>Consent Required</th></tr>
+                <tr>
+                    <td><strong>OWNER</strong> 👑</td>
+                    <td>Full device control, user management, all settings, safety overrides</td>
+                    <td>N/A (device owner)</td>
+                </tr>
+                <tr>
+                    <td><strong>DOM</strong> 🎮</td>
+                    <td>Control commands, game selection, intensity adjustment, consequence triggers, pattern changes</td>
+                    <td>✅ Required (time-limited)</td>
+                </tr>
+                <tr>
+                    <td><strong>SUB</strong> 🔒</td>
+                    <td>Safeword (always available), view own stats, grant/revoke consent</td>
+                    <td>N/A (wearer)</td>
+                </tr>
+                <tr>
+                    <td><strong>VIEWER</strong> 👁️</td>
+                    <td>Read-only access to device status, arousal level, session stats</td>
+                    <td>✅ Required</td>
+                </tr>
             </table>
 
             <h4>Consent Manager (<code>ConsentManager.h</code>)</h4>
@@ -2842,14 +4122,118 @@ bool TENSController::canEnable() const {
                 <li>Safeword always available regardless of control state</li>
             </ul>
 
-            <h4>Pairing System</h4>
-            <p>Secure device pairing with consent verification:</p>
-            <ol>
-                <li>Pairing request initiated by DOM</li>
-                <li>SUB receives notification with permissions list</li>
-                <li>SUB explicitly accepts with duration limit</li>
-                <li>Consent can be revoked at any time</li>
-            </ol>
+            <h4>Pairing & Consent Flow</h4>
+            <p>Secure device pairing with explicit consent verification at every step:</p>
+
+            <!-- Consent Flow Diagram -->
+            <svg width="100%" height="550" viewBox="0 0 1000 550" style="background: #F8F9FA; border-radius: 12px; margin: 20px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <defs>
+                    <marker id="arrowConsent" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#333"/>
+                    </marker>
+                    <marker id="arrowSuccess" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#27AE60"/>
+                    </marker>
+                    <marker id="arrowDeny" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#E74C3C"/>
+                    </marker>
+                </defs>
+
+                <!-- Title -->
+                <text x="500" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#333">Consent & Pairing Flow</text>
+
+                <!-- Step 1: DOM Request -->
+                <rect x="50" y="60" width="200" height="70" fill="#9B59B6" stroke="#8E44AD" stroke-width="2" rx="8"/>
+                <text x="150" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="white">1. DOM Initiates</text>
+                <text x="150" y="105" text-anchor="middle" font-size="11" fill="white">Pairing Request</text>
+                <text x="150" y="120" text-anchor="middle" font-size="10" fill="#ECF0F1">Specifies permissions</text>
+
+                <!-- Arrow to SUB -->
+                <line x1="250" y1="95" x2="330" y2="95" stroke="#333" stroke-width="2" marker-end="url(#arrowConsent)"/>
+                <text x="290" y="85" text-anchor="middle" font-size="10" fill="#666">Request sent</text>
+
+                <!-- Step 2: SUB Notification -->
+                <rect x="330" y="60" width="200" height="70" fill="#3498DB" stroke="#2980B9" stroke-width="2" rx="8"/>
+                <text x="430" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="white">2. SUB Receives</text>
+                <text x="430" y="105" text-anchor="middle" font-size="11" fill="white">Notification</text>
+                <text x="430" y="120" text-anchor="middle" font-size="10" fill="#ECF0F1">Reviews permissions</text>
+
+                <!-- Decision Diamond -->
+                <path d="M 430 150 L 480 200 L 430 250 L 380 200 Z" fill="#F39C12" stroke="#E67E22" stroke-width="2"/>
+                <text x="430" y="200" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Accept?</text>
+                <text x="430" y="215" text-anchor="middle" font-size="10" fill="white">SUB Decision</text>
+
+                <!-- DENY Path -->
+                <line x1="380" y1="200" x2="150" y2="200" stroke="#E74C3C" stroke-width="3" marker-end="url(#arrowDeny)"/>
+                <text x="265" y="190" text-anchor="middle" font-size="11" fill="#E74C3C" font-weight="bold">DENY</text>
+
+                <rect x="50" y="170" width="100" height="60" fill="#E74C3C" stroke="#C0392B" stroke-width="2" rx="8"/>
+                <text x="100" y="195" text-anchor="middle" font-size="12" font-weight="bold" fill="white">REJECTED</text>
+                <text x="100" y="213" text-anchor="middle" font-size="10" fill="white">No access</text>
+
+                <!-- ACCEPT Path -->
+                <line x1="480" y1="200" x2="610" y2="200" stroke="#27AE60" stroke-width="3" marker-end="url(#arrowSuccess)"/>
+                <text x="545" y="190" text-anchor="middle" font-size="11" fill="#27AE60" font-weight="bold">ACCEPT</text>
+
+                <!-- Step 3: Duration Selection -->
+                <rect x="610" y="60" width="200" height="70" fill="#3498DB" stroke="#2980B9" stroke-width="2" rx="8"/>
+                <text x="710" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="white">3. Set Duration</text>
+                <text x="710" y="105" text-anchor="middle" font-size="11" fill="white">Time Limit</text>
+                <text x="710" y="120" text-anchor="middle" font-size="10" fill="#ECF0F1">15 min - 24 hours</text>
+
+                <!-- Arrow down -->
+                <line x1="710" y1="130" x2="710" y2="170" stroke="#333" stroke-width="2" marker-end="url(#arrowConsent)"/>
+
+                <!-- Step 4: Consent Granted -->
+                <rect x="610" y="170" width="200" height="60" fill="#27AE60" stroke="#229954" stroke-width="2" rx="8"/>
+                <text x="710" y="195" text-anchor="middle" font-size="14" font-weight="bold" fill="white">✅ CONSENT GRANTED</text>
+                <text x="710" y="213" text-anchor="middle" font-size="10" fill="white">DOM has control</text>
+
+                <!-- Arrow down to active session -->
+                <line x1="710" y1="230" x2="710" y2="270" stroke="#333" stroke-width="2" marker-end="url(#arrowConsent)"/>
+
+                <!-- Active Session -->
+                <rect x="560" y="270" width="300" height="100" fill="white" stroke="#27AE60" stroke-width="3" rx="8"/>
+                <text x="710" y="295" text-anchor="middle" font-size="14" font-weight="bold" fill="#27AE60">ACTIVE SESSION</text>
+                <text x="710" y="315" text-anchor="middle" font-size="11" fill="#666">DOM can send commands</text>
+                <text x="710" y="333" text-anchor="middle" font-size="10" fill="#888">• Intensity changes</text>
+                <text x="710" y="348" text-anchor="middle" font-size="10" fill="#888">• Pattern selection</text>
+                <text x="710" y="363" text-anchor="middle" font-size="10" fill="#888">• Game control</text>
+
+                <!-- Safeword Override -->
+                <rect x="50" y="290" width="180" height="60" fill="#E74C3C" stroke="#C0392B" stroke-width="3" rx="8"/>
+                <text x="140" y="315" text-anchor="middle" font-size="13" font-weight="bold" fill="white">⚠️ SAFEWORD</text>
+                <text x="140" y="333" text-anchor="middle" font-size="10" fill="white">Always available</text>
+                <line x1="230" y1="320" x2="555" y2="320" stroke="#E74C3C" stroke-width="3" stroke-dasharray="5,5" marker-end="url(#arrowDeny)"/>
+                <text x="390" y="310" text-anchor="middle" font-size="10" fill="#E74C3C" font-weight="bold">Immediate stop</text>
+
+                <!-- Revoke Consent -->
+                <rect x="280" y="290" width="180" height="60" fill="#F39C12" stroke="#E67E22" stroke-width="2" rx="8"/>
+                <text x="370" y="315" text-anchor="middle" font-size="13" font-weight="bold" fill="white">🔓 REVOKE</text>
+                <text x="370" y="333" text-anchor="middle" font-size="10" fill="white">SUB can revoke anytime</text>
+                <line x1="460" y1="320" x2="555" y2="320" stroke="#F39C12" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrowConsent)"/>
+                <text x="507" y="310" text-anchor="middle" font-size="10" fill="#F39C12">Ends session</text>
+
+                <!-- Expiration -->
+                <rect x="610" y="400" width="200" height="60" fill="#95A5A6" stroke="#7F8C8D" stroke-width="2" rx="8"/>
+                <text x="710" y="425" text-anchor="middle" font-size="13" font-weight="bold" fill="white">⏱️ EXPIRED</text>
+                <text x="710" y="443" text-anchor="middle" font-size="10" fill="white">Time limit reached</text>
+                <line x1="710" y1="370" x2="710" y2="395" stroke="#333" stroke-width="2" marker-end="url(#arrowConsent)"/>
+                <text x="730" y="385" font-size="10" fill="#666">Auto-expire</text>
+
+                <!-- Consent Types -->
+                <rect x="50" y="400" width="480" height="130" fill="rgba(52,152,219,0.1)" stroke="#3498DB" stroke-width="2" rx="8"/>
+                <text x="290" y="425" text-anchor="middle" font-size="13" font-weight="bold" fill="#3498DB">Consent Types (All Require Explicit Opt-In)</text>
+                <text x="290" y="450" text-anchor="middle" font-size="11" fill="#666">• <strong>Control Consent:</strong> Allow DOM to send commands (time-limited)</text>
+                <text x="290" y="470" text-anchor="middle" font-size="11" fill="#666">• <strong>Camera Consent:</strong> Body camera / Cup camera (separate permissions)</text>
+                <text x="290" y="490" text-anchor="middle" font-size="11" fill="#666">• <strong>TENS Consent:</strong> Electrical stimulation (explicit opt-in required)</text>
+                <text x="290" y="510" text-anchor="middle" font-size="11" fill="#666">• <strong>Data Sharing:</strong> Share session stats with DOM/viewers</text>
+            </svg>
+
+            <div class="danger">
+                <strong>⚠️ Consent Priority</strong><br>
+                The SUB (device wearer) always has ultimate control. The safeword immediately terminates all activity regardless of consent state. Consent can be revoked at any time, and all consent grants are time-limited with automatic expiration. No control commands are executed without active, valid consent.
+            </div>
         </section>
 
         <!-- Section 10: Licensing -->
