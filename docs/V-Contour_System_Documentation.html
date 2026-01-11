@@ -2024,18 +2024,320 @@ AROUSAL_ALPHA       = 0.15  // Exponential smoothing factor
             <p>State machine-based pattern execution with real-time parameter adjustment.</p>
 
             <h4>Pattern Types</h4>
-            <table>
-                <tr><th>Type</th><th>Description</th><th>Parameters</th></tr>
-                <tr><td>PULSE</td><td>Rhythmic vacuum pulses (slow/medium/fast)</td><td>frequency, duty cycle</td></tr>
-                <tr><td>WAVE</td><td>Gradual pressure changes</td><td>amplitude, period</td></tr>
-                <tr><td>AIR_PULSE</td><td>Rapid air pulses with release phases</td><td>burst count, interval</td></tr>
-                <tr><td>MILKING</td><td>Rhythmic suction motion</td><td>depth, speed</td></tr>
-                <tr><td>CONSTANT</td><td>Steady pressure with variations</td><td>pressure level</td></tr>
-                <tr><td>DUAL_CHAMBER</td><td>Outer sustained + clitoral oscillation</td><td>outer pressure, clitoral freq</td></tr>
-                <tr><td>CLITORAL_ONLY</td><td>Clitoral oscillation only</td><td>frequency (5-13 Hz), amplitude</td></tr>
-                <tr><td>TENS_VACUUM</td><td>Combined TENS + vacuum</td><td>TENS freq, vacuum pattern</td></tr>
-                <tr><td>EDGING</td><td>Automated edge detection pattern</td><td>edge threshold, cycles</td></tr>
-            </table>
+            <p>Each pattern type creates a unique pressure waveform for different sensations and effects:</p>
+
+            <style>
+                .pattern-card {
+                    background: white;
+                    border-radius: 12px;
+                    padding: 20px;
+                    margin: 20px 0;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                    border-left: 5px solid;
+                }
+                .pattern-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 15px;
+                }
+                .pattern-name {
+                    font-size: 18px;
+                    font-weight: bold;
+                    font-family: 'Consolas', monospace;
+                }
+                .pattern-badge {
+                    background: #ECF0F1;
+                    padding: 4px 12px;
+                    border-radius: 12px;
+                    font-size: 11px;
+                    font-weight: bold;
+                }
+                .pattern-description {
+                    color: #555;
+                    margin-bottom: 10px;
+                    font-size: 14px;
+                }
+                .pattern-params {
+                    background: #F8F9FA;
+                    padding: 10px;
+                    border-radius: 6px;
+                    font-size: 12px;
+                    color: #666;
+                    margin-top: 10px;
+                }
+            </style>
+
+            <!-- PULSE Pattern -->
+            <div class="pattern-card" style="border-left-color: #3498DB;">
+                <div class="pattern-header">
+                    <span class="pattern-name" style="color: #3498DB;">PULSE</span>
+                    <span class="pattern-badge">Basic</span>
+                </div>
+                <div class="pattern-description">Rhythmic vacuum pulses with adjustable frequency (slow/medium/fast)</div>
+                <svg width="100%" height="120" viewBox="0 0 800 120" style="background: #F8F9FA; border-radius: 6px;">
+                    <text x="10" y="20" font-size="11" fill="#666">Pressure</text>
+                    <text x="750" y="115" font-size="11" fill="#666">Time</text>
+
+                    <!-- Axes -->
+                    <line x1="50" y1="100" x2="750" y2="100" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="20" x2="50" y2="100" stroke="#999" stroke-width="1"/>
+
+                    <!-- Pulse waveform -->
+                    <path d="M 50 100 L 50 40 L 120 40 L 120 100 L 120 40 L 190 40 L 190 100 L 190 40 L 260 40 L 260 100 L 260 40 L 330 40 L 330 100 L 330 40 L 400 40 L 400 100 L 400 40 L 470 40 L 470 100 L 470 40 L 540 40 L 540 100 L 540 40 L 610 40 L 610 100 L 610 40 L 680 40 L 680 100"
+                          fill="none" stroke="#3498DB" stroke-width="3"/>
+
+                    <text x="400" y="70" text-anchor="middle" font-size="10" fill="#3498DB" font-weight="bold">ON</text>
+                    <text x="155" y="110" text-anchor="middle" font-size="10" fill="#95A5A6">OFF</text>
+                </svg>
+                <div class="pattern-params"><strong>Parameters:</strong> frequency (Hz), duty cycle (% on-time)</div>
+            </div>
+
+            <!-- WAVE Pattern -->
+            <div class="pattern-card" style="border-left-color: #9B59B6;">
+                <div class="pattern-header">
+                    <span class="pattern-name" style="color: #9B59B6;">WAVE</span>
+                    <span class="pattern-badge">Basic</span>
+                </div>
+                <div class="pattern-description">Gradual sinusoidal pressure changes for smooth, wave-like sensations</div>
+                <svg width="100%" height="120" viewBox="0 0 800 120" style="background: #F8F9FA; border-radius: 6px;">
+                    <text x="10" y="20" font-size="11" fill="#666">Pressure</text>
+                    <text x="750" y="115" font-size="11" fill="#666">Time</text>
+
+                    <!-- Axes -->
+                    <line x1="50" y1="100" x2="750" y2="100" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="20" x2="50" y2="100" stroke="#999" stroke-width="1"/>
+
+                    <!-- Sine wave -->
+                    <path d="M 50 60 Q 100 30, 150 60 T 250 60 T 350 60 T 450 60 T 550 60 T 650 60 T 750 60"
+                          fill="none" stroke="#9B59B6" stroke-width="3"/>
+
+                    <text x="400" y="45" text-anchor="middle" font-size="10" fill="#9B59B6" font-weight="bold">Smooth Oscillation</text>
+                </svg>
+                <div class="pattern-params"><strong>Parameters:</strong> amplitude (mmHg), period (seconds)</div>
+            </div>
+
+            <!-- AIR_PULSE Pattern -->
+            <div class="pattern-card" style="border-left-color: #E74C3C;">
+                <div class="pattern-header">
+                    <span class="pattern-name" style="color: #E74C3C;">AIR_PULSE</span>
+                    <span class="pattern-badge">Advanced</span>
+                </div>
+                <div class="pattern-description">Rapid air pulses with release phases - mimics commercial air-pulse toys</div>
+                <svg width="100%" height="120" viewBox="0 0 800 120" style="background: #F8F9FA; border-radius: 6px;">
+                    <text x="10" y="20" font-size="11" fill="#666">Pressure</text>
+                    <text x="750" y="115" font-size="11" fill="#666">Time</text>
+
+                    <!-- Axes -->
+                    <line x1="50" y1="100" x2="750" y2="100" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="20" x2="50" y2="100" stroke="#999" stroke-width="1"/>
+
+                    <!-- Burst pattern -->
+                    <g>
+                        <!-- Burst 1 -->
+                        <rect x="80" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+                        <rect x="100" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+                        <rect x="120" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+
+                        <!-- Burst 2 -->
+                        <rect x="250" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+                        <rect x="270" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+                        <rect x="290" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+
+                        <!-- Burst 3 -->
+                        <rect x="420" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+                        <rect x="440" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+                        <rect x="460" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+
+                        <!-- Burst 4 -->
+                        <rect x="590" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+                        <rect x="610" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+                        <rect x="630" y="40" width="15" height="60" fill="#E74C3C" opacity="0.8"/>
+                    </g>
+
+                    <text x="110" y="70" text-anchor="middle" font-size="9" fill="#E74C3C" font-weight="bold">BURST</text>
+                    <text x="180" y="90" text-anchor="middle" font-size="9" fill="#95A5A6">interval</text>
+                </svg>
+                <div class="pattern-params"><strong>Parameters:</strong> burst count (pulses per burst), interval (ms between bursts)</div>
+            </div>
+
+            <!-- MILKING Pattern -->
+            <div class="pattern-card" style="border-left-color: #F39C12;">
+                <div class="pattern-header">
+                    <span class="pattern-name" style="color: #F39C12;">MILKING</span>
+                    <span class="pattern-badge">Advanced</span>
+                </div>
+                <div class="pattern-description">Rhythmic suction motion with gradual ramp-up and release</div>
+                <svg width="100%" height="120" viewBox="0 0 800 120" style="background: #F8F9FA; border-radius: 6px;">
+                    <text x="10" y="20" font-size="11" fill="#666">Pressure</text>
+                    <text x="750" y="115" font-size="11" fill="#666">Time</text>
+
+                    <!-- Axes -->
+                    <line x1="50" y1="100" x2="750" y2="100" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="20" x2="50" y2="100" stroke="#999" stroke-width="1"/>
+
+                    <!-- Sawtooth wave (milking) -->
+                    <path d="M 50 100 L 120 30 L 120 100 L 190 30 L 190 100 L 260 30 L 260 100 L 330 30 L 330 100 L 400 30 L 400 100 L 470 30 L 470 100 L 540 30 L 540 100 L 610 30 L 610 100 L 680 30 L 680 100"
+                          fill="none" stroke="#F39C12" stroke-width="3"/>
+
+                    <text x="85" y="60" text-anchor="middle" font-size="9" fill="#F39C12" font-weight="bold">SUCK</text>
+                    <text x="120" y="110" text-anchor="middle" font-size="9" fill="#95A5A6">release</text>
+                </svg>
+                <div class="pattern-params"><strong>Parameters:</strong> depth (max pressure), speed (cycle frequency)</div>
+            </div>
+
+            <!-- CONSTANT Pattern -->
+            <div class="pattern-card" style="border-left-color: #16A085;">
+                <div class="pattern-header">
+                    <span class="pattern-name" style="color: #16A085;">CONSTANT</span>
+                    <span class="pattern-badge">Basic</span>
+                </div>
+                <div class="pattern-description">Steady pressure with minor variations for sustained stimulation</div>
+                <svg width="100%" height="120" viewBox="0 0 800 120" style="background: #F8F9FA; border-radius: 6px;">
+                    <text x="10" y="20" font-size="11" fill="#666">Pressure</text>
+                    <text x="750" y="115" font-size="11" fill="#666">Time</text>
+
+                    <!-- Axes -->
+                    <line x1="50" y1="100" x2="750" y2="100" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="20" x2="50" y2="100" stroke="#999" stroke-width="1"/>
+
+                    <!-- Constant with slight variation -->
+                    <path d="M 50 50 L 150 48 L 250 52 L 350 49 L 450 51 L 550 50 L 650 48 L 750 50"
+                          fill="none" stroke="#16A085" stroke-width="3"/>
+                    <line x1="50" y1="50" x2="750" y2="50" stroke="#16A085" stroke-width="1" stroke-dasharray="5,5" opacity="0.3"/>
+
+                    <text x="400" y="40" text-anchor="middle" font-size="10" fill="#16A085" font-weight="bold">Steady Pressure</text>
+                </svg>
+                <div class="pattern-params"><strong>Parameters:</strong> pressure level (mmHg), variation (±%)</div>
+            </div>
+
+            <!-- DUAL_CHAMBER Pattern -->
+            <div class="pattern-card" style="border-left-color: #8E44AD;">
+                <div class="pattern-header">
+                    <span class="pattern-name" style="color: #8E44AD;">DUAL_CHAMBER</span>
+                    <span class="pattern-badge">Advanced</span>
+                </div>
+                <div class="pattern-description">Outer chamber sustained pressure + clitoral cylinder rapid oscillation</div>
+                <svg width="100%" height="140" viewBox="0 0 800 140" style="background: #F8F9FA; border-radius: 6px;">
+                    <text x="10" y="20" font-size="11" fill="#666">Pressure</text>
+                    <text x="750" y="135" font-size="11" fill="#666">Time</text>
+
+                    <!-- Axes -->
+                    <line x1="50" y1="120" x2="750" y2="120" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="20" x2="50" y2="120" stroke="#999" stroke-width="1"/>
+
+                    <!-- Outer chamber (constant) -->
+                    <line x1="50" y1="70" x2="750" y2="70" stroke="#8E44AD" stroke-width="3" opacity="0.6"/>
+                    <text x="700" y="65" font-size="10" fill="#8E44AD" font-weight="bold">Outer Chamber</text>
+
+                    <!-- Clitoral oscillation (high frequency) -->
+                    <path d="M 50 70 Q 70 50, 90 70 T 130 70 T 170 70 T 210 70 T 250 70 T 290 70 T 330 70 T 370 70 T 410 70 T 450 70 T 490 70 T 530 70 T 570 70 T 610 70 T 650 70 T 690 70 T 730 70"
+                          fill="none" stroke="#E74C3C" stroke-width="2"/>
+                    <text x="400" y="45" text-anchor="middle" font-size="10" fill="#E74C3C" font-weight="bold">Clitoral Oscillation (5-13 Hz)</text>
+                </svg>
+                <div class="pattern-params"><strong>Parameters:</strong> outer pressure (mmHg), clitoral frequency (Hz), clitoral amplitude (mmHg)</div>
+            </div>
+
+            <!-- CLITORAL_ONLY Pattern -->
+            <div class="pattern-card" style="border-left-color: #E91E63;">
+                <div class="pattern-header">
+                    <span class="pattern-name" style="color: #E91E63;">CLITORAL_ONLY</span>
+                    <span class="pattern-badge">Advanced</span>
+                </div>
+                <div class="pattern-description">Rapid clitoral oscillation only (5-13 Hz) - mimics Womanizer/Satisfyer</div>
+                <svg width="100%" height="120" viewBox="0 0 800 120" style="background: #F8F9FA; border-radius: 6px;">
+                    <text x="10" y="20" font-size="11" fill="#666">Pressure</text>
+                    <text x="750" y="115" font-size="11" fill="#666">Time</text>
+
+                    <!-- Axes -->
+                    <line x1="50" y1="100" x2="750" y2="100" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="20" x2="50" y2="100" stroke="#999" stroke-width="1"/>
+
+                    <!-- High frequency sine wave -->
+                    <path d="M 50 60 Q 65 35, 80 60 T 110 60 T 140 60 T 170 60 T 200 60 T 230 60 T 260 60 T 290 60 T 320 60 T 350 60 T 380 60 T 410 60 T 440 60 T 470 60 T 500 60 T 530 60 T 560 60 T 590 60 T 620 60 T 650 60 T 680 60 T 710 60 T 740 60"
+                          fill="none" stroke="#E91E63" stroke-width="3"/>
+
+                    <text x="400" y="45" text-anchor="middle" font-size="10" fill="#E91E63" font-weight="bold">Rapid Air Pulse (5-13 Hz)</text>
+                    <text x="400" y="95" text-anchor="middle" font-size="9" fill="#666">SOL4/SOL5 rapid switching</text>
+                </svg>
+                <div class="pattern-params"><strong>Parameters:</strong> frequency (5-13 Hz), amplitude (5-75 mmHg)</div>
+            </div>
+
+            <!-- TENS_VACUUM Pattern -->
+            <div class="pattern-card" style="border-left-color: #FF5722;">
+                <div class="pattern-header">
+                    <span class="pattern-name" style="color: #FF5722;">TENS_VACUUM</span>
+                    <span class="pattern-badge" style="background: #FFD700; color: #333;">⭐ Premium</span>
+                </div>
+                <div class="pattern-description">Combined TENS electrical stimulation + vacuum pattern synchronization</div>
+                <svg width="100%" height="160" viewBox="0 0 800 160" style="background: #F8F9FA; border-radius: 6px;">
+                    <text x="10" y="20" font-size="11" fill="#666">Intensity</text>
+                    <text x="750" y="155" font-size="11" fill="#666">Time</text>
+
+                    <!-- Axes -->
+                    <line x1="50" y1="140" x2="750" y2="140" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="20" x2="50" y2="140" stroke="#999" stroke-width="1"/>
+
+                    <!-- Vacuum pattern (wave) -->
+                    <path d="M 50 90 Q 150 50, 250 90 T 450 90 T 650 90"
+                          fill="none" stroke="#3498DB" stroke-width="3" opacity="0.7"/>
+                    <text x="650" y="75" font-size="10" fill="#3498DB" font-weight="bold">Vacuum</text>
+
+                    <!-- TENS pulses (synchronized) -->
+                    <g>
+                        <rect x="100" y="60" width="8" height="80" fill="#FF5722" opacity="0.8"/>
+                        <rect x="150" y="50" width="8" height="90" fill="#FF5722" opacity="0.8"/>
+                        <rect x="200" y="60" width="8" height="80" fill="#FF5722" opacity="0.8"/>
+                        <rect x="300" y="70" width="8" height="70" fill="#FF5722" opacity="0.8"/>
+                        <rect x="350" y="60" width="8" height="80" fill="#FF5722" opacity="0.8"/>
+                        <rect x="400" y="70" width="8" height="70" fill="#FF5722" opacity="0.8"/>
+                        <rect x="500" y="60" width="8" height="80" fill="#FF5722" opacity="0.8"/>
+                        <rect x="550" y="50" width="8" height="90" fill="#FF5722" opacity="0.8"/>
+                        <rect x="600" y="60" width="8" height="80" fill="#FF5722" opacity="0.8"/>
+                    </g>
+                    <text x="150" y="35" font-size="10" fill="#FF5722" font-weight="bold">TENS Pulses</text>
+                </svg>
+                <div class="pattern-params"><strong>Parameters:</strong> TENS frequency (Hz), TENS amplitude (%), vacuum pattern type, sync mode</div>
+            </div>
+
+            <!-- EDGING Pattern -->
+            <div class="pattern-card" style="border-left-color: #00BCD4;">
+                <div class="pattern-header">
+                    <span class="pattern-name" style="color: #00BCD4;">EDGING</span>
+                    <span class="pattern-badge">Advanced</span>
+                </div>
+                <div class="pattern-description">Automated edge detection with adaptive intensity control</div>
+                <svg width="100%" height="140" viewBox="0 0 800 140" style="background: #F8F9FA; border-radius: 6px;">
+                    <text x="10" y="20" font-size="11" fill="#666">Arousal</text>
+                    <text x="750" y="135" font-size="11" fill="#666">Time</text>
+
+                    <!-- Axes -->
+                    <line x1="50" y1="120" x2="750" y2="120" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="20" x2="50" y2="120" stroke="#999" stroke-width="1"/>
+
+                    <!-- Edge threshold line -->
+                    <line x1="50" y1="40" x2="750" y2="40" stroke="#E74C3C" stroke-width="2" stroke-dasharray="5,5"/>
+                    <text x="760" y="45" font-size="10" fill="#E74C3C" font-weight="bold">Edge</text>
+
+                    <!-- Arousal curve with edges -->
+                    <path d="M 50 120 Q 100 80, 150 45 L 180 50 Q 220 90, 270 45 L 300 50 Q 340 85, 390 42 L 420 48 Q 460 80, 510 40 L 540 45 Q 580 75, 630 38"
+                          fill="none" stroke="#00BCD4" stroke-width="3"/>
+
+                    <!-- Edge markers -->
+                    <circle cx="150" cy="45" r="5" fill="#E74C3C"/>
+                    <circle cx="270" cy="45" r="5" fill="#E74C3C"/>
+                    <circle cx="390" cy="42" r="5" fill="#E74C3C"/>
+                    <circle cx="510" cy="40" r="5" fill="#E74C3C"/>
+
+                    <text x="150" y="30" text-anchor="middle" font-size="9" fill="#E74C3C" font-weight="bold">Edge 1</text>
+                    <text x="270" y="30" text-anchor="middle" font-size="9" fill="#E74C3C" font-weight="bold">Edge 2</text>
+                    <text x="390" y="30" text-anchor="middle" font-size="9" fill="#E74C3C" font-weight="bold">Edge 3</text>
+                    <text x="510" y="30" text-anchor="middle" font-size="9" fill="#E74C3C" font-weight="bold">Edge 4</text>
+
+                    <text x="400" y="110" text-anchor="middle" font-size="9" fill="#666">Automatic backing off when edge detected</text>
+                </svg>
+                <div class="pattern-params"><strong>Parameters:</strong> edge threshold (arousal level 0.85-0.95), target cycles, backing-off intensity</div>
+            </div>
 
             <h4>Real-Time Adjustments</h4>
             <ul>
