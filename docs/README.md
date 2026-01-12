@@ -4,7 +4,7 @@ A sophisticated **Automated Vacuum Stimulation Device** - an electromechanical s
 
 ---
 
-## 📖 [**View Full Documentation →**](https://morrisraybrooks.github.io/apps/v-contour-documentation.html)
+## 📖 [**View Full Documentation →**](https://morrisraybrooks.github.io/apps/V-Contour_System_Documentation.html)
 
 The complete system documentation is available as an interactive webpage with:
 - Detailed hardware specifications and diagrams
