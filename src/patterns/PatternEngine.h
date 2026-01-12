@@ -149,6 +149,10 @@ public:
     void stopTENS();
     bool isTENSRunning() const;
 
+    // TENS auto-trigger during automated orgasm patterns
+    void setTENSAutoTriggerEnabled(bool enabled);     // Enable/disable auto TENS phase sync
+    bool isTENSAutoTriggerEnabled() const { return m_tensAutoTriggerEnabled; }
+
 public Q_SLOTS:
     void setPatternParameters(const QJsonObject& parameters);
 
@@ -192,6 +196,7 @@ private:
     void executeStep(const PatternStep& step);
     void applyPressureTarget(double targetPressure);
     void performSafetyCheck();
+    void applyTENSPhasePreset(const QString& action);  // Auto-trigger TENS presets during automated orgasm
     
     // Pattern type handlers
     void buildPulsePattern(const QJsonObject& params);
@@ -245,7 +250,11 @@ private:
     // Safety limits
     double m_minPressure;
     double m_maxPressure;
-    
+
+    // TENS integration for automated orgasm patterns
+    bool m_tensAutoTriggerEnabled;     // Enable auto TENS during automated patterns
+    QString m_lastTENSPhase;           // Track last phase to avoid redundant changes
+
     // Pattern storage
     QMap<QString, QJsonObject> m_loadedPatterns;
     std::unique_ptr<PatternDefinitions> m_patternDefinitions;

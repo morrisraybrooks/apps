@@ -272,6 +272,13 @@ Q_SIGNALS:
     void milkingIntensityAdjusted(double newIntensity, double arousalError);
     void milkingSessionComplete(qint64 durationMs, bool success, int dangerEntries);
 
+    // Denial mode signals
+    void denialFrustrationEscalated(double frustrationLevel, double newIntensity);
+    void denialThresholdAdjusted(double effectiveThreshold, double offset);
+    void denialHoldExtended(int holdDurationMs, int edgeCount);
+    void denialTeasePhaseChanged(int phase, double frequency, double amplitude);
+    void denialSessionProgress(double progress, int edgeCount, double frustration);
+
 private Q_SLOTS:
     void onUpdateTick();
     void onSafetyCheck();
@@ -298,6 +305,14 @@ private:
     void startMilkingInternal(int durationMs, int failureMode);
     double calculateMilkingIntensityAdjustment();
     void handleMilkingOrgasmFailure();
+
+    // Denial mode helper methods
+    void initializeDenialState();                    // Set up denial-specific parameters
+    void updateDenialFrustration();                  // Escalate frustration after each edge
+    double calculateDenialEffectiveThreshold();      // Get dynamic pre-emptive threshold
+    void updateDenialHoldDuration();                 // Extend hold time after each edge
+    void runDenialTeaseOscillation();                // Handle teasing clitoral patterns
+    void updateDenialSessionProgress();              // Track session progress for threshold decay
     
     // Safety methods
     void performSafetyCheck();
@@ -435,6 +450,30 @@ private:
     double m_milkingPreviousError;  // Previous error for D term
     double m_milkingTargetArousal;  // Center of milking zone (0.82)
 
+    // ========================================================================
+    // Denial Mode State - Extended teasing without release
+    // ========================================================================
+    // Frustration escalation: intensity increases after each edge
+    double m_denialFrustrationLevel;     // 0.0-1.0 escalation accumulator
+    double m_denialBaseIntensity;        // Starting intensity for this session
+    double m_denialCurrentIntensity;     // Current escalated intensity
+
+    // Dynamic edge threshold: backs off earlier as session progresses
+    double m_denialThresholdOffset;      // How much lower than configured threshold
+    double m_denialSessionProgress;      // 0.0-1.0 progress through session duration
+
+    // Extended recovery: longer holds that increase with each edge
+    int m_denialHoldDurationMs;          // Current hold duration (increases per edge)
+    int m_denialBaseHoldMs;              // Starting hold duration
+    int m_denialHoldIncrementMs;         // How much to add per edge
+
+    // Teasing oscillation: denial-specific clitoral patterns
+    double m_denialOscillatorFreq;       // Current teasing frequency (lower than normal)
+    double m_denialOscillatorAmp;        // Current teasing amplitude
+    bool m_denialOscillatorTease;        // Enable stop-start teasing pattern
+    int m_denialTeasePhase;              // Which phase of tease cycle (0-3)
+    QElapsedTimer m_denialTeaseTimer;    // Timer for tease phase switching
+
     // Thread safety
     mutable QMutex m_mutex;
 
@@ -561,6 +600,34 @@ private:
     // Danger zone recovery
     static constexpr double DANGER_RECOVERY_THRESHOLD = 0.88;  // Exit danger when below this
     static constexpr int DANGER_PAUSE_DURATION_MS = 2000;      // Pause stimulation duration
+
+    // ========================================================================
+    // Denial Mode Constants - Frustration maximization while preventing orgasm
+    // ========================================================================
+    // Frustration escalation: gradually increase intensity to maintain arousal
+    static constexpr double DENIAL_BASE_INTENSITY = 0.35;        // Starting intensity (lower than edging)
+    static constexpr double DENIAL_MAX_INTENSITY = 0.75;         // Maximum escalated intensity
+    static constexpr double DENIAL_ESCALATION_RATE = 0.03;       // Intensity increase per edge (3%)
+    static constexpr double DENIAL_FRUSTRATION_DECAY = 0.01;     // Decay during extended holds
+
+    // Pre-emptive back-off: dynamic threshold lower than configured
+    static constexpr double DENIAL_THRESHOLD_OFFSET_INITIAL = 0.05;  // Start 5% below configured
+    static constexpr double DENIAL_THRESHOLD_OFFSET_MAX = 0.15;      // Eventually 15% below configured
+    static constexpr double DENIAL_THRESHOLD_DECAY_RATE = 0.002;     // Threshold drops over time
+
+    // Extended recovery: longer holds between edges
+    static constexpr int DENIAL_BASE_HOLD_MS = 8000;             // Start with 8 second holds
+    static constexpr int DENIAL_HOLD_INCREMENT_MS = 2000;        // Add 2 seconds per edge
+    static constexpr int DENIAL_MAX_HOLD_MS = 30000;             // Maximum 30 second holds
+    static constexpr double DENIAL_RECOVERY_THRESHOLD = 0.55;    // Lower recovery target (frustrating)
+
+    // Teasing oscillation: denial-specific clitoral patterns
+    static constexpr double DENIAL_OSC_FREQ_MIN = 3.0;           // Minimum teasing frequency (Hz)
+    static constexpr double DENIAL_OSC_FREQ_MAX = 6.0;           // Maximum teasing frequency (Hz)
+    static constexpr double DENIAL_OSC_AMP_MIN = 20.0;           // Minimum amplitude (mmHg)
+    static constexpr double DENIAL_OSC_AMP_MAX = 45.0;           // Maximum amplitude (mmHg)
+    static constexpr int DENIAL_TEASE_PHASE_MS = 3000;           // Duration of each tease phase
+    static constexpr int DENIAL_TEASE_PAUSE_MS = 1500;           // Pause between tease phases
 };
 
 #endif // ORGASMCONTROLALGORITHM_H

@@ -7,6 +7,8 @@
 #include "../hardware/FluidSensor.h"
 #include "../hardware/TENSController.h"
 #include "../hardware/MotionSensor.h"
+#include "../hardware/CameraMotionSensor.h"
+#include "../hardware/CameraManager.h"
 #include <QDebug>
 
 GameEngine::GameEngine(HardwareManager* hardware,
@@ -899,4 +901,38 @@ void GameEngine::onStillnessChanged(bool isStill, double score)
     emit stillnessScoreUpdated(score);
 
     Q_UNUSED(isStill)
+}
+
+// ============================================================================
+// Camera-based motion slots
+// ============================================================================
+
+void GameEngine::onCameraMotionViolation(CameraMotionSensor::CameraRole source,
+                                         CameraMotionSensor::MotionLevel level, double intensity)
+{
+    Q_UNUSED(source)
+    Q_UNUSED(level)
+    Q_UNUSED(intensity)
+    // TODO: Implement camera-based motion violation handling
+}
+
+void GameEngine::onCameraStillnessChanged(bool isStill, double score)
+{
+    Q_UNUSED(isStill)
+    Q_UNUSED(score)
+    // TODO: Implement camera-based stillness tracking
+}
+
+void GameEngine::onOrgasmStateChanged(CameraManager::OrgasmState state, double confidence)
+{
+    Q_UNUSED(state)
+    Q_UNUSED(confidence)
+    // TODO: Implement camera-based orgasm state tracking
+}
+
+void GameEngine::onCameraOrgasmDetected(double intensity, qint64 durationMs)
+{
+    Q_UNUSED(intensity)
+    Q_UNUSED(durationMs)
+    // TODO: Implement camera-based orgasm detection handling
 }

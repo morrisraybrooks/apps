@@ -197,9 +197,9 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
     app.setApplicationName("VacuumControllerTests");
     app.setApplicationVersion("1.0");
-    
+
     TestRunner runner;
-    
+
     // Handle special commands
     QStringList args = app.arguments();
     if (args.contains("--list-tests")) {
@@ -207,10 +207,14 @@ int main(int argc, char *argv[])
         runner.printAvailableTests();
         return 0;
     }
-    
-    // Run tests
-    int result = runner.run(args);
-    
-    // Start event loop
+
+    // Schedule test execution after event loop starts
+    // This ensures QTest::qWait, QSignalSpy::wait, etc. work correctly
+    QTimer::singleShot(0, [&runner, &args]() {
+        runner.run(args);
+        // run() schedules QCoreApplication::exit() via QTimer::singleShot
+    });
+
+    // Start event loop - will exit when tests complete
     return app.exec();
 }

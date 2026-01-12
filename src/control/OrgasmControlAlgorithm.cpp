@@ -245,7 +245,58 @@ void OrgasmControlAlgorithm::startDenial(int durationMs)
     m_inOrgasm = false;
     m_pointOfNoReturnReached = false;
 
+    // Initialize denial-specific parameters
+    initializeDenialState();
+
     setMode(Mode::DENIAL);
+
+    qDebug() << "Started Denial mode:"
+             << "duration:" << durationMs << "ms"
+             << "initial intensity:" << m_denialBaseIntensity
+             << "threshold offset:" << m_denialThresholdOffset
+             << "hold duration:" << m_denialHoldDurationMs << "ms";
+}
+
+void OrgasmControlAlgorithm::initializeDenialState()
+{
+    // ========================================================================
+    // Frustration Escalation Setup
+    // ========================================================================
+    // Start with lower intensity than normal edging - gives room to escalate
+    m_denialFrustrationLevel = 0.0;
+    m_denialBaseIntensity = DENIAL_BASE_INTENSITY;
+    m_denialCurrentIntensity = m_denialBaseIntensity;
+
+    // Override the base intensity from edging
+    m_intensity = m_denialBaseIntensity;
+
+    // ========================================================================
+    // Pre-Emptive Back-Off Setup
+    // ========================================================================
+    // Start with small offset, will increase over session
+    m_denialThresholdOffset = DENIAL_THRESHOLD_OFFSET_INITIAL;
+    m_denialSessionProgress = 0.0;
+
+    // Use lower recovery threshold for denial (more frustrating)
+    m_recoveryThreshold = DENIAL_RECOVERY_THRESHOLD;
+
+    // ========================================================================
+    // Extended Recovery Setup
+    // ========================================================================
+    // Start with longer holds than normal edging, will increase per edge
+    m_denialBaseHoldMs = DENIAL_BASE_HOLD_MS;
+    m_denialHoldIncrementMs = DENIAL_HOLD_INCREMENT_MS;
+    m_denialHoldDurationMs = m_denialBaseHoldMs;
+
+    // ========================================================================
+    // Teasing Oscillation Setup
+    // ========================================================================
+    // Lower frequencies for teasing (not enough to push over)
+    m_denialOscillatorFreq = DENIAL_OSC_FREQ_MIN;
+    m_denialOscillatorAmp = DENIAL_OSC_AMP_MIN;
+    m_denialOscillatorTease = true;  // Enable stop-start teasing
+    m_denialTeasePhase = 0;
+    m_denialTeaseTimer.start();
 }
 
 void OrgasmControlAlgorithm::startMilking(int durationMs, int failureMode)
@@ -974,7 +1025,17 @@ void OrgasmControlAlgorithm::runAdaptiveEdging()
 
     switch (m_state) {
         case ControlState::BUILDING: {
-            emit buildUpProgress(m_arousalLevel, m_edgeThreshold);
+            // ================================================================
+            // DENIAL MODE: Use dynamic pre-emptive threshold
+            // ================================================================
+            double effectiveEdgeThreshold = m_edgeThreshold;
+            if (m_mode == Mode::DENIAL) {
+                effectiveEdgeThreshold = calculateDenialEffectiveThreshold();
+                // Run teasing oscillation pattern in denial mode
+                runDenialTeaseOscillation();
+            }
+
+            emit buildUpProgress(m_arousalLevel, effectiveEdgeThreshold);
 
             // ================================================================
             // ORGASM DETECTION - Check before edge detection
@@ -1003,10 +1064,17 @@ void OrgasmControlAlgorithm::runAdaptiveEdging()
                 // Continue stimulation through orgasm (handled in m_inOrgasm block above)
                 // Do NOT stop or back off - let the orgasm complete naturally
 
-            } else if (m_arousalLevel >= m_edgeThreshold) {
+            } else if (m_arousalLevel >= effectiveEdgeThreshold) {
                 // EDGE DETECTED - back off!
                 m_edgeCount++;
                 emit edgeDetected(m_edgeCount, m_intensity);
+
+                // DENIAL MODE: Escalate frustration and extend hold after each edge
+                if (m_mode == Mode::DENIAL) {
+                    updateDenialFrustration();
+                    updateDenialHoldDuration();
+                    emit denialThresholdAdjusted(effectiveEdgeThreshold, m_denialThresholdOffset);
+                }
 
                 if (m_clitoralOscillator) m_clitoralOscillator->stop();
                 // SAFETY: Only vent clitoral chamber (SOL5), NEVER outer chamber (SOL2)
@@ -1022,8 +1090,11 @@ void OrgasmControlAlgorithm::runAdaptiveEdging()
                 // Normal ramping up when not near edge threshold
                 // Anti-escape is intentionally NOT used in edging mode - arousal
                 // fluctuations are expected and part of the natural edging experience
-                if (m_arousalLevel < m_edgeThreshold * 0.9) {
-                    m_intensity = qMin(m_intensity + RAMP_RATE, MAX_INTENSITY);
+                double rampThreshold = effectiveEdgeThreshold * 0.9;
+                if (m_arousalLevel < rampThreshold) {
+                    // DENIAL MODE: Use escalated intensity
+                    double maxIntensity = (m_mode == Mode::DENIAL) ? DENIAL_MAX_INTENSITY : MAX_INTENSITY;
+                    m_intensity = qMin(m_intensity + RAMP_RATE, maxIntensity);
                     m_frequency = qMin(m_frequency + FREQ_RAMP_RATE, MAX_FREQUENCY);
                 }
 
@@ -1031,11 +1102,17 @@ void OrgasmControlAlgorithm::runAdaptiveEdging()
                     m_hardware->setSOL1(true);
                     m_hardware->setSOL2(false);
                 }
-                if (m_clitoralOscillator) {
-                    if (!m_clitoralOscillator->isRunning()) m_clitoralOscillator->start();
-                    m_clitoralOscillator->setFrequency(m_frequency);
-                    m_clitoralOscillator->setAmplitude(m_intensity * MAX_CLITORAL_AMPLITUDE);
+
+                // DENIAL MODE: Use teasing oscillation instead of normal oscillation
+                if (m_mode != Mode::DENIAL) {
+                    if (m_clitoralOscillator) {
+                        if (!m_clitoralOscillator->isRunning()) m_clitoralOscillator->start();
+                        m_clitoralOscillator->setFrequency(m_frequency);
+                        m_clitoralOscillator->setAmplitude(m_intensity * MAX_CLITORAL_AMPLITUDE);
+                    }
                 }
+                // (Denial oscillation handled by runDenialTeaseOscillation() above)
+
                 if (m_tensEnabled && m_tensController && !m_tensController->isRunning()) {
                     m_tensController->setFrequency(20.0);
                     m_tensController->setAmplitude(m_intensity * 60.0);
@@ -1109,7 +1186,10 @@ void OrgasmControlAlgorithm::runAdaptiveEdging()
         }
 
         case ControlState::HOLDING: {
-            if (m_stateTimer.elapsed() >= HOLD_DURATION_MS) {
+            // DENIAL MODE: Use extended hold duration (increases per edge)
+            int holdDuration = (m_mode == Mode::DENIAL) ? m_denialHoldDurationMs : HOLD_DURATION_MS;
+
+            if (m_stateTimer.elapsed() >= holdDuration) {
                 if (m_edgeCount >= m_targetEdges) {
                     if (m_mode == Mode::DENIAL) {
                         emit edgingComplete(m_edgeCount);
@@ -1129,7 +1209,12 @@ void OrgasmControlAlgorithm::runAdaptiveEdging()
                     }
                 } else {
                     emit edgeCycleCompleted(m_edgeCount, m_targetEdges);
-                    m_intensity = qMin(m_intensity + ESCALATION_RATE, MAX_INTENSITY * 0.8);
+
+                    // DENIAL MODE: Use escalated intensity from frustration level
+                    double maxIntensity = (m_mode == Mode::DENIAL) ?
+                        m_denialCurrentIntensity : (MAX_INTENSITY * 0.8);
+                    m_intensity = qMin(m_intensity + ESCALATION_RATE, maxIntensity);
+
                     setState(ControlState::BUILDING);
                 }
             }
@@ -1864,6 +1949,161 @@ void OrgasmControlAlgorithm::handleMilkingOrgasmFailure()
     default:
         startCoolDown();
         break;
+    }
+}
+
+// ============================================================================
+// Denial Mode Helper Methods
+// ============================================================================
+
+void OrgasmControlAlgorithm::updateDenialFrustration()
+{
+    // Called after each edge detection in denial mode
+    // Gradually escalate intensity to maintain arousal while staying safe
+
+    double previousFrustration = m_denialFrustrationLevel;
+
+    // Increase frustration level (capped at 1.0)
+    m_denialFrustrationLevel = qMin(1.0, m_denialFrustrationLevel + DENIAL_ESCALATION_RATE);
+
+    // Calculate new intensity based on frustration level
+    double escalationRange = DENIAL_MAX_INTENSITY - DENIAL_BASE_INTENSITY;
+    m_denialCurrentIntensity = m_denialBaseIntensity + (escalationRange * m_denialFrustrationLevel);
+
+    // Apply to actual intensity
+    m_intensity = m_denialCurrentIntensity;
+
+    qDebug() << "Denial frustration escalated:"
+             << "level:" << previousFrustration << "->" << m_denialFrustrationLevel
+             << "intensity:" << m_denialCurrentIntensity;
+
+    emit denialFrustrationEscalated(m_denialFrustrationLevel, m_denialCurrentIntensity);
+}
+
+double OrgasmControlAlgorithm::calculateDenialEffectiveThreshold()
+{
+    // Calculate dynamic edge threshold that decreases over session
+    // This makes the algorithm more conservative (backs off earlier) as session progresses
+
+    // Update session progress
+    updateDenialSessionProgress();
+
+    // Calculate current offset (increases over time)
+    double progressOffset = m_denialSessionProgress *
+                           (DENIAL_THRESHOLD_OFFSET_MAX - DENIAL_THRESHOLD_OFFSET_INITIAL);
+    m_denialThresholdOffset = DENIAL_THRESHOLD_OFFSET_INITIAL + progressOffset;
+
+    // Calculate effective threshold
+    double effectiveThreshold = m_edgeThreshold - m_denialThresholdOffset;
+
+    // Never go below a minimum safe threshold
+    effectiveThreshold = qMax(effectiveThreshold, m_recoveryThreshold + 0.10);
+
+    return effectiveThreshold;
+}
+
+void OrgasmControlAlgorithm::updateDenialSessionProgress()
+{
+    // Calculate progress through the session (0.0 to 1.0)
+    if (m_maxDurationMs > 0) {
+        qint64 elapsed = m_sessionTimer.elapsed();
+        m_denialSessionProgress = qMin(1.0, static_cast<double>(elapsed) / m_maxDurationMs);
+
+        // Emit progress update periodically
+        if (m_edgeCount % 3 == 0 || m_denialSessionProgress >= 0.9) {
+            emit denialSessionProgress(m_denialSessionProgress, m_edgeCount, m_denialFrustrationLevel);
+        }
+    }
+}
+
+void OrgasmControlAlgorithm::updateDenialHoldDuration()
+{
+    // Called after each edge to extend the hold duration
+    // Longer holds = more frustration
+
+    int previousHold = m_denialHoldDurationMs;
+
+    // Increase hold duration (capped at maximum)
+    m_denialHoldDurationMs = qMin(DENIAL_MAX_HOLD_MS,
+                                   m_denialHoldDurationMs + m_denialHoldIncrementMs);
+
+    qDebug() << "Denial hold extended:"
+             << previousHold << "ms ->" << m_denialHoldDurationMs << "ms"
+             << "after edge" << m_edgeCount;
+
+    emit denialHoldExtended(m_denialHoldDurationMs, m_edgeCount);
+}
+
+void OrgasmControlAlgorithm::runDenialTeaseOscillation()
+{
+    // Handle teasing clitoral oscillation patterns for denial mode
+    // Lower frequencies, stop-start patterns, random variation
+
+    if (!m_clitoralOscillator || !m_denialOscillatorTease) {
+        return;
+    }
+
+    qint64 teaseElapsed = m_denialTeaseTimer.elapsed();
+
+    // Tease pattern has 4 phases:
+    // 0: Slow tease (low freq, low amp)
+    // 1: Build (increasing freq)
+    // 2: Sudden stop (no stimulation)
+    // 3: Resume at low (frustrating restart)
+
+    int phaseDuration = (m_denialTeasePhase == 2) ? DENIAL_TEASE_PAUSE_MS : DENIAL_TEASE_PHASE_MS;
+
+    if (teaseElapsed >= phaseDuration) {
+        // Advance to next phase
+        m_denialTeasePhase = (m_denialTeasePhase + 1) % 4;
+        m_denialTeaseTimer.restart();
+
+        switch (m_denialTeasePhase) {
+        case 0:  // Slow tease start
+            m_denialOscillatorFreq = DENIAL_OSC_FREQ_MIN;
+            m_denialOscillatorAmp = DENIAL_OSC_AMP_MIN;
+            m_clitoralOscillator->setFrequency(m_denialOscillatorFreq);
+            m_clitoralOscillator->setAmplitude(m_denialOscillatorAmp);
+            if (!m_clitoralOscillator->isRunning()) {
+                m_clitoralOscillator->start();
+            }
+            break;
+
+        case 1:  // Building phase - gradually increase
+            m_denialOscillatorFreq = DENIAL_OSC_FREQ_MIN +
+                (DENIAL_OSC_FREQ_MAX - DENIAL_OSC_FREQ_MIN) * 0.7;  // Go to 70% of max
+            m_denialOscillatorAmp = DENIAL_OSC_AMP_MIN +
+                (DENIAL_OSC_AMP_MAX - DENIAL_OSC_AMP_MIN) * 0.5;
+            m_clitoralOscillator->setFrequency(m_denialOscillatorFreq);
+            m_clitoralOscillator->setAmplitude(m_denialOscillatorAmp);
+            break;
+
+        case 2:  // Sudden stop - frustrating pause
+            m_clitoralOscillator->stop();
+            break;
+
+        case 3:  // Resume at low level
+            m_denialOscillatorFreq = DENIAL_OSC_FREQ_MIN + 1.0;  // Just above minimum
+            m_denialOscillatorAmp = DENIAL_OSC_AMP_MIN + 5.0;
+            m_clitoralOscillator->setFrequency(m_denialOscillatorFreq);
+            m_clitoralOscillator->setAmplitude(m_denialOscillatorAmp);
+            m_clitoralOscillator->start();
+            break;
+        }
+
+        emit denialTeasePhaseChanged(m_denialTeasePhase, m_denialOscillatorFreq, m_denialOscillatorAmp);
+
+        qDebug() << "Denial tease phase:" << m_denialTeasePhase
+                 << "freq:" << m_denialOscillatorFreq << "Hz"
+                 << "amp:" << m_denialOscillatorAmp << "mmHg";
+    }
+
+    // During build phase (1), gradually ramp up
+    if (m_denialTeasePhase == 1 && m_clitoralOscillator->isRunning()) {
+        double rampProgress = static_cast<double>(teaseElapsed) / DENIAL_TEASE_PHASE_MS;
+        double targetFreq = DENIAL_OSC_FREQ_MIN +
+            (DENIAL_OSC_FREQ_MAX - DENIAL_OSC_FREQ_MIN) * rampProgress * 0.8;
+        m_clitoralOscillator->setFrequency(qMin(targetFreq, DENIAL_OSC_FREQ_MAX));
     }
 }
 

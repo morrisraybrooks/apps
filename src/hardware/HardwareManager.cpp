@@ -29,6 +29,9 @@ HardwareManager::HardwareManager(QObject *parent)
     , m_tensEnableState(false)
     , m_tensPhaseState(false)
     , m_tensPWMValue(0)
+    , m_urethralEnableState(false)
+    , m_urethralPhaseState(false)
+    , m_urethralPWMValue(0)
     , m_simulationMode(false)
     , m_simulatedAVLPressure(0.0)
     , m_simulatedTankPressure(0.0)
@@ -166,7 +169,7 @@ bool HardwareManager::initialize()
             } else {
                 connect(m_cameraManager.get(), &CameraManager::cameraError,
                         this, [this](CameraMotionSensor::CameraRole role, const QString& error) {
-                    QString roleStr = (role == CameraMotionSensor::CameraRole::BODY_CAMERA) ? "Body" : "Cup";
+                    QString roleStr = (role == CameraMotionSensor::CameraRole::PATIENT_MONITOR) ? "Body" : "Cup";
                     emit hardwareError(QString("%1 camera error: %2").arg(roleStr, error));
                 });
                 qDebug() << "Camera Manager initialized";
@@ -777,4 +780,78 @@ bool HardwareManager::readTENSFaultPin() const
     }
 
     return false;  // No fault if no actuator control
+}
+
+// ============================================================================
+// URETHRAL ELECTRODE GPIO CONTROL
+// ============================================================================
+
+void HardwareManager::setUrethralOutputEnable(bool enabled)
+{
+    QMutexLocker locker(&m_stateMutex);
+    m_urethralEnableState = enabled;
+
+    if (m_actuatorControl && !m_simulationMode) {
+        m_actuatorControl->setGPIO(GPIO_URETHRAL_ENABLE, enabled);
+    }
+}
+
+void HardwareManager::setUrethralPhasePolarity(bool positive)
+{
+    QMutexLocker locker(&m_stateMutex);
+    m_urethralPhaseState = positive;
+
+    if (m_actuatorControl && !m_simulationMode) {
+        m_actuatorControl->setGPIO(GPIO_URETHRAL_PHASE, positive);
+    }
+}
+
+void HardwareManager::setUrethralPWMDutyCycle(int pwmValue)
+{
+    QMutexLocker locker(&m_stateMutex);
+
+    // Clamp to valid range (0-1024 for 10-bit PWM)
+    m_urethralPWMValue = std::clamp(pwmValue, 0, 1024);
+
+    if (m_actuatorControl && !m_simulationMode) {
+        // GPIO 13 is hardware PWM0 channel on Raspberry Pi
+        m_actuatorControl->setPWM(GPIO_URETHRAL_PWM, m_urethralPWMValue);
+    }
+}
+
+bool HardwareManager::readUrethralFaultPin() const
+{
+    QMutexLocker locker(&m_stateMutex);
+
+    if (m_simulationMode) {
+        return m_simulatedFailures.contains("URETHRAL");
+    }
+
+    if (m_actuatorControl) {
+        return m_actuatorControl->readGPIO(GPIO_URETHRAL_FAULT);
+    }
+
+    return false;
+}
+
+double HardwareManager::readUrethralImpedance() const
+{
+    QMutexLocker locker(&m_stateMutex);
+
+    if (m_simulationMode) {
+        // Simulate good electrode contact (low impedance)
+        return m_simulatedFailures.contains("URETHRAL_CONTACT") ? 10000.0 : 500.0;
+    }
+
+    if (m_adc) {
+        // Read impedance measurement from ADC channel 3
+        // The impedance measurement circuit outputs a voltage proportional to impedance
+        // Typical range: 0-5000 ohms maps to 0-3.3V
+        uint16_t rawValue = m_adc->readRawValue(ADC_CHANNEL_URETHRAL_IMPEDANCE);
+        // Convert 10-bit ADC value (0-1023) to impedance (0-10000 ohms)
+        double impedance = (rawValue / 1023.0) * 10000.0;
+        return impedance;
+    }
+
+    return 10000.0;  // Return high impedance if no ADC (indicates no contact)
 }

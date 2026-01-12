@@ -8,7 +8,7 @@
 CameraManager::CameraManager(QObject* parent)
     : QObject(parent)
     , m_combinedMotionMagnitude(0.0)
-    , m_combinedMotionLevel(CameraMotionSensor::MotionLevel::NONE)
+    , m_combinedMotionLevel(CameraMotionSensor::MotionLevel::STILL)
     , m_combinedStillnessScore(1.0)
     , m_bodyWeight(0.6)
     , m_cupWeight(0.4)
@@ -56,60 +56,66 @@ bool CameraManager::initializeBodyCamera(const CameraConfig& config)
     
     m_bodyConfig = config;
     m_bodyCamera = std::make_unique<CameraMotionSensor>(
-        config.type, CameraMotionSensor::CameraRole::BODY_CAMERA, this);
-    
-    if (config.deviceIndex >= 0) {
-        m_bodyCamera->setDeviceIndex(config.deviceIndex);
-    }
-    if (!config.deviceUrl.isEmpty()) {
-        m_bodyCamera->setDeviceUrl(config.deviceUrl);
-    }
+        config.type, CameraMotionSensor::CameraRole::PATIENT_MONITOR, this);
+
     if (!config.roi.isEmpty()) {
         m_bodyCamera->setRegionOfInterest(config.roi);
     }
-    
-    bool success = m_bodyCamera->initialize();
-    connectCameraSignals(m_bodyCamera.get(), CameraMotionSensor::CameraRole::BODY_CAMERA);
-    
-    emit cameraInitialized(CameraMotionSensor::CameraRole::BODY_CAMERA, success);
+
+    // Initialize with device index or URL
+    bool success = false;
+    if (config.deviceIndex >= 0) {
+        success = m_bodyCamera->initialize(config.deviceIndex);
+    } else if (!config.deviceUrl.isEmpty()) {
+        success = m_bodyCamera->initializeFromUrl(config.deviceUrl);
+    } else {
+        success = m_bodyCamera->initialize(0);  // Default device
+    }
+
+    connectCameraSignals(m_bodyCamera.get(), CameraMotionSensor::CameraRole::PATIENT_MONITOR);
+
+    emit cameraInitialized(CameraMotionSensor::CameraRole::PATIENT_MONITOR, success);
     return success;
 }
 
 bool CameraManager::initializeCupCamera(const CameraConfig& config)
 {
     QMutexLocker locker(&m_mutex);
-    
+
     m_cupConfig = config;
     m_cupCamera = std::make_unique<CameraMotionSensor>(
-        config.type, CameraMotionSensor::CameraRole::CUP_CAMERA, this);
-    
-    if (config.deviceIndex >= 0) {
-        m_cupCamera->setDeviceIndex(config.deviceIndex);
-    }
-    if (!config.deviceUrl.isEmpty()) {
-        m_cupCamera->setDeviceUrl(config.deviceUrl);
-    }
+        config.type, CameraMotionSensor::CameraRole::CUP_AREA_MONITOR, this);
+
     if (!config.roi.isEmpty()) {
         m_cupCamera->setRegionOfInterest(config.roi);
     }
-    
-    bool success = m_cupCamera->initialize();
-    connectCameraSignals(m_cupCamera.get(), CameraMotionSensor::CameraRole::CUP_CAMERA);
-    
-    emit cameraInitialized(CameraMotionSensor::CameraRole::CUP_CAMERA, success);
+
+    // Initialize with device index or URL
+    bool success = false;
+    if (config.deviceIndex >= 0) {
+        success = m_cupCamera->initialize(config.deviceIndex);
+    } else if (!config.deviceUrl.isEmpty()) {
+        success = m_cupCamera->initializeFromUrl(config.deviceUrl);
+    } else {
+        success = m_cupCamera->initialize(1);  // Second camera device
+    }
+
+    connectCameraSignals(m_cupCamera.get(), CameraMotionSensor::CameraRole::CUP_AREA_MONITOR);
+
+    emit cameraInitialized(CameraMotionSensor::CameraRole::CUP_AREA_MONITOR, success);
     return success;
 }
 
 void CameraManager::shutdown()
 {
     m_orgasmAnalysisTimer->stop();
-    
+
     if (m_bodyCamera) {
-        m_bodyCamera->stopCapture();
+        m_bodyCamera->shutdown();
         m_bodyCamera.reset();
     }
     if (m_cupCamera) {
-        m_cupCamera->stopCapture();
+        m_cupCamera->shutdown();
         m_cupCamera.reset();
     }
 }
@@ -124,29 +130,29 @@ bool CameraManager::calibrateBothCameras(int durationMs)
     bool success = true;
     int totalSteps = 0;
     int completedSteps = 0;
-    
+
     if (hasBodyCamera()) totalSteps++;
     if (hasCupCamera()) totalSteps++;
-    
+
     if (totalSteps == 0) return false;
-    
+
     if (hasBodyCamera()) {
         emit calibrationProgress(0);
-        if (!m_bodyCamera->calibrate(durationMs / 2)) {
+        if (!m_bodyCamera->calibrateBackground(durationMs / 2)) {
             success = false;
         }
         completedSteps++;
         emit calibrationProgress((completedSteps * 100) / totalSteps);
     }
-    
+
     if (hasCupCamera()) {
-        if (!m_cupCamera->calibrate(durationMs / 2)) {
+        if (!m_cupCamera->calibrateBackground(durationMs / 2)) {
             success = false;
         }
         completedSteps++;
         emit calibrationProgress(100);
     }
-    
+
     emit calibrationComplete(success);
     return success;
 }
@@ -163,7 +169,7 @@ void CameraManager::connectCameraSignals(CameraMotionSensor* camera, CameraMotio
 {
     if (!camera) return;
 
-    if (role == CameraMotionSensor::CameraRole::BODY_CAMERA) {
+    if (role == CameraMotionSensor::CameraRole::PATIENT_MONITOR) {
         connect(camera, &CameraMotionSensor::motionDetected,
                 this, &CameraManager::onBodyCameraMotion);
         connect(camera, &CameraMotionSensor::violationDetected,
@@ -175,7 +181,8 @@ void CameraManager::connectCameraSignals(CameraMotionSensor* camera, CameraMotio
                 this, &CameraManager::onCupCameraViolation);
     }
 
-    connect(camera, &CameraMotionSensor::sensorError,
+    // Forward camera errors
+    connect(camera, &CameraMotionSensor::cameraError,
             this, [this, role](const QString& error) {
         emit cameraError(role, error);
     });
@@ -212,12 +219,12 @@ void CameraManager::onCupCameraMotion(CameraMotionSensor::MotionLevel level, dou
 
 void CameraManager::onBodyCameraViolation(CameraMotionSensor::MotionLevel level, double intensity)
 {
-    emit violationDetected(CameraMotionSensor::CameraRole::BODY_CAMERA, level, intensity);
+    emit violationDetected(CameraMotionSensor::CameraRole::PATIENT_MONITOR, level, intensity);
 }
 
 void CameraManager::onCupCameraViolation(CameraMotionSensor::MotionLevel level, double intensity)
 {
-    emit violationDetected(CameraMotionSensor::CameraRole::CUP_CAMERA, level, intensity);
+    emit violationDetected(CameraMotionSensor::CameraRole::CUP_AREA_MONITOR, level, intensity);
 }
 
 void CameraManager::updateCombinedMotion()
@@ -241,15 +248,13 @@ void CameraManager::updateCombinedMotion()
 
     // Determine combined motion level
     if (m_combinedMotionMagnitude < 0.1) {
-        m_combinedMotionLevel = CameraMotionSensor::MotionLevel::NONE;
+        m_combinedMotionLevel = CameraMotionSensor::MotionLevel::STILL;
     } else if (m_combinedMotionMagnitude < 0.3) {
-        m_combinedMotionLevel = CameraMotionSensor::MotionLevel::MINIMAL;
+        m_combinedMotionLevel = CameraMotionSensor::MotionLevel::MINOR;
     } else if (m_combinedMotionMagnitude < 0.5) {
         m_combinedMotionLevel = CameraMotionSensor::MotionLevel::MODERATE;
-    } else if (m_combinedMotionMagnitude < 0.7) {
-        m_combinedMotionLevel = CameraMotionSensor::MotionLevel::SIGNIFICANT;
     } else {
-        m_combinedMotionLevel = CameraMotionSensor::MotionLevel::EXTREME;
+        m_combinedMotionLevel = CameraMotionSensor::MotionLevel::MAJOR;
     }
 
     // Calculate stillness score (inverse of motion)
@@ -429,8 +434,8 @@ void CameraManager::setPrivacyMode(bool enabled)
 // Session control
 void CameraManager::startSession()
 {
-    if (hasBodyCamera()) m_bodyCamera->startCapture();
-    if (hasCupCamera()) m_cupCamera->startCapture();
+    if (hasBodyCamera()) m_bodyCamera->startSession();
+    if (hasCupCamera()) m_cupCamera->startSession();
 
     if (m_orgasmDetectionEnabled) {
         m_orgasmAnalysisTimer->start();
@@ -440,8 +445,8 @@ void CameraManager::startSession()
 void CameraManager::endSession()
 {
     m_orgasmAnalysisTimer->stop();
-    if (hasBodyCamera()) m_bodyCamera->stopCapture();
-    if (hasCupCamera()) m_cupCamera->stopCapture();
+    if (hasBodyCamera()) m_bodyCamera->endSession();
+    if (hasCupCamera()) m_cupCamera->endSession();
 }
 
 void CameraManager::resetSession()
@@ -488,11 +493,11 @@ QImage CameraManager::getCupCameraFrame() const
 
 QImage CameraManager::getBodyCameraVisualization() const
 {
-    return hasBodyCamera() ? m_bodyCamera->getVisualizationFrame() : QImage();
+    return hasBodyCamera() ? m_bodyCamera->getVisualization() : QImage();
 }
 
 QImage CameraManager::getCupCameraVisualization() const
 {
-    return hasCupCamera() ? m_cupCamera->getVisualizationFrame() : QImage();
+    return hasCupCamera() ? m_cupCamera->getVisualization() : QImage();
 }
 

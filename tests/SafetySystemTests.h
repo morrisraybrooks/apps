@@ -12,6 +12,7 @@
 #include "VacuumController.h"
 #include "safety/SafetyManager.h"
 #include "safety/AntiDetachmentMonitor.h"
+#include "safety/AdaptiveSealMonitor.h"
 #include "safety/EmergencyStop.h"
 #include "hardware/HardwareManager.h"
 #include "TestFramework.h"
@@ -54,10 +55,19 @@ private:
         TestResult testFullVentOnTissueDamageRiskOverpressure();
         TestResult testFullVentOnRunawayPumpWithInvalidSensors();
 
+        // AdaptiveSealMonitor tests
+        TestResult testAdaptiveSealMonitorInitialization();
+        TestResult testAdaptiveThresholdCalculation();
+        TestResult testMultiPathLeakDetection();
+        TestResult testProgressiveResealRecovery();
+        TestResult testArousalIntegration();
+        TestResult testPhasePriorityAdjustment();
+
     // Test objects (raw pointers, managed by Qt parent)
     SafetyManager* m_safetyManager;
     HardwareManager* m_hardwareManager;
     AntiDetachmentMonitor* m_antiDetachmentMonitor;
+    AdaptiveSealMonitor* m_adaptiveSealMonitor;
     EmergencyStop* m_emergencyStop;
 };
 

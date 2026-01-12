@@ -86,11 +86,18 @@ public:
     bool isTENSRunning() const;
     bool isTENSFault() const;
 
-    // Low-level TENS GPIO control (for TENSController use)
+    // Low-level TENS GPIO control (for TENSController use) - Clitoral channel
     void setTENSOutputEnable(bool enabled);
     void setTENSPhasePolarity(bool positive);
     void setTENSPWMDutyCycle(int pwmValue);  // 0-1024
     bool readTENSFaultPin() const;
+
+    // Low-level TENS GPIO control - Urethral channel
+    void setUrethralOutputEnable(bool enabled);
+    void setUrethralPhasePolarity(bool positive);
+    void setUrethralPWMDutyCycle(int pwmValue);  // 0-1024
+    bool readUrethralFaultPin() const;
+    double readUrethralImpedance() const;  // Electrode contact quality
 
     // Emergency controls
     void emergencyStop();
@@ -161,6 +168,11 @@ private:
     bool m_tensPhaseState;       // GPIO 6: Polarity (true=positive, false=negative)
     int m_tensPWMValue;          // GPIO 12: PWM duty cycle (0-1024)
 
+    // Urethral electrode states
+    bool m_urethralEnableState;  // GPIO 25: Urethral master enable
+    bool m_urethralPhaseState;   // GPIO 26: Urethral polarity
+    int m_urethralPWMValue;      // GPIO 13: Urethral PWM duty cycle (0-1024)
+
     // Error tracking
     QString m_lastError;
 
@@ -199,6 +211,15 @@ private:
     static const int GPIO_TENS_PHASE = 6;    // Polarity control (H=positive, L=negative)
     static const int GPIO_TENS_PWM = 12;     // Amplitude PWM (hardware PWM1)
     static const int GPIO_TENS_FAULT = 16;   // Fault input from driver
+
+    // Urethral electrode GPIO pin definitions
+    static const int GPIO_URETHRAL_ENABLE = 19;  // Urethral master enable
+    static const int GPIO_URETHRAL_PHASE = 20;   // Urethral polarity control
+    static const int GPIO_URETHRAL_PWM = 13;     // Urethral amplitude PWM (hardware PWM0)
+    static const int GPIO_URETHRAL_FAULT = 21;   // Urethral fault input
+
+    // ADC channel for urethral impedance measurement
+    static const int ADC_CHANNEL_URETHRAL_IMPEDANCE = 3;  // Channel 3: Urethral electrode impedance
 };
 
 #endif // HARDWAREMANAGER_H

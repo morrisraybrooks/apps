@@ -124,32 +124,62 @@
         "name": "Single Automated Orgasm",
         "type": "automated_orgasm",
         "cycles": 1,
-        "total_duration_minutes": 5,
-        "description": "Complete 5-minute arousal-to-climax cycle with 4 physiological phases",
+        "total_duration_minutes": 6.5,
+        "description": "Complete 6.5-minute arousal-to-climax-to-recovery cycle with 7 physiological phases (0-6)",
         "phases": {
-          "initial_sensitivity": {
+          "phase_0_engorgement": {
+            "duration_seconds": 20,
+            "outer_pressure": 45,
+            "clitoral_oscillation": false,
+            "clitoral_sustained_vacuum_mmhg": 40,
+            "description": "Active tissue engorgement - sustained vacuum only, NO pulsing"
+          },
+          "phase_1_sensitivity": {
             "duration_seconds": 30,
             "start_pressure": 35,
             "end_pressure": 55,
-            "description": "Gentle ramp-up to avoid overwhelming initial sensitivity"
+            "clitoral_frequency_hz": "5-6",
+            "clitoral_amplitude_mmhg": 35,
+            "description": "Gentle air-pulse introduction on pre-engorged tissue"
           },
-          "adaptation": {
+          "phase_2_adaptation": {
             "duration_seconds": 90,
             "pressure": 60,
             "variation": 8,
+            "clitoral_frequency_hz": "6-8",
+            "clitoral_amplitude_mmhg": 40,
             "description": "Consistent moderate intensity during body adaptation"
           },
-          "arousal_buildup": {
+          "phase_3_arousal_buildup": {
             "duration_seconds": 120,
             "start_pressure": 60,
             "end_pressure": 85,
-            "description": "Gradually increase intensity to match building arousal"
+            "clitoral_frequency_hz": "8-10",
+            "clitoral_amplitude_mmhg": "45-50",
+            "description": "Gradual intensity increase matching building arousal"
           },
-          "climax": {
-            "duration_seconds": 60,
+          "phase_4_pre_climax": {
+            "duration_seconds": 45,
             "pressure": 85,
             "variation": 8,
-            "description": "Maintain precise positioning and consistent stimulation"
+            "clitoral_frequency_hz": "10-12",
+            "clitoral_amplitude_mmhg": 55,
+            "description": "Build tension immediately preceding orgasm"
+          },
+          "phase_5_climax": {
+            "duration_seconds": 30,
+            "pressure": 90,
+            "variation": 5,
+            "clitoral_frequency_hz": "11-13",
+            "clitoral_amplitude_mmhg": 60,
+            "description": "Maintain optimal stimulation through orgasmic contractions"
+          },
+          "phase_6_recovery": {
+            "duration_seconds": 45,
+            "pressure": 30,
+            "clitoral_frequency_hz": "4-5",
+            "clitoral_amplitude_mmhg": 25,
+            "description": "Gentle cooldown to prevent overstimulation"
           }
         }
       },
@@ -175,43 +205,55 @@
         "type": "continuous_orgasm",
         "infinite_loop": true,
         "cycle_duration_minutes": 4,
-        "description": "Endless orgasm cycles - runs continuously until manually stopped",
+        "description": "Endless orgasm cycles with dual-chamber coordination - runs until manually stopped",
         "phases": {
           "quick_sensitivity": {
             "duration_seconds": 15,
             "start_pressure": 40,
             "end_pressure": 60,
-            "description": "Quick sensitivity adaptation for continuous operation"
+            "clitoral_frequency_hz": "6-7",
+            "clitoral_amplitude_mmhg": 40,
+            "description": "Quick sensitivity adaptation (higher start for continuous)"
           },
           "rapid_adaptation": {
             "duration_seconds": 30,
             "pressure": 65,
             "variation": 10,
+            "clitoral_frequency_hz": "7-9",
+            "clitoral_amplitude_mmhg": 45,
             "description": "Rapid adaptation with higher base pressure"
           },
           "accelerated_buildup": {
             "duration_seconds": 75,
             "start_pressure": 65,
             "end_pressure": 88,
+            "clitoral_frequency_hz": "9-12",
+            "clitoral_amplitude_mmhg": "50-55",
             "description": "Accelerated arousal buildup for continuous flow"
           },
           "extended_climax": {
             "duration_seconds": 90,
             "pressure": 88,
             "variation": 10,
+            "clitoral_frequency_hz": "11-13",
+            "clitoral_amplitude_mmhg": 60,
             "description": "Extended climax phase for continuous pleasure"
           },
           "brief_recovery": {
             "duration_seconds": 30,
             "pressure": 45,
-            "description": "Brief transition period before next cycle"
+            "clitoral_frequency_hz": "6-7",
+            "clitoral_amplitude_mmhg": 30,
+            "clitoral_oscillation_maintained": true,
+            "description": "Brief transition - oscillation maintained for quick restart"
           }
         },
         "continuous_features": {
           "auto_repeat": true,
           "cycle_tracking": true,
           "enhanced_anti_detachment": true,
-          "optimized_recovery": "Minimal recovery for continuous flow"
+          "optimized_recovery": "Minimal recovery for continuous flow",
+          "clitoral_oscillation_continuous": true
         }
       }
     ],
@@ -293,6 +335,51 @@
             "type": "Exponential",
             "exponent": 1.5,
             "custom": false
+          }
+        }
+      },
+      {
+        "name": "Denial",
+        "type": "denial",
+        "speed": "variable",
+        "default_duration_minutes": 30,
+        "description": "Frustration-maximizing denial mode - edges repeatedly without allowing orgasm",
+        "denial_parameters": {
+          "frustration_escalation": {
+            "base_intensity": 0.35,
+            "max_intensity": 0.75,
+            "escalation_rate_per_edge": 0.03,
+            "decay_during_holds": 0.01,
+            "description": "Intensity gradually increases after each edge to maintain arousal"
+          },
+          "pre_emptive_backoff": {
+            "initial_threshold_offset": 0.05,
+            "max_threshold_offset": 0.15,
+            "threshold_decay_rate": 0.002,
+            "description": "Backs off earlier than normal edging to ensure denial"
+          },
+          "extended_recovery": {
+            "base_hold_duration_ms": 8000,
+            "hold_increment_per_edge_ms": 2000,
+            "max_hold_duration_ms": 30000,
+            "recovery_threshold": 0.55,
+            "description": "Longer holds between edges, progressively increasing"
+          },
+          "teasing_oscillation": {
+            "min_frequency_hz": 3.0,
+            "max_frequency_hz": 6.0,
+            "min_amplitude_mmhg": 20.0,
+            "max_amplitude_mmhg": 45.0,
+            "tease_phase_duration_ms": 3000,
+            "tease_pause_duration_ms": 1500,
+            "stop_start_pattern": true,
+            "description": "Lower frequencies with stop-start teasing pattern"
+          },
+          "session_progression": {
+            "threshold_decreases_over_time": true,
+            "intensity_floor_increases": true,
+            "recovery_periods_shorten_late": false,
+            "description": "Session becomes progressively more challenging"
           }
         }
       }
@@ -399,8 +486,8 @@
     },
     {
       "name": "Special Patterns",
-      "patterns": ["Edging"],
-      "description": "Advanced specialized patterns"
+      "patterns": ["Edging", "Denial"],
+      "description": "Advanced specialized patterns including edging and denial modes"
     },
     {
       "name": "Therapeutic Patterns",

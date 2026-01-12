@@ -1,351 +1,130 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1200" font-family="DejaVu Sans,Arial" stroke="#222" fill="none" stroke-width="1">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" font-family="DejaVu Sans,Arial" stroke="none" fill="none" stroke-width="1">
   <defs>
-    <pattern id="shell-hatch" patternUnits="userSpaceOnUse" width="4" height="4">
-      <path d="M0,4 L4,0" stroke="#666" stroke-width="0.5"/>
-    </pattern>
-    <pattern id="silicone-dots" patternUnits="userSpaceOnUse" width="8" height="8">
-      <circle cx="4" cy="4" r="1" fill="#999"/>
-    </pattern>
-    <linearGradient id="shell-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#f0f0f0"/>
-      <stop offset="100%" style="stop-color:#d0d0d0"/>
+    <!-- Glass-like gradient for left A-leg -->
+    <linearGradient id="glass-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.95"/>
+      <stop offset="15%" style="stop-color:#e8eef5;stop-opacity:0.9"/>
+      <stop offset="40%" style="stop-color:#c5d5e8;stop-opacity:0.85"/>
+      <stop offset="60%" style="stop-color:#a8c0d8;stop-opacity:0.8"/>
+      <stop offset="80%" style="stop-color:#d0dce8;stop-opacity:0.85"/>
+      <stop offset="100%" style="stop-color:#f0f5fa;stop-opacity:0.9"/>
     </linearGradient>
-    <linearGradient id="zone1-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#e8d5f0"/>
-      <stop offset="100%" style="stop-color:#c9a8d8"/>
+    <!-- Glass-like gradient for right A-leg -->
+    <linearGradient id="glass-right" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.95"/>
+      <stop offset="15%" style="stop-color:#e8eef5;stop-opacity:0.9"/>
+      <stop offset="40%" style="stop-color:#c5d5e8;stop-opacity:0.85"/>
+      <stop offset="60%" style="stop-color:#a8c0d8;stop-opacity:0.8"/>
+      <stop offset="80%" style="stop-color:#d0dce8;stop-opacity:0.85"/>
+      <stop offset="100%" style="stop-color:#f0f5fa;stop-opacity:0.9"/>
     </linearGradient>
-    <linearGradient id="zone2-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#ffe4ec"/>
-      <stop offset="100%" style="stop-color:#ffb6c8"/>
+    <!-- Highlight gradient for glass reflection -->
+    <linearGradient id="glass-highlight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.8"/>
+      <stop offset="50%" style="stop-color:#ffffff;stop-opacity:0.2"/>
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0"/>
     </linearGradient>
-    <linearGradient id="electrode-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#ffd700"/>
-      <stop offset="100%" style="stop-color:#b8860b"/>
+    <!-- Red/burgundy gradient for clitoral cylinder (teardrop) -->
+    <radialGradient id="clitoral-gradient" cx="40%" cy="30%" r="70%" fx="30%" fy="20%">
+      <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1"/>
+      <stop offset="30%" style="stop-color:#c0392b;stop-opacity:1"/>
+      <stop offset="70%" style="stop-color:#8b1a1a;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#5a1010;stop-opacity:1"/>
+    </radialGradient>
+    <!-- Highlight for clitoral cylinder -->
+    <radialGradient id="clitoral-highlight" cx="30%" cy="25%" r="40%" fx="25%" fy="20%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.7"/>
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0"/>
+    </radialGradient>
+    <!-- Edge/rim gradient -->
+    <linearGradient id="rim-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#8a9fb5"/>
+      <stop offset="50%" style="stop-color:#5a7085"/>
+      <stop offset="100%" style="stop-color:#8a9fb5"/>
     </linearGradient>
-    <marker id="assembly-arrow" markerWidth="12" markerHeight="8" refX="10" refY="4" orient="auto">
-      <polygon points="0 0, 12 4, 0 8" fill="#6B4D8A" stroke="#6B4D8A"/>
-    </marker>
+    <!-- Background gradient -->
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#b0b8c0"/>
+      <stop offset="50%" style="stop-color:#d0d5da"/>
+      <stop offset="100%" style="stop-color:#e8ebee"/>
+    </linearGradient>
+    <!-- Shadow -->
+    <radialGradient id="shadow-gradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#000000;stop-opacity:0.15"/>
+      <stop offset="100%" style="stop-color:#000000;stop-opacity:0"/>
+    </radialGradient>
+    <!-- Inner channel gradient -->
+    <linearGradient id="channel-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#a0b0c0;stop-opacity:0.6"/>
+      <stop offset="100%" style="stop-color:#c0ccd8;stop-opacity:0.4"/>
+    </linearGradient>
   </defs>
 
   <!-- Background -->
-  <rect x="0" y="0" width="1600" height="1200" fill="#fff"/>
+  <rect x="0" y="0" width="800" height="1000" fill="url(#bg-gradient)"/>
 
-  <!-- Title -->
-  <text x="800" y="35" text-anchor="middle" font-size="24" font-weight="bold" fill="#6B4D8A">A-CONTOUR CUP - EXPLODED ASSEMBLY</text>
-  <text x="800" y="58" text-anchor="middle" font-size="13" fill="#666">Dual-Chamber Anatomical Vacuum Interface • V-Contour System</text>
-
-  <!-- Assembly direction arrow -->
-  <line x1="80" y1="130" x2="80" y2="950" stroke="#6B4D8A" stroke-width="3" marker-end="url(#assembly-arrow)"/>
-  <text x="65" y="540" text-anchor="middle" font-size="13" font-weight="bold" fill="#6B4D8A" transform="rotate(-90, 65, 540)">ASSEMBLY DIRECTION</text>
+  <!-- Subtle ground shadow -->
+  <ellipse cx="400" cy="920" rx="220" ry="35" fill="url(#shadow-gradient)"/>
 
   <!-- ============================================== -->
-  <!-- COMPONENT 1: A-CONTOUR MAIN SHELL (A-Shape) -->
+  <!-- UNIFIED A-CONTOUR (Seamless single piece) -->
   <!-- ============================================== -->
-  <g id="main-shell">
-    <!-- A-shaped shell - top view perspective showing the iconic A shape -->
-    <!-- Left A-Leg -->
-    <path d="M 280 140 Q 240 160 230 200 L 230 280 Q 235 310 280 320 L 350 320 Q 380 315 390 290 L 390 200 Q 385 160 350 140 Z"
-          stroke="#222" stroke-width="2.5" fill="url(#zone1-gradient)" opacity="0.85"/>
-    <!-- Right A-Leg -->
-    <path d="M 450 140 Q 490 160 500 200 L 500 280 Q 495 310 450 320 L 380 320 Q 360 315 355 290 L 355 200 Q 360 160 400 140 Z"
-          stroke="#222" stroke-width="2.5" fill="url(#zone1-gradient)" opacity="0.85"/>
+  <g id="a-contour-unified">
+    <!-- Left leg with seamless top connection -->
+    <path d="M 400 120
+             C 380 120, 320 160, 280 240
+             C 200 380, 140 500, 140 600
+             C 140 720, 180 830, 240 880
+             C 300 930, 340 910, 360 830
+             L 370 650
+             C 375 500, 385 300, 400 180 Z"
+          fill="url(#glass-left)" stroke="url(#rim-gradient)" stroke-width="3"/>
+    <!-- Left glass highlight -->
+    <path d="M 340 220
+             C 280 300, 200 420, 190 540
+             C 185 620, 200 720, 240 790
+             C 220 660, 250 440, 320 280 Z"
+          fill="url(#glass-highlight)" opacity="0.6"/>
 
-    <!-- Open channel between legs (bottom) - shows the gap for urethral/vaginal access -->
-    <path d="M 340 320 L 340 400 Q 345 420 365 420 L 365 320" stroke="#222" stroke-width="1.5" fill="none" stroke-dasharray="4,2"/>
-    <text x="355" y="380" text-anchor="middle" font-size="9" fill="#666">OPEN</text>
-    <text x="355" y="392" text-anchor="middle" font-size="9" fill="#666">CHANNEL</text>
+    <!-- Right leg with seamless top connection -->
+    <path d="M 400 120
+             C 420 120, 480 160, 520 240
+             C 600 380, 660 500, 660 600
+             C 660 720, 620 830, 560 880
+             C 500 930, 460 910, 440 830
+             L 430 650
+             C 425 500, 415 300, 400 180 Z"
+          fill="url(#glass-right)" stroke="url(#rim-gradient)" stroke-width="3"/>
+    <!-- Right glass highlight -->
+    <path d="M 460 220
+             C 520 300, 600 420, 610 540
+             C 615 620, 600 720, 560 790
+             C 580 660, 550 440, 480 280 Z"
+          fill="url(#glass-highlight)" opacity="0.6"/>
 
-    <!-- Clitoral cylinder housing at apex -->
-    <circle cx="365" cy="115" r="45" stroke="#222" stroke-width="2" fill="url(#zone2-gradient)" opacity="0.9"/>
-    <circle cx="365" cy="115" r="35" stroke="#222" stroke-width="1" fill="none" stroke-dasharray="3,2"/>
-    <text x="365" y="112" text-anchor="middle" font-size="9" font-weight="bold" fill="#d64545">ZONE 2</text>
-    <text x="365" y="124" text-anchor="middle" font-size="8" fill="#d64545">1" ⌀ (25mm)</text>
-
-    <!-- Zone 1 labels on legs -->
-    <text x="290" y="230" text-anchor="middle" font-size="9" font-weight="bold" fill="#6B4D8A">ZONE 1</text>
-    <text x="290" y="242" text-anchor="middle" font-size="8" fill="#6B4D8A">Left A-Leg</text>
-    <text x="445" y="230" text-anchor="middle" font-size="9" font-weight="bold" fill="#6B4D8A">ZONE 1</text>
-    <text x="445" y="242" text-anchor="middle" font-size="8" fill="#6B4D8A">Right A-Leg</text>
-
-    <!-- Vacuum ports on shell -->
-    <circle cx="255" cy="180" r="7" stroke="#222" stroke-width="2" fill="#fff"/>
-    <text x="255" y="183" text-anchor="middle" font-size="6" fill="#222">P1</text>
-    <circle cx="475" cy="180" r="7" stroke="#222" stroke-width="2" fill="#fff"/>
-    <text x="475" y="183" text-anchor="middle" font-size="6" fill="#222">P2</text>
-    <circle cx="365" cy="70" r="6" stroke="#d64545" stroke-width="2" fill="#fff"/>
-    <text x="365" y="73" text-anchor="middle" font-size="5" fill="#d64545">P3</text>
-
-    <!-- Callout balloon -->
-    <circle cx="580" cy="100" r="18" stroke="#222" stroke-width="1.5" fill="#fff"/>
-    <text x="580" y="106" text-anchor="middle" font-size="16" font-weight="bold" fill="#000">1</text>
-    <line x1="562" y1="108" x2="510" y2="140" stroke="#222" stroke-width="1"/>
-
-    <!-- Component label -->
-    <text x="620" y="95" font-size="15" font-weight="bold" fill="#6B4D8A">A-CONTOUR MAIN SHELL</text>
-    <text x="620" y="112" font-size="11" fill="#000">Material: Medical-grade PC/Tritan (transparent)</text>
-    <text x="620" y="127" font-size="11" fill="#000">Total width: ~80mm (A-Legs span)</text>
-    <text x="620" y="142" font-size="11" fill="#000">Total height: ~100mm (apex to base)</text>
-    <text x="620" y="157" font-size="11" fill="#000">Wall thickness: 2.0 ±0.2mm</text>
-    <text x="620" y="172" font-size="11" fill="#6B4D8A">Zone 1 (A-Legs): Bilateral vacuum chambers</text>
-    <text x="620" y="187" font-size="11" fill="#d64545">Zone 2 (Apex): 1" ⌀ clitoral cylinder</text>
-    <text x="620" y="202" font-size="11" fill="#666">Open channel: Urethral/vaginal access</text>
+    <!-- Seamless top fill to cover any line at apex -->
+    <ellipse cx="400" cy="140" rx="25" ry="30" fill="url(#glass-left)" stroke="none"/>
   </g>
 
-  <!-- ============================================== -->
-  <!-- COMPONENT 2: INTERNAL DIAPHRAGM (A-Crossbar) -->
-  <!-- ============================================== -->
-  <g id="diaphragm">
-    <!-- Horizontal diaphragm separating Zone 1 from Zone 2 -->
-    <path d="M 250 480 Q 260 460 365 455 Q 470 460 480 480 L 480 495 Q 470 505 365 510 Q 260 505 250 495 Z"
-          stroke="#666" stroke-width="2" fill="url(#silicone-dots)" opacity="0.75"/>
-    <!-- Central hole for clitoral cylinder -->
-    <ellipse cx="365" cy="483" rx="38" ry="18" stroke="#666" stroke-width="1.5" fill="#fff"/>
-    <text x="365" y="488" text-anchor="middle" font-size="8" fill="#666">Zone 2 opening</text>
 
-    <!-- Callout balloon -->
-    <circle cx="580" cy="460" r="18" stroke="#222" stroke-width="1.5" fill="#fff"/>
-    <text x="580" y="466" text-anchor="middle" font-size="16" font-weight="bold" fill="#000">2</text>
-    <line x1="562" y1="468" x2="490" y2="483" stroke="#222" stroke-width="1"/>
 
-    <!-- Component label -->
-    <text x="620" y="445" font-size="15" font-weight="bold" fill="#000">INTERNAL DIAPHRAGM (A-Crossbar)</text>
-    <text x="620" y="462" font-size="11" fill="#000">Material: Medical Silicone (Shore A 30-40)</text>
-    <text x="620" y="477" font-size="11" fill="#000">Thickness: 1.5 ±0.3mm</text>
-    <text x="620" y="492" font-size="11" fill="#000">Central aperture: 25mm (Zone 2 pass-through)</text>
-    <text x="620" y="507" font-size="11" fill="#000">Function: Separates Zone 1 from Zone 2</text>
-    <text x="620" y="522" font-size="11" fill="#000">Allows independent pressure control</text>
+
+
+  <!-- ============================================== -->
+  <!-- ADDITIONAL GLASS HIGHLIGHTS -->
+  <!-- ============================================== -->
+  <g id="extra-highlights" opacity="0.4">
+    <!-- Left leg bottom highlight -->
+    <ellipse cx="240" cy="850" rx="60" ry="25" fill="#ffffff" opacity="0.3"/>
+    <!-- Right leg bottom highlight -->
+    <ellipse cx="560" cy="850" rx="60" ry="25" fill="#ffffff" opacity="0.3"/>
   </g>
 
-  <!-- ============================================== -->
-  <!-- COMPONENT 3: CLITORAL CYLINDER (Zone 2) -->
-  <!-- ============================================== -->
-  <g id="clitoral-cylinder">
-    <!-- Cylinder body - vertical tube -->
-    <ellipse cx="365" cy="560" rx="32" ry="12" stroke="#d64545" stroke-width="2" fill="url(#zone2-gradient)" opacity="0.9"/>
-    <rect x="333" y="560" width="64" height="80" stroke="#d64545" stroke-width="2" fill="url(#zone2-gradient)" opacity="0.85"/>
-    <ellipse cx="365" cy="640" rx="32" ry="12" stroke="#d64545" stroke-width="2" fill="url(#zone2-gradient)" opacity="0.9"/>
 
-    <!-- Cylinder dimensions -->
-    <text x="365" y="600" text-anchor="middle" font-size="10" font-weight="bold" fill="#d64545">ZONE 2</text>
-    <text x="365" y="615" text-anchor="middle" font-size="9" fill="#d64545">1"×2"</text>
-    <text x="365" y="628" text-anchor="middle" font-size="8" fill="#d64545">(25×51mm)</text>
-
-    <!-- Vacuum port -->
-    <circle cx="397" cy="580" r="5" stroke="#d64545" stroke-width="1.5" fill="#fff"/>
-    <text x="405" y="583" font-size="7" fill="#d64545">P3</text>
-
-    <!-- Callout balloon -->
-    <circle cx="200" cy="590" r="18" stroke="#222" stroke-width="1.5" fill="#fff"/>
-    <text x="200" y="596" text-anchor="middle" font-size="16" font-weight="bold" fill="#000">3</text>
-    <line x1="218" y1="594" x2="333" y2="600" stroke="#222" stroke-width="1"/>
-
-    <!-- Component label -->
-    <text x="120" y="540" font-size="15" font-weight="bold" fill="#d64545">CLITORAL CYLINDER (Zone 2)</text>
-    <text x="120" y="557" font-size="11" fill="#000">Diameter: 1" (25.4mm) internal</text>
-    <text x="120" y="572" font-size="11" fill="#000">Height: 2" (50.8mm)</text>
-    <text x="120" y="587" font-size="11" fill="#000">Material: Clear medical silicone/PC</text>
-    <text x="120" y="602" font-size="11" fill="#000">Function: Targeted clitoral suction</text>
-    <text x="120" y="617" font-size="11" fill="#000">Oscillation: 5-13 Hz air-pulse via SOL4/5</text>
-    <text x="120" y="632" font-size="11" fill="#d64545">Electrode mounting: Internal walls</text>
+  <!-- Small decorative sparkle in corner (like the reference image) -->
+  <g id="sparkle" transform="translate(750, 950)">
+    <path d="M 0 -8 L 2 -2 L 8 0 L 2 2 L 0 8 L -2 2 L -8 0 L -2 -2 Z"
+          fill="#c0ccd8" opacity="0.6"/>
   </g>
-
-  <!-- ============================================== -->
-  <!-- COMPONENT 4: TENS ELECTRODES -->
-  <!-- ============================================== -->
-  <g id="tens-electrodes">
-    <!-- Electrode pair - curved crescents -->
-    <path d="M 730 560 Q 750 545 770 560 L 770 620 Q 750 635 730 620 Z"
-          stroke="#b8860b" stroke-width="2" fill="url(#electrode-gradient)" opacity="0.9"/>
-    <path d="M 820 560 Q 840 545 860 560 L 860 620 Q 840 635 820 620 Z"
-          stroke="#b8860b" stroke-width="2" fill="url(#electrode-gradient)" opacity="0.9"/>
-
-    <!-- Electrode labels -->
-    <text x="750" y="595" text-anchor="middle" font-size="10" font-weight="bold" fill="#333">+</text>
-    <text x="840" y="595" text-anchor="middle" font-size="10" font-weight="bold" fill="#333">−</text>
-
-    <!-- Wire connections -->
-    <line x1="750" y1="560" x2="750" y2="540" stroke="#b8860b" stroke-width="1.5"/>
-    <line x1="840" y1="560" x2="840" y2="540" stroke="#b8860b" stroke-width="1.5"/>
-    <circle cx="750" cy="535" r="4" stroke="#b8860b" stroke-width="1" fill="#fff"/>
-    <circle cx="840" cy="535" r="4" stroke="#b8860b" stroke-width="1" fill="#fff"/>
-
-    <!-- Callout balloon -->
-    <circle cx="920" cy="570" r="18" stroke="#222" stroke-width="1.5" fill="#fff"/>
-    <text x="920" y="576" text-anchor="middle" font-size="16" font-weight="bold" fill="#000">4</text>
-    <line x1="902" y1="575" x2="865" y2="590" stroke="#222" stroke-width="1"/>
-
-    <!-- Component label -->
-    <text x="950" y="545" font-size="15" font-weight="bold" fill="#b8860b">TENS ELECTRODES</text>
-    <text x="950" y="562" font-size="11" fill="#000">Material: 316L SS with gold plating</text>
-    <text x="950" y="577" font-size="11" fill="#000">Shape: Curved crescents (8×4mm)</text>
-    <text x="950" y="592" font-size="11" fill="#000">Spacing: 10-15mm apart</text>
-    <text x="950" y="607" font-size="11" fill="#000">Mounting: Flush with Zone 2 interior</text>
-    <text x="950" y="622" font-size="11" fill="#000">Output: Biphasic, 1-100Hz, 50-500μs</text>
-    <text x="950" y="637" font-size="11" fill="#d64545">Max amplitude: 80mA (hardware limited)</text>
-  </g>
-
-  <!-- ============================================== -->
-  <!-- COMPONENT 5: V-SEAL LIP (Outer Perimeter) -->
-  <!-- ============================================== -->
-  <g id="seal-lip">
-    <!-- A-shaped outer seal following the A-Legs contour -->
-    <path d="M 265 710 Q 220 740 210 790 L 210 890 Q 220 930 280 945 L 365 965 L 450 945 Q 510 930 520 890 L 520 790 Q 510 740 465 710
-             Q 430 695 365 665 Q 300 695 265 710 Z"
-          stroke="#666" stroke-width="3" fill="url(#silicone-dots)" opacity="0.7"/>
-    <!-- Inner cutout showing the seal profile -->
-    <path d="M 285 730 Q 250 755 245 800 L 245 870 Q 255 905 300 920 L 365 938 L 430 920 Q 475 905 485 870 L 485 800 Q 480 755 445 730
-             Q 415 715 365 690 Q 315 715 285 730 Z"
-          stroke="#666" stroke-width="1" fill="none" stroke-dasharray="3,2"/>
-
-    <!-- Seal profile indicators -->
-    <text x="365" y="820" text-anchor="middle" font-size="10" fill="#666">Contact surface</text>
-    <text x="365" y="835" text-anchor="middle" font-size="9" fill="#666">(follows anatomy)</text>
-
-    <!-- Callout balloon -->
-    <circle cx="580" cy="760" r="18" stroke="#222" stroke-width="1.5" fill="#fff"/>
-    <text x="580" y="766" text-anchor="middle" font-size="16" font-weight="bold" fill="#000">5</text>
-    <line x1="562" y1="765" x2="525" y2="800" stroke="#222" stroke-width="1"/>
-
-    <!-- Component label -->
-    <text x="620" y="735" font-size="15" font-weight="bold" fill="#000">V-SEAL LIP (Outer Perimeter)</text>
-    <text x="620" y="752" font-size="11" fill="#000">Material: Platinum-cured Silicone</text>
-    <text x="620" y="767" font-size="11" fill="#000">Hardness: Shore A 10-15 (ultra-soft)</text>
-    <text x="620" y="782" font-size="11" fill="#000">Width: 8.0 ±0.5mm</text>
-    <text x="620" y="797" font-size="11" fill="#000">Contact angle: 12° ±2° (anatomical)</text>
-    <text x="620" y="812" font-size="11" fill="#000">Biocompatible: ISO 10993 certified</text>
-    <text x="620" y="827" font-size="11" fill="#000">Follows A-shape contour for optimal seal</text>
-    <text x="620" y="842" font-size="11" fill="#666">Maintains seal during engorgement</text>
-  </g>
-
-  <!-- ============================================== -->
-  <!-- COMPONENT 6: PNEUMATIC FITTINGS -->
-  <!-- ============================================== -->
-  <g id="pneumatic-fittings">
-    <!-- Zone 1 ports (left/right) -->
-    <rect x="740" y="720" width="35" height="18" stroke="#222" stroke-width="2" fill="#e0e0e0"/>
-    <polygon points="775,720 792,729 775,738" stroke="#222" stroke-width="1" fill="#fff"/>
-    <circle cx="798" cy="729" r="8" stroke="#222" stroke-width="1" fill="none"/>
-    <text x="758" y="752" text-anchor="middle" font-size="9" fill="#222">P1/P2</text>
-
-    <!-- Zone 2 port (clitoral) -->
-    <rect x="850" y="720" width="30" height="15" stroke="#d64545" stroke-width="2" fill="#ffe4ec"/>
-    <polygon points="880,720 895,727.5 880,735" stroke="#d64545" stroke-width="1" fill="#fff"/>
-    <circle cx="900" cy="727.5" r="7" stroke="#d64545" stroke-width="1" fill="none"/>
-    <text x="865" y="752" text-anchor="middle" font-size="9" fill="#d64545">P3</text>
-
-    <!-- Callout balloon -->
-    <circle cx="970" cy="720" r="18" stroke="#222" stroke-width="1.5" fill="#fff"/>
-    <text x="970" y="726" text-anchor="middle" font-size="16" font-weight="bold" fill="#000">6</text>
-    <line x1="952" y1="725" x2="910" y2="728" stroke="#222" stroke-width="1"/>
-
-    <!-- Component label -->
-    <text x="1010" y="700" font-size="15" font-weight="bold" fill="#000">PNEUMATIC FITTINGS</text>
-    <text x="1010" y="717" font-size="11" fill="#000">Type: Female Luer-lock (ISO 80369-7)</text>
-    <text x="1010" y="732" font-size="11" fill="#6B4D8A">P1: Zone 1 Left → SOL1/SOL2</text>
-    <text x="1010" y="747" font-size="11" fill="#6B4D8A">P2: Zone 1 Right → SOL1/SOL2</text>
-    <text x="1010" y="762" font-size="11" fill="#d64545">P3: Zone 2 → SOL4/SOL5 (oscillator)</text>
-    <text x="1010" y="777" font-size="11" fill="#000">ID: 3.9mm min (tapered bore)</text>
-  </g>
-
-  <!-- ============================================== -->
-  <!-- COMPONENT 7: AVL SENSOR TAPS -->
-  <!-- ============================================== -->
-  <g id="avl-taps">
-    <!-- Micro tubes for pressure sensing -->
-    <rect x="740" y="810" width="45" height="5" stroke="#0066cc" stroke-width="1.5" fill="#cce6ff"/>
-    <circle cx="735" cy="812.5" r="3" stroke="#0066cc" stroke-width="1" fill="#0066cc"/>
-    <text x="762" y="828" text-anchor="middle" font-size="8" fill="#0066cc">AVL-1</text>
-
-    <rect x="850" y="810" width="40" height="4" stroke="#d64545" stroke-width="1.5" fill="#ffe4ec"/>
-    <circle cx="845" cy="812" r="3" stroke="#d64545" stroke-width="1" fill="#d64545"/>
-    <text x="870" y="828" text-anchor="middle" font-size="8" fill="#d64545">AVL-2</text>
-
-    <!-- Callout balloon -->
-    <circle cx="970" cy="820" r="18" stroke="#222" stroke-width="1.5" fill="#fff"/>
-    <text x="970" y="826" text-anchor="middle" font-size="16" font-weight="bold" fill="#000">7</text>
-    <line x1="952" y1="818" x2="895" y2="812" stroke="#222" stroke-width="1"/>
-
-    <!-- Component label -->
-    <text x="1010" y="800" font-size="15" font-weight="bold" fill="#0066cc">AVL SENSOR TAPS</text>
-    <text x="1010" y="817" font-size="11" fill="#000">ID: 2.0mm micro-lumen</text>
-    <text x="1010" y="832" font-size="11" fill="#0066cc">AVL-1: Zone 1 → MCP3008 Ch0</text>
-    <text x="1010" y="847" font-size="11" fill="#d64545">AVL-2: Zone 2 → MCP3008 Ch1</text>
-    <text x="1010" y="862" font-size="11" fill="#000">Function: Real-time pressure monitoring</text>
-    <text x="1010" y="877" font-size="11" fill="#000">Anti-detachment system integration</text>
-  </g>
-
-  <!-- ============================================== -->
-  <!-- ASSEMBLY NOTES -->
-  <!-- ============================================== -->
-  <g id="assembly-notes">
-    <rect x="120" y="980" width="700" height="200" stroke="#222" stroke-width="1" fill="#f8f8f8" rx="5"/>
-    <text x="135" y="1005" font-size="16" font-weight="bold" fill="#6B4D8A">ASSEMBLY INSTRUCTIONS</text>
-
-    <text x="135" y="1030" font-size="12" font-weight="bold" fill="#000">1. Shell Preparation:</text>
-    <text x="145" y="1045" font-size="11" fill="#000">• Clean all surfaces with 70% IPA, air dry</text>
-    <text x="145" y="1058" font-size="11" fill="#000">• Inspect for cracks, verify port dimensions</text>
-
-    <text x="135" y="1078" font-size="12" font-weight="bold" fill="#000">2. Diaphragm Installation:</text>
-    <text x="145" y="1093" font-size="11" fill="#000">• Align central aperture with Zone 2 opening</text>
-    <text x="145" y="1106" font-size="11" fill="#000">• Ensure airtight seal at perimeter</text>
-
-    <text x="135" y="1126" font-size="12" font-weight="bold" fill="#000">3. Zone 2 Cylinder + Electrodes:</text>
-    <text x="145" y="1141" font-size="11" fill="#000">• Mount electrodes flush with interior wall</text>
-    <text x="145" y="1154" font-size="11" fill="#000">• Route wires through designated channels</text>
-    <text x="145" y="1167" font-size="11" fill="#000">• Insert cylinder through diaphragm aperture</text>
-
-    <text x="450" y="1030" font-size="12" font-weight="bold" fill="#000">4. Fittings & Sensors:</text>
-    <text x="460" y="1045" font-size="11" fill="#000">• Press-fit Luer connectors into ports P1, P2, P3</text>
-    <text x="460" y="1058" font-size="11" fill="#000">• Install AVL sensor taps, verify seal</text>
-
-    <text x="450" y="1078" font-size="12" font-weight="bold" fill="#000">5. V-Seal Lip Assembly:</text>
-    <text x="460" y="1093" font-size="11" fill="#000">• Stretch seal over shell rim following A-contour</text>
-    <text x="460" y="1106" font-size="11" fill="#000">• Verify uniform contact angle (12°)</text>
-
-    <text x="450" y="1126" font-size="12" font-weight="bold" fill="#ff0000">⚠ CRITICAL NOTES:</text>
-    <text x="460" y="1141" font-size="11" fill="#ff0000">• All components must be biocompatible</text>
-    <text x="460" y="1154" font-size="11" fill="#ff0000">• Pressure test each zone to -60 mmHg</text>
-    <text x="460" y="1167" font-size="11" fill="#ff0000">• Verify electrode isolation before use</text>
-  </g>
-
-  <!-- ============================================== -->
-  <!-- CONNECTION MAPPING -->
-  <!-- ============================================== -->
-  <g id="connection-map">
-    <rect x="860" y="920" width="700" height="260" stroke="#0066cc" stroke-width="2" fill="#f0f8ff" rx="5"/>
-    <text x="875" y="945" font-size="16" font-weight="bold" fill="#0066cc">VACUUM CONTROLLER CONNECTION MAPPING</text>
-
-    <!-- Connection table header -->
-    <text x="875" y="970" font-size="12" font-weight="bold" fill="#000">CUP PORT → GPIO/VALVE → FUNCTION</text>
-    <line x1="875" y1="977" x2="1540" y2="977" stroke="#222" stroke-width="1"/>
-
-    <!-- Zone 1 connections -->
-    <text x="875" y="997" font-size="11" font-weight="bold" fill="#6B4D8A">ZONE 1 (Outer A-Legs):</text>
-    <text x="885" y="1012" font-size="11" fill="#000">P1/P2 → SOL1 (GPIO 17) → Apply vacuum (outer chamber)</text>
-    <text x="885" y="1027" font-size="11" fill="#000">P1/P2 → SOL2 (GPIO 27) → Vent (outer chamber release)</text>
-    <text x="885" y="1042" font-size="11" fill="#000">P1/P2 → SOL3 (GPIO 22) → Tank vent valve</text>
-    <text x="885" y="1057" font-size="11" fill="#0066cc">AVL-1 → MCP3008 Ch0 → Zone 1 pressure monitoring</text>
-
-    <!-- Zone 2 connections -->
-    <text x="875" y="1082" font-size="11" font-weight="bold" fill="#d64545">ZONE 2 (Clitoral Cylinder):</text>
-    <text x="885" y="1097" font-size="11" fill="#000">P3 → SOL4 (GPIO 23) → Clitoral vacuum</text>
-    <text x="885" y="1112" font-size="11" fill="#000">P3 → SOL5 (GPIO 24) → Clitoral vent</text>
-    <text x="885" y="1127" font-size="11" fill="#d64545">AVL-2 → MCP3008 Ch1 → Zone 2 pressure monitoring</text>
-    <text x="885" y="1142" font-size="11" fill="#666">SOL4+SOL5 rapid switching → 5-13 Hz oscillation</text>
-
-    <!-- TENS connections -->
-    <text x="875" y="1167" font-size="11" font-weight="bold" fill="#b8860b">TENS ELECTRODES:</text>
-    <text x="885" y="1167" font-size="11" fill="#000">              GPIO 5 (Enable) • GPIO 6 (Phase) • GPIO 12 (PWM) • GPIO 16 (Fault)</text>
-  </g>
-
-  <!-- Drawing information -->
-  <rect x="1350" y="40" width="230" height="130" stroke="#222" stroke-width="1" fill="#fff" rx="3"/>
-  <text x="1365" y="62" font-size="13" font-weight="bold" fill="#6B4D8A">A-CONTOUR CUP</text>
-  <text x="1365" y="78" font-size="11" fill="#000">Drawing: ACU-001-EXPLODED</text>
-  <text x="1365" y="94" font-size="11" fill="#000">Scale: NOT TO SCALE</text>
-  <text x="1365" y="110" font-size="11" fill="#000">Revision: B</text>
-  <text x="1365" y="126" font-size="11" fill="#000">Date: 2026-01-11</text>
-  <text x="1365" y="142" font-size="11" fill="#000">Sheet: 1 of 1</text>
-  <text x="1365" y="158" font-size="10" fill="#666">V-Contour System</text>
 
 </svg>

@@ -45,6 +45,7 @@ PatternEngine::PatternEngine(HardwareManager* hardware, QObject *parent)
     , m_pressureOffset(DEFAULT_PRESSURE_OFFSET)
     , m_minPressure(MIN_PRESSURE_PERCENT)
     , m_maxPressure(MAX_PRESSURE_PERCENT)
+    , m_tensAutoTriggerEnabled(true)  // Enable TENS sync by default for automated orgasm
     , m_patternDefinitions(std::make_unique<PatternDefinitions>())
 {
     // Set up timers
@@ -126,6 +127,7 @@ bool PatternEngine::startPattern(const QString& patternName, const QJsonObject& 
         m_patternStartTime = QDateTime::currentMSecsSinceEpoch();
         m_totalPausedTime = 0;
         m_emergencyStop = false;
+        m_lastTENSPhase.clear();  // Reset TENS phase tracking for new pattern
         
         // Start safety monitoring
         m_safetyTimer->start();
@@ -547,44 +549,96 @@ void PatternEngine::buildAutomatedOrgasmPattern(const QJsonObject& params)
 {
     // Build automated orgasm patterns based on physiological response phases
     // This handles both single and multi-cycle patterns
+    // Reference: AUTOMATED_ORGASM_PATTERNS.md - 7 phases (0-6)
+    //
+    // DUAL-CHAMBER COORDINATION:
+    // - Outer chamber (SOL1/SOL2): Sustained vacuum for tissue engorgement (pressurePercent)
+    // - Clitoral cylinder (SOL4/SOL5): Air-pulse oscillation for stimulation (clitoral_* params)
 
     QString patternName = params["name"].toString();
     bool isMultiCycle = patternName.contains("Triple") || params["cycles"].toInt(1) > 1;
     int cycles = isMultiCycle ? params["cycles"].toInt(3) : 1;
 
+    // Base clitoral amplitude (mmHg) - increases with cycle for sensitivity adaptation
+    const double BASE_CLITORAL_AMPLITUDE = 35.0;
+
     for (int cycle = 0; cycle < cycles; ++cycle) {
         // Adjust intensities based on cycle number (sensitivity adaptation)
-        double sensitivityMultiplier = 1.0 + (cycle * 0.15);  // Increase by 15% each cycle
+        // Note: sensitivityMultiplier reserved for future intensity scaling
         double initialIntensity = 35.0 + (cycle * 10.0);      // Start higher each cycle
+        double clitoralAmplitudeBase = BASE_CLITORAL_AMPLITUDE + (cycle * 5.0);  // Higher each cycle
 
-        // Phase 1: Initial Sensitivity (0-30 seconds) - Gentle ramp-up
-        // 10 seconds gentle start
+        // ================================================================
+        // PHASE 0: Active Engorgement (20 seconds)
+        // ================================================================
+        // Purpose: Actively induce clitoral and vulvar engorgement BEFORE stimulation
+        // Outer: 45% sustained vacuum | Clitoral: 40 mmHg sustained (NO pulsing)
+        if (cycle == 0) {  // Only on first cycle - tissue already engorged for subsequent
+            PatternStep engorgementStep;
+            engorgementStep.pressurePercent = 45.0;
+            engorgementStep.durationMs = 20000;  // 20 seconds
+            engorgementStep.action = "engorgement";
+            engorgementStep.parameters["clitoral_oscillation"] = false;  // NO pulsing
+            engorgementStep.parameters["clitoral_sustained_vacuum"] = 40.0;  // mmHg sustained
+            engorgementStep.parameters["description"] = "Phase 0: Active tissue engorgement";
+            m_patternSteps.append(engorgementStep);
+        }
+
+        // ================================================================
+        // PHASE 1: Initial Sensitivity (30 seconds)
+        // ================================================================
+        // Purpose: Gentle introduction to air-pulse on pre-engorged tissue
+        // Outer: 35%→55% | Clitoral: 5-6 Hz, 35% amplitude
         double startPressure = initialIntensity;
         double rampTarget = 55.0 + (cycle * 5.0);
-        int rampSteps = 5;  // 2-second steps
+        int rampSteps = 5;  // 2-second steps = 10 seconds
         for (int i = 0; i < rampSteps; ++i) {
             double progress = static_cast<double>(i) / rampSteps;
             double pressure = startPressure + (rampTarget - startPressure) * progress;
-            m_patternSteps.append(PatternStep(pressure, 2000, "gentle_ramp"));
+            double freq = 5.0 + progress * 1.0;  // 5→6 Hz ramp
+            PatternStep step(pressure, 2000, "gentle_ramp");
+            step.parameters["clitoral_oscillation"] = true;
+            step.parameters["clitoral_frequency"] = freq;
+            step.parameters["clitoral_amplitude"] = clitoralAmplitudeBase;
+            step.parameters["description"] = "Phase 1: Initial sensitivity ramp";
+            m_patternSteps.append(step);
         }
 
-        // 20 seconds moderate steady
+        // 20 seconds moderate steady at 55%
         double moderatePressure = rampTarget;
         for (int i = 0; i < 10; ++i) {  // 2-second steps
-            double variation = 5.0 * sin(i * 0.6);  // Gentle variation
-            m_patternSteps.append(PatternStep(moderatePressure + variation, 2000, "steady_moderate"));
+            double variation = 5.0 * sin(i * 0.6);
+            PatternStep step(moderatePressure + variation, 2000, "steady_moderate");
+            step.parameters["clitoral_oscillation"] = true;
+            step.parameters["clitoral_frequency"] = 5.5;  // 5-6 Hz range
+            step.parameters["clitoral_amplitude"] = clitoralAmplitudeBase;
+            step.parameters["description"] = "Phase 1: Steady moderate";
+            m_patternSteps.append(step);
         }
 
-        // Phase 2: Adaptation Period (30 seconds - 2 minutes) - Consistent moderate
+        // ================================================================
+        // PHASE 2: Adaptation Period (90 seconds)
+        // ================================================================
+        // Purpose: Consistent moderate intensity during body adaptation
+        // Outer: 60% sustained | Clitoral: 6-8 Hz, 40% amplitude
         double adaptationPressure = 60.0 + (cycle * 5.0);
-        int adaptationSteps = 45;  // 2-second steps for 90 seconds
+        int adaptationSteps = 45;  // 2-second steps = 90 seconds
         for (int i = 0; i < adaptationSteps; ++i) {
-            double variation = 8.0 * sin(i * 0.4);  // Slow variation
-            m_patternSteps.append(PatternStep(adaptationPressure + variation, 2000, "adaptation_steady"));
+            double progress = static_cast<double>(i) / adaptationSteps;
+            double variation = 8.0 * sin(i * 0.4);
+            double freq = 6.0 + progress * 2.0;  // 6→8 Hz progression
+            PatternStep step(adaptationPressure + variation, 2000, "adaptation_steady");
+            step.parameters["clitoral_oscillation"] = true;
+            step.parameters["clitoral_frequency"] = freq;
+            step.parameters["clitoral_amplitude"] = clitoralAmplitudeBase + 5.0;  // 40 mmHg
+            step.parameters["description"] = "Phase 2: Adaptation period";
+            m_patternSteps.append(step);
         }
 
-        // Phase 3: Arousal Build-up (2-4 minutes) - Gradual intensity increase
-        // Phase 3a: Early buildup (60 seconds)
+        // ================================================================
+        // PHASE 3: Arousal Build-up (120 seconds)
+        // ================================================================
+        // Phase 3a: Early buildup (60 seconds) - 60%→75%, 8-9 Hz
         double buildupStart = 60.0 + (cycle * 5.0);
         double buildupMid = 75.0 + (cycle * 5.0);
         int buildup1Steps = 30;  // 2-second steps
@@ -592,125 +646,271 @@ void PatternEngine::buildAutomatedOrgasmPattern(const QJsonObject& params)
             double progress = static_cast<double>(i) / buildup1Steps;
             double pressure = buildupStart + (buildupMid - buildupStart) * progress;
             double variation = 10.0 * sin(i * 0.5);
-            m_patternSteps.append(PatternStep(pressure + variation, 2000, "arousal_buildup"));
+            double freq = 8.0 + progress * 1.0;  // 8→9 Hz
+            PatternStep step(pressure + variation, 2000, "arousal_buildup");
+            step.parameters["clitoral_oscillation"] = true;
+            step.parameters["clitoral_frequency"] = freq;
+            step.parameters["clitoral_amplitude"] = clitoralAmplitudeBase + 10.0;  // 45 mmHg
+            step.parameters["description"] = "Phase 3a: Arousal buildup";
+            m_patternSteps.append(step);
         }
 
-        // Phase 3b: Intensifying buildup (60 seconds)
-        double buildupEnd = 85.0 + (cycle * 3.0);  // Cap at reasonable level
+        // Phase 3b: Intensifying buildup (60 seconds) - 75%→85%, 9-10 Hz
+        double buildupEnd = 85.0 + (cycle * 3.0);
+        buildupEnd = std::min(buildupEnd, 88.0);  // Cap below climax level
         int buildup2Steps = 30;  // 2-second steps
         for (int i = 0; i < buildup2Steps; ++i) {
             double progress = static_cast<double>(i) / buildup2Steps;
             double pressure = buildupMid + (buildupEnd - buildupMid) * progress;
             double variation = 12.0 * sin(i * 0.6);
-            m_patternSteps.append(PatternStep(pressure + variation, 2000, "arousal_intensify"));
+            double freq = 9.0 + progress * 1.0;  // 9→10 Hz
+            PatternStep step(pressure + variation, 2000, "arousal_intensify");
+            step.parameters["clitoral_oscillation"] = true;
+            step.parameters["clitoral_frequency"] = freq;
+            step.parameters["clitoral_amplitude"] = clitoralAmplitudeBase + 15.0;  // 50 mmHg
+            step.parameters["description"] = "Phase 3b: Arousal intensify";
+            m_patternSteps.append(step);
         }
 
-        // Phase 4: Pre-climax Tension (4-5 minutes) - Maintain precise stimulation
-        double climaxPressure = std::min(85.0 + (cycle * 3.0), 90.0);  // Cap at 90%
-        int climaxDuration = (cycle == cycles - 1) ? 75000 : 60000;  // Longer final climax
-        int climaxSteps = climaxDuration / 1500;  // 1.5-second steps for precision
+        // ================================================================
+        // PHASE 4: Pre-Climax Tension (45 seconds)
+        // ================================================================
+        // Purpose: Build tension immediately preceding orgasm
+        // Outer: 85% sustained | Clitoral: 10-12 Hz, 55 mmHg
+        double preClimaxPressure = 85.0;
+        int preClimaxSteps = 30;  // 1.5-second steps = 45 seconds
+        for (int i = 0; i < preClimaxSteps; ++i) {
+            double progress = static_cast<double>(i) / preClimaxSteps;
+            double variation = 8.0 * sin(i * 0.8);
+            double freq = 10.0 + progress * 2.0;  // 10→12 Hz
+            PatternStep step(preClimaxPressure + variation, 1500, "pre_climax_tension");
+            step.parameters["clitoral_oscillation"] = true;
+            step.parameters["clitoral_frequency"] = freq;
+            step.parameters["clitoral_amplitude"] = clitoralAmplitudeBase + 20.0;  // 55 mmHg
+            step.parameters["description"] = "Phase 4: Pre-climax tension";
+            m_patternSteps.append(step);
+        }
+
+        // ================================================================
+        // PHASE 5: Climax/Orgasm (30-45 seconds)
+        // ================================================================
+        // Purpose: Maintain optimal stimulation through orgasmic contractions
+        // Outer: 90% maximum | Clitoral: 11-13 Hz (peak orgasm frequency), 60 mmHg
+        double climaxPressure = 90.0;  // Maximum safe pressure
+        int climaxDuration = (cycle == cycles - 1) ? 45000 : 30000;  // Longer final
+        int climaxSteps = climaxDuration / 1500;  // 1.5-second steps
         for (int i = 0; i < climaxSteps; ++i) {
-            double variation = 8.0 * sin(i * 0.8);  // Faster variation for climax
-            m_patternSteps.append(PatternStep(climaxPressure + variation, 1500, "climax_maintain"));
+            double progress = static_cast<double>(i) / climaxSteps;
+            double variation = 5.0 * sin(i * 1.0);  // Minimal variation for consistency
+            double freq = 11.0 + progress * 2.0;  // 11→13 Hz (peak orgasm band)
+            PatternStep step(climaxPressure + variation, 1500, "climax_maintain");
+            step.parameters["clitoral_oscillation"] = true;
+            step.parameters["clitoral_frequency"] = freq;
+            step.parameters["clitoral_amplitude"] = clitoralAmplitudeBase + 25.0;  // 60 mmHg max
+            step.parameters["description"] = "Phase 5: Climax/orgasm";
+            m_patternSteps.append(step);
         }
 
-        // Recovery period between cycles (except after last cycle)
+        // ================================================================
+        // PHASE 6: Post-Climax Recovery (45-60 seconds)
+        // ================================================================
+        // Purpose: Gentle cooldown to prevent overstimulation
+        // Outer: 30% gentle | Clitoral: 4-5 Hz or OFF, 25 mmHg
         if (cycle < cycles - 1) {
-            double recoveryPressure = 30.0 - (cycle * 5.0);  // Gentler each time
-            recoveryPressure = std::max(recoveryPressure, 20.0);  // Minimum 20%
-            int recoveryDuration = (cycle == 0) ? 45000 : 60000;  // Longer recovery after first
+            double recoveryPressure = 30.0 - (cycle * 5.0);
+            recoveryPressure = std::max(recoveryPressure, 20.0);
+            int recoveryDuration = (cycle == 0) ? 45000 : 60000;
             int recoverySteps = recoveryDuration / 5000;  // 5-second steps
             for (int i = 0; i < recoverySteps; ++i) {
-                double variation = 3.0 * sin(i * 0.3);  // Very gentle variation
-                m_patternSteps.append(PatternStep(recoveryPressure + variation, 5000, "post_climax_recovery"));
+                double progress = static_cast<double>(i) / recoverySteps;
+                double variation = 3.0 * sin(i * 0.3);
+                // Gentle 4-5 Hz or ramp down to off
+                bool useOscillation = (progress < 0.7);  // Stop oscillation in final 30%
+                double freq = useOscillation ? (5.0 - progress * 1.5) : 0.0;  // 5→3.5 Hz
+                PatternStep step(recoveryPressure + variation, 5000, "post_climax_recovery");
+                step.parameters["clitoral_oscillation"] = useOscillation;
+                step.parameters["clitoral_frequency"] = freq;
+                step.parameters["clitoral_amplitude"] = 25.0;  // Low amplitude
+                step.parameters["description"] = "Phase 6: Post-climax recovery";
+                m_patternSteps.append(step);
             }
         }
     }
 
-    // Final cooldown for multi-cycle patterns
+    // Final cooldown for multi-cycle patterns (extended Phase 6)
     if (isMultiCycle) {
         double cooldownPressure = 20.0;
         int cooldownSteps = 18;  // 90 seconds / 5 seconds per step
         for (int i = 0; i < cooldownSteps; ++i) {
-            double variation = 2.0 * sin(i * 0.2);  // Minimal variation
-            m_patternSteps.append(PatternStep(cooldownPressure + variation, 5000, "final_recovery"));
+            double variation = 2.0 * sin(i * 0.2);
+            // Oscillation off for final cooldown
+            PatternStep step(cooldownPressure + variation, 5000, "final_recovery");
+            step.parameters["clitoral_oscillation"] = false;
+            step.parameters["description"] = "Final cooldown - oscillation off";
+            m_patternSteps.append(step);
+        }
+    } else {
+        // Single cycle: add Phase 6 recovery
+        double recoveryPressure = 30.0;
+        int recoverySteps = 9;  // 45 seconds / 5 seconds per step
+        for (int i = 0; i < recoverySteps; ++i) {
+            double progress = static_cast<double>(i) / recoverySteps;
+            double variation = 3.0 * sin(i * 0.3);
+            bool useOscillation = (progress < 0.5);
+            double freq = useOscillation ? (4.5 - progress * 1.0) : 0.0;
+            PatternStep step(recoveryPressure + variation, 5000, "post_climax_recovery");
+            step.parameters["clitoral_oscillation"] = useOscillation;
+            step.parameters["clitoral_frequency"] = freq;
+            step.parameters["clitoral_amplitude"] = 25.0;
+            step.parameters["description"] = "Phase 6: Post-climax recovery";
+            m_patternSteps.append(step);
         }
     }
+
+    qDebug() << QString("Automated orgasm pattern built: %1 steps, %2 cycle(s)")
+                .arg(m_patternSteps.size()).arg(cycles);
 }
 
 void PatternEngine::buildContinuousOrgasmPattern(const QJsonObject& params)
 {
     // Build continuous orgasm pattern that loops indefinitely
     // Optimized 4-minute cycles for continuous operation
+    // Reference: AUTOMATED_ORGASM_PATTERNS.md - Continuous Orgasm Marathon
+    //
+    // DUAL-CHAMBER COORDINATION:
+    // - Outer chamber: Sustained vacuum for tissue engorgement (pressurePercent)
+    // - Clitoral cylinder: Air-pulse oscillation (clitoral_* params)
+    // - Higher starting intensities due to already-aroused state between cycles
 
     m_infiniteLoop = params["infinite_loop"].toBool(true);
     m_completedCycles = 0;
 
+    // Base clitoral amplitude for continuous mode (higher than single cycle)
+    const double BASE_CLITORAL_AMPLITUDE = 40.0;
+
+    // ================================================================
     // Phase 1: Quick Sensitivity Adaptation (0-15 seconds)
-    // 5 seconds quick ramp
-    double startPressure = 40.0;  // Higher start for continuous mode
+    // ================================================================
+    // 5 seconds quick ramp - Clitoral: 6-7 Hz (higher start for continuous)
+    double startPressure = 40.0;
     double rampTarget = 60.0;
-    int rampSteps = 3;  // Faster ramp for continuous operation
+    int rampSteps = 3;  // Faster ramp
     for (int i = 0; i < rampSteps; ++i) {
         double progress = static_cast<double>(i) / rampSteps;
         double pressure = startPressure + (rampTarget - startPressure) * progress;
-        m_patternSteps.append(PatternStep(pressure, 1500, "continuous_gentle_ramp"));
+        double freq = 6.0 + progress * 1.0;  // 6→7 Hz
+        PatternStep step(pressure, 1500, "continuous_gentle_ramp");
+        step.parameters["clitoral_oscillation"] = true;
+        step.parameters["clitoral_frequency"] = freq;
+        step.parameters["clitoral_amplitude"] = BASE_CLITORAL_AMPLITUDE;
+        step.parameters["description"] = "Continuous: Quick sensitivity ramp";
+        m_patternSteps.append(step);
     }
 
-    // 10 seconds quick settling
-    for (int i = 0; i < 5; ++i) {  // 2-second steps
+    // 10 seconds quick settling - Clitoral: 7 Hz
+    for (int i = 0; i < 5; ++i) {
         double variation = 6.0 * sin(i * 0.8);
-        m_patternSteps.append(PatternStep(60.0 + variation, 2000, "continuous_steady_moderate"));
+        PatternStep step(60.0 + variation, 2000, "continuous_steady_moderate");
+        step.parameters["clitoral_oscillation"] = true;
+        step.parameters["clitoral_frequency"] = 7.0;
+        step.parameters["clitoral_amplitude"] = BASE_CLITORAL_AMPLITUDE;
+        step.parameters["description"] = "Continuous: Quick settling";
+        m_patternSteps.append(step);
     }
 
-    // Phase 2: Rapid Adaptation (15-45 seconds) - 30 seconds total
-    double adaptationPressure = 65.0;  // Higher for continuous mode
-    int adaptationSteps = 15;  // 2-second steps for 30 seconds
+    // ================================================================
+    // Phase 2: Rapid Adaptation (15-45 seconds) - 30 seconds
+    // ================================================================
+    // Clitoral: 7-9 Hz progression
+    double adaptationPressure = 65.0;
+    int adaptationSteps = 15;
     for (int i = 0; i < adaptationSteps; ++i) {
+        double progress = static_cast<double>(i) / adaptationSteps;
         double variation = 10.0 * sin(i * 0.5);
-        m_patternSteps.append(PatternStep(adaptationPressure + variation, 2000, "continuous_adaptation"));
+        double freq = 7.0 + progress * 2.0;  // 7→9 Hz
+        PatternStep step(adaptationPressure + variation, 2000, "continuous_adaptation");
+        step.parameters["clitoral_oscillation"] = true;
+        step.parameters["clitoral_frequency"] = freq;
+        step.parameters["clitoral_amplitude"] = BASE_CLITORAL_AMPLITUDE + 5.0;  // 45 mmHg
+        step.parameters["description"] = "Continuous: Rapid adaptation";
+        m_patternSteps.append(step);
     }
 
-    // Phase 3: Accelerated Buildup (45 seconds - 2 minutes) - 75 seconds total
-    // Phase 3a: Rapid buildup (30 seconds)
+    // ================================================================
+    // Phase 3: Accelerated Buildup (45 seconds - 2 minutes) - 75 seconds
+    // ================================================================
+    // Phase 3a: Rapid buildup (30 seconds) - Clitoral: 9-10 Hz
     double buildupStart = 65.0;
     double buildupMid = 80.0;
-    int buildup1Steps = 15;  // 2-second steps
+    int buildup1Steps = 15;
     for (int i = 0; i < buildup1Steps; ++i) {
         double progress = static_cast<double>(i) / buildup1Steps;
         double pressure = buildupStart + (buildupMid - buildupStart) * progress;
         double variation = 12.0 * sin(i * 0.6);
-        m_patternSteps.append(PatternStep(pressure + variation, 2000, "continuous_arousal_buildup"));
+        double freq = 9.0 + progress * 1.0;  // 9→10 Hz
+        PatternStep step(pressure + variation, 2000, "continuous_arousal_buildup");
+        step.parameters["clitoral_oscillation"] = true;
+        step.parameters["clitoral_frequency"] = freq;
+        step.parameters["clitoral_amplitude"] = BASE_CLITORAL_AMPLITUDE + 10.0;  // 50 mmHg
+        step.parameters["description"] = "Continuous: Rapid buildup";
+        m_patternSteps.append(step);
     }
 
-    // Phase 3b: Rapid intensification (45 seconds)
-    double buildupEnd = 88.0;  // Higher peak for continuous mode
-    int buildup2Steps = 23;  // ~2-second steps
+    // Phase 3b: Rapid intensification (45 seconds) - Clitoral: 10-12 Hz
+    double buildupEnd = 88.0;
+    int buildup2Steps = 23;
     for (int i = 0; i < buildup2Steps; ++i) {
         double progress = static_cast<double>(i) / buildup2Steps;
         double pressure = buildupMid + (buildupEnd - buildupMid) * progress;
         double variation = 15.0 * sin(i * 0.7);
-        m_patternSteps.append(PatternStep(pressure + variation, 2000, "continuous_arousal_intensify"));
+        double freq = 10.0 + progress * 2.0;  // 10→12 Hz
+        PatternStep step(pressure + variation, 2000, "continuous_arousal_intensify");
+        step.parameters["clitoral_oscillation"] = true;
+        step.parameters["clitoral_frequency"] = freq;
+        step.parameters["clitoral_amplitude"] = BASE_CLITORAL_AMPLITUDE + 15.0;  // 55 mmHg
+        step.parameters["description"] = "Continuous: Rapid intensify";
+        m_patternSteps.append(step);
     }
 
-    // Phase 4: Extended Climax (2-3.5 minutes) - 90 seconds
+    // ================================================================
+    // Phase 4: Extended Climax (90 seconds)
+    // ================================================================
+    // Clitoral: 11-13 Hz (peak orgasm frequency band)
     double climaxPressure = 88.0;
-    int climaxSteps = 75;  // 1.2-second steps for precision during extended climax
+    int climaxSteps = 75;  // 1.2-second steps
     for (int i = 0; i < climaxSteps; ++i) {
-        double variation = 10.0 * sin(i * 0.9);  // Faster variation for continuous climax
-        m_patternSteps.append(PatternStep(climaxPressure + variation, 1200, "continuous_climax_maintain"));
+        double progress = static_cast<double>(i) / climaxSteps;
+        double variation = 10.0 * sin(i * 0.9);
+        double freq = 11.0 + progress * 2.0;  // 11→13 Hz
+        PatternStep step(climaxPressure + variation, 1200, "continuous_climax_maintain");
+        step.parameters["clitoral_oscillation"] = true;
+        step.parameters["clitoral_frequency"] = freq;
+        step.parameters["clitoral_amplitude"] = BASE_CLITORAL_AMPLITUDE + 20.0;  // 60 mmHg max
+        step.parameters["description"] = "Continuous: Extended climax";
+        m_patternSteps.append(step);
     }
 
-    // Brief Recovery/Transition (3.5-4 minutes) - 30 seconds
-    double recoveryPressure = 45.0;  // Higher than normal recovery for continuous flow
+    // ================================================================
+    // Brief Recovery/Transition (30 seconds)
+    // ================================================================
+    // Clitoral: 6-7 Hz (maintain some stimulation for quick restart)
+    double recoveryPressure = 45.0;
     int recoverySteps = 6;  // 5-second steps
     for (int i = 0; i < recoverySteps; ++i) {
+        double progress = static_cast<double>(i) / recoverySteps;
         double variation = 8.0 * sin(i * 0.4);
-        m_patternSteps.append(PatternStep(recoveryPressure + variation, 5000, "continuous_brief_recovery"));
+        // Keep oscillation running but at lower frequency for continuous flow
+        double freq = 7.0 - progress * 1.0;  // 7→6 Hz (still active)
+        PatternStep step(recoveryPressure + variation, 5000, "continuous_brief_recovery");
+        step.parameters["clitoral_oscillation"] = true;  // Keep running!
+        step.parameters["clitoral_frequency"] = freq;
+        step.parameters["clitoral_amplitude"] = 30.0;  // Lower but active
+        step.parameters["description"] = "Continuous: Brief recovery (oscillation maintained)";
+        m_patternSteps.append(step);
     }
 
-    qDebug() << QString("Continuous orgasm pattern built: %1 steps, %2 minute cycles")
-                .arg(m_patternSteps.size()).arg(4.0);
+    qDebug() << QString("Continuous orgasm pattern built: %1 steps, %2 minute cycles, infinite=%3")
+                .arg(m_patternSteps.size()).arg(4.0).arg(m_infiniteLoop);
 }
 
 void PatternEngine::executeNextStep()
@@ -786,7 +986,9 @@ void PatternEngine::executeStep(const PatternStep& step)
         if (m_currentPatternType == AUTOMATED_ORGASM || m_currentPatternType == MULTI_CYCLE_ORGASM ||
             m_currentPatternType == CONTINUOUS_ORGASM) {
             // Set anti-detachment sensitivity based on phase
-            if (step.action == "climax_maintain" || step.action == "arousal_intensify" ||
+            // Phase 4 (pre_climax_tension) and Phase 5 (climax_maintain) need maximum sensitivity
+            if (step.action == "pre_climax_tension" || step.action == "climax_maintain" ||
+                step.action == "arousal_intensify" ||
                 step.action == "continuous_climax_maintain" || step.action == "continuous_arousal_intensify") {
                 // Maximum anti-detachment sensitivity during critical phases
                 if (m_antiDetachmentMonitor) {
@@ -795,17 +997,26 @@ void PatternEngine::executeStep(const PatternStep& step)
                 }
             } else if (step.action == "post_climax_recovery" || step.action == "final_recovery" ||
                        step.action == "continuous_brief_recovery") {
-                // Gentle anti-detachment during recovery
+                // Gentle anti-detachment during recovery (Phase 6)
                 if (m_antiDetachmentMonitor) {
                     m_antiDetachmentMonitor->setResponseDelay(150);  // Slower response (150ms)
                     m_antiDetachmentMonitor->setMaxVacuumIncrease(15.0);  // Gentler correction (15%)
                 }
+            } else {
+                // Standard anti-detachment for Phases 1-3 (adaptation, buildup)
+                if (m_antiDetachmentMonitor) {
+                    m_antiDetachmentMonitor->setResponseDelay(100);  // Standard response (100ms)
+                    m_antiDetachmentMonitor->setMaxVacuumIncrease(20.0);  // Standard correction (20%)
+                }
             }
         }
 
-        // Handle clitoral oscillation for dual-chamber, clitoral-only, TENS patterns, AND air pulse
+        // Handle clitoral oscillation for ALL dual-chamber patterns including automated orgasm
+        // This enables the frequency progression documented in AUTOMATED_ORGASM_PATTERNS.md
         if (m_currentPatternType == DUAL_CHAMBER || m_currentPatternType == CLITORAL_ONLY ||
-            m_currentPatternType == TENS_VACUUM || m_currentPatternType == AIR_PULSE) {
+            m_currentPatternType == TENS_VACUUM || m_currentPatternType == AIR_PULSE ||
+            m_currentPatternType == AUTOMATED_ORGASM || m_currentPatternType == MULTI_CYCLE_ORGASM ||
+            m_currentPatternType == CONTINUOUS_ORGASM) {
 
             bool enableOscillation = step.parameters.value("clitoral_oscillation").toBool(false);
 
@@ -889,6 +1100,10 @@ void PatternEngine::executeStep(const PatternStep& step)
                 qDebug() << QString("Automated Orgasm Phase: %1 - Pressure: %2%")
                             .arg(step.action).arg(adjustedPressure, 0, 'f', 1);
                 lastAction = step.action;
+
+                // Auto-trigger synchronized TENS phase presets
+                // This enables synergistic TENS+Vacuum stimulation during automated orgasm
+                applyTENSPhasePreset(step.action);
             }
         }
 
@@ -1198,6 +1413,90 @@ void PatternEngine::stopTENS()
 bool PatternEngine::isTENSRunning() const
 {
     return m_tensController && m_tensController->isRunning();
+}
+
+void PatternEngine::setTENSAutoTriggerEnabled(bool enabled)
+{
+    m_tensAutoTriggerEnabled = enabled;
+    qDebug() << "TENS auto-trigger during automated orgasm patterns:" << (enabled ? "enabled" : "disabled");
+
+    // If disabling mid-pattern and TENS is running, stop it
+    if (!enabled && m_tensController && m_tensController->isRunning()) {
+        m_tensController->stop();
+        m_lastTENSPhase.clear();
+    }
+}
+
+void PatternEngine::applyTENSPhasePreset(const QString& action)
+{
+    // Auto-trigger TENS phase presets during automated orgasm patterns
+    // Maps pattern step actions to corresponding TENS phase presets
+    // Reference: AUTOMATED_ORGASM_PATTERNS.md phases 0-6
+
+    if (!m_tensController || !m_tensAutoTriggerEnabled) {
+        return;
+    }
+
+    // Determine the TENS phase based on the vacuum pattern action
+    QString tensPhase;
+
+    // Phase mapping from vacuum pattern actions to TENS phases
+    // Reference: AUTOMATED_ORGASM_PATTERNS.md phases 0-6
+    if (action == "engorgement" || action == "pre_stimulation") {
+        tensPhase = "engorgement";  // Phase 0
+    } else if (action == "gentle_ramp" || action == "steady_moderate") {
+        tensPhase = "sensitivity";  // Phase 1
+    } else if (action == "adaptation_steady" || action == "continuous_adaptation") {
+        tensPhase = "adaptation";   // Phase 2
+    } else if (action == "arousal_buildup" || action == "continuous_arousal_buildup") {
+        tensPhase = "arousal_build";  // Phase 3a
+    } else if (action == "arousal_intensify" || action == "continuous_arousal_intensify") {
+        tensPhase = "pre_climax";   // Phase 3b (intensifying)
+    } else if (action == "pre_climax_tension") {
+        tensPhase = "pre_climax";   // Phase 4: distinct pre-climax phase
+    } else if (action == "climax_maintain" || action == "continuous_climax_maintain") {
+        tensPhase = "climax";       // Phase 5
+    } else if (action == "post_climax_recovery" || action == "final_recovery" ||
+               action == "continuous_brief_recovery") {
+        tensPhase = "recovery";     // Phase 6
+    } else if (action == "continuous_gentle_ramp" || action == "continuous_steady_moderate") {
+        tensPhase = "sensitivity";  // Continuous: Phase 1 equivalent
+    } else {
+        // Unknown action - don't change TENS settings
+        return;
+    }
+
+    // Only apply if phase has changed
+    if (tensPhase == m_lastTENSPhase) {
+        return;
+    }
+
+    m_lastTENSPhase = tensPhase;
+
+    // Apply the corresponding TENS preset
+    if (tensPhase == "engorgement") {
+        m_tensController->setPhaseEngorgement();
+    } else if (tensPhase == "sensitivity") {
+        m_tensController->setPhaseSensitivity();
+    } else if (tensPhase == "adaptation") {
+        m_tensController->setPhaseAdaptation();
+    } else if (tensPhase == "arousal_build") {
+        m_tensController->setPhaseArousalBuild();
+    } else if (tensPhase == "pre_climax") {
+        m_tensController->setPhasePreClimax();
+    } else if (tensPhase == "climax") {
+        m_tensController->setPhaseClimax();
+    } else if (tensPhase == "recovery") {
+        m_tensController->setPhaseRecovery();
+    }
+
+    // Ensure TENS is running during automated orgasm patterns
+    if (!m_tensController->isRunning()) {
+        m_tensController->start();
+        qDebug() << "TENS auto-started for automated orgasm pattern phase:" << tensPhase;
+    }
+
+    qDebug() << "TENS phase preset applied:" << tensPhase << "for action:" << action;
 }
 
 // ============================================================================

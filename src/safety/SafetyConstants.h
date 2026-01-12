@@ -63,6 +63,66 @@ constexpr double DEFAULT_HYSTERESIS_MMHG = 5.0;
 constexpr double MAX_VACUUM_INCREASE_PERCENT = 20.0;
 
 // ============================================================================
+// ADAPTIVE SEAL MONITORING CONSTANTS
+// ============================================================================
+
+/// Minimum seal pressure required for safe operation (10 mmHg)
+/// Below this pressure, seal integrity is critically compromised
+constexpr double MIN_SEAL_PRESSURE_MMHG = 10.0;
+
+/// Critical pressure threshold for emergency detection (10 mmHg)
+/// Immediate action required regardless of physiological state
+constexpr double CRITICAL_SEAL_THRESHOLD_MMHG = 10.0;
+
+/// Arousal compensation factor for adaptive threshold (0.5 = 50% reduction at max arousal)
+/// During high arousal, tissue swelling reduces effective chamber volume
+constexpr double AROUSAL_COMPENSATION_FACTOR = 0.5;
+
+/// Rate of change threshold for rapid leak detection (5.0 mmHg per 100ms)
+/// Pressure dropping faster than this indicates mechanical failure, not physiology
+constexpr double RAPID_LEAK_RATE_THRESHOLD = 5.0;
+
+/// Minimum arousal level to apply adaptive threshold (0.3 = 30%)
+/// Below this, use fixed threshold as swelling effects are minimal
+constexpr double ADAPTIVE_THRESHOLD_MIN_AROUSAL = 0.3;
+
+// ============================================================================
+// RESEAL RECOVERY PARAMETERS
+// ============================================================================
+
+/// Maximum number of progressive reseal attempts before failure
+constexpr int MAX_RESEAL_ATTEMPTS = 3;
+
+/// Duration to wait for each reseal attempt (2000 ms)
+constexpr int RESEAL_ATTEMPT_DURATION_MS = 2000;
+
+/// Base pump power for first reseal attempt (30%)
+constexpr double RESEAL_BASE_PUMP_POWER = 0.3;
+
+/// Pump power increment per reseal attempt (20%)
+/// Attempt 1: 50%, Attempt 2: 70%, Attempt 3: 90%
+constexpr double RESEAL_POWER_INCREMENT = 0.2;
+
+/// Maximum pump power allowed during reseal (95%)
+constexpr double RESEAL_MAX_PUMP_POWER = 0.95;
+
+/// Cooldown period after successful reseal before resuming normal operation (500 ms)
+constexpr int RESEAL_COOLDOWN_MS = 500;
+
+// ============================================================================
+// CRITICAL PHASE PARAMETERS
+// ============================================================================
+
+/// Enhanced response delay during critical phases like climax (25 ms)
+constexpr int CRITICAL_PHASE_RESPONSE_DELAY_MS = 25;
+
+/// Maximum vacuum increase during critical phases (30%)
+constexpr double CRITICAL_PHASE_MAX_VACUUM_INCREASE = 30.0;
+
+/// Monitoring rate during critical phases (200 Hz)
+constexpr int CRITICAL_PHASE_MONITORING_RATE_HZ = 200;
+
+// ============================================================================
 // TIMING CONSTANTS
 // ============================================================================
 

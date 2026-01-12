@@ -118,6 +118,8 @@ set(SOURCES
     src/hardware/FluidSensor.cpp
     src/hardware/MotionSensor.cpp
     src/hardware/CameraMotionSensor.cpp
+    src/hardware/CameraManager.cpp
+    src/hardware/ConsentManager.cpp
     src/control/OrgasmControlAlgorithm.cpp
     src/gui/MainWindow.cpp
     src/gui/MotionMonitor.cpp
@@ -126,6 +128,7 @@ set(SOURCES
     src/gui/FluidMonitor.cpp
     src/gui/PatternSelector.cpp
     src/gui/SafetyPanel.cpp
+    src/gui/SafetyActionsPanel.cpp
     src/gui/SettingsPanel.cpp
     src/gui/CustomPatternEditor.cpp
     src/gui/SystemDiagnosticsPanel.cpp
@@ -141,6 +144,7 @@ set(SOURCES
     src/patterns/PatternTemplateManager.cpp
     src/safety/SafetyManager.cpp
     src/safety/AntiDetachmentMonitor.cpp
+    src/safety/AdaptiveSealMonitor.cpp
     src/safety/EmergencyStop.cpp
     src/safety/EmergencyStopCoordinator.cpp
     src/safety/LightweightSafetyMonitor.cpp
@@ -188,6 +192,8 @@ set(HEADERS
     src/hardware/FluidSensor.h
     src/hardware/MotionSensor.h
     src/hardware/CameraMotionSensor.h
+    src/hardware/CameraManager.h
+    src/hardware/ConsentManager.h
     src/control/OrgasmControlAlgorithm.h
     src/gui/MainWindow.h
     src/gui/MotionMonitor.h
@@ -196,6 +202,7 @@ set(HEADERS
     src/gui/FluidMonitor.h
     src/gui/PatternSelector.h
     src/gui/SafetyPanel.h
+    src/gui/SafetyActionsPanel.h
     src/gui/SettingsPanel.h
     src/gui/components/PressureGauge.h
     src/gui/components/PressureChart.h
@@ -208,6 +215,7 @@ set(HEADERS
     src/patterns/PatternTemplateManager.h
     src/safety/SafetyManager.h
     src/safety/AntiDetachmentMonitor.h
+    src/safety/AdaptiveSealMonitor.h
     src/safety/EmergencyStop.h
     src/safety/EmergencyStopCoordinator.h
     src/safety/LightweightSafetyMonitor.h
