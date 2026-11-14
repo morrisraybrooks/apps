@@ -27,7 +27,7 @@ quick release that works **without** the electronics, and time limits.
 | Mechanism | Why it matters | Design answer | Status in cup v6 |
 |---|---|---|---|
 | **Undercut chamber** – mouth narrower than the inside | Engorged tissue swells past the mouth and can't pass back out after release; constriction-device series report oedema in >90 % of entrapments and call removal *challenging* | Mouth is always the widest point of every chamber. Straight or outward-flaring walls only. | Default `tear_mouth = 0` (full width, no undercut). Sidebar shows a warning if the mouth slider is set narrower. **Recommendation: do not print an undercut mouth.** |
-| **No way to release vacuum if electronics fail** (power loss, solenoid stuck closed, software hang) | FDA requires a quick-release / vacuum-ceasing mechanism on both classes of vacuum device | 1) Vent solenoids **normally-open** (power loss = vent). 2) A **manual push-to-vent valve** on the cup or the tubing within reach of the user. 3) A passive relief valve (duckbill) cracking just above the cap (85–100 mmHg). | Controller has SOL2 vent + e-stop. **Manual vent and relief valve not yet on the cup – next design step.** |
+| **No way to release vacuum if electronics fail** (power loss, solenoid stuck closed, software hang) | FDA requires a quick-release / vacuum-ceasing mechanism on both classes of vacuum device | 1) Vent solenoids **normally-open** (power loss = vent). 2) A **manual vent on the cup** that needs no power. 3) A passive relief valve (duckbill) cracking just above the cap (85–100 mmHg). | **Manual vents added (cup_010):** a silicone flap valve on each chamber – clitoral (high on the turret side) and legs (top of the left leg). Vacuum holds the flap shut; **lift the tab with a fingertip = instant vent**, no power, no moving rigid parts, molded in the same silicone as the seal. Relief valve + normally-open solenoids still to do. |
 | **Ring constriction at the rim** | A hard, narrow rim acts like a constriction ring on swollen tissue | Wide, soft, rounded seal lip; no sharp rim | Silicone lip with rounded profile; every rim rounded 1 mm (`edge_round`). |
 | **Tissue drawn into small holes** (port bores, sensor taps) | A 2–3 mm hole concentrates suction on a small spot → blisters/petechiae | Keep port openings where tissue can't reach (high in the chamber), round their edges, or cover with a diffuser/grille | Clitoral port at the top of a 63.5 mm chamber; leg port on the pathway roof; hole edges rounded. AVL tap removed (one leg port, sensor teed at controller). |
 | **Pinch slits** – narrow crevices tissue can be pulled into | Pinching + concentrated stress | Fill any chamber space narrower than ~3 mm | `min_gap = 3 mm` (default on). |
@@ -52,9 +52,9 @@ surfaces, textured surfaces, hinges, sharp internal corners, and parts that can'
 | Every chamber open to the skin side – no blind pockets | Rinse/brush reaches every surface; fluid drains | All chambers (both legs, pathway, clitoral chamber) are open at the bottom. Pinch slits filled. |
 | No sealed internal tunnels | Can't be brushed or inspected | Leg pathway is **open to the skin** (a channel, not a tube). |
 | Short, straight, through-lumens only | Narrow blind lumens are worst-case for cleaning | Port bores are short straight Luer bores – flush with a syringe. |
-| **Generous concave fillets** where walls meet | Sharp inside corners trap residue | Convex edges rounded 1 mm. **Concave corners (divider ↔ shell) should also get fillets – next step.** |
+| **Generous concave fillets** where walls meet | Sharp inside corners trap residue | Convex edges rounded 1 mm; **inside corners (divider ↔ shell) filleted 2 mm** (`inner_fillet`, cup_010); pinch-slit fill also rounds every inside corner to ≥ 1.5 mm. |
 | Smooth surface finish | Layer lines and texture hold residue/biofilm (food-safe AM guidance: ~32 µin Ra or better) | Model is smooth; **finish depends on manufacturing** – see below. |
-| Separable parts | Seal lip and shell cleaned separately | Seal is a separate part – keep it removable (press-fit/groove), never glued. |
+| **One piece – nothing comes apart** | Every joint between separate parts is a seam: a sharp edge against skin and a crevice that traps residue | Silicone seal lip and vent flaps **overmolded / permanently bonded** onto the shell. No press-fits, grooves or removable parts. |
 | Keep fluids out of the tubing | Fluid in lines/controller can't be cleaned and contaminates the pump | **Add an inline hydrophobic filter / backflow protector at each port** (as on breast pumps). The open-channel design already drains most fluid away from the ports. |
 | Transparent shell | Residue is visible | Clear Tritan/PC. |
 
@@ -72,10 +72,10 @@ Material care (general material knowledge – confirm with the specific grade's 
 - **Platinum-cure silicone (seal):** can be boiled 3–5 min or washed with mild soap; oil-based lubricants degrade silicone (also an FDA labeling item).
 
 ### Cleaning procedure (for the user manual)
-1. Vent, remove, separate seal from shell, disconnect tubing at the Luer ports.
+1. Vent (lift both flap tabs), remove, disconnect tubing at the Luer ports. The cup is one piece – do not try to separate the seal.
 2. Rinse warm water → mild unscented soap, soft brush into every chamber and along the pathway.
 3. Flush each port bore with a syringe of soapy water, then clean water.
-4. Seal: boil 3–5 min or wash. Shell: per material (Tritan: top-rack dishwasher OK).
+4. Wash the whole piece; lift each vent flap and rinse under it. Use a method safe for **both** materials (Tritan shell + silicone): warm soapy water, or top-rack dishwasher if the Tritan grade allows. Do not boil (the shell is not rated for it).
 5. Air-dry fully, open side down. Inspect for residue, cracks or crazing before each use.
 
 ---
@@ -84,11 +84,11 @@ Material care (general material knowledge – confirm with the specific grade's 
 
 | # | Item | Where |
 |---|---|---|
-| 1 | Manual push-to-vent valve on each chamber line (works without power) | cup / tubing |
+| 1 | ~~Manual vent on each chamber (works without power)~~ **done – silicone flap vents, cup_010** | cup |
 | 2 | Passive relief duckbill, cracking 85–100 mmHg | tubing |
 | 3 | Normally-open vent solenoids (power loss = vent) | controller hardware |
 | 4 | Inline hydrophobic filter / backflow protector on both ports | tubing |
-| 5 | Concave fillets (divider ↔ shell) for cleanability | `cup_sdf.py` |
+| 5 | ~~Concave fillets (divider ↔ shell) for cleanability~~ **done – 2 mm, cup_010** | `cup_sdf.py` |
 | 6 | Hard session-time limit + rest period for sustained vacuum | controller software |
 | 7 | Keep `tear_mouth` at full width (no undercut) for printed cups | design rule |
 | 8 | Body-safe manufacturing (SLA biocompatible resin or molded Tritan; no FDM) | production |
