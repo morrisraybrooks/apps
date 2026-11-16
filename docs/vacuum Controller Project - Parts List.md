@@ -21,10 +21,21 @@
 - 50 inch HDMI display
 
 ## Vacuum System
-- Vacuum Pump (DC motor type)
-  - Controlled via software PWM on GPIO 18 using libgpiod
+- **Main vacuum pump (in the machine): Marhynchus "Electric Micro Air Pump 2.5-8.0LPM Low Noise Mini Vacuum Diaphragm Pump (DC12V)"**
+  - Amazon ASIN [B0BN8DY5FT](https://www.amazon.com/dp/B0BN8DY5FT) — bought Feb 2024 (listing now unavailable)
+  - 12 V DC diaphragm pump, 2.5–8.0 L/min, about 80 g, 5 mm air nozzle
+  - Max vacuum −60 kPa (**−450 mmHg**) — about 6× the controller's 75 mmHg cap, so a mechanical relief valve on each line (85–100 mmHg) is still needed
+  - Max positive pressure 100 kPa; noise ≤ 65 dB at 30 cm; rated life ≥ 500 h continuous
+  - Has a built-in pressure switch and relief valve
+  - RPM and current draw not listed — measure the current: the L293D only handles about 0.6 A per channel
+  - Controlled via software PWM on GPIO 18 using libgpiod (currently on/off only — see `ActuatorControl::setPWM`)
   - PWM frequency: 5000Hz (configurable)
   - Enable control via GPIO 25
+- **Spare 12 V pump: YOGULGUL "Mini Air Pump 12V DC, Micro Water Pump Motor with 2 Hose Clamps"**
+  - Amazon ASIN [B0B1HTFHZ9](https://www.amazon.com/dp/B0B1HTFHZ9) — bought twice (Feb and Mar 2024; listing now unavailable)
+  - 12 V DC mini motor pump, about 50 g, aluminium + polypropylene; flow and max vacuum not listed
+  - No pressure switch ("do not block the outlet")
+  - Candidate for a first **clitoral air-pulse test**: remove its check valves, seal the exhaust port, and connect the other port by a short stiff tube to a T at the clitoral port (vacuum line joins the T through a small restrictor). Pulse rate = motor RPM ÷ 60. Run it from its own PWM motor driver, not the L293D.
 - Vacuum Storage Tank
 - Silicone Tubing (3mm ID/5mm OD) for vacuum lines
 - T-connectors for vacuum routing
