@@ -1,5 +1,8 @@
 # vacuum Controller Project - Parts List
 
+*Updated 2026-11-16 to match the code (3 pressure sensors, 5 valves, TENS, body sensors) and the cup_020 design.
+Pin numbers are BCM GPIO; the full pin table is in the [README](README.md#gpio-pin-assignments).*
+
 ## Microcontroller
 - Raspberry Pi 4 (8GB RAM)
   - Raspbian 32-bit OS
@@ -9,16 +12,20 @@
 ## Analog-to-Digital Conversion
 - Adafruit MCP3008 (8-channel, 10-bit SPI ADC)
   - Connected via SPI (SCK: GPIO 11, MOSI: GPIO 10, MISO: GPIO 9, CS: GPIO 8)
-  - Channel 0: AVL-Line sensor (Applied Vacuum Line)
+  - Channel 0: AVL sensor — leg (outer) chamber line, used by anti-detachment
   - Channel 1: Tank vacuum sensor
+  - Channel 2: Clitoral chamber sensor
+  - Channel 3: Urethral electrode impedance (TENS)
 
 ## Pressure Sensors
-- 2x MPX5010DP Differential Pressure Sensors
-  - Sensor 1 = AVL-on MCP3008 channel 0
+- 3x MPX5010DP Differential Pressure Sensors (0–10 kPa = 0–75 mmHg)
+  - Sensor 1 = AVL (leg chamber line) on MCP3008 channel 0
   - Sensor 2 = Vacuum tank on MCP3008 channel 1
+  - Sensor 3 = Clitoral chamber line on MCP3008 channel 2
+  - Each line sensor tees into its tube at the controller (the cup has no sensor tap)
 
 ## Display
-- 50 inch HDMI display
+- 50 inch HDMI touch display
 
 ## Vacuum System
 - **Main vacuum pump (in the machine): Marhynchus "Electric Micro Air Pump 2.5-8.0LPM Low Noise Mini Vacuum Diaphragm Pump (DC12V)"**
@@ -38,21 +45,30 @@
   - Candidate for a first **clitoral air-pulse test**: remove its check valves, seal the exhaust port, and connect the other port by a short stiff tube to a T at the clitoral port (vacuum line joins the T through a small restrictor). Pulse rate = motor RPM ÷ 60. Run it from its own PWM motor driver, not the L293D.
 - Vacuum Storage Tank
 - Silicone Tubing (3mm ID/5mm OD) for vacuum lines
+  - For an air-pulse line use a short piece of stiff-walled PU or PVC tubing instead — soft silicone soaks up the pulses
 - T-connectors for vacuum routing
-- Cup-Cylinders for vacuum application:
+- Luer connectors for the two cup ports (ISO 80369-7)
+
+## Cup
+- **A-Contour cup_020** — design files in [`hardware/cup/v6/`](../hardware/cup/v6/)
+  - One piece: clear Tritan shell (`shell.stl`) with the platinum-cure silicone seal lip, hood ridge and two vent flaps molded on (`seal.stl`)
+  - Two ports: leg chamber (SOL1/SOL2 line) and clitoral chamber (SOL4/SOL5 line)
+  - Make with SLA in a skin-contact-rated resin, or molded Tritan — **not FDM** (see [cup safety](cup-cleaning-and-entrapment-safety.md))
 
 ## Valves & Actuators
-- 3x Solenoid Valves (for vacuum application/release)
-  - SOL1 (GPIO 17): AVL-(Applied Vacuum Line) - controlled via libgpiod
-  - SOL2 (GPIO 27): AVL vent valve - controlled via libgpiod
-  - SOL3 (GPIO 22): Tank vent valve - controlled via libgpiod
+- 5x 12 V Solenoid Valves (for vacuum application/release), all controlled via libgpiod
+  - SOL1 (GPIO 17): leg chamber vacuum (AVL line)
+  - SOL2 (GPIO 27): leg chamber vent
+  - SOL3 (GPIO 22): tank vent
+  - SOL4 (GPIO 23): clitoral chamber vacuum
+  - SOL5 (GPIO 24): clitoral chamber vent
+  - The vent valves (SOL2, SOL3, SOL5) should be **normally-open** types, so losing power vents the cup
 
 
 ## Motor Driver
-- L293D Motor Driver Shield or Module
-  - Enable pin connected to Raspberry Pi GPIO 25
-  - PWM connected to Raspberry Pi GPIO 18
-  - IN2 grounded for single direction operation
+- 3x L293D Motor Driver (1 for the pump, 2 for the five valves)
+  - Pump: enable on GPIO 25, PWM on GPIO 18, IN2 grounded for single direction operation
+  - Limit: about 0.6 A per channel and a 1–2 V drop — check the pump and each valve draw less than that
 
 ### Motor Wiring Instructions
 ```
@@ -71,6 +87,34 @@ GPIO 18 (PWM)    ----> IN1 (Input 1)
                        GND -----------------> Connect to GND
 ```
 
+## Body & Fluid Sensors
+- MAX30102 pulse oximeter / heart rate — I²C bus 1 (GPIO 2, 3)
+- MPU6050 6-axis motion sensor — I²C bus 1, address 0x68 or 0x69
+- Fluid catcher scale: TAL220 load cell + HX711 amplifier — data GPIO 26, clock GPIO 14
+  - GPIO 14 is also the serial TX pin: keep the serial port turned off
+  - The HX711 code still uses stub GPIO functions (not reading real hardware yet)
+
+## TENS (Electrical Stimulation)
+- 2 channels: clitoral cup electrodes and urethral electrodes
+  - Clitoral: enable GPIO 5, polarity GPIO 6, amplitude PWM GPIO 12, fault input GPIO 16
+  - Urethral: enable GPIO 19, polarity GPIO 20, amplitude PWM GPIO 13, fault input GPIO 4; impedance on MCP3008 channel 3
+- **Driver hardware not chosen yet.** It must be an isolated, current-limited, biphasic (charge-balanced) stimulator — never wired straight to the Pi or the 12 V supply
+- The code does not yet claim the TENS pins, so TENS does not work in software yet
+
+## Safety Hardware
+- Emergency stop button — GPIO 21 (active low, pull-up)
+- Silicone manual vent flaps on the cup (one per chamber) — work with no power
+- **Still to add:**
+  - Passive relief valve (duckbill) on each line, opening at 85–100 mmHg
+  - Inline hydrophobic filter / backflow protector at each cup port
+  - Normally-open vent solenoids (see Valves)
+
+## Planned: Clitoral Air-Pulse Pulser
+- A second 12 V diaphragm pump with its check valves removed and exhaust port sealed (the spare YOGULGUL is the first test candidate)
+- Its own PWM DC motor speed controller + hall sensor and magnet on the shaft to read the real pulse frequency
+- Small restrictor (needle valve or 0.5–1 mm orifice) between the SOL4 vacuum line and the T at the clitoral port
+- Safety rule: steady vacuum + pulse peak must stay under 75 mmHg
+
 ## Control Interface
   - graphical interface
   - Anti detachment (crucial)
@@ -82,7 +126,7 @@ GPIO 18 (PWM)    ----> IN1 (Input 1)
 
 ## Power Supply
 - 5V Power Supply (for Raspberry Pi)
-- 12V Power Supply (for vacuum pump, solenoid valves, and L293D)
+- 12V Power Supply (for vacuum pump, solenoid valves, L293D drivers and a future pulser pump)
 - Common ground between all components
 
 ## Additional Components
@@ -97,7 +141,8 @@ GPIO 18 (PWM)    ----> IN1 (Input 1)
 - C++ with Qt5 framework:
   - libgpiod (for GPIO control)
   - Linux SPI interface (/dev/spidev for MCP3008)
-  - Qt5::Core, Qt5::Widgets, Qt5::Charts
+  - Qt5: Core, Widgets, Charts, Sql, Multimedia, WebSockets, SerialPort
+  - libgpiod + libgpiodcxx 2.x (C and C++ bindings)
   - pthread (for threading)
 - Build system: CMake 3.16+
 
