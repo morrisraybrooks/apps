@@ -1,0 +1,21 @@
+{
+ "shell": {
+  "points_checked": 278308,
+  "sharp_on_skin_side": 0,
+  "thin_on_skin_side": 0,
+  "sharp_outside_only": 841,
+  "worst_deg_skin_side": 61.3
+ },
+ "seal_breakdown": {
+  "lip_sharp": 0,
+  "vent_flaps_sharp": 0
+ },
+ "seal": {
+  "points_checked": 43290,
+  "sharp_on_skin_side": 0,
+  "thin_on_skin_side": 0,
+  "sharp_outside_only": 0,
+  "worst_deg_skin_side": 63.8
+ },
+ "PASS": true
+}

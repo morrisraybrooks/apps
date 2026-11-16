@@ -1,0 +1,119 @@
+{
+ "params": {
+  "wall": 2.0,
+  "divider": 1.9999998807907104,
+  "leg_top_x": 1.000002145767212,
+  "leg_top_y": 40.0,
+  "leg_foot_x": 20.999961853027344,
+  "leg_foot_y": -44.0,
+  "leg_r_top": 17.5,
+  "leg_r_foot": 25.0,
+  "leg_bulge": 12.0,
+  "leg_h_top": 40.0,
+  "leg_h_foot": 40.29993438720703,
+  "apex_blend": 8.0,
+  "tear_top_y": 53.5,
+  "tear_width": 32.0,
+  "tear_length": 55.0,
+  "tear_tail_r": 5.0,
+  "tear_height": 63.5,
+  "tear_flip": 1,
+  "tear_nose": 1,
+  "tear_mouth": 0.0,
+  "tear_bridge": 0.55,
+  "tear_full": 2.6,
+  "tear_turret": 1,
+  "tear_dome": 5.0,
+  "slot_on": 1,
+  "slot_top_y": -12.0,
+  "slot_top_w": 13.100000381469727,
+  "slot_flare": 0.0,
+  "slot_round": 12.0,
+  "ribs_on": 0,
+  "rib_height": 1.1,
+  "side_port_x": 24.0,
+  "side_port_y": 5.0,
+  "inner_fillet": 2.0,
+  "vents_on": 1,
+  "vent_hole": 3.0,
+  "flap_d": 12.0,
+  "leg_link": 0,
+  "link_r": 7.0,
+  "link_gap": 6.0,
+  "one_outer_port": 0,
+  "avl_tap": 0,
+  "wrap_on": 1,
+  "wrap_gap": 6.0,
+  "wrap_flare": 6.0,
+  "wrap_start": 0.35,
+  "wrap_blend": 8.0,
+  "wrap_top": 32.0,
+  "glans_on": 1,
+  "shaft_d": 27.0,
+  "shaft_len": 44.0,
+  "corona_d": 33.0,
+  "glans_len": 26.0,
+  "corona_back": 5.0,
+  "neck_round": 3.0,
+  "glans_tilt": 15.0,
+  "glans_y": 4.0,
+  "hood_ridge": 1.5,
+  "hood_arc": 120.0,
+  "luer_od": 6.6,
+  "luer_id": 2.6,
+  "luer_len": 11.0,
+  "avl_od": 4.4,
+  "avl_id": 2.0,
+  "avl_len": 7.0,
+  "seal_w": 2.5999999046325684,
+  "seal_h": 5.0,
+  "min_gap": 3.0,
+  "edge_round": 1.0
+ },
+ "voxel_mm": 0.3,
+ "vents": [
+  {
+   "chamber": "clitoral",
+   "at_mm": [
+    16.6,
+    32.2,
+    53.8
+   ]
+  },
+  {
+   "chamber": "outer (legs)",
+   "at_mm": [
+    -23.4,
+    -18.0,
+    38.7
+   ]
+  }
+ ],
+ "shell": {
+  "faces": 1669856,
+  "watertight": true,
+  "size_mm": [
+   93.5,
+   128.5,
+   79.6
+  ],
+  "plastic_cm3": 57.29,
+  "spike_free": true
+ },
+ "seal": {
+  "faces": 259732,
+  "watertight": true,
+  "size_mm": [
+   94.7,
+   129.7,
+   66.3
+  ],
+  "plastic_cm3": 8.94,
+  "spike_free": true
+ },
+ "outer_chamber_cm3": 204.1,
+ "clit_chamber_cm3": 34.3,
+ "clit_fit": 0.992,
+ "chambers_separate": true,
+ "legs_connected": true
+}
