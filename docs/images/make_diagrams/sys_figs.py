@@ -183,9 +183,9 @@ def overview():
         (["Pump driver", "L293D"], "GPIO 18, 25", C["drv"], C["drvfill"]),
         (["Valve drivers", "2 × L293D, 12 V"], "GPIO 17 27 22 23 24", C["drv"], C["drvfill"]),
         (["ADC", "MCP3008"], "SPI 8–11", C["sens"], C["sensfill"]),
-        (["Scale amp", "HX711"], "GPIO 26, 19", C["chan"], C["chanfill"]),
+        (["Scale amp", "HX711"], "GPIO 26, 14", C["chan"], C["chanfill"]),
         (["I²C sensors", "bus 1"], "I²C", C["sens"], C["sensfill"]),
-        (["TENS drivers", "×2"], "GPIO 5 6 12 16 / 19 20 13 21", C["tens"], C["tensfill"]),
+        (["TENS drivers", "×2"], "GPIO 5 6 12 16 / 19 20 13 4", C["tens"], C["tensfill"]),
     ]
     n, gap, x = 6, 22, 40
     bw = (1720 - x - gap * (n - 1)) / n
@@ -198,7 +198,7 @@ def overview():
         g.line([(cx, bus_y), (cx, 640)], C["ctl"], 6)
         g.tag(cx, 585, pins.split(" / ")[0], C["ctl"], 20)
         g.box(xx, 640, bw, 130, lines, col, fill, 30)
-    g.tag(xs[5] + bw / 2, 615, "19 20 13 21", C["ctl"], 20)
+    g.tag(xs[5] + bw / 2, 615, "19 20 13 4", C["ctl"], 20)
 
     # band 3: devices
     dev = [
@@ -238,8 +238,8 @@ def overview():
     g.line([(cx4, 1010), (cx4, 1200)], C["sens"], 6, dashed=True)
     g.text(cx4 + 14, 1240, "worn on the body", 22, C["sub"])
 
-    # pin clash warning
-    g.box(40, 1320, 1680, 84, ["Pin clash in the code: GPIO 19 = HX711 clock and urethral TENS enable;  GPIO 21 = e-stop button and urethral TENS fault"],
+    # what the code does not do yet
+    g.box(40, 1320, 1680, 84, ["Not working in the code yet: TENS pins are never claimed, the HX711 scale is a stub, and PWM is only on/off"],
           C["warn"], C["warnfill"], 26)
     g.save("system-overview.svg")
 

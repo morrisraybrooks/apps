@@ -23,7 +23,7 @@
  * - Orgasmic burst detection
  * - Lubrication rate correlation with arousal
  * 
- * Hardware: TAL220 load cell → HX711 ADC → GPIO 26 (DT), GPIO 19 (SCK)
+ * Hardware: TAL220 load cell → HX711 ADC → GPIO 26 (DT), GPIO 14 (SCK)
  */
 class FluidSensor : public QObject
 {
@@ -225,7 +225,7 @@ private:
 
     // GPIO definitions for HX711
     static const int DEFAULT_HX711_DATA_GPIO = 26;
-    static const int DEFAULT_HX711_CLOCK_GPIO = 19;
+    static const int DEFAULT_HX711_CLOCK_GPIO = 14;  // was 19 = urethral TENS enable. GPIO 14 is also UART TX: keep the serial port off (Pi default)
 };
 
 #endif // FLUIDSENSOR_H

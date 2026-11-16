@@ -760,7 +760,7 @@ void HardwareManager::setTENSPWMDutyCycle(int pwmValue)
 
     if (!m_simulationMode && m_actuatorControl) {
         // Use ActuatorControl to set hardware PWM on GPIO_TENS_PWM (GPIO 12)
-        // GPIO 12 is hardware PWM1 channel on Raspberry Pi
+        // GPIO 12 is hardware PWM channel 0 on Raspberry Pi
         m_actuatorControl->setPWM(GPIO_TENS_PWM, m_tensPWMValue);
     }
 }
@@ -814,7 +814,7 @@ void HardwareManager::setUrethralPWMDutyCycle(int pwmValue)
     m_urethralPWMValue = std::clamp(pwmValue, 0, 1024);
 
     if (m_actuatorControl && !m_simulationMode) {
-        // GPIO 13 is hardware PWM0 channel on Raspberry Pi
+        // GPIO 13 is hardware PWM channel 1 on Raspberry Pi
         m_actuatorControl->setPWM(GPIO_URETHRAL_PWM, m_urethralPWMValue);
     }
 }

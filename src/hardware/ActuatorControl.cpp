@@ -494,7 +494,7 @@ void ActuatorControl::setPWM(int pin, int dutyCycle)
 
     // For now, implement as simple on/off based on threshold
     // For proper PWM, this would need hardware PWM support or software PWM timer
-    // Hardware PWM is available on GPIO 12 and 13 (PWM0) and GPIO 18 and 19 (PWM1)
+    // Hardware PWM channel 0 is on GPIO 12 or 18, channel 1 on GPIO 13 or 19 (pins on the same channel share one signal)
 
     if (pin == 12 || pin == 13 || pin == 18 || pin == 19) {
         // These are hardware PWM capable pins

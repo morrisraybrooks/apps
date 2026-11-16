@@ -333,14 +333,15 @@ private:
     // GPIO pin definitions - Clitoral channel
     static const int GPIO_TENS_ENABLE = 5;   // Master enable
     static const int GPIO_TENS_PHASE = 6;    // Polarity control
-    static const int GPIO_TENS_PWM = 12;     // Amplitude PWM (hardware PWM1)
+    static const int GPIO_TENS_PWM = 12;     // Amplitude PWM (hardware PWM channel 0)
     static const int GPIO_TENS_FAULT = 16;   // Fault input
 
-    // GPIO pin definitions - Urethral channel (new)
-    static const int GPIO_URETHRAL_ENABLE = 25;  // Urethral master enable
-    static const int GPIO_URETHRAL_PHASE = 26;   // Urethral polarity control
-    static const int GPIO_URETHRAL_PWM = 13;     // Urethral amplitude PWM (hardware PWM0)
-    static const int GPIO_URETHRAL_FAULT = 17;   // Urethral fault input
+    // GPIO pin definitions - Urethral channel. MUST match HardwareManager.h, which drives the pins.
+    // (These were 25/26/17 = pump enable / HX711 data / SOL1 valve.)
+    static const int GPIO_URETHRAL_ENABLE = 19;  // Urethral master enable
+    static const int GPIO_URETHRAL_PHASE = 20;   // Urethral polarity control
+    static const int GPIO_URETHRAL_PWM = 13;     // Urethral amplitude PWM (hardware PWM channel 1)
+    static const int GPIO_URETHRAL_FAULT = 4;    // Urethral fault input
 
     // Limits - Clitoral
     static constexpr double MIN_FREQUENCY_HZ = 1.0;

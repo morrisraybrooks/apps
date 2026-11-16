@@ -11,8 +11,12 @@ To redraw them, run the scripts in [`images/make_diagrams/`](images/make_diagram
 The Raspberry Pi runs the Qt app and talks to everything through its pins: two kinds of drivers (pump, valves),
 an ADC for the three pressure sensors, a scale amp for the fluid catcher, I²C body sensors and two TENS drivers.
 
-> **Pin clash found in the code:** GPIO 19 is both the HX711 clock and the urethral TENS enable, and GPIO 21 is both
-> the emergency-stop button and the urethral TENS fault input. These need different pins before both features are wired.
+> **Pin clashes fixed (2026-11-16):** the urethral TENS fault moved from GPIO 21 (the e-stop button) to GPIO 4, and the
+> HX711 clock moved from GPIO 19 (the urethral TENS enable) to GPIO 14. Every pin now has one job — see the pin table in
+> the [README](README.md#gpio-pin-assignments).
+>
+> **Still not working in the code:** the TENS pins are never claimed from the GPIO chip, the HX711 scale uses stub
+> functions, and "PWM" is only on/off (above or below 50 %).
 
 ## 2. Vacuum plumbing
 

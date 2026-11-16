@@ -169,8 +169,8 @@ private:
     int m_tensPWMValue;          // GPIO 12: PWM duty cycle (0-1024)
 
     // Urethral electrode states
-    bool m_urethralEnableState;  // GPIO 25: Urethral master enable
-    bool m_urethralPhaseState;   // GPIO 26: Urethral polarity
+    bool m_urethralEnableState;  // GPIO 19: Urethral master enable
+    bool m_urethralPhaseState;   // GPIO 20: Urethral polarity
     int m_urethralPWMValue;      // GPIO 13: Urethral PWM duty cycle (0-1024)
 
     // Error tracking
@@ -209,14 +209,14 @@ private:
     // TENS GPIO pin definitions (integrated into clitoral cup)
     static const int GPIO_TENS_ENABLE = 5;   // Master enable for TENS output
     static const int GPIO_TENS_PHASE = 6;    // Polarity control (H=positive, L=negative)
-    static const int GPIO_TENS_PWM = 12;     // Amplitude PWM (hardware PWM1)
+    static const int GPIO_TENS_PWM = 12;     // Amplitude PWM (hardware PWM channel 0)
     static const int GPIO_TENS_FAULT = 16;   // Fault input from driver
 
     // Urethral electrode GPIO pin definitions
     static const int GPIO_URETHRAL_ENABLE = 19;  // Urethral master enable
     static const int GPIO_URETHRAL_PHASE = 20;   // Urethral polarity control
-    static const int GPIO_URETHRAL_PWM = 13;     // Urethral amplitude PWM (hardware PWM0)
-    static const int GPIO_URETHRAL_FAULT = 21;   // Urethral fault input
+    static const int GPIO_URETHRAL_PWM = 13;     // Urethral amplitude PWM (hardware PWM channel 1)
+    static const int GPIO_URETHRAL_FAULT = 4;    // Urethral fault input (was 21 = e-stop button)
 
     // ADC channel for urethral impedance measurement
     static const int ADC_CHANNEL_URETHRAL_IMPEDANCE = 3;  // Channel 3: Urethral electrode impedance

@@ -6,8 +6,7 @@
 #include <gpiod.h>
 #include <stdexcept>
 
-// Define GPIO line offset
-#define GPIO_EMERGENCY_BUTTON 21 // Example GPIO pin
+// GPIO_EMERGENCY_BUTTON (21) is defined once, in EmergencyStop.h
 
 EmergencyStop::EmergencyStop(HardwareManager* hardware, QObject *parent)
     : QObject(parent)

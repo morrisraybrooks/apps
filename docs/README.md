@@ -340,17 +340,35 @@ cd build && make docs
 
 ![Vacuum plumbing: pump, tank, valves SOL1–SOL5, sensors and the two cup chambers](images/vacuum-plumbing.svg)
 
-### GPIO Pin Assignments (Dual-Chamber)
-```
-GPIO 17 - SOL1 (Outer A-seal vacuum / A-legs)
-GPIO 27 - SOL2 (Outer A-seal vent - safety / A-legs)
-GPIO 22 - SOL3 (Tank vent - safety)
-GPIO 23 - SOL4 (Clitoral cylinder vacuum / A-apex)      ← NEW
-GPIO 24 - SOL5 (Clitoral cylinder vent - safety / A-apex)        ← NEW
-GPIO 25 - Pump enable (L293D)
-GPIO 18 - Pump PWM control
-GPIO 21 - Emergency stop button (optional)
-```
+### GPIO Pin Assignments
+
+BCM numbering. Every pin has exactly one job (checked 2026-11-16).
+
+| GPIO | Job | Defined in |
+|------|-----|-----------|
+| 2, 3 | I²C bus 1 — heart rate (MAX30102), motion (MPU6050) | MotionSensor.h, HeartRateSensor.h |
+| 4 | Urethral TENS fault input *(was 21)* | HardwareManager.h |
+| 5 | Clitoral TENS enable | HardwareManager.h |
+| 6 | Clitoral TENS polarity | HardwareManager.h |
+| 8, 9, 10, 11 | SPI to MCP3008 ADC (CS, MISO, MOSI, SCK) | HardwareManager.h |
+| 12 | Clitoral TENS amplitude PWM (hardware PWM channel 0) | HardwareManager.h |
+| 13 | Urethral TENS amplitude PWM (hardware PWM channel 1) | HardwareManager.h |
+| 14 | HX711 scale clock *(was 19)* — keep the serial port off | FluidSensor.h |
+| 16 | Clitoral TENS fault input | HardwareManager.h |
+| 17 | SOL1 — leg chamber vacuum | ActuatorControl.h |
+| 18 | Pump PWM | ActuatorControl.h |
+| 19 | Urethral TENS enable | HardwareManager.h |
+| 20 | Urethral TENS polarity | HardwareManager.h |
+| 21 | Emergency stop button | EmergencyStop.h |
+| 22 | SOL3 — tank vent | ActuatorControl.h |
+| 23 | SOL4 — clitoral chamber vacuum | ActuatorControl.h |
+| 24 | SOL5 — clitoral chamber vent | ActuatorControl.h |
+| 25 | Pump enable (L293D) | ActuatorControl.h |
+| 26 | HX711 scale data | FluidSensor.h |
+| 27 | SOL2 — leg chamber vent | ActuatorControl.h |
+
+> Hardware PWM: GPIO 12 and 18 share **channel 0**, so real hardware PWM can't drive the TENS amplitude (12) and the
+> pump (18) separately. One of them will need software PWM or a different pin when real PWM is implemented.
 
 ### Pressure Specifications by Chamber
 
