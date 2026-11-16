@@ -8,6 +8,8 @@ add_library(PneumaticsLogic STATIC
     TankLogic.cpp
     ChamberRegulator.cpp
     SealWatch.cpp
+    PulserDrive.cpp
+    SoftwarePwm.cpp
 )
 set_target_properties(PneumaticsLogic PROPERTIES
     AUTOMOC ON
