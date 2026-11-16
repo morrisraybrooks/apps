@@ -12,3 +12,4 @@ endfunction()
 
 pneumatics_test(pulsercalibration)
 pneumatics_test(tanklogic)
+pneumatics_test(chamberregulator)
