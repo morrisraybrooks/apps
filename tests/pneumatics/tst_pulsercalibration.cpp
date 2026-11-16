@@ -85,6 +85,15 @@ private slots:
         QVERIFY(!c.isValid());
     }
 
+    void exampleFileIsRejected()
+    {
+        PulserCalibration c;
+        QString error;
+        QVERIFY2(!c.loadFromFile(PNEUMATICS_SOURCE_DIR "/config/pulser_calibration.example.json", &error),
+                 "the example calibration must never run the pulser");
+        QVERIFY2(error.contains("measured"), qPrintable(error));  // rejected for being unmeasured, not missing
+    }
+
     void rejectsGarbage()
     {
         QTemporaryFile f;

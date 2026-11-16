@@ -79,6 +79,7 @@ public:
     void setPulserDuty(double percent);   // 0-100 %, GPIO 15
     double getPulserDuty() const;
     double sampleClitoralSwing(int durationMs);  // bench: max - min of raw clitoral readings
+    void setPneumaticsBenchMode(bool on) { m_pneumaticsBenchMode = on; }  // PulserBench only; before initialize()
     CameraManager* getCameraManager() const { return m_cameraManager.get(); }
     ConsentManager* getConsentManager() const { return m_consentManager.get(); }
 
@@ -156,6 +157,7 @@ private:
     std::unique_ptr<IPneumaticHardware> m_pneumaticsHw;
     std::unique_ptr<PneumaticController> m_pneumatics;
     double m_simulatedPulserDuty = 0.0;
+    bool m_pneumaticsBenchMode = false;
     void createPneumatics();
     std::unique_ptr<CameraManager> m_cameraManager;
     std::unique_ptr<ConsentManager> m_consentManager;

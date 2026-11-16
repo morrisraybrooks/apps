@@ -106,7 +106,7 @@ def plumbing():
     g.text(412, 382, "Tank sensor", 26, C["sens"], "end", True)
     g.text(412, 410, "ADC ch 1", 22, C["sub"], "end")
     g.line([(460, 660), (460, 720)], C["air"], 6)
-    g.box(385, 720, 150, 100, ["SOL3", "tank vent"], C["drv"], C["drvfill"], 32)
+    g.box(385, 720, 150, 100, ["SOL3", "tank vent · NC"], C["drv"], C["drvfill"], 30)
     g.air(460, 820, "down")
     # manifold
     g.line([(570, 570), (630, 570)], C["air"], 8)
@@ -114,7 +114,7 @@ def plumbing():
 
     def branch(y, col, fill, vac, vent, sens_name, ch, up):
         g.line([(630, y), (1300, y)], col, 8)
-        g.box(680, y - 55, 180, 110, [vac, "vacuum on"], col, "#ffffff", 34)
+        g.box(680, y - 55, 180, 110, [vac, "vacuum · NC"], col, "#ffffff", 34)
         s = -1 if up else 1
         # sensor tee
         g.line([(960, y), (960, y + s * 70)], col, 6)
@@ -125,7 +125,7 @@ def plumbing():
         # vent tee
         g.line([(1140, y), (1140, y + s * 60)], col, 6)
         vy = y + s * 60 if not up else y - 60 - 100
-        g.box(1065, vy, 150, 100, [vent, "vent"], col, "#ffffff", 32)
+        g.box(1065, vy, 150, 100, [vent, "vent · NO"], col, "#ffffff", 32)
         g.air(1140, vy if up else vy + 100, "up" if up else "down")
 
     branch(TOP, C["clit"], C["clitfill"], "SOL4", "SOL5", "Clitoral sensor", "ADC ch 2", True)
@@ -135,7 +135,7 @@ def plumbing():
     x0, w = 1310, 400
     g.el.append(f'<rect x="{x0}" y="200" width="{w}" height="760" rx="30" fill="#f5f7fa" stroke="{C["line"]}" stroke-width="4"/>')
     g.text(x0 + w / 2, 250, "A-Contour cup", 32, C["ink"], "middle", True)
-    g.box(x0 + 30, 270, w - 60, 180, ["Clitoral chamber", "steady (engorge) or", "5–13 Hz air pulses"], C["clit"], C["clitfill"], 30)
+    g.box(x0 + 30, 270, w - 60, 180, ["Clitoral chamber", "steady vacuum +", "pulser air pulses"], C["clit"], C["clitfill"], 30)
     g.box(x0 + 30, 690, w - 60, 220, ["Leg chamber", "steady 30–50 mmHg", "engorge + hold on", "(both legs)"], C["leg"], C["legfill"], 30)
     g.line([(1300, TOP), (x0 + 30, TOP)], C["clit"], 8)
     g.line([(1300, BOT), (x0 + 30, BOT)], C["leg"], 8)
@@ -149,11 +149,15 @@ def plumbing():
     g.text(x0 + w / 2, 1032, "lift to release, no power needed", 22, C["sub"], "middle")
 
     # planned safety parts
-    g.box(690, 470, 560, 200,
-          ["Safety parts still to add", "• relief valve on each line, opens 85–100 mmHg",
+    # clitoral pulser on a T near the cup
+    g.line([(1255, TOP), (1255, 470)], C["clit"], 8)
+    g.box(1150, 470, 150, 150, ["Pulser", "2nd pump,", "valves out", "GPIO 15"], C["clit"], C["clitfill"], 28)
+    g.box(690, 470, 430, 200,
+          ["Safety parts to fit", "• relief valve 85–100 mmHg:",
+           "   tank + both lines",
            "• fluid filter at each cup port",
-           "• vent valves open when power is lost"],
-          C["warn"], "#fffafa", 28, dashed=True, align="start")
+           "NC = closed when off · NO = open"],
+          C["warn"], "#fffafa", 26, dashed=True, align="start")
     g.text(40, 1120, "Controller limits: 30–50 mmHg normal · 75 mmHg cap · 80 mmHg emergency stop · 100 mmHg never.",
            26, C["ink"], "start", True)
     g.el[n0:] = ['<g transform="translate(0,50)">'] + g.el[n0:] + ['</g>']

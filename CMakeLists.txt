@@ -320,6 +320,11 @@ target_compile_definitions(VacuumControllerLib
 # Create main executable
 add_executable(VacuumController src/main.cpp)
 
+# Bench calibration tool for the clitoral pulser (docs/pulser-bench-calibration.md)
+add_executable(PulserBench tools/pulser_bench/main.cpp)
+target_include_directories(PulserBench PRIVATE ${CMAKE_SOURCE_DIR}/src/hardware)
+target_link_libraries(PulserBench PRIVATE VacuumControllerLib)
+
 # Link executable to library
 target_link_libraries(VacuumController
     PRIVATE

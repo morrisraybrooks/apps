@@ -925,6 +925,7 @@ void HardwareManager::createPneumatics()
     } else {
         qWarning() << "settings.json not found - using default pneumatic settings";
     }
+    settings.benchMode = m_pneumaticsBenchMode;
 
     m_pneumaticsHw = std::make_unique<HardwarePneumatics>(this);
     m_pneumatics = std::make_unique<PneumaticController>(m_pneumaticsHw.get(), settings);
