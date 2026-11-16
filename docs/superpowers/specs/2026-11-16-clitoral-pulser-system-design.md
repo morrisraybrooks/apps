@@ -43,7 +43,8 @@ Background: [air-pulse-toy-research.md](../../air-pulse-toy-research.md).
 - Main pump: Marhynchus 12 V diaphragm pump, can pull **450 mmHg**.
 - `PatternEngine::applyPressureTarget()` today treats **pump speed as the pressure** and holds SOL1 open; nothing
   regulates the tank.
-- `PatternEngine::performSafetyCheck()` emergency-stops if **tank** pressure exceeds the chamber limit.
+- `PatternEngine::performSafetyCheck()` emergency-stops if **tank** pressure exceeds the chamber limit – fine as long
+  as the tank is held below it.
 - `ClitoralOscillator` makes pulses by cycling **SOL4/SOL5** through VACUUM → HOLD → VENT phases with a 1 ms
   `QTimer`.
 - `AntiDetachmentMonitor` thresholds (attached ≥ 60 mmHg, detach < 50, releases only at 65) don't fit the 30–50 mmHg
@@ -85,25 +86,26 @@ pump ─► TANK ─┬─► SOL1 ─► leg line ──┬─► LEG CHAMBER (
               │                          ├─ clitoral sensor (ADC 2)
               │                          ├─ SOL5 vent ─► air
               │                          ├─ relief valve 85–100 mmHg   (my call)
-              │                          └─ PULSER: both ports of the modified pump
-              ├─ tank sensor (ADC 1) – upgraded to MPX5050DP (my call)
+              │                          └─ T ◄── PULSER: both ports of the modified pump
+              ├─ tank sensor (ADC 1) – MPX5010DP, unchanged
               ├─ SOL3 vent ─► air
-              └─ relief valve ~150 mmHg   (my call)
+              └─ relief valve 85–100 mmHg   (my call)
 ```
 
 - **Pulser:** a 12 V diaphragm pump with its check valves removed; **intake and exhaust both** piped to the clitoral
-  line. With the valves out, both ports open into the same diaphragm chamber, so every turn of the motor pushes and
+  line, joined by a **T close to the cup** (owner confirmed a T is fine – they don't need separate cup ports). With
+  the valves out, both ports open into the same diaphragm chamber, so every turn of the motor pushes and
   pulls air in the clitoral chamber. Pulse rate = motor RPM ÷ 60. First candidate: the spare **YOGULGUL** pump (no
   built-in pressure switch or relief valve to leak). The pump body must be airtight.
 - **Short, stiff tubing** from the pulser to the clitoral port (PU or PVC, as short as practical) – soft silicone
   soaks up pulses. *(my call)*
 - **Tank:** kept. The pump fills it to a target, then stops (see 5.3).
-- **Tank sensor upgrade (my call):** MPX5010DP → **MPX5050DP** (same family and pinout, 0–50 kPa ≈ 0–375 mmHg) so the
-  tank can be held deeper than the chambers. The two chamber sensors stay MPX5010DP. The software conversion for ADC
-  channel 1 changes to the new range.
+- **Tank sensor: unchanged MPX5010DP (owner's choice).** It reads up to 75 mmHg and the owner's pump isn't strong
+  in practice anyway, so the tank is held **at about 70 mmHg** – just deeper than the chambers. A deeper tank (with an
+  MPX5050DP) was considered and not chosen.
 - **Valve types (my call):** SOL1, SOL3, SOL4 **normally-closed** (power off = tank isolated and keeps its vacuum);
   SOL2, SOL5 **normally-open** (power off = both chambers vent).
-- **Relief valves (my call):** ~150 mmHg on the tank; 85–100 mmHg on each chamber line. Mechanical backstop if a
+- **Relief valves (my call):** 85–100 mmHg on the tank and on each chamber line. Mechanical backstop if a
   valve sticks or the software hangs.
 
 ### 5.2 Electronics
@@ -118,12 +120,16 @@ pump ─► TANK ─┬─► SOL1 ─► leg line ──┬─► LEG CHAMBER (
 ### 5.3 Pressure control
 
 **Tank (new)** *(my call on numbers)*
-- Fill the tank to **120 mmHg**; switch the pump **off**; restart when the tank falls to **90 mmHg**.
+- Fill the tank to **70 mmHg**; switch the pump **off**; restart when the tank falls to **55 mmHg**. The tank stays
+  below the sensor's 75 mmHg top so its reading is always real.
+- The pump also restarts whenever a chamber needs topping up and the tank is not at least 5 mmHg deeper than that
+  chamber. *(my call)*
 - Optional "quiet top-up": instead of full speed, restart at low speed.
 - The tank never feeds the body directly – only through SOL1 / SOL4.
 
 **Each chamber (replaces "pump speed = pressure")**
-- Each chamber has its own **target** (legs: 30–50 mmHg; clitoral: 0–75 mmHg minus pulse allowance, see 5.5).
+- Each chamber has its own **target** (legs: 30–50 mmHg; clitoral: 0 to about 60 mmHg – it must stay below the
+  tank – and lower still by the pulse allowance, see 5.5).
 - Hold the target with short **SOL1 / SOL4 openings** when below target − 2 mmHg, closing at target; vent with
   **SOL2 / SOL5** when above target + 3 mmHg. *(my call on the bands)*
 - Openings are short (start with **30 ms**, then re-read and repeat) so the deep tank doesn't overshoot the chamber.
@@ -158,8 +164,8 @@ current numbers:
 
 - **Pulse allowance:** while the pulser runs, the clitoral target is capped at **75 mmHg − (measured pulse peak at
   that speed)**. Measured once on the bench, **worst case** (see 5.6), stored with the calibration table.
-- **Tank has its own limit** (relief ~150, software stop at 140) – the safety check stops comparing the tank to the
-  chamber limit.
+- **Tank:** the pump stops at 70 mmHg; the existing safety check (tank above the chamber limit = emergency stop) stays
+  as a backstop, with the 85–100 mmHg relief valve behind it.
 - **Emergency stop / any fault:** pulser off → SOL1 and SOL4 closed → SOL2 and SOL5 open → pump off. SOL3 opens only on
   emergency stop or a manual "Vent tank" command; a normal session end keeps the tank vacuum (quiet next start).
   *(my call)*
@@ -182,13 +188,13 @@ current numbers:
 | Area | Change |
 |---|---|
 | `ActuatorControl` | Claim GPIO 15; software-PWM thread for the pulser; `setPulserSpeed()` / `setPulserEnabled()` |
-| `HardwareManager` | Pass-throughs for the pulser; tank sensor uses MPX5050DP conversion |
-| `PatternEngine` | Chamber targets instead of pump speed; tank fill/stop loop; safety check with separate tank limit |
+| `HardwareManager` | Pass-throughs for the pulser |
+| `PatternEngine` | Chamber targets instead of pump speed; tank fill/stop loop |
 | `ClitoralOscillator` | Pulser speed + bursts instead of SOL4/SOL5 cycling |
 | `AntiDetachmentMonitor` (or switch to `AdaptiveSealMonitor`) | Target-relative leak detection, stop at target, 3 attempts then safe stop |
 | Emergency stop | Adds pulser off; SOL3 on e-stop only |
 | `config/` | Pulser calibration table; tank thresholds |
-| Docs | Plumbing picture, parts list (MPX5050DP, relief valves, pulser), pin table (GPIO 15) |
+| Docs | Plumbing picture, parts list (relief valves, pulser), pin table (GPIO 15) |
 
 ## 6. Left to the builder
 
