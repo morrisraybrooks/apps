@@ -17,3 +17,10 @@ pneumatics_test(sealwatch)
 pneumatics_test(pulserdrive)
 pneumatics_test(softwarepwm)
 pneumatics_test(pneumaticcontroller)
+
+# Oscillator against the real HardwareManager in simulation mode
+add_executable(tst_clitoraloscillator tst_clitoraloscillator.cpp)
+set_target_properties(tst_clitoraloscillator PROPERTIES AUTOMOC ON)
+target_include_directories(tst_clitoraloscillator PRIVATE ${CMAKE_SOURCE_DIR}/src/hardware)
+target_link_libraries(tst_clitoraloscillator PRIVATE VacuumControllerLib Qt5::Test)
+add_test(NAME pneumatics_clitoraloscillator COMMAND tst_clitoraloscillator)

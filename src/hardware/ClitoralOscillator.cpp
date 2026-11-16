@@ -1,409 +1,180 @@
 #include "ClitoralOscillator.h"
 #include "HardwareManager.h"
+#include "PneumaticController.h"
+
 #include <QDebug>
 #include <QMutexLocker>
-#include <cmath>
 #include <algorithm>
 
 ClitoralOscillator::ClitoralOscillator(HardwareManager* hardware, QObject *parent)
     : QObject(parent)
     , m_hardware(hardware)
-    , m_oscillationTimer(new QTimer(this))
     , m_running(false)
     , m_currentPhase(Phase::IDLE)
     , m_cycleCount(0)
     , m_frequencyHz(DEFAULT_FREQUENCY_HZ)
-    , m_periodMs(static_cast<int>(1000.0 / DEFAULT_FREQUENCY_HZ))
-    , m_suctionRatio(DEFAULT_SUCTION_RATIO)
-    , m_holdRatio(DEFAULT_HOLD_RATIO)
-    , m_ventRatio(DEFAULT_VENT_RATIO)
-    , m_transitionRatio(DEFAULT_TRANSITION_RATIO)
     , m_targetAmplitude(DEFAULT_AMPLITUDE_MMHG)
     , m_dutyCycle(0.5)
-    , m_measuredPeakPressure(0.0)
-    , m_measuredTroughPressure(0.0)
+    , m_suctionRatio(0.35)
+    , m_holdRatio(0.10)
+    , m_ventRatio(0.35)
+    , m_transitionRatio(0.20)
 {
-    // High-precision timer for smooth oscillation
-    m_oscillationTimer->setTimerType(Qt::PreciseTimer);
-    m_oscillationTimer->setInterval(TIMER_RESOLUTION_MS);
-    connect(m_oscillationTimer, &QTimer::timeout, this, &ClitoralOscillator::onTimerTick);
-
-    // Calculate initial phase durations
-    calculatePhaseDurations();
-
-    qDebug() << "ClitoralOscillator initialized:"
-             << "Frequency:" << m_frequencyHz << "Hz"
-             << "Period:" << m_periodMs << "ms"
-             << "Amplitude:" << m_targetAmplitude << "mmHg";
+    // Nothing is sent to the air side here: constructing the oscillator must not
+    // request vacuum. Targets go out on setAmplitude()/start().
 }
 
 ClitoralOscillator::~ClitoralOscillator()
 {
-    stop();
+    if (m_running) stop();
+}
+
+PneumaticController* ClitoralOscillator::air() const
+{
+    return m_hardware ? m_hardware->pneumatics() : nullptr;
+}
+
+void ClitoralOscillator::onBurstChanged(bool on)
+{
+    m_currentPhase = on ? Phase::SUCTION : Phase::VENT;
+    emit phaseChanged(m_currentPhase);
+    emit vacuumPhaseChanged(on);
+    if (on) emit cycleCompleted(++m_cycleCount);
 }
 
 void ClitoralOscillator::start()
 {
-    QMutexLocker locker(&m_mutex);
-
-    if (m_running) {
-        qWarning() << "ClitoralOscillator already running";
+    PneumaticController* controller = air();
+    if (!controller) {
+        emit error("Clitoral pulser unavailable: hardware not initialized");
         return;
     }
+    if (m_running) return;
 
-    if (!m_hardware || !m_hardware->isReady()) {
-        emit error("Hardware not ready");
+    controller->setPulseRate(m_frequencyHz);
+    if (!controller->setPulserEnabled(true)) {
+        emit error("Clitoral pulser not calibrated - run the bench calibration first");
         return;
     }
-
-    qDebug() << "Starting ClitoralOscillator at" << m_frequencyHz << "Hz";
 
     m_running = true;
     m_cycleCount = 0;
-    m_currentPhase = Phase::SUCTION;
-    m_phaseTimer.start();
-
-    // Start with suction phase
-    executePhase(Phase::SUCTION);
-
-    m_oscillationTimer->start();
+    m_burstConnection = connect(controller, &PneumaticController::pulseBurstChanged,
+                                this, &ClitoralOscillator::onBurstChanged);
     emit oscillationStarted();
+    qDebug() << "Clitoral pulser started at" << m_frequencyHz << "pulses/s";
 }
 
 void ClitoralOscillator::stop()
 {
-    QMutexLocker locker(&m_mutex);
-
-    if (!m_running) {
-        return;
+    if (PneumaticController* controller = air()) {
+        controller->setPulserEnabled(false);  // steady clitoral target is left as it is
     }
-
-    qDebug() << "Stopping ClitoralOscillator after" << m_cycleCount << "cycles";
-
-    m_oscillationTimer->stop();
+    disconnect(m_burstConnection);
+    const bool wasRunning = m_running;
     m_running = false;
     m_currentPhase = Phase::IDLE;
-
-    // Safety: vent the clitoral cylinder
-    if (m_hardware) {
-        m_hardware->setSOL4(false);  // Close vacuum
-        m_hardware->setSOL5(true);   // Open vent
+    if (wasRunning) {
+        emit vacuumPhaseChanged(false);
+        emit oscillationStopped();
     }
-
-    emit oscillationStopped();
 }
 
 void ClitoralOscillator::emergencyStop()
 {
-    QMutexLocker locker(&m_mutex);
-
-    qWarning() << "ClitoralOscillator EMERGENCY STOP";
-
-    // Immediately stop the timer
-    m_oscillationTimer->stop();
+    if (PneumaticController* controller = air()) {
+        controller->emergencyStop();
+    }
+    disconnect(m_burstConnection);
     m_running = false;
     m_currentPhase = Phase::IDLE;
-
-    // Safety: Immediately vent the clitoral cylinder to release all pressure
-    if (m_hardware) {
-        m_hardware->setSOL4(false);  // Close vacuum source
-        m_hardware->setSOL5(true);   // Open vent to atmosphere
-    }
-
+    emit vacuumPhaseChanged(false);
     emit oscillationStopped();
 }
 
 void ClitoralOscillator::pulse(double intensity, int durationMs)
 {
-    QMutexLocker locker(&m_mutex);
-
-    // Clamp intensity to valid range
-    intensity = std::clamp(intensity, 0.0, 1.0);
+    Q_UNUSED(intensity);  // fixed-stroke pulser: strength is not adjustable
     durationMs = std::clamp(durationMs, 10, 1000);
+    PneumaticController* controller = air();
+    if (!controller || m_running) return;
 
-    if (!m_hardware) {
+    controller->setPulseRate(m_frequencyHz);
+    if (!controller->setPulserEnabled(true)) {
+        emit error("Clitoral pulser not calibrated - run the bench calibration first");
         return;
     }
-
-    // Apply a single vacuum pulse for haptic feedback
-    double savedAmplitude = m_targetAmplitude;
-    m_targetAmplitude = intensity * 100.0;  // Convert to mmHg
-
-    // Quick suction pulse
-    m_hardware->setSOL5(false);  // Close vent
-    m_hardware->setSOL4(true);   // Open vacuum
-
-    // Use a single-shot timer to end the pulse
-    QTimer::singleShot(durationMs, this, [this, savedAmplitude]() {
-        QMutexLocker locker(&m_mutex);
-        m_hardware->setSOL4(false);  // Close vacuum
-        m_hardware->setSOL5(true);   // Open vent
-        m_targetAmplitude = savedAmplitude;
+    QTimer::singleShot(durationMs, this, [this]() {
+        if (!m_running) {
+            if (PneumaticController* c = air()) c->setPulserEnabled(false);
+        }
     });
 }
 
 void ClitoralOscillator::setFrequency(double frequencyHz)
 {
-    QMutexLocker locker(&m_mutex);
-
-    // Clamp to valid range
-    frequencyHz = std::clamp(frequencyHz, MIN_FREQUENCY_HZ, MAX_FREQUENCY_HZ);
-
-    if (std::abs(m_frequencyHz - frequencyHz) < 0.01) {
-        return;  // No significant change
+    m_frequencyHz = std::clamp(frequencyHz, MIN_FREQUENCY_HZ, MAX_FREQUENCY_HZ);
+    if (PneumaticController* controller = air()) {
+        controller->setPulseRate(m_frequencyHz);
     }
-
-    m_frequencyHz = frequencyHz;
-    m_periodMs = static_cast<int>(1000.0 / frequencyHz);
-
-    calculatePhaseDurations();
-
-    qDebug() << "ClitoralOscillator frequency set to" << frequencyHz << "Hz"
-             << "(period:" << m_periodMs << "ms)";
 }
 
 void ClitoralOscillator::setAmplitude(double pressureMmHg)
 {
-    QMutexLocker locker(&m_mutex);
-
-    m_targetAmplitude = std::clamp(pressureMmHg, MIN_AMPLITUDE_MMHG, SafetyConstants::MAX_PRESSURE_STIMULATION_MMHG);
-
-    qDebug() << "ClitoralOscillator amplitude set to" << m_targetAmplitude << "mmHg";
+    m_targetAmplitude = std::clamp(pressureMmHg, MIN_AMPLITUDE_MMHG,
+                                   SafetyConstants::MAX_PRESSURE_STIMULATION_MMHG);
+    if (PneumaticController* controller = air()) {
+        controller->setClitoralTarget(m_targetAmplitude);  // further capped by the pulse allowance
+    }
 }
 
 void ClitoralOscillator::setDutyCycle(double dutyCycle)
 {
-    QMutexLocker locker(&m_mutex);
-
-    m_dutyCycle = std::clamp(dutyCycle, 0.1, 0.9);
-
-    // Adjust phase ratios based on duty cycle
-    m_suctionRatio = m_dutyCycle * 0.7;  // 70% of duty for suction
-    m_holdRatio = m_dutyCycle * 0.3;      // 30% of duty for hold
-    m_ventRatio = (1.0 - m_dutyCycle) * 0.7;
-    m_transitionRatio = (1.0 - m_dutyCycle) * 0.3;
-
-    calculatePhaseDurations();
-
-    qDebug() << "ClitoralOscillator duty cycle set to" << (m_dutyCycle * 100) << "%";
+    m_dutyCycle = std::clamp(dutyCycle, 0.0, 1.0);  // no effect: fixed-stroke pulser
 }
 
 void ClitoralOscillator::setPhaseTiming(double suctionRatio, double holdRatio,
                                         double ventRatio, double transitionRatio)
 {
-    QMutexLocker locker(&m_mutex);
-
-    // Normalize ratios to sum to 1.0
-    double total = suctionRatio + holdRatio + ventRatio + transitionRatio;
-    if (total <= 0) {
-        return;
-    }
-
-    m_suctionRatio = suctionRatio / total;
-    m_holdRatio = holdRatio / total;
-    m_ventRatio = ventRatio / total;
-    m_transitionRatio = transitionRatio / total;
-
-    calculatePhaseDurations();
+    // No effect with the pulser; stored for API compatibility
+    m_suctionRatio = suctionRatio;
+    m_holdRatio = holdRatio;
+    m_ventRatio = ventRatio;
+    m_transitionRatio = transitionRatio;
 }
 
 double ClitoralOscillator::getCurrentPressure() const
 {
-    if (m_hardware) {
+    if (!m_hardware) return 0.0;
+    try {
         return m_hardware->readClitoralPressure();
+    } catch (const std::exception&) {
+        return 0.0;
     }
-    return 0.0;
 }
 
-// ============================================================================
-// Presets based on research (8-13 Hz optimal orgasm frequency band)
-// ============================================================================
-
+// Presets: rates are now pulse rhythms (below the motor minimum they run as bursts);
+// pressures are the steady clitoral targets. Re-map after bench measurements.
 void ClitoralOscillator::setPresetWarmup()
 {
     setFrequency(5.0);
     setAmplitude(20.0);
-    setDutyCycle(0.4);
-    qDebug() << "ClitoralOscillator preset: Warmup (5 Hz, 20 mmHg)";
 }
 
 void ClitoralOscillator::setPresetBuildUp()
 {
     setFrequency(8.0);
     setAmplitude(40.0);
-    setDutyCycle(0.5);
-    qDebug() << "ClitoralOscillator preset: Build-up (8 Hz, 40 mmHg)";
 }
 
 void ClitoralOscillator::setPresetClimax()
 {
-    setFrequency(11.0);  // In the 8-13 Hz optimal band
+    setFrequency(11.0);
     setAmplitude(55.0);
-    setDutyCycle(0.6);
-    qDebug() << "ClitoralOscillator preset: Climax (11 Hz, 55 mmHg)";
 }
 
 void ClitoralOscillator::setPresetAfterGlow()
 {
     setFrequency(4.0);
     setAmplitude(15.0);
-    setDutyCycle(0.35);
-    qDebug() << "ClitoralOscillator preset: Afterglow (4 Hz, 15 mmHg)";
-}
-
-// ============================================================================
-// Phase calculation and execution
-// ============================================================================
-
-void ClitoralOscillator::calculatePhaseDurations()
-{
-    // Calculate phase durations based on period and ratios
-    m_suctionDurationMs = static_cast<int>(m_periodMs * m_suctionRatio);
-    m_holdDurationMs = static_cast<int>(m_periodMs * m_holdRatio);
-    m_ventDurationMs = static_cast<int>(m_periodMs * m_ventRatio);
-    m_transitionDurationMs = static_cast<int>(m_periodMs * m_transitionRatio);
-
-    // Ensure minimum 1ms for each phase
-    m_suctionDurationMs = std::max(1, m_suctionDurationMs);
-    m_holdDurationMs = std::max(1, m_holdDurationMs);
-    m_ventDurationMs = std::max(1, m_ventDurationMs);
-    m_transitionDurationMs = std::max(1, m_transitionDurationMs);
-
-    qDebug() << "Phase durations (ms): Suction=" << m_suctionDurationMs
-             << "Hold=" << m_holdDurationMs
-             << "Vent=" << m_ventDurationMs
-             << "Transition=" << m_transitionDurationMs;
-}
-
-void ClitoralOscillator::executePhase(Phase phase)
-{
-    if (!m_hardware) return;
-
-    bool isSuctionPhase = false;
-
-    switch (phase) {
-        case Phase::SUCTION:
-            // Open vacuum valve, close vent - build vacuum rapidly
-            m_hardware->setSOL5(false);  // Close vent first (safety)
-            m_hardware->setSOL4(true);   // Open vacuum
-            isSuctionPhase = true;
-            break;
-
-        case Phase::HOLD:
-            // Both valves closed - maintain peak pressure
-            m_hardware->setSOL4(false);
-            m_hardware->setSOL5(false);
-            // Measure peak pressure for amplitude adjustment
-            m_measuredPeakPressure = getCurrentPressure();
-            isSuctionPhase = true;  // Still in "suction" phase for TENS sync
-            break;
-
-        case Phase::VENT:
-            // Close vacuum, open vent - release pressure rapidly
-            m_hardware->setSOL4(false);  // Close vacuum first (safety)
-            m_hardware->setSOL5(true);   // Open vent
-            isSuctionPhase = false;
-            break;
-
-        case Phase::TRANSITION:
-            // Both valves closed - settle at minimum pressure
-            m_hardware->setSOL4(false);
-            m_hardware->setSOL5(false);
-            // Measure trough pressure
-            m_measuredTroughPressure = getCurrentPressure();
-            isSuctionPhase = false;  // Still in "vent" phase for TENS sync
-            break;
-
-        case Phase::IDLE:
-            // Safety: vent and close
-            m_hardware->setSOL4(false);
-            m_hardware->setSOL5(true);
-            isSuctionPhase = false;
-            break;
-    }
-
-    emit phaseChanged(phase);
-    emit vacuumPhaseChanged(isSuctionPhase);
-}
-
-void ClitoralOscillator::advancePhase()
-{
-    Phase nextPhase;
-
-    switch (m_currentPhase) {
-        case Phase::SUCTION:
-            nextPhase = Phase::HOLD;
-            break;
-        case Phase::HOLD:
-            nextPhase = Phase::VENT;
-            break;
-        case Phase::VENT:
-            nextPhase = Phase::TRANSITION;
-            break;
-        case Phase::TRANSITION:
-            nextPhase = Phase::SUCTION;
-            m_cycleCount++;
-            emit cycleCompleted(m_cycleCount);
-            // Adjust amplitude every few cycles based on measured pressure
-            if (m_cycleCount % 5 == 0) {
-                adjustAmplitude();
-            }
-            break;
-        default:
-            return;
-    }
-
-    m_currentPhase = nextPhase;
-    m_phaseTimer.restart();
-    executePhase(nextPhase);
-}
-
-void ClitoralOscillator::onTimerTick()
-{
-    if (!m_running) return;
-
-    qint64 elapsedMs = m_phaseTimer.elapsed();
-    int currentPhaseDuration = 0;
-
-    switch (m_currentPhase) {
-        case Phase::SUCTION:
-            currentPhaseDuration = m_suctionDurationMs;
-            break;
-        case Phase::HOLD:
-            currentPhaseDuration = m_holdDurationMs;
-            break;
-        case Phase::VENT:
-            currentPhaseDuration = m_ventDurationMs;
-            break;
-        case Phase::TRANSITION:
-            currentPhaseDuration = m_transitionDurationMs;
-            break;
-        default:
-            return;
-    }
-
-    if (elapsedMs >= currentPhaseDuration) {
-        advancePhase();
-    }
-}
-
-void ClitoralOscillator::adjustAmplitude()
-{
-    // Simple amplitude feedback: adjust duty cycle based on measured peak
-    double peakError = m_targetAmplitude - m_measuredPeakPressure;
-
-    if (std::abs(peakError) > 5.0) {  // Only adjust if error > 5 mmHg
-        // Increase duty cycle if we need more vacuum, decrease if too much
-        double adjustment = peakError * 0.01;  // Small adjustment factor
-        double newDutyCycle = m_dutyCycle + adjustment;
-
-        // Apply with clamping (done inside setDutyCycle)
-        setDutyCycle(newDutyCycle);
-
-        qDebug() << "Amplitude adjustment: target=" << m_targetAmplitude
-                 << "measured=" << m_measuredPeakPressure
-                 << "new duty cycle=" << (m_dutyCycle * 100) << "%";
-    }
-
-    emit amplitudeReached(m_measuredPeakPressure);
 }

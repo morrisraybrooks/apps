@@ -8,25 +8,21 @@
 #include "../safety/SafetyConstants.h"
 
 class HardwareManager;
+class PneumaticController;
 
 /**
- * @brief High-frequency oscillation controller for clitoral cylinder air-pulse stimulation
- * 
- * This class creates oscillating pressure waves in the clitoral cylinder using
- * SOL4 (vacuum) and SOL5 (vent) valves. It generates air-pulse stimulation similar
- * to commercial toys (Womanizer, Satisfyer) but using solenoid valve control.
- * 
- * Key Features:
- * - Frequency range: 5-13 Hz (research shows 8-13 Hz optimal for orgasm)
- * - 4-phase asymmetric duty cycle for smooth pressure oscillations
- * - Amplitude control via duty cycle modulation
- * - Independent from outer chamber control (dual-chamber coordination)
- * 
- * Valve Timing Strategy (4-Phase Cycle):
- * 1. SUCTION: SOL4 open, SOL5 closed - rapid vacuum build
- * 2. HOLD:    Both closed - peak pressure maintained
- * 3. VENT:    SOL4 closed, SOL5 open - rapid pressure release
- * 4. TRANSITION: Both closed - minimum pressure before next cycle
+ * @brief Clitoral air-pulse control, driving the pulser pump.
+ *
+ * The fast pulses come from the clitoral pulser (a second diaphragm pump with its
+ * valves removed, GPIO 15). SOL4/SOL5 only hold or release the steady clitoral
+ * vacuum, through PneumaticController. This class keeps its old API:
+ * - setFrequency(): pulse rate, 1-100 per second (below the calibrated motor
+ *   minimum the controller makes slow "deep" bursts)
+ * - setAmplitude(): the steady clitoral vacuum target in mmHg
+ * - start()/stop(): pulser on/off (refused until the pulser is bench-calibrated)
+ * phaseChanged/vacuumPhaseChanged/cycleCompleted follow the pulser bursts.
+ *
+ * Design: docs/superpowers/specs/2026-11-16-clitoral-pulser-system-design.md
  */
 class ClitoralOscillator : public QObject
 {
@@ -97,18 +93,11 @@ Q_SIGNALS:
     void amplitudeReached(double pressure);
     void error(const QString& message);
 
-private Q_SLOTS:
-    void onTimerTick();
-
 private:
-    void calculatePhaseDurations();
-    void executePhase(Phase phase);
-    void advancePhase();
-    void adjustAmplitude();
+    PneumaticController* air() const;
+    void onBurstChanged(bool on);
 
     HardwareManager* m_hardware;
-    QTimer* m_oscillationTimer;
-    QElapsedTimer m_phaseTimer;
     mutable QMutex m_mutex;
 
     // State
@@ -116,44 +105,23 @@ private:
     Phase m_currentPhase;
     int m_cycleCount;
 
-    // Frequency and timing (in milliseconds)
-    double m_frequencyHz;         // Oscillation frequency (5-13 Hz)
-    int m_periodMs;               // Total period = 1000/frequency
-    int m_suctionDurationMs;      // Duration of suction phase
-    int m_holdDurationMs;         // Duration of hold phase
-    int m_ventDurationMs;         // Duration of vent phase
-    int m_transitionDurationMs;   // Duration of transition phase
-
-    // Phase timing ratios (must sum to 1.0)
-    double m_suctionRatio;
+    double m_frequencyHz;         // Pulse rate (1-100 per second)
+    double m_targetAmplitude;     // Steady clitoral vacuum target (mmHg)
+    double m_dutyCycle;           // Kept for API compatibility (no effect: fixed-stroke pulser)
+    double m_suctionRatio;        // Kept for API compatibility (no effect)
     double m_holdRatio;
     double m_ventRatio;
     double m_transitionRatio;
+    QMetaObject::Connection m_burstConnection;
 
-    // Amplitude control
-    double m_targetAmplitude;     // Target peak pressure (mmHg)
-    double m_dutyCycle;           // Suction duty cycle (0.0 - 1.0)
-    double m_measuredPeakPressure;
-    double m_measuredTroughPressure;
-
-    // Timer resolution
-    static const int TIMER_RESOLUTION_MS = 1;  // 1ms for high-frequency control
-
-    // Frequency limits (based on research)
-    static constexpr double MIN_FREQUENCY_HZ = 3.0;
-    static constexpr double MAX_FREQUENCY_HZ = 15.0;
+    // Pulse-rate limits: slow "deep" bursts up to toy-like rates
+    static constexpr double MIN_FREQUENCY_HZ = 1.0;
+    static constexpr double MAX_FREQUENCY_HZ = 100.0;
     static constexpr double DEFAULT_FREQUENCY_HZ = 8.0;
 
-    // Amplitude limits
-    static constexpr double MIN_AMPLITUDE_MMHG = 5.0;
-    // MAX_AMPLITUDE_MMHG uses SafetyConstants::MAX_PRESSURE_STIMULATION_MMHG (75.0 mmHg)
+    // Amplitude (steady target) limits
+    static constexpr double MIN_AMPLITUDE_MMHG = 0.0;
     static constexpr double DEFAULT_AMPLITUDE_MMHG = 40.0;
-
-    // Default phase ratios (optimized for smooth oscillation)
-    static constexpr double DEFAULT_SUCTION_RATIO = 0.35;
-    static constexpr double DEFAULT_HOLD_RATIO = 0.10;
-    static constexpr double DEFAULT_VENT_RATIO = 0.35;
-    static constexpr double DEFAULT_TRANSITION_RATIO = 0.20;
 };
 
 #endif // CLITORALOSCILLATOR_H
