@@ -11,6 +11,7 @@ void SealWatch::reset()
     m_lastTarget = 0.0;
     m_attempts = 0;
     m_attemptStart = 0;
+    m_settleUntil = -1;
     m_history.clear();
 }
 
@@ -39,6 +40,8 @@ SealState SealWatch::update(double legMmHg, double legTarget, qint64 nowMs)
     }
     if (legTarget > m_lastTarget + 0.01) {
         m_state = SealState::WaitingForSeal;  // commanded rise: re-arm at the new level
+    } else if (legTarget < m_lastTarget - 0.01) {
+        m_settleUntil = nowMs + 1500;         // commanded drop: the vent may overshoot the new band
     }
     m_lastTarget = legTarget;
 
@@ -49,7 +52,8 @@ SealState SealWatch::update(double legMmHg, double legTarget, qint64 nowMs)
         break;
     case SealState::Sealed: {
         const bool deepDrop = legMmHg < legTarget - m_settings.leakDropMmHg;
-        const bool fastFall = legMmHg < band && fall > m_settings.leakRateMmHgPer100ms;
+        const bool settling = nowMs < m_settleUntil;
+        const bool fastFall = !settling && legMmHg < band && fall > m_settings.leakRateMmHgPer100ms;
         if (deepDrop || fastFall) {
             m_state = SealState::Recovering;
             m_attempts = 1;

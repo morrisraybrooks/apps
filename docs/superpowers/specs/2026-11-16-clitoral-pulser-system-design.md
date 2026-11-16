@@ -203,3 +203,20 @@ current numbers:
 - How the GUI shows pulser rate and the "Vent tank" button.
 - Tests: simulation-mode coverage of tank fill/stop, chamber regulation, pulse allowance and e-stop ordering. Nothing is
   tested on a body; bench tests use the sealed plate.
+
+## 7. Corrections after the final review (2026-11-16)
+
+Two assumptions in this design were wrong; the code follows the corrected versions.
+
+- **"100 Hz sensor loop" (5.3).** The normal pressure readings (`read*Pressure()`) are updated only 20 times a
+  second and heavily smoothed (about half a second of lag). Regulating on them overshot badly (legs to ~66 mmHg in
+  simulation). The controller now takes a **fresh, unsmoothed ADC reading every 10 ms**
+  (`HardwareManager::readFreshPressure()`); a read error stops it.
+- **"The safety check emergency-stops above the chamber limit" (3, 5.5).** `PatternEngine`'s check tripped at
+  **67.5 mmHg** (90 % of 75), below the 70 mmHg tank fill. The tank is now left out of the body-pressure checks
+  (it has its own fill limit and relief valve); SafetyManager no longer warns about a full tank.
+
+Also added: controller faults (seal lost, bad or over-cap reading) go through `HardwareManager::enterFullVentState()`
+and `hardwareError`; the steady clitoral target is capped at *ceiling − vent band* and pulses wait until the
+averaged pressure is under the ceiling; the loop stops (pump off) once a session has ended and both chambers are
+vented; settings from `settings.json` are clamped to safe values.

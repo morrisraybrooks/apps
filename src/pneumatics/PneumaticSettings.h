@@ -2,6 +2,7 @@
 #define PNEUMATICSETTINGS_H
 
 #include <QJsonObject>
+#include <algorithm>
 
 /**
  * @brief Tunable numbers for tank, chamber regulation, seal watch and pulser.
@@ -48,7 +49,28 @@ struct PneumaticSettings {
         s.recoveryAttempts = static_cast<int>(num("recovery_attempts", s.recoveryAttempts));
         s.recoveryWindowMs = static_cast<int>(num("recovery_window_ms", s.recoveryWindowMs));
         s.benchMode = section.value("bench_mode").toBool(s.benchMode);
+        s.clampToSafeValues();
         return s;
+    }
+
+    /// Keep file values inside what the hardware and the 75 mmHg cap allow
+    /// (the tank sensor pins at 75, so "full" must be reachable below it).
+    void clampToSafeValues()
+    {
+        tankFillMmHg = std::clamp(tankFillMmHg, 10.0, 72.0);
+        tankRestartMmHg = std::clamp(tankRestartMmHg, 5.0, tankFillMmHg - 5.0);
+        topUpMarginMmHg = std::clamp(topUpMarginMmHg, 0.0, 20.0);
+        legMaxMmHg = std::clamp(legMaxMmHg, 0.0, 75.0);
+        legMinMmHg = std::clamp(legMinMmHg, 0.0, legMaxMmHg);
+        clitMaxMmHg = std::clamp(clitMaxMmHg, 0.0, 75.0);
+        feedBelowMmHg = std::clamp(feedBelowMmHg, 0.5, 10.0);
+        ventAboveMmHg = std::clamp(ventAboveMmHg, 0.5, 10.0);
+        feedPulseMs = std::clamp(feedPulseMs, 10, 200);
+        averageWindowMs = std::clamp(averageWindowMs, 50, 1000);
+        leakDropMmHg = std::clamp(leakDropMmHg, 2.0, 30.0);
+        leakRateMmHgPer100ms = std::clamp(leakRateMmHgPer100ms, 1.0, 30.0);
+        recoveryAttempts = std::clamp(recoveryAttempts, 1, 10);
+        recoveryWindowMs = std::clamp(recoveryWindowMs, 500, 10000);
     }
 };
 

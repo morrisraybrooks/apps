@@ -11,7 +11,7 @@
 struct CalibrationPoint {
     double pwmPercent;       ///< Motor PWM duty, 0-100 %
     double pulsesPerSecond;  ///< Measured pulse rate at that duty
-    double peakMmHg;         ///< Measured worst-case pulse peak (swing above the steady vacuum)
+    double peakMmHg;         ///< Measured worst-case pulse swing, peak-to-peak (PulserBench "swing")
 };
 
 /**

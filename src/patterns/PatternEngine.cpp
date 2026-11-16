@@ -1154,11 +1154,7 @@ void PatternEngine::performSafetyCheck()
         double avlPressure = m_hardware->readAVLPressure();
         double tankPressure = m_hardware->readTankPressure();
 
-        // Convert mmHg to percentage for comparison (sensor FS = 75 mmHg)
-        double avlPercent = (avlPressure / SafetyConstants::MAX_PRESSURE_STIMULATION_MMHG) * 100.0;
-        double tankPercent = (tankPressure / SafetyConstants::MAX_PRESSURE_STIMULATION_MMHG) * 100.0;
-
-        if (avlPercent > m_maxPressure || tankPercent > m_maxPressure) {
+        if (isPressureLimitExceeded(avlPressure, tankPressure)) {
             emergencyStop();
             emit patternError("Pressure limit exceeded during pattern execution");
         }
@@ -1648,4 +1644,13 @@ void PatternEngine::buildTENSVacuumPattern(const QJsonObject& params)
     m_patternSteps.append(afterglowStep);
 
     qDebug() << "Built TENS+Vacuum pattern with" << m_patternSteps.size() << "phases";
+}
+
+bool PatternEngine::isPressureLimitExceeded(double avlMmHg, double tankMmHg) const
+{
+    // Body pressure only. The tank is meant to sit at ~70 mmHg (fill-then-stop); it never
+    // touches the body directly and has its own fill limit and relief valve.
+    Q_UNUSED(tankMmHg);
+    const double avlPercent = (avlMmHg / SafetyConstants::MAX_PRESSURE_STIMULATION_MMHG) * 100.0;
+    return avlPercent > m_maxPressure;
 }

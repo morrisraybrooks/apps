@@ -47,6 +47,19 @@ private slots:
         }
     }
 
+    void repeatedSetRateKeepsRhythm()   // review I4
+    {
+        const PulserCalibration cal = table();
+        PulserDrive d(&cal);
+        d.setEnabled(true);
+        int on = 0, off = 0;
+        for (qint64 t = 0; t < 2000; t += 10) {
+            if (t % 100 == 0) d.setRate(3);   // caller re-sends the rate every 100 ms
+            d.update(t).on ? ++on : ++off;
+        }
+        QVERIFY2(off > 70 && on > 70, qPrintable(QString("on %1 off %2").arg(on).arg(off)));
+    }
+
     void offWhenDisabled()
     {
         const PulserCalibration cal = table();

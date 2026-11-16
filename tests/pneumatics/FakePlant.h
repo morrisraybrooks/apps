@@ -16,6 +16,8 @@ class FakePlant : public IPneumaticHardware
 public:
     double tank = 0, leg = 0, clit = 0;
     double legLeakPerStep = 0;
+    bool refuseWrites = false;   ///< like HardwareManager during an emergency stop
+    double pinClit = -1;         ///< >= 0: clitoral sensor reads this regardless
     bool valve[6] = {false, false, false, false, false, false};
     bool pump = false;
     double duty = 0;
@@ -23,12 +25,16 @@ public:
 
     double legMmHg() override { return leg; }
     double tankMmHg() override { return tank; }
-    double clitMmHg() override { return clit; }
-    void setPump(bool on) override { pump = on; log << QString("pump %1").arg(on); }
+    double clitMmHg() override { return pinClit >= 0 ? pinClit : clit; }
+    void setPump(bool on) override
+    {
+        log << QString("pump %1").arg(on);
+        if (!refuseWrites || !on) pump = on;
+    }
     void setValve(int sol, bool open) override
     {
-        valve[sol] = open;
         log << QString("SOL%1 %2").arg(sol).arg(open);
+        if (!refuseWrites || !open || sol == 2 || sol == 3 || sol == 5) valve[sol] = open;
     }
     void setPulserDuty(double percent) override
     {

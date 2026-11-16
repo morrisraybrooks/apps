@@ -43,6 +43,8 @@ class PatternEngine : public QObject
     Q_OBJECT
 
 public:
+    /// Body-pressure limit used by the 10 Hz safety check (percent of the 75 mmHg sensor range).
+    bool isPressureLimitExceeded(double avlMmHg, double tankMmHg) const;
     enum PatternState {
         STOPPED,
         STARTING,

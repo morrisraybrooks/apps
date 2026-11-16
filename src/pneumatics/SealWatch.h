@@ -38,6 +38,7 @@ private:
     double m_lastTarget = 0.0;
     int m_attempts = 0;
     qint64 m_attemptStart = 0;
+    qint64 m_settleUntil = -1;   ///< after a lowered target, ignore fast falls until then
     std::deque<std::pair<qint64, double>> m_history;
 };
 

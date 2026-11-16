@@ -9,8 +9,11 @@
 #include "SealWatch.h"
 #include "TankLogic.h"
 
+#include <QElapsedTimer>
 #include <QObject>
 #include <QString>
+#include <deque>
+#include <utility>
 
 class QTimer;
 
@@ -37,7 +40,7 @@ public:
     /// (targets > 0, holdLegs, pulser on) start it automatically unless latched.
     void start();
     /// Clear the emergency latch without starting (HardwareManager::resetEmergencyStop).
-    void rearm() { m_latched = false; }
+    void rearm();
     bool isLatched() const { return m_latched; }
     void tick(qint64 nowMs);
     bool isActive() const { return m_active; }
@@ -74,6 +77,10 @@ signals:
 private:
     void applyClitoralTarget();
     void autoStart();
+    void resetState();
+    double pulseCeiling() const;
+    double clitMean(double clit, qint64 nowMs);
+    void goIdle();
     void write(int sol, bool open);
     void writePump(bool on);
     void writeDuty(double percent);
@@ -91,6 +98,9 @@ private:
 
     bool m_active = false;
     bool m_latched = false;   ///< set by emergencyStop(); blocks auto-start
+    bool m_hadSession = false; ///< vacuum was requested since the last start/idle
+    QElapsedTimer m_clock;    ///< monotonic time for the 100 Hz loop
+    std::deque<std::pair<qint64, double>> m_clitSamples;  ///< ~200 ms of raw clitoral readings
     double m_legTarget = 0.0;
     double m_lastLegTarget = 40.0;
     double m_requestedClit = 0.0;

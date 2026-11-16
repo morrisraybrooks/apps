@@ -860,9 +860,10 @@ class HardwarePneumatics : public IPneumaticHardware
 public:
     explicit HardwarePneumatics(HardwareManager* hw) : m_hw(hw) {}
 
-    double legMmHg() override { return read([this] { return m_hw->readAVLPressure(); }); }
-    double tankMmHg() override { return read([this] { return m_hw->readTankPressure(); }); }
-    double clitMmHg() override { return read([this] { return m_hw->readClitoralPressure(); }); }
+    // Fresh ADC reads every tick (not the 20 Hz smoothed values)
+    double legMmHg() override { return read([this] { return m_hw->readFreshPressure(0); }); }
+    double tankMmHg() override { return read([this] { return m_hw->readFreshPressure(1); }); }
+    double clitMmHg() override { return read([this] { return m_hw->readFreshPressure(2); }); }
 
     void setPump(bool on) override
     {
@@ -889,7 +890,9 @@ private:
     double read(F f)
     {
         try {
-            return f();
+            const double value = f();
+            if (value < 0.0) return std::numeric_limits<double>::quiet_NaN();  // sensor error value
+            return value;
         } catch (const std::exception& e) {
             qWarning() << "Pressure read failed:" << e.what();
             return std::numeric_limits<double>::quiet_NaN();
@@ -929,6 +932,15 @@ void HardwareManager::createPneumatics()
 
     m_pneumaticsHw = std::make_unique<HardwarePneumatics>(this);
     m_pneumatics = std::make_unique<PneumaticController>(m_pneumaticsHw.get(), settings);
+
+    // One fault path: controller faults become a hardware emergency stop (TENS off,
+    // both chambers vented, emergency flag set so the session ends) and are reported.
+    auto fault = [this](const QString& reason) {
+        enterFullVentState(reason);
+        emit hardwareError(reason);
+    };
+    connect(m_pneumatics.get(), &PneumaticController::sealFailed, this, fault);
+    connect(m_pneumatics.get(), &PneumaticController::sensorFault, this, fault);
 
     const QString calibration = findConfigFile("pulser_calibration.json");
     if (m_pneumatics->loadCalibration(calibration)) {
@@ -977,4 +989,22 @@ double HardwareManager::sampleClitoralSwing(int durationMs)
         high = std::max(high, p);
     }
     return high > low ? high - low : 0.0;
+}
+
+double HardwareManager::readFreshPressure(int sensor)
+{
+    if (m_simulationMode) {
+        QMutexLocker locker(&m_stateMutex);
+        switch (sensor) {
+        case 0: return m_simulatedAVLPressure;
+        case 1: return m_simulatedTankPressure;
+        default: return m_simulatedClitoralPressure;
+        }
+    }
+    if (!m_sensorInterface) return -1.0;
+    switch (sensor) {   // SensorInterface reads the ADC directly (MCP3008 has its own SPI lock)
+    case 0: return m_sensorInterface->readAVLPressure();
+    case 1: return m_sensorInterface->readTankPressure();
+    default: return m_sensorInterface->readClitoralPressure();
+    }
 }

@@ -20,7 +20,8 @@ PneumaticController::PneumaticController(IPneumaticHardware* hardware, Pneumatic
     , m_calibrationError("No pulser calibration loaded - measure it on the bench first")
 {
     m_timer->setInterval(10);  // 100 Hz
-    connect(m_timer, &QTimer::timeout, this, [this]() { tick(QDateTime::currentMSecsSinceEpoch()); });
+    m_clock.start();           // monotonic: the Pi has no RTC and its wall clock can jump
+    connect(m_timer, &QTimer::timeout, this, [this]() { tick(m_clock.elapsed()); });
 }
 
 PneumaticController::~PneumaticController() = default;
@@ -38,9 +39,29 @@ bool PneumaticController::loadCalibration(const QString& path)
     return ok;
 }
 
+void PneumaticController::resetState()
+{
+    m_seal.reset();
+    m_legReg.reset();
+    m_clitReg.reset();
+    m_clitSamples.clear();
+    // Forget what we think the outputs are, so the next tick rewrites all of them
+    // (writes refused during a hardware emergency stop must not stay "done")
+    std::fill(std::begin(m_valveState), std::end(m_valveState), -1);
+    m_pumpState = -1;
+    m_dutyState = -1.0;
+}
+
+void PneumaticController::rearm()
+{
+    m_latched = false;
+    resetState();
+}
+
 void PneumaticController::start()
 {
     m_latched = false;
+    resetState();
     m_active = true;
     m_timer->start();
 }
@@ -55,7 +76,10 @@ void PneumaticController::setLegTarget(double mmHg)
     m_legTarget = mmHg <= 0.0 ? 0.0 : std::clamp(mmHg, m_settings.legMinMmHg, m_settings.legMaxMmHg);
     if (m_legTarget > 0.0) m_lastLegTarget = m_legTarget;
     m_legReg.setTarget(m_legTarget);
-    if (m_legTarget > 0.0) autoStart();
+    if (m_legTarget > 0.0) {
+        m_hadSession = true;
+        autoStart();
+    }
 }
 
 void PneumaticController::holdLegs()
@@ -67,7 +91,10 @@ void PneumaticController::setClitoralTarget(double mmHg)
 {
     m_requestedClit = std::max(0.0, mmHg);
     applyClitoralTarget();
-    if (m_requestedClit > 0.0) autoStart();
+    if (m_requestedClit > 0.0) {
+        m_hadSession = true;
+        autoStart();
+    }
 }
 
 double PneumaticController::clitoralTarget() const
@@ -75,13 +102,46 @@ double PneumaticController::clitoralTarget() const
     return m_clitReg.target();
 }
 
+double PneumaticController::pulseCeiling() const
+{
+    // Highest steady clitoral pressure at which pulses at the current rate stay under 75 mmHg
+    if (!m_pulser.isEnabled() || !m_calibration.isValid()) return PulserCalibration::CAP_MMHG;
+    return m_calibration.maxClitoralTarget(m_pulser.rate());
+}
+
 void PneumaticController::applyClitoralTarget()
 {
     double ceiling = std::min(m_settings.clitMaxMmHg, PulserCalibration::CAP_MMHG);
     if (m_pulser.isEnabled() && m_calibration.isValid()) {
-        ceiling = std::min(ceiling, m_calibration.maxClitoralTarget(m_pulser.rate()));
+        // The regulator lets the steady level sit up to target + ventAbove, so keep that
+        // whole band under the pulse ceiling
+        ceiling = std::min(ceiling, pulseCeiling() - m_settings.ventAboveMmHg);
     }
-    m_clitReg.setTarget(std::min(m_requestedClit, ceiling));
+    m_clitReg.setTarget(std::min(m_requestedClit, std::max(0.0, ceiling)));
+}
+
+double PneumaticController::clitMean(double clit, qint64 nowMs)
+{
+    m_clitSamples.emplace_back(nowMs, clit);
+    while (!m_clitSamples.empty() && m_clitSamples.front().first < nowMs - m_settings.averageWindowMs) {
+        m_clitSamples.pop_front();
+    }
+    double sum = 0.0;
+    for (const auto& s : m_clitSamples) sum += s.second;
+    return sum / static_cast<double>(m_clitSamples.size());
+}
+
+void PneumaticController::goIdle()
+{
+    // Session over and both chambers vented: stop the loop so the pump never
+    // restarts with nobody at the machine. Vents stay open.
+    m_active = false;
+    m_hadSession = false;
+    m_timer->stop();
+    writeDuty(0.0);
+    write(1, false);
+    write(4, false);
+    writePump(false);
 }
 
 void PneumaticController::setPulseRate(double pps)
@@ -100,7 +160,10 @@ bool PneumaticController::setPulserEnabled(bool on)
     m_pulser.setEnabled(on);
     m_clitReg.setAveraging(on);
     applyClitoralTarget();
-    if (on) autoStart();
+    if (on) {
+        m_hadSession = true;
+        autoStart();
+    }
     return true;
 }
 
@@ -201,6 +264,18 @@ void PneumaticController::tick(qint64 nowMs)
                              .arg(leg).arg(tank).arg(clit));
         return;
     }
+    const double clitAverage = clitMean(clit, nowMs);
+    if (clitAverage >= PulserCalibration::CAP_MMHG - 0.5) {
+        emergencyStop();
+        emit sensorFault(QString("Clitoral chamber at %1 mmHg - at or above the 75 mmHg cap")
+                             .arg(clitAverage, 0, 'f', 1));
+        return;
+    }
+    if (m_hadSession && m_legTarget <= 0.0 && m_requestedClit <= 0.0 && !m_pulser.isEnabled()
+        && m_benchDuty < 0.0 && !m_ventingTank && leg < 3.0 && clit < 3.0) {
+        goIdle();
+        return;
+    }
 
     // Seal watch on the legs
     const SealState before = m_seal.state();
@@ -230,6 +305,9 @@ void PneumaticController::tick(qint64 nowMs)
 
     // Pulser
     PulserOutput pulse = m_pulser.update(nowMs);
+    if (pulse.on && clitAverage > pulseCeiling()) {
+        pulse = PulserOutput{};  // wait until the steady level is low enough for this rate
+    }
     if (m_benchDuty >= 0.0) pulse = PulserOutput{m_benchDuty > 0.0, m_benchDuty};
     if (pulse.on != m_burstOn) {
         m_burstOn = pulse.on;

@@ -14,6 +14,8 @@ void ChamberRegulator::reset()
 {
     m_venting = false;
     m_feedUntil = -1;
+    m_holdUntil = -1;
+    m_lastNow = -1;
     m_lastValue = 0.0;
     m_samples.clear();
 }
@@ -44,9 +46,20 @@ ValveCommand ChamberRegulator::update(double pressureMmHg, qint64 nowMs)
         m_venting = true;
         return {false, true};
     }
-    if (m_averaging && !windowFull) {
+    if (m_averaging) {
+        // Single-tick actions spaced by a full averaging window
         m_feedUntil = -1;
-        return {false, false};  // wait for a full window before acting
+        m_venting = false;
+        if (!windowFull || nowMs < m_holdUntil) return {false, false};
+        if (value < m_target - m_settings.feedBelowMmHg) {
+            m_holdUntil = nowMs + m_settings.averageWindowMs;
+            return {true, false};
+        }
+        if (value > m_target + m_settings.ventAboveMmHg) {
+            m_holdUntil = nowMs + m_settings.averageWindowMs;
+            return {false, true};
+        }
+        return {false, false};
     }
 
     if (m_venting) {

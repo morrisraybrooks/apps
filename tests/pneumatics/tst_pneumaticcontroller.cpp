@@ -7,6 +7,8 @@
 #include "FakePlant.h"
 #include "PneumaticController.h"
 
+Q_DECLARE_METATYPE(SealState)
+
 namespace {
 // Peak 8 mmHg at 20 pps, 20 mmHg at 60 pps
 QString writeCalibration(QTemporaryFile& f)
@@ -97,7 +99,7 @@ private slots:
         c.setClitoralTarget(60);
         c.setPulseRate(60);
         QVERIFY(c.setPulserEnabled(true));
-        QCOMPARE(c.clitoralTarget(), 55.0);
+        QCOMPARE(c.clitoralTarget(), 52.0);  // 75 - 20 peak - 3 vent band
     }
 
     void raisingRateReclamps()
@@ -111,7 +113,7 @@ private slots:
         QVERIFY(c.setPulserEnabled(true));
         QCOMPARE(c.clitoralTarget(), 60.0);
         c.setPulseRate(60);
-        QCOMPARE(c.clitoralTarget(), 55.0);
+        QCOMPARE(c.clitoralTarget(), 52.0);
     }
 
     void sealFailureStops()
@@ -220,6 +222,120 @@ private slots:
         c.rearm();
         c.setLegTarget(40);
         QVERIFY(c.isActive());
+    }
+
+    void loweredLegTargetIsNotLeak()   // review I1 (Review Focus 4, controller level)
+    {
+        FakePlant plant;
+        PneumaticController c(&plant, PneumaticSettings{});
+        c.setLegTarget(50);
+        qint64 t = 0;
+        run(c, plant, t, 4000);
+        QCOMPARE(c.sealState(), SealState::Sealed);
+        qRegisterMetaType<SealState>("SealState");
+        QSignalSpy states(&c, &PneumaticController::sealStateChanged);
+        QVERIFY(states.isValid());
+        c.setLegTarget(30);
+        run(c, plant, t, 3000);
+        for (const auto& args : states) {
+            QVERIFY(args.at(0).value<SealState>() != SealState::Recovering);
+        }
+        QVERIFY2(plant.leg >= 27 && plant.leg <= 34, qPrintable(QString::number(plant.leg)));
+    }
+
+    void restartAfterSealFailureWorks()   // review C3
+    {
+        FakePlant plant;
+        PneumaticController c(&plant, PneumaticSettings{});
+        QSignalSpy failed(&c, &PneumaticController::sealFailed);
+        c.setLegTarget(40);
+        qint64 t = 0;
+        run(c, plant, t, 3000);
+        plant.legLeakPerStep = 5.0;
+        run(c, plant, t, 8000);
+        QCOMPARE(failed.count(), 1);
+        plant.legLeakPerStep = 0.0;
+        c.rearm();
+        c.start();
+        c.setLegTarget(40);
+        run(c, plant, t, 4000);
+        QCOMPARE(failed.count(), 1);
+        QVERIFY(c.isActive());
+        QVERIFY2(plant.leg >= 38, qPrintable(QString::number(plant.leg)));
+    }
+
+    void pumpResumesAfterRearm()   // review I3
+    {
+        FakePlant plant;
+        PneumaticController c(&plant, PneumaticSettings{});
+        c.start();
+        c.emergencyStop();
+        plant.refuseWrites = true;   // hardware still in emergency stop
+        c.start();                   // e.g. PatternEngine::startPattern
+        qint64 t = 0;
+        run(c, plant, t, 200);
+        QVERIFY(!plant.pump);
+        plant.refuseWrites = false;  // HardwareManager::resetEmergencyStop()
+        c.rearm();
+        run(c, plant, t, 200);
+        QVERIFY(plant.pump);
+    }
+
+    void pulserWaitsForChamberBelowCeiling()   // review I6
+    {
+        QTemporaryFile f;
+        FakePlant plant;
+        PneumaticController c(&plant, PneumaticSettings{});
+        QVERIFY(c.loadCalibration(writeCalibration(f)));
+        c.setLegTarget(40);
+        c.setClitoralTarget(60);
+        qint64 t = 0;
+        run(c, plant, t, 5000);
+        QVERIFY(plant.clit > 57);
+        c.setPulseRate(60);              // peak 20 -> ceiling 55
+        QVERIFY(c.setPulserEnabled(true));
+        for (const qint64 end = t + 4000; t < end; t += 10) {
+            c.tick(t);
+            if (plant.duty > 0) {
+                QVERIFY2(plant.clit + 20 <= 75.0 + 1e-9,
+                         qPrintable(QString("pulsing at clit %1").arg(plant.clit)));
+            }
+            plant.step();
+        }
+        QVERIFY(plant.duty > 0);         // pulses did start once it was safe
+    }
+
+    void sessionEndStopsLoop()   // review I9
+    {
+        FakePlant plant;
+        PneumaticController c(&plant, PneumaticSettings{});
+        c.setLegTarget(40);
+        c.setClitoralTarget(30);
+        qint64 t = 0;
+        run(c, plant, t, 3000);
+        c.ventAll();
+        run(c, plant, t, 3000);
+        QVERIFY(!c.isActive());
+        QVERIFY(!plant.pump);
+        plant.tank = 40;                 // tank leaks down while idle
+        run(c, plant, t, 1000);
+        QVERIFY(!plant.pump);            // no unattended pump restarts
+    }
+
+    void clitoralOverpressureStops()   // review I10
+    {
+        FakePlant plant;
+        PneumaticController c(&plant, PneumaticSettings{});
+        QSignalSpy faults(&c, &PneumaticController::sensorFault);
+        c.setLegTarget(40);
+        c.setClitoralTarget(30);
+        qint64 t = 0;
+        run(c, plant, t, 2000);
+        plant.pinClit = 75.0;
+        run(c, plant, t, 500);
+        QCOMPARE(faults.count(), 1);
+        QVERIFY(!c.isActive());
+        QVERIFY(plant.valve[5]);
     }
 
     void legTargetClamped()

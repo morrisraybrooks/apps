@@ -33,6 +33,7 @@ ActuatorControl::ActuatorControl(QObject *parent)
 
 ActuatorControl::~ActuatorControl()
 {
+    m_pulserPwm.reset();  // stop the PWM thread even if shutdown() returns early
     shutdown();
 }
 
@@ -76,6 +77,9 @@ void ActuatorControl::shutdown()
 
     // Stop PWM timer
     m_pwmTimer->stop();
+
+    // Pulser PWM thread first: it writes through m_outputRequest
+    m_pulserPwm.reset();
 
     // Safe shutdown all actuators
     safeShutdownAll();
@@ -355,7 +359,7 @@ bool ActuatorControl::initializeGPIO()
         // Create the request
         m_outputRequest = std::make_unique<gpiod::line_request>(request_builder.do_request());
         m_pulserPwm = std::make_unique<SoftwarePwm>(
-            [this](bool level) { setGPIOOutput(GPIO_PULSER_PWM, level); });
+            [this](bool level) { writeLine(GPIO_PULSER_PWM, level); });  // ~2000 edges/s: no logging
         m_pulserPwm->setDuty(0.0);
         m_pulserPwm->start();
 
@@ -387,24 +391,25 @@ bool ActuatorControl::initializePWM()
     }
 }
 
+bool ActuatorControl::writeLine(int pin, bool state)
+{
+    std::lock_guard<std::mutex> lineLock(m_lineMutex);
+    if (!m_outputRequest) return false;
+    try {
+        m_outputRequest->set_value(pin, state ? gpiod::line::value::ACTIVE : gpiod::line::value::INACTIVE);
+        return true;
+    } catch (const std::exception&) {
+        return false;
+    }
+}
+
 void ActuatorControl::setGPIOOutput(int pin, bool state)
 {
-    if (!m_outputRequest) {
-        qWarning() << "GPIO not initialized";
+    if (!writeLine(pin, state)) {
+        qWarning() << "Failed to set GPIO pin" << pin << "to" << state << "(GPIO not initialized or write error)";
         return;
     }
-
-    try {
-        gpiod::line::value value = state ? gpiod::line::value::ACTIVE : gpiod::line::value::INACTIVE;
-        std::lock_guard<std::mutex> lineLock(m_lineMutex);
-        m_outputRequest->set_value(pin, value);
-
-        // Debug output for verification
-        qDebug() << "GPIO pin" << pin << "set to" << (state ? "HIGH" : "LOW");
-
-    } catch (const std::exception& e) {
-        qWarning() << "Failed to set GPIO pin" << pin << "to" << state << ":" << e.what();
-    }
+    qDebug() << "GPIO pin" << pin << "set to" << (state ? "HIGH" : "LOW");
 }
 
 bool ActuatorControl::getGPIOState(int pin)

@@ -93,6 +93,7 @@ private:
     bool initializeGPIO();
     bool initializePWM();
     void setGPIOOutput(int pin, bool state);
+    bool writeLine(int pin, bool state);   ///< locked write, no logging (used by the PWM thread)
     bool getGPIOState(int pin);
     void safeShutdownAll();
 
@@ -101,7 +102,6 @@ private:
     bool m_emergencyStop;
     mutable QMutex m_stateMutex;
     std::mutex m_lineMutex;   ///< serialises line_request writes (the pulser PWM thread writes too)
-    std::unique_ptr<class SoftwarePwm> m_pulserPwm;
     
     // Pump state
     bool m_pumpEnabled;
@@ -122,6 +122,8 @@ private:
     // GPIO control using libgpiod v2.x C++ API
     std::unique_ptr<gpiod::chip> m_gpioChip;
     std::unique_ptr<gpiod::line_request> m_outputRequest;
+    // Declared after m_outputRequest so it is destroyed first: its thread writes through the request
+    std::unique_ptr<class SoftwarePwm> m_pulserPwm;
 
     // Error tracking
     QString m_lastError;

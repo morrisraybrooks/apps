@@ -7,8 +7,8 @@ PulserDrive::PulserDrive(const PulserCalibration* calibration)
 
 void PulserDrive::setRate(double pulsesPerSecond)
 {
+    // Keep the burst phase: callers re-send the rate every control cycle
     m_rate = pulsesPerSecond > 0.0 ? pulsesPerSecond : 0.0;
-    m_burstStart = -1;
 }
 
 void PulserDrive::setEnabled(bool enabled)

@@ -79,6 +79,10 @@ public:
     void setPulserDuty(double percent);   // 0-100 %, GPIO 15
     double getPulserDuty() const;
     double sampleClitoralSwing(int durationMs);  // bench: max - min of raw clitoral readings
+    /// Fresh, unfiltered reading for the 100 Hz pneumatic loop (0 = legs/AVL, 1 = tank, 2 = clitoral).
+    /// The filtered read*Pressure() values update at 20 Hz with heavy smoothing - too slow to regulate on.
+    /// Returns a negative value on a read error.
+    double readFreshPressure(int sensor);
     void setPneumaticsBenchMode(bool on) { m_pneumaticsBenchMode = on; }  // PulserBench only; before initialize()
     CameraManager* getCameraManager() const { return m_cameraManager.get(); }
     ConsentManager* getConsentManager() const { return m_consentManager.get(); }

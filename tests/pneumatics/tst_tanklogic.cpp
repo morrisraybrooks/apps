@@ -53,6 +53,21 @@ private slots:
         QVERIFY(!tank.update(75, 0));
     }
 
+    void settingsClampedToSafeValues()   // review I7
+    {
+        const PneumaticSettings s = PneumaticSettings::fromJson(QJsonObject{
+            {"tank_fill_mmhg", 90}, {"tank_restart_mmhg", 95}, {"leg_max_mmhg", 80},
+            {"clit_max_mmhg", 99}, {"feed_pulse_ms", 0}, {"average_window_ms", -5},
+            {"recovery_attempts", 0}});
+        QVERIFY(s.tankFillMmHg <= 72.0);
+        QVERIFY(s.tankRestartMmHg < s.tankFillMmHg);
+        QVERIFY(s.legMaxMmHg <= 75.0);
+        QVERIFY(s.clitMaxMmHg <= 75.0);
+        QVERIFY(s.feedPulseMs > 0);
+        QVERIFY(s.averageWindowMs > 0);
+        QVERIFY(s.recoveryAttempts >= 1);
+    }
+
     void settingsFromJson()
     {
         const PneumaticSettings s = PneumaticSettings::fromJson(QJsonObject{{"tank_fill_mmhg", 65}});
