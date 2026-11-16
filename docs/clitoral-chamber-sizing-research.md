@@ -1,6 +1,38 @@
 # Clitoral Chamber Sizing – Anatomy Research & Design Basis
 
-*Compiled 2026-11-14 for the A-Contour cup redesign (hardware/cup/v6, `cup_sdf.py` / Blender "Cup" sidebar).*
+*Compiled 2026-11-14 for the A-Contour cup redesign (hardware/cup/v6, `cup_sdf.py` / Blender "Cup" sidebar).
+Updated 2026-11-16 for the current design, **cup_020**.*
+
+## Current design – cup_020 (glans + shaft)
+
+The chamber went through three shapes:
+
+1. **Teardrop** (cup_004–005): 1" × 2", then flipped bulb-down, 32 × 55 mm.
+2. **Nose** (cup_006–018): rounded, bulb over the glans, 32 × 55 mm, 63.5 mm deep, mouth at full width (no undercut).
+3. **Glans + shaft** (cup_019, then cup_020): shaped like a penis head and shaft. Good size and shape references exist for
+   that shape, but none were found for a clitoris drawn under vacuum.
+
+In **cup_020** the shaft is lengthened so the head and corona stand up **out through the shell**. The base of the shaft
+sits inside the cup, surrounded by the leg chamber's air.
+
+| Feature | cup_020 | Reason |
+|---|---|---|
+| Shaft width at the skin | **27 mm** (> 1") | Room for the fully engorged clitoris |
+| Shaft length (skin → corona) | **44 mm** | Lets the head and corona stand above the shell (cup_019 used 18 mm) |
+| Corona | **33 mm** – wider than the shaft | A full corona was chosen deliberately – this is an **undercut** (see Safety) |
+| Head (corona → tip) | 26 mm | |
+| Total depth | **≈ 70 mm (2.75")** | Same length as a large commercial cylinder (70 mm) |
+| Volume | 34.3 cm³ | |
+| Neck where shaft meets corona | rounded 3 mm | No sharp ring pressing on swollen tissue |
+| Lean | 15° toward the apex / pubic bone | Follows the shaft and hood |
+| Position | moved 4 mm toward the apex | Keeps a clean gap above the open channel (urethra stays out of the vacuum) |
+| Hood retractor ridge | soft silicone, 1.5 mm, 120° arc on the apex side of the mouth | Presses the skin above the hood and holds the hood back; **nothing goes under the hood** |
+| Clitoral port | at the glans tip, sleeved through the leg air | Pulls from the deepest point |
+| Manual vent | silicone flap on the side of the glans head | Releases the chamber with no power |
+| Outer (leg) chamber | 204.1 cm³; legs joined over the top; open channel between the legs | Fluids drain out of the channel |
+| Overall | 93.5 × 128.5 × 79.6 mm, one piece, two ports | Passes the skin-safety edge check (0 sharp / 0 thin on the skin side) |
+
+The rest of this document is the original research and the first design basis. The measured anatomy still applies.
 
 ## Why this exists
 
@@ -42,7 +74,9 @@ All structures vary widely between individuals – design for the large end, not
 - Clitoral pump cylinders on the market: **small ≈ 15 mm (0.6") opening × 38 mm long**;
   **large ≈ 32 mm (1.25") wide × 70 mm long**. Round or oval, straight-walled.
 
-## Design decisions for the chamber
+## First design basis (teardrop / nose, cup_004–018)
+
+*Kept for history. The current glans + shaft values are in the cup_020 table at the top.*
 
 | Decision | Value | Reason |
 |---|---|---|
@@ -50,7 +84,7 @@ All structures vary widely between individuals – design for the large end, not
 | Bulb width | **≈ 32 mm** | Same as a large commercial cylinder; room for a glans/hood complex roughly doubling in size |
 | Length | **≈ 55 mm** | Glans + shaft (≈ 25 mm) + hood (≈ 23 mm) + margin |
 | Depth | **≈ 38 mm**, domed roof (superellipse p ≈ 3) | Tissue can draw in without hitting the roof; deepest over the bulb, shallower toward the tail |
-| Walls | **No undercut** – the mouth is the widest point | A chamber wider inside than its opening can trap swollen tissue and make removal painful; commercial cylinders are straight-walled for this reason |
+| Walls | **No undercut** – the mouth is the widest point | A chamber wider inside than its opening can trap swollen tissue and make removal painful; commercial cylinders are straight-walled for this reason. **cup_020 departs from this on purpose (corona wider than the shaft)** – see Safety |
 | Urethra | Open gap must start **≥ ~18 mm below the bulb centre** | Meatus is ~22 mm below the glans; keep it in the open channel, never under the clitoral vacuum |
 | Port 2 | Over the bulb | Pulls from the deepest part of the chamber |
 
@@ -62,6 +96,17 @@ All structures vary widely between individuals – design for the large end, not
 - Known risks of excessive vacuum or duration: petechiae (broken capillaries), numbness, tissue damage.
   Start low and short; stop on pain, numbness or very dark discoloration.
 - Clitoral pumps must not be applied to the vaginal opening (Wikipedia, *Clitoral pump*).
+
+### cup_020-specific
+
+- **Undercut:** the corona (33 mm) is wider than the shaft (27 mm), so engorged tissue can fill the head and be
+  wider than the way out. Before removing: **vent both chambers** (lift the flap knobs), **wait for the swelling to go
+  down**, and never pull the cup off under vacuum. See
+  [cup-cleaning-and-entrapment-safety.md](cup-cleaning-and-entrapment-safety.md).
+- **Deep tube:** a 70 mm chamber gives tissue room to be drawn in a long way, and how far it goes depends on
+  vacuum level **and time**. cup_019 kept the depth to about 44 mm because, with the hood held back, a deeper pull
+  could stretch the clitoris. cup_020 goes deeper so the head stands out through the shell, which makes the
+  "start low and short" rule more important. This matters most where the tissue is thinner, for example after menopause.
 
 ## Sources
 
