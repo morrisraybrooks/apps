@@ -5,6 +5,7 @@
 #include "../hardware/TENSController.h"
 #include "../hardware/HeartRateSensor.h"
 #include "../hardware/FluidSensor.h"
+#include "PneumaticController.h"
 #include <QDebug>
 #include <QThread>
 #include <algorithm>
@@ -354,8 +355,7 @@ void OrgasmControlAlgorithm::stop()
     }
 
     if (m_hardware) {
-        m_hardware->setSOL2(true);   // Vent outer chamber
-        m_hardware->setSOL5(true);   // Vent clitoral chamber
+        if (auto* air = m_hardware->pneumatics()) air->ventAll();  // release both chambers (tank keeps its vacuum)
     }
 
     // End fluid sensor session
@@ -987,8 +987,7 @@ void OrgasmControlAlgorithm::runAdaptiveEdging()
     if (m_inOrgasm) {
         // Continue supporting the orgasm - don't fight it
         if (m_hardware) {
-            m_hardware->setSOL1(true);
-            m_hardware->setSOL2(false);
+            if (auto* air = m_hardware->pneumatics()) air->holdLegs();  // legs held at their target by SOL1/SOL2
         }
         if (m_clitoralOscillator) {
             if (!m_clitoralOscillator->isRunning()) m_clitoralOscillator->start();
@@ -1079,7 +1078,7 @@ void OrgasmControlAlgorithm::runAdaptiveEdging()
                 if (m_clitoralOscillator) m_clitoralOscillator->stop();
                 // SAFETY: Only vent clitoral chamber (SOL5), NEVER outer chamber (SOL2)
                 // Outer chamber maintains seal - venting SOL2 causes detachment
-                if (m_hardware) m_hardware->setSOL5(true);  // Vent clitoral only
+                if (m_hardware) if (auto* air = m_hardware->pneumatics()) air->setClitoralTarget(0.0);  // Vent clitoral only
                 if (m_tensController) m_tensController->stop();
 
                 m_stateTimer.start();
@@ -1099,8 +1098,7 @@ void OrgasmControlAlgorithm::runAdaptiveEdging()
                 }
 
                 if (m_hardware) {
-                    m_hardware->setSOL1(true);
-                    m_hardware->setSOL2(false);
+                    if (auto* air = m_hardware->pneumatics()) air->holdLegs();  // legs held at their target by SOL1/SOL2
                 }
 
                 // DENIAL MODE: Use teasing oscillation instead of normal oscillation
@@ -1146,8 +1144,7 @@ void OrgasmControlAlgorithm::runAdaptiveEdging()
                     m_clitoralOscillator->start();
                 }
                 if (m_hardware) {
-                    m_hardware->setSOL1(true);
-                    m_hardware->setSOL2(false);  // Close vent, resume vacuum
+                    if (auto* air = m_hardware->pneumatics()) air->holdLegs();  // legs held at their target by SOL1/SOL2
                 }
             }
 
@@ -1248,8 +1245,7 @@ void OrgasmControlAlgorithm::runForcedOrgasm()
     }
 
     if (m_hardware) {
-        m_hardware->setSOL1(true);
-        m_hardware->setSOL2(false);
+        if (auto* air = m_hardware->pneumatics()) air->holdLegs();  // legs held at their target by SOL1/SOL2
     }
 
     // Bug #3 fix: Ensure clitoral oscillator is started, not just configured
@@ -1440,8 +1436,7 @@ void OrgasmControlAlgorithm::performSafetyCheck()
             // Bug #15: Increase outer chamber vacuum to pull device back onto body
             // MEDIUM-5 fix: Add null check for m_hardware
             if (m_resealTimer.elapsed() < RESEAL_BOOST_DURATION_MS && m_hardware) {
-                m_hardware->setSOL1(true);   // Ensure vacuum is on
-                m_hardware->setSOL2(false);  // Ensure vent is closed
+                if (auto* air = m_hardware->pneumatics()) air->holdLegs();  // legs held at their target by SOL1/SOL2
                 // Temporarily increase intensity to boost vacuum
                 m_intensity = qMin(m_intensity + 0.05, MAX_INTENSITY);
             }
@@ -1913,7 +1908,7 @@ void OrgasmControlAlgorithm::handleMilkingOrgasmFailure()
         if (m_tensController) m_tensController->stop();
         // SAFETY: Only vent clitoral chamber (SOL5), NEVER outer chamber (SOL2)
         // Outer chamber maintains seal - venting SOL2 causes detachment
-        if (m_hardware) m_hardware->setSOL5(true);  // Vent clitoral only
+        if (m_hardware) if (auto* air = m_hardware->pneumatics()) air->setClitoralTarget(0.0);  // Vent clitoral only
         emit milkingSessionComplete(elapsed, false, m_dangerZoneEntries);
         setState(ControlState::COOLING_DOWN);
         break;
@@ -1922,7 +1917,7 @@ void OrgasmControlAlgorithm::handleMilkingOrgasmFailure()
         if (m_clitoralOscillator) m_clitoralOscillator->stop();
         if (m_tensController) m_tensController->stop();
         // SAFETY: Only vent clitoral chamber, maintain outer seal
-        if (m_hardware) m_hardware->setSOL5(true);
+        if (m_hardware) if (auto* air = m_hardware->pneumatics()) air->setClitoralTarget(0.0);
         m_stateTimer.start();
         setState(ControlState::ORGASM_FAILURE);
         break;
@@ -1941,7 +1936,7 @@ void OrgasmControlAlgorithm::handleMilkingOrgasmFailure()
     case 3:  // Continue - log and resume after brief pause
         if (m_clitoralOscillator) m_clitoralOscillator->stop();
         // SAFETY: Only vent clitoral chamber, maintain outer seal
-        if (m_hardware) m_hardware->setSOL5(true);
+        if (m_hardware) if (auto* air = m_hardware->pneumatics()) air->setClitoralTarget(0.0);
         m_stateTimer.start();
         setState(ControlState::ORGASM_FAILURE);
         break;

@@ -33,7 +33,12 @@ public:
     bool loadCalibration(const QString& path);
     bool hasCalibration() const { return m_calibration.isValid(); }
 
+    /// Start the 100 Hz loop (also clears the emergency latch). Requests for vacuum
+    /// (targets > 0, holdLegs, pulser on) start it automatically unless latched.
     void start();
+    /// Clear the emergency latch without starting (HardwareManager::resetEmergencyStop).
+    void rearm() { m_latched = false; }
+    bool isLatched() const { return m_latched; }
     void tick(qint64 nowMs);
     bool isActive() const { return m_active; }
 
@@ -68,6 +73,7 @@ signals:
 
 private:
     void applyClitoralTarget();
+    void autoStart();
     void write(int sol, bool open);
     void writePump(bool on);
     void writeDuty(double percent);
@@ -84,6 +90,7 @@ private:
     QString m_calibrationError;
 
     bool m_active = false;
+    bool m_latched = false;   ///< set by emergencyStop(); blocks auto-start
     double m_legTarget = 0.0;
     double m_lastLegTarget = 40.0;
     double m_requestedClit = 0.0;

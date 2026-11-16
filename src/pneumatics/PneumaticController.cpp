@@ -40,8 +40,14 @@ bool PneumaticController::loadCalibration(const QString& path)
 
 void PneumaticController::start()
 {
+    m_latched = false;
     m_active = true;
     m_timer->start();
+}
+
+void PneumaticController::autoStart()
+{
+    if (!m_active && !m_latched) start();
 }
 
 void PneumaticController::setLegTarget(double mmHg)
@@ -49,6 +55,7 @@ void PneumaticController::setLegTarget(double mmHg)
     m_legTarget = mmHg <= 0.0 ? 0.0 : std::clamp(mmHg, m_settings.legMinMmHg, m_settings.legMaxMmHg);
     if (m_legTarget > 0.0) m_lastLegTarget = m_legTarget;
     m_legReg.setTarget(m_legTarget);
+    if (m_legTarget > 0.0) autoStart();
 }
 
 void PneumaticController::holdLegs()
@@ -60,6 +67,7 @@ void PneumaticController::setClitoralTarget(double mmHg)
 {
     m_requestedClit = std::max(0.0, mmHg);
     applyClitoralTarget();
+    if (m_requestedClit > 0.0) autoStart();
 }
 
 double PneumaticController::clitoralTarget() const
@@ -92,6 +100,7 @@ bool PneumaticController::setPulserEnabled(bool on)
     m_pulser.setEnabled(on);
     m_clitReg.setAveraging(on);
     applyClitoralTarget();
+    if (on) autoStart();
     return true;
 }
 
@@ -135,6 +144,7 @@ void PneumaticController::ventTank()
 void PneumaticController::emergencyStop()
 {
     m_active = false;
+    m_latched = true;
     m_timer->stop();
     m_pulser.setEnabled(false);
     m_benchDuty = -1.0;

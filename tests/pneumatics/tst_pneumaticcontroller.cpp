@@ -198,6 +198,30 @@ private slots:
         QVERIFY(!plant.valve[1] && !plant.valve[4] && plant.valve[2] && plant.valve[5]);
     }
 
+    void autoStartsWhenVacuumRequested()
+    {
+        FakePlant plant;
+        PneumaticController c(&plant, PneumaticSettings{});
+        QVERIFY(!c.isActive());
+        c.holdLegs();
+        QVERIFY(c.isActive());
+    }
+
+    void emergencyLatchBlocksAutoStart()
+    {
+        FakePlant plant;
+        PneumaticController c(&plant, PneumaticSettings{});
+        c.start();
+        c.emergencyStop();
+        c.setLegTarget(40);
+        c.setClitoralTarget(30);
+        c.holdLegs();
+        QVERIFY(!c.isActive());
+        c.rearm();
+        c.setLegTarget(40);
+        QVERIFY(c.isActive());
+    }
+
     void legTargetClamped()
     {
         FakePlant plant;

@@ -476,6 +476,7 @@ bool HardwareManager::resetEmergencyStop()
     
     if (m_actuatorControl && m_actuatorControl->resetEmergencyStop()) {
         m_emergencyStop = false;
+        if (m_pneumatics) m_pneumatics->rearm();  // vacuum requests may start the air side again
         qDebug() << "Hardware emergency stop reset";
         return true;
     }
