@@ -10,6 +10,7 @@ add_library(PneumaticsLogic STATIC
     SealWatch.cpp
     PulserDrive.cpp
     SoftwarePwm.cpp
+    PneumaticController.cpp
 )
 set_target_properties(PneumaticsLogic PROPERTIES
     AUTOMOC ON
