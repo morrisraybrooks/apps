@@ -11,3 +11,4 @@ function(pneumatics_test name)
 endfunction()
 
 pneumatics_test(pulsercalibration)
+pneumatics_test(tanklogic)

@@ -53,6 +53,22 @@
     "security_enabled": true,
     "wifi_enabled": false
   },
+  "pneumatics": {
+    "tank_fill_mmhg": 70,
+    "tank_restart_mmhg": 55,
+    "top_up_margin_mmhg": 5,
+    "leg_min_mmhg": 30,
+    "leg_max_mmhg": 50,
+    "clit_max_mmhg": 60,
+    "feed_below_mmhg": 2,
+    "vent_above_mmhg": 3,
+    "feed_pulse_ms": 30,
+    "average_window_ms": 200,
+    "leak_drop_mmhg": 10,
+    "leak_rate_mmhg_per_100ms": 5,
+    "recovery_attempts": 3,
+    "recovery_window_ms": 2000
+  },
   "pattern_settings": {
     "auto_start_enabled": false,
     "custom_patterns_enabled": true,

@@ -5,6 +5,7 @@ find_package(Threads REQUIRED)
 
 add_library(PneumaticsLogic STATIC
     PulserCalibration.cpp
+    TankLogic.cpp
 )
 set_target_properties(PneumaticsLogic PROPERTIES
     AUTOMOC ON
