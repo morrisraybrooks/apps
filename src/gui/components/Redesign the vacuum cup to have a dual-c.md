@@ -25,7 +25,7 @@ Redesign the vacuum cup to have a dual-chamber system with two separate ports an
 - Both chambers must be visible through transparent shell material
 
 **Functional Requirements:**
-- Outer chamber: Constant vacuum (-20 to -40 kPa) for attachment and anti-detachment
-- Inner chamber: Variable patterns (0 to -60 kPa) for stimulation
+- Outer chamber: Constant vacuum (30–50 mmHg / 4–6.7 kPa) for attachment and anti-detachment
+- Inner chamber: Variable patterns (0–75 mmHg / 0–10 kPa, controller hard cap) for stimulation
 - Independent control of each chamber via separate solenoid valves
 - AVL sensor monitoring on outer chamber for detachment detection

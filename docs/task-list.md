@@ -1,10 +1,12 @@
+> **Note (2026-11-14):** pressure figures in this AI-generated transcript were corrected to the device's real limits (30–50 mmHg normal, 75 mmHg controller cap, 100 mmHg absolute max). The original −40/−60 kPa figures were deep enough to damage tissue.
+
 Vacuum Cup Design — Agent Task List
 
 Context
 - Goal: Finalize design artifacts for a vacuum cup compatible with the Vacuum Controller (SOL1/SOL2/SOL3, AVL/Tank, anti-detachment).
 - Defaults: Inner oval 22 × 14 mm; dome depth 14 mm; wall 2.0 mm.
 - Ports: Off-the-shelf female Luer-lock inserts (ISO 80369-7), Part Number: 0-0-1.
-- Safety/specs: −40 kPa continuous, −60 kPa transient; ISO 10993 skin-contact materials.
+- Safety/specs: 75 mmHg controller hard cap (100 mmHg absolute max); ISO 10993 skin-contact materials.
 - Keep check-list.md as transcript; this file is the actionable checklist.
 
 Deliverables (should already exist in repo)
@@ -37,7 +39,7 @@ Commands (run from repo root)
 
 Acceptance criteria
 - docs/cup_design.pdf exists and displays labels for: primary/aux female Luer-lock ports (P/N 0-0-1), AVL tee, optional diaphragm cavity, optional relief and hydrophobic filter.
-- docs/manufacturing/cup_exploded.pdf and cup_tech_drawing.pdf are generated without errors; dimensions and notes visible (22 × 14 mm inner, wall 2.0 mm, depth 14 mm, ISO 10993, −40/−60 kPa).
+- docs/manufacturing/cup_exploded.pdf and cup_tech_drawing.pdf are generated without errors; dimensions and notes visible (22 × 14 mm inner, wall 2.0 mm, depth 14 mm, ISO 10993, 75 mmHg cap).
 - No overheating (>70°C) or memory overuse (>6 GB) during export.
 - No changes to check-list.md (remains transcript).
 

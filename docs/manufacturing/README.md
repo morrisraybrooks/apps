@@ -45,9 +45,9 @@ hardware/cup/cup.scad           # Complete OpenSCAD parametric model
   - Dual-chamber separation
 
 ### Pressure Ratings
-- **Continuous Operation**: -40 kPa (-300 mmHg)
-- **Transient Maximum**: -60 kPa (-450 mmHg)
-- **Test Pressure**: -80 kPa (-600 mmHg)
+- **Normal Operation**: 30–50 mmHg (4–6.7 kPa)
+- **Maximum**: 75 mmHg controller cap, 100 mmHg absolute ceiling (13.3 kPa)
+- **Bench Proof Test**: 200 mmHg (26.7 kPa) on the empty cup, sealed plate – never on a body
 
 ### Compliance Standards
 - **ISO 10993**: Biocompatibility (skin contact)
@@ -92,7 +92,7 @@ hardware/cup/cup.scad           # Complete OpenSCAD parametric model
 - Ensure proper contact angle (12°)
 
 ### 4. Quality Control
-- Pressure testing to -80 kPa
+- Bench proof test of the empty cup to 200 mmHg (never on a body)
 - Dimensional verification
 - Biocompatibility certification
 - Visual inspection for defects

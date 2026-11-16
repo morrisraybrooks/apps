@@ -124,7 +124,7 @@ The A-shape's open channel provides unique advantages over closed dome designs:
 | Chamber separation height | 8mm | |
 | Diaphragm thickness | 1.0mm | A-crossbar membrane |
 | Port separation angle | 45° | |
-| Pressure rating | −40 kPa continuous, −60 kPa transient | |
+| Pressure rating | Max 100 mmHg (13.3 kPa) – controller hard cap 75 mmHg; shell bench-tested empty to 200 mmHg, never on skin | Deep vacuum damages tissue |
 
 ![A-Contour Cup Render](images/a-contour-cup-render.png)
 *A-Contour cup 3D render showing the A-shaped geometry with clitoral cylinder (A-apex), structural divider (A-crossbar), bilateral outer chambers (A-legs), and central open channel.*

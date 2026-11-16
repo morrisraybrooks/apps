@@ -19,7 +19,7 @@ The A-Contour uses two independent vacuum zones:
 ### Outer Chamber (Vulva Zone)
 - **Diameter**: 80mm (full vulva coverage)
 - **Function**: Anti-detachment + baseline vacuum for tissue engorgement
-- **Pressure**: -20 to -40 kPa constant
+- **Pressure**: 30–50 mmHg (4–6.7 kPa) sustained – never above the controller's 75 mmHg cap
 - **Connected to**: SOL1/SOL2 valves + AVL (Applied Vacuum Line) sensor
 - Creates peripheral seal around the vulva (labia majora/minora)
 - Maintains sustained vacuum for blood engorgement of vulva and labia
@@ -27,7 +27,7 @@ The A-Contour uses two independent vacuum zones:
 ### Inner Chamber (Clitoral Zone)
 - **Dimensions**: 1" × 2" (25mm wide × 51mm tall)
 - **Function**: Variable patterns + air pulse stimulation
-- **Pressure**: 0 to -60 kPa variable
+- **Pressure**: 0–75 mmHg (0–10 kPa) variable – controller hard cap 75 mmHg
 - **Connected to**: SOL3 valve (or SOL4/SOL5 in 5-valve configuration)
 - Two operating modes:
   - **Sustained vacuum mode**: Continuous negative pressure for clitoral engorgement
@@ -44,7 +44,7 @@ The A-Contour uses two independent vacuum zones:
 | Chamber separation height | 8mm | |
 | Diaphragm thickness | 1.0mm | A-crossbar membrane |
 | Port separation angle | 45° | |
-| Pressure rating | −40 kPa continuous, −60 kPa transient | |
+| Pressure rating | Max 100 mmHg (13.3 kPa) – controller hard cap 75 mmHg; shell bench-tested empty to 200 mmHg, never on skin | Deep vacuum damages tissue |
 
 ![A-Contour Cup Render](images/a-contour-cup-render.png)
 *A-Contour cup 3D render showing the A-shaped geometry with clitoral cylinder (A-apex), structural divider (A-crossbar), bilateral outer chambers (A-legs), and central open channel.*

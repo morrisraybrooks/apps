@@ -151,7 +151,7 @@ Automatic protection against excessive pressure:
 
 #### Monitoring
 - **Dual Sensors**: Both AVL and tank pressure monitored
-- **Configurable Limits**: Set maximum pressure (50-150 mmHg)
+- **Configurable Limits**: Set maximum pressure up to 75 mmHg (default cap); the software never accepts more than 100 mmHg, and emergency-stops at 80 mmHg
 - **Rapid Response**: Immediate shutdown if limits exceeded
 
 #### Protection Actions
