@@ -1,8 +1,15 @@
 # Vacuum Cup Explanation
 
+*Updated 2026-11-16 for the current design, **cup_020**. Design files: [`hardware/cup/v6/`](../hardware/cup/v6/).
+The pictures are sliced from the real cup_020 model.*
+
 ## Overview
 
-The vacuum cup is a dual-chamber medical device component designed for vulva stimulation with anti-detachment monitoring. It's called the **A-Contour** and is purpose-built for the female vulva anatomy, solving problems that traditional dome-shaped cups have.
+The vacuum cup is called the **A-Contour**. It is purpose-built for vulva anatomy and has **two separate vacuum chambers** plus an **open channel**, so it can do what dome cups and air-pulse toys can't: hold steady vacuum to engorge the vulva and clitoris, and pulse the clitoris, at the same time and independently.
+
+It is **one piece** (clear Tritan shell, silicone seal lip and vent flaps molded on) with **two ports**.
+
+![A-Contour cup_020 footprint on the body](images/cup020-footprint.svg)
 
 ## Problems with Traditional Dome Cups
 
@@ -12,155 +19,90 @@ The vacuum cup is a dual-chamber medical device component designed for vulva sti
 - No access to urethra or vaginal opening for simultaneous play
 - Uniform suction cannot replicate localized oral stimulation sensations
 
-## The A-Contour Solution: Dual-Chamber Design
+## The A-Contour Solution: Two Chambers + Open Channel
 
-The A-Contour uses two independent vacuum zones:
+### Leg Chamber (outer, blue)
+- **Where**: the two legs of the "A", which join over the top of the clitoral chamber
+- **Function**: holds the cup on (anti-detachment) + steady vacuum that engorges the labia
+- **Pressure**: 30–50 mmHg (4–6.7 kPa) steady – never above the controller's 75 mmHg cap
+- **Valves**: SOL1 (vacuum) / SOL2 (vent); **AVL sensor** on this line, ADC channel 0
+- **Port**: one leg port on top of the right leg pulls both legs
+- **Manual vent**: silicone flap on top of the left leg
 
-### Outer Chamber (Vulva Zone)
-- **Diameter**: 80mm (full vulva coverage)
-- **Function**: Anti-detachment + baseline vacuum for tissue engorgement
-- **Pressure**: 30–50 mmHg (4–6.7 kPa) sustained – never above the controller's 75 mmHg cap
-- **Connected to**: SOL1/SOL2 valves + AVL (Applied Vacuum Line) sensor
-- Creates peripheral seal around the vulva (labia majora/minora)
-- Maintains sustained vacuum for blood engorgement of vulva and labia
+### Clitoral Chamber (inner, orange)
+- **Shape**: a glans + shaft. Shaft **27 mm wide × 44 mm long**, corona **33 mm**, head 26 mm – about **70 mm (2.75") deep**, 34.3 cm³. The head and corona stand up out through the shell.
+- **Lean**: 15° toward the pubic bone
+- **Hood retractor ridge**: soft 1.5 mm silicone ridge on the apex side of the mouth holds the hood back from above (nothing goes under the hood)
+- **Pressure**: 0–75 mmHg (0–10 kPa) – controller hard cap 75 mmHg
+- **Valves**: SOL4 (vacuum) / SOL5 (vent); clitoral sensor on this line, ADC channel 2
+- **Two modes**:
+  - **Steady vacuum** – engorges the clitoris
+  - **Air pulses** – rapid oscillation (5–13 Hz) for stimulation
+- **Port**: at the glans tip
+- **Manual vent**: silicone flap on the side of the glans head
 
-### Inner Chamber (Clitoral Zone)
-- **Dimensions**: 1" × 2" (25mm wide × 51mm tall)
-- **Function**: Variable patterns + air pulse stimulation
-- **Pressure**: 0–75 mmHg (0–10 kPa) variable – controller hard cap 75 mmHg
-- **Connected to**: SOL3 valve (or SOL4/SOL5 in 5-valve configuration)
-- Two operating modes:
-  - **Sustained vacuum mode**: Continuous negative pressure for clitoral engorgement
-  - **Air-pulse mode**: Rapid pressure oscillation (5-13 Hz) for stimulation
+### Open Channel (green)
+- **Where**: between the legs, with no plastic over it
+- **Function**: no vacuum here – the urethra and vaginal opening stay out of the suction, fluids drain out, and an insertable toy can be used
 
-## Physical Specifications
+![Side cut through the middle of cup_020](images/cup020-side-cut.svg)
+
+![Cuts across the legs and across the apex](images/cup020-cross-cuts.svg)
+
+## Physical Specifications (cup_020)
 
 | Parameter | Value | Notes |
 |-----------|-------|-------|
-| Overall dome diameter | 80mm | Full vulva coverage |
-| Clitoral cylinder size | 1" × 2" (25mm × 51mm) | Focused clitoral stimulation |
-| Dome height | 50mm | |
-| Wall thickness | 2.0mm | |
-| Chamber separation height | 8mm | |
-| Diaphragm thickness | 1.0mm | A-crossbar membrane |
-| Port separation angle | 45° | |
+| Overall size | 93.5 × 128.5 × 79.6 mm | width × length × height |
+| Shell wall | 2.0 mm | |
+| Leg chamber | 204.1 cm³ | legs connected |
+| Clitoral chamber | 34.3 cm³ | ~70 mm deep |
+| Ports | 2 | Luer |
+| Manual vents | 2 silicone flaps | no power needed |
 | Pressure rating | Max 100 mmHg (13.3 kPa) – controller hard cap 75 mmHg; shell bench-tested empty to 200 mmHg, never on skin | Deep vacuum damages tissue |
-
-![A-Contour Cup Render](images/a-contour-cup-render.png)
-*A-Contour cup 3D render showing the A-shaped geometry with clitoral cylinder (A-apex), structural divider (A-crossbar), bilateral outer chambers (A-legs), and central open channel.*
 
 ## Materials
 
-- **Shell**: Clear PC/Tritan (polycarbonate/copolyester) - highly transparent
-- **Seal lip**: Silicone (Shore A 10–15) for skin contact
-- **Compliance**: ISO 10993 biocompatible materials, ISO 80369-7 Luer-lock connections
+- **Shell**: Clear Tritan copolyester – see-through for placement
+- **Seal lip, hood ridge, vent flaps**: Platinum-cure silicone, molded onto the shell
+- **Compliance targets**: ISO 10993 biocompatible materials, ISO 80369-7 Luer connections
 
 ## Port Configuration
 
-- **Port 1 (Outer Chamber)**: Female Luer-lock connection for SOL1/SOL2 + AVL sensor
-- **Port 2 (Inner Chamber)**: Female Luer-lock connection for SOL3 pattern control
-- **AVL sensor tap**: 2.0mm ID pickoff on outer chamber for pressure monitoring
+- **Leg port**: SOL1 / SOL2 line. The AVL pressure sensor tees into this tube **at the controller** – there is no separate sensor tap on the cup.
+- **Clitoral port**: SOL4 / SOL5 line, with the clitoral pressure sensor teed in at the controller.
+
+![Vacuum plumbing](images/vacuum-plumbing.svg)
 
 ## Key Differentiator: Active Engorgement
 
 Unlike commercial air-pulse toys (Womanizer, Satisfyer, LELO) that only provide oscillating pressure waves, the A-Contour can create **sustained vacuum for tissue engorgement**. This allows:
 
 1. **Faster arousal**: Engorge the clitoris BEFORE beginning stimulation
-2. **Maintained engorgement**: Sustained outer vacuum keeps tissue engorged throughout
+2. **Maintained engorgement**: Sustained leg-chamber vacuum keeps tissue engorged throughout
 3. **Faster orgasm**: Optimal clitoral erection from the start
-4. **Enhanced sensitivity**: Engorged tissue exposes ~8,000 nerve endings
-5. **Consistent response**: Does not rely on user's natural arousal state
+4. **Enhanced sensitivity**: Engorged tissue exposes more of its ~8,000 nerve endings
+5. **Consistent response**: Does not rely on the user's natural arousal state
 
-## A-Shape Open-Channel Design
+## Open-Channel Benefits
 
-The A-Contour's defining feature is its **A-shaped geometry** that creates an open channel for vaginal and urethral access. Unlike traditional dome cups that completely enclose the vulva, the A-shape seals around the **periphery** of the vulva while leaving the center open.
-
-### Understanding the A-Shape Geometry
-
-The "A" shape represents the cup's anatomy:
-- **A-apex triangle**: The enclosed triangular space at the top of the "A" houses the 1" × 2" clitoral cylinder
-- **A-crossbar**: The internal diaphragm that separates the clitoral chamber from the outer chambers
-- **A-legs**: The two bilateral outer vacuum chambers (80mm total coverage) that seal against the labia
-- **Open channel**: The space between the A-legs for vaginal/urethral access
-
-### How the A-Shape Works
-
-```
-                  A-CONTOUR CUP ANATOMY (Top View)
-
-                         ╱╲
-                        ╱╱╲╲
-                       ╱╱  ╲╲  ← A-APEX TRIANGLE (1"×2" Clitoral Cylinder)
-                      ╱╱clit╲╲
-                     ╱╱──────╲╲ ← A-CROSSBAR (Divide between Clitoral Cylinder and Outer Chamber)
-                    ╱╱────────╲╲
-                   ╱╱   OPEN   ╲╲ ← A-LEGS (Bilateral Outer Chambers / Labia Seal)
-                  ╱╱   CHANNEL  ╲╲
-                 ╱╱  (Urethral)  ╲╲
-                ╱╱    (Vaginal)   ╲╲
-               └┘      Access      └┘
-```
-
-### Cross-Section View (Side)
-
-```
-              OPEN-CHANNEL CROSS-SECTION (Side View)
-
-                            A-Apex Triangle
-                          (Clitoral Cylinder)
-                                   │
-                                   ▼
-                                ╭─────╮
-                                │~~~~~│ ← Clitoral Gland (1"×2")
-                                │~~~~~│
-                      ══════════╧═════╧══════ ← A-CROSSBAR
-    A-Cup Outer Wall │                       │   (Diaphragm)
-            │        │                       │
-            ▼        │                       │
-         ╭───────────┤                       ├───────────╮
-        ╱            │                       │            ╲
-       │  A-LEG      │        OPEN           │   A-LEG    │
-       │  (Left      │       CHANNEL         │   (Right   │
-       │   Vacuum    │   (Urethra/Vaginal)   │   Vacuum   │
-       │   Chamber)  │                       │   Chamber) │
-        ╲            │                       │            ╱
-     ═══════════════════════════════════════════════════════
-     Body Surface - Fluids drain through open channel
-```
-
-### Key Benefits of Open-Channel Design
-
-1. **Vaginal Access**: The open channel between the two A-legs allows insertable toys (vibrators, dildos) to be used simultaneously while vacuum is active
-
-2. **Urethral Access**: Enables urethral sounding or catheter play during vacuum therapy if desired
-
-3. **Hygiene/Fluid Drainage**:
-   - Vaginal lubrication drains away from vacuum system
-   - Urine (if released) exits through open channel
-   - Female ejaculate/squirting doesn't contaminate vacuum lines or hoses
-
-4. **Squirting-Compatible**: Traditional dome cups trap ejaculate inside, creating hygiene issues and potentially damaging vacuum components. The A-Contour's open channel allows fluids to exit freely
-
-5. **Easy Cleanup**: Vacuum hoses remain dry; only the cup exterior needs cleaning after use
-
-### How It Seals While Staying Open
-
-The A-shape creates two sealed vacuum chambers on either side:
-- **Left A-leg**: Seals against left labia majora/minora
-- **Right A-leg**: Seals against right labia majora/minora
-- **Center gap**: Open channel between the A-legs - no seal, no suction
-- **A-apex triangle**: Clitoral cylinder creates focused seal around clitoris
-- **A-crossbar**: Internal diaphragm separates clitoral chamber from outer chambers
-
-This design means the vacuum pulls the labia tissue into the A-leg chambers for engorgement, while leaving the vaginal vestibule and urethral meatus completely accessible in the center
+1. **Vaginal access**: insertable toys can be used while vacuum is active
+2. **Urethral access**: sounding or catheter play is possible during vacuum
+3. **Hygiene / drainage**: lubrication, urine and squirting exit through the channel instead of the vacuum lines
+4. **Easy cleanup**: hoses stay dry
 
 ## Anti-Detachment System
 
-The AVL (Applied Vacuum Line) sensor monitors the outer chamber pressure. If pressure rises above an adjustable threshold (indicating potential detachment), the system opens SOL1 to pull more vacuum, ensuring the cup stays attached to the patient's skin.
+The AVL sensor monitors the leg-chamber pressure. If pressure rises above an adjustable threshold (the cup is starting to come loose), the system opens SOL1 to pull more vacuum – never above the 75 mmHg cap.
+
+## Safety
+
+- **Undercut**: the corona (33 mm) is wider than the shaft (27 mm). Before removing, vent **both** chambers (lift the flaps), wait for the swelling to go down, never pull off under vacuum.
+- **Deep chamber**: how far tissue is drawn in depends on vacuum and time – start low and short.
+- See [cup cleaning & entrapment safety](cup-cleaning-and-entrapment-safety.md) and [clitoral chamber sizing research](clitoral-chamber-sizing-research.md).
 
 ## Related Files
 
-- `hardware/cup/cup.scad` - Parametric 3D model (OpenSCAD)
-- `docs/cup_design.svg` - Design overview diagram
-- `docs/manufacturing/cup_exploded.svg` - Exploded assembly view
-- `docs/manufacturing/cup_tech_drawing.svg` - Technical drawing with dimensions
+- `hardware/cup/v6/` – cup_020 STL meshes, Blender scene, parameters, build scripts, renders
+- `hardware/cup/v6/scripts/cup_sdf.py` – the model that generates the cup
+- `docs/images/make_diagrams/` – scripts that draw the pictures in these docs

@@ -8,6 +8,18 @@ The updated A-Contour dual-chamber cup. The original cup files in `hardware/cup/
 |---|---|---|
 | ![Top](renders/render_top.png) | ![Side](renders/render_side.png) | ![Underside](renders/render_under.png) |
 
+## Labelled drawings
+
+Sliced from this folder's `shell.stl` and `seal.stl`. Blue = leg chamber, orange = clitoral chamber, green = open channel, pink = silicone.
+
+![Footprint on the body](../../../docs/images/cup020-footprint.svg)
+
+![Side cut through the middle](../../../docs/images/cup020-side-cut.svg)
+
+![Cuts across the legs and the apex](../../../docs/images/cup020-cross-cuts.svg)
+
+How it connects to the controller: [vacuum plumbing](../../../docs/images/vacuum-plumbing.svg) · [system overview](../../../docs/images/system-overview.svg)
+
 ## What changed
 
 - **Glans + shaft clitoral chamber** in place of the older teardrop/nose chamber.
