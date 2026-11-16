@@ -7,6 +7,7 @@ add_library(PneumaticsLogic STATIC
     PulserCalibration.cpp
     TankLogic.cpp
     ChamberRegulator.cpp
+    SealWatch.cpp
 )
 set_target_properties(PneumaticsLogic PROPERTIES
     AUTOMOC ON
