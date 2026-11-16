@@ -48,6 +48,8 @@ public:
     bool isPulserEnabled() const { return m_pulser.isEnabled(); }
 
     void ventAll();
+    /// Normal end / shutdown: pulser and pump off, both chambers vented, tank keeps its vacuum.
+    void stop();
     void ventTank();
     void emergencyStop();
     bool isSealRecovering() const { return m_seal.state() == SealState::Recovering; }
@@ -61,6 +63,8 @@ signals:
     void sealStateChanged(SealState state);
     void pulserUnavailable(const QString& reason);
     void pulseBurstChanged(bool on);
+    /// A pressure reading was not a number (sensor/ADC failure) - controller has stopped.
+    void sensorFault(const QString& reason);
 
 private:
     void applyClitoralTarget();

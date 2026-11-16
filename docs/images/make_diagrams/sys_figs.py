@@ -180,7 +180,7 @@ def overview():
 
     # band 2: interfaces
     names = [
-        (["Pump driver", "L293D"], "GPIO 18, 25", C["drv"], C["drvfill"]),
+        (["Pump drivers", "L293D: pump + pulser"], "GPIO 18, 25, 15", C["drv"], C["drvfill"]),
         (["Valve drivers", "2 × L293D, 12 V"], "GPIO 17 27 22 23 24", C["drv"], C["drvfill"]),
         (["ADC", "MCP3008"], "SPI 8–11", C["sens"], C["sensfill"]),
         (["Scale amp", "HX711"], "GPIO 26, 14", C["chan"], C["chanfill"]),
@@ -202,7 +202,7 @@ def overview():
 
     # band 3: devices
     dev = [
-        (["Pump → tank"], C["air"], C["airfill"]),
+        (["Pump → tank", "+ clitoral", "pulser"], C["air"], C["airfill"]),
         (["SOL1–SOL5", "valves"], C["air"], C["airfill"]),
         (["3 pressure", "sensors", "MPX5010DP"], C["sens"], C["sensfill"]),
         (["Load cell", "under fluid", "catcher"], C["chan"], C["chanfill"]),

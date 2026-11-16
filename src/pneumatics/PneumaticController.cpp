@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QTimer>
 #include <algorithm>
+#include <cmath>
 
 PneumaticController::PneumaticController(IPneumaticHardware* hardware, PneumaticSettings settings,
                                          QObject* parent)
@@ -112,6 +113,20 @@ void PneumaticController::ventAll()
     applyClitoralTarget();
 }
 
+void PneumaticController::stop()
+{
+    ventAll();
+    m_active = false;
+    m_timer->stop();
+    m_ventingTank = false;
+    writeDuty(0.0);
+    write(1, false);
+    write(4, false);
+    write(2, true);
+    write(5, true);
+    writePump(false);
+}
+
 void PneumaticController::ventTank()
 {
     m_ventingTank = true;
@@ -170,6 +185,12 @@ void PneumaticController::tick(qint64 nowMs)
     const double leg = m_hw->legMmHg();
     const double tank = m_hw->tankMmHg();
     const double clit = m_hw->clitMmHg();
+    if (!std::isfinite(leg) || !std::isfinite(tank) || !std::isfinite(clit)) {
+        emergencyStop();
+        emit sensorFault(QString("Invalid pressure reading (legs %1, tank %2, clitoral %3)")
+                             .arg(leg).arg(tank).arg(clit));
+        return;
+    }
 
     // Seal watch on the legs
     const SealState before = m_seal.state();

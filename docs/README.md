@@ -354,6 +354,7 @@ BCM numbering. Every pin has exactly one job (checked 2026-11-16).
 | 12 | Clitoral TENS amplitude PWM (hardware PWM channel 0) | HardwareManager.h |
 | 13 | Urethral TENS amplitude PWM (hardware PWM channel 1) | HardwareManager.h |
 | 14 | HX711 scale clock *(was 19)* — keep the serial port off | FluidSensor.h |
+| 15 | Clitoral pulser motor PWM (software PWM) — keep the serial port off | ActuatorControl.h |
 | 16 | Clitoral TENS fault input | HardwareManager.h |
 | 17 | SOL1 — leg chamber vacuum | ActuatorControl.h |
 | 18 | Pump PWM | ActuatorControl.h |

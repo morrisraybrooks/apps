@@ -8,9 +8,18 @@
 #include "ClitoralOscillator.h"
 #include "CameraManager.h"
 #include "ConsentManager.h"
+#include "IPneumaticHardware.h"
+#include "PneumaticController.h"
+#include "PneumaticSettings.h"
 
 #include <QDebug>
 #include <QMutexLocker>
+#include <QElapsedTimer>
+#include <QFile>
+#include <QJsonDocument>
+#include <QStandardPaths>
+#include <algorithm>
+#include <limits>
 // Modern GPIO library using libgpiod
 #include <gpiod.h>
 #include <stdexcept>
@@ -61,6 +70,7 @@ bool HardwareManager::initialize()
             // m_simulated* members and logical state maintained by the
             // setter methods below.
 
+            createPneumatics();
             m_initialized = true;
             return true;
         }
@@ -144,6 +154,9 @@ bool HardwareManager::initialize()
             qDebug() << "Motion Sensor initialized (MPU6050 IMU)";
         }
 
+        // Air side controller (tank, chambers, seal watch, pulser)
+        createPneumatics();
+
         // Create and initialize clitoral oscillator (for air-pulse stimulation)
         m_clitoralOscillator = std::make_unique<ClitoralOscillator>(this, this);
         qDebug() << "Clitoral Oscillator initialized";
@@ -200,6 +213,12 @@ void HardwareManager::shutdown()
     if (!m_initialized) return;
     
     qDebug() << "Shutting down Hardware Manager...";
+
+    // Air side first: pulser and pump off, chambers vented (tank keeps its vacuum)
+    if (m_pneumatics) {
+        m_pneumatics->stop();
+        m_pneumatics.reset();
+    }
     
     // Safe shutdown sequence
     safeShutdown();
@@ -406,48 +425,19 @@ void HardwareManager::emergencyStop()
 
 void HardwareManager::enterSealMaintainedSafeState(const QString& reason)
 {
-    QMutexLocker locker(&m_stateMutex);
-
-    qWarning() << "HARDWARE SEAL-MAINTAINED SAFE STATE:" << reason;
-
-    m_emergencyStop = true;
-
-    // Immediately stop TENS (electrical safety first!)
-    if (m_tensController) {
-        m_tensController->emergencyStop();
-    }
-
-    // Stop pump and place valves into a state that vents inner circuits
-    // while preserving the outer AVL seal.
-    if (m_actuatorControl) {
-        // Pump off
-        m_actuatorControl->setPumpEnabled(false);
-        m_actuatorControl->setPumpSpeed(0.0);
-
-        // Outer V-seal chamber: close vacuum, keep vent closed (seal maintained)
-        m_actuatorControl->setSOL1(false);  // No new vacuum to AVL
-        m_actuatorControl->setSOL2(false);  // Do NOT vent AVL
-
-        // Tank and clitoral circuit: fully vent
-        m_actuatorControl->setSOL3(true);   // Tank vent open
-        m_actuatorControl->setSOL4(false);  // Clitoral vacuum closed
-        m_actuatorControl->setSOL5(true);   // Clitoral vent open
-    }
-
-    // Mirror state locally
-    m_pumpEnabled = false;
-    m_pumpSpeed = 0.0;
-    m_sol1State = false;
-    m_sol2State = false;
-    m_sol3State = true;
-    m_sol4State = false;
-    m_sol5State = true;
-
-    emit hardwareError("Seal-maintained safe state activated");
+    // Spec 5.5 (owner-approved 2026-11-16): any fault vents BOTH chambers.
+    // Kept as a separate entry point so existing callers need no change.
+    enterFullVentState(reason);
 }
 
 void HardwareManager::enterFullVentState(const QString& reason)
 {
+    // Pulser off, feeds closed, vents open, pump off, tank vent open (spec 5.5).
+    // Must run before the lock below: the controller's writes take m_stateMutex.
+    if (m_pneumatics) {
+        m_pneumatics->emergencyStop();
+    }
+
     QMutexLocker locker(&m_stateMutex);
 
     qCritical() << "HARDWARE FULL-VENT EMERGENCY STATE:" << reason;
@@ -854,4 +844,135 @@ double HardwareManager::readUrethralImpedance() const
     }
 
     return 10000.0;  // Return high impedance if no ADC (indicates no contact)
+}
+
+// ============================================================================
+// AIR SIDE: PNEUMATIC CONTROLLER
+// ============================================================================
+
+namespace {
+
+/// Real-machine adapter for PneumaticController. A failed read returns NaN,
+/// which makes the controller stop (never treat a dead sensor as 0 mmHg).
+class HardwarePneumatics : public IPneumaticHardware
+{
+public:
+    explicit HardwarePneumatics(HardwareManager* hw) : m_hw(hw) {}
+
+    double legMmHg() override { return read([this] { return m_hw->readAVLPressure(); }); }
+    double tankMmHg() override { return read([this] { return m_hw->readTankPressure(); }); }
+    double clitMmHg() override { return read([this] { return m_hw->readClitoralPressure(); }); }
+
+    void setPump(bool on) override
+    {
+        m_hw->setPumpEnabled(on);
+        m_hw->setPumpSpeed(on ? 100.0 : 0.0);
+    }
+
+    void setValve(int sol, bool open) override
+    {
+        switch (sol) {
+        case 1: m_hw->setSOL1(open); break;
+        case 2: m_hw->setSOL2(open); break;
+        case 3: m_hw->setSOL3(open); break;
+        case 4: m_hw->setSOL4(open); break;
+        case 5: m_hw->setSOL5(open); break;
+        default: break;
+        }
+    }
+
+    void setPulserDuty(double percent) override { m_hw->setPulserDuty(percent); }
+
+private:
+    template <typename F>
+    double read(F f)
+    {
+        try {
+            return f();
+        } catch (const std::exception& e) {
+            qWarning() << "Pressure read failed:" << e.what();
+            return std::numeric_limits<double>::quiet_NaN();
+        }
+    }
+
+    HardwareManager* m_hw;
+};
+
+QString findConfigFile(const QString& name)
+{
+    const QStringList candidates = {
+        "config/" + name,
+        "../config/" + name,
+        "/usr/local/share/vacuum-controller/" + name,
+        QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/" + name,
+    };
+    for (const QString& path : candidates) {
+        if (QFile::exists(path)) return path;
+    }
+    return "config/" + name;
+}
+
+}  // namespace
+
+void HardwareManager::createPneumatics()
+{
+    PneumaticSettings settings;
+    QFile settingsFile(findConfigFile("settings.json"));
+    if (settingsFile.open(QIODevice::ReadOnly)) {
+        const QJsonObject root = QJsonDocument::fromJson(settingsFile.readAll()).object();
+        settings = PneumaticSettings::fromJson(root.value("pneumatics").toObject());
+    } else {
+        qWarning() << "settings.json not found - using default pneumatic settings";
+    }
+
+    m_pneumaticsHw = std::make_unique<HardwarePneumatics>(this);
+    m_pneumatics = std::make_unique<PneumaticController>(m_pneumaticsHw.get(), settings);
+
+    const QString calibration = findConfigFile("pulser_calibration.json");
+    if (m_pneumatics->loadCalibration(calibration)) {
+        qDebug() << "Pulser calibration loaded from" << calibration;
+    } else {
+        qWarning() << "Clitoral pulser unavailable until it is calibrated on the bench"
+                   << "(docs/pulser-bench-calibration.md)";
+    }
+}
+
+void HardwareManager::setPulserDuty(double percent)
+{
+    QMutexLocker locker(&m_stateMutex);
+    if (m_emergencyStop && percent > 0.0) {
+        qWarning() << "Cannot run the pulser: Emergency stop active";
+        return;
+    }
+    if (m_simulationMode) {
+        m_simulatedPulserDuty = std::clamp(percent, 0.0, 100.0);
+        return;
+    }
+    if (m_actuatorControl) {
+        m_actuatorControl->setPulserDuty(percent);
+    }
+}
+
+double HardwareManager::getPulserDuty() const
+{
+    QMutexLocker locker(&m_stateMutex);
+    if (m_simulationMode) return m_simulatedPulserDuty;
+    return m_actuatorControl ? m_actuatorControl->getPulserDuty() : 0.0;
+}
+
+double HardwareManager::sampleClitoralSwing(int durationMs)
+{
+    if (m_simulationMode || !m_sensorInterface) return 0.0;
+
+    double low = std::numeric_limits<double>::max();
+    double high = std::numeric_limits<double>::lowest();
+    QElapsedTimer timer;
+    timer.start();
+    while (timer.elapsed() < durationMs) {
+        const double p = m_sensorInterface->readClitoralPressure();  // raw ADC read, unfiltered
+        if (p < 0.0) continue;  // read error value
+        low = std::min(low, p);
+        high = std::max(high, p);
+    }
+    return high > low ? high - low : 0.0;
 }

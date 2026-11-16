@@ -1,4 +1,5 @@
 #include "ActuatorControl.h"
+#include "SoftwarePwm.h"
 #include <QDebug>
 #include <QMutexLocker>
 #include <gpiod.h>
@@ -218,6 +219,9 @@ void ActuatorControl::emergencyStop()
     qWarning() << "ACTUATOR EMERGENCY STOP ACTIVATED";
     
     m_emergencyStop = true;
+
+    // Pulser off first
+    if (m_pulserPwm) m_pulserPwm->setDuty(0.0);
     
     // Immediately stop pump
     m_pumpEnabled = false;
@@ -338,7 +342,8 @@ bool ActuatorControl::initializeGPIO()
         std::vector<gpiod::line::offset> offsets = {
             GPIO_SOL1, GPIO_SOL2, GPIO_SOL3,  // Outer chamber + tank
             GPIO_SOL4, GPIO_SOL5,              // Clitoral cylinder
-            GPIO_PUMP_ENABLE, GPIO_PUMP_PWM    // Pump control
+            GPIO_PUMP_ENABLE, GPIO_PUMP_PWM,   // Pump control
+            GPIO_PULSER_PWM                    // Clitoral pulser motor
         };
 
         gpiod::line_settings settings;
@@ -349,6 +354,10 @@ bool ActuatorControl::initializeGPIO()
 
         // Create the request
         m_outputRequest = std::make_unique<gpiod::line_request>(request_builder.do_request());
+        m_pulserPwm = std::make_unique<SoftwarePwm>(
+            [this](bool level) { setGPIOOutput(GPIO_PULSER_PWM, level); });
+        m_pulserPwm->setDuty(0.0);
+        m_pulserPwm->start();
 
         qDebug() << "GPIO pins initialized using libgpiod v2.x C++ API";
         qDebug() << "Configured pins: SOL1-5 =" << GPIO_SOL1 << GPIO_SOL2 << GPIO_SOL3
@@ -387,6 +396,7 @@ void ActuatorControl::setGPIOOutput(int pin, bool state)
 
     try {
         gpiod::line::value value = state ? gpiod::line::value::ACTIVE : gpiod::line::value::INACTIVE;
+        std::lock_guard<std::mutex> lineLock(m_lineMutex);
         m_outputRequest->set_value(pin, value);
 
         // Debug output for verification
@@ -416,6 +426,8 @@ bool ActuatorControl::getGPIOState(int pin)
 
 void ActuatorControl::safeShutdownAll()
 {
+    if (m_pulserPwm) m_pulserPwm->setDuty(0.0);
+
     // Set all actuators to safe state
     m_pumpEnabled = false;
     m_pumpSpeed = 0.0;
@@ -514,4 +526,19 @@ void ActuatorControl::setPWM(int pin, int dutyCycle)
         // Fall back to simple on/off
         setGPIOOutput(pin, dutyCycle > 0);
     }
+}
+
+void ActuatorControl::setPulserDuty(double percent)
+{
+    if (!m_pulserPwm) return;
+    if (m_emergencyStop && percent > 0.0) {
+        qWarning() << "Cannot run the pulser: Emergency stop active";
+        return;
+    }
+    m_pulserPwm->setDuty(percent);
+}
+
+double ActuatorControl::getPulserDuty() const
+{
+    return m_pulserPwm ? m_pulserPwm->duty() : 0.0;
 }

@@ -1,4 +1,5 @@
 #include <QtTest>
+#include <limits>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QSignalSpy>
@@ -162,6 +163,39 @@ private slots:
         run(c, plant, t, 2000);
         QVERIFY(!plant.log.contains("SOL3 1"));
         QVERIFY(plant.leg < 3 && plant.clit < 3);
+    }
+
+    void stopVentsChambersKeepsTank()
+    {
+        FakePlant plant;
+        PneumaticController c(&plant, PneumaticSettings{});
+        c.start();
+        c.setLegTarget(40);
+        c.setClitoralTarget(30);
+        qint64 t = 0;
+        run(c, plant, t, 2000);
+        c.stop();
+        QVERIFY(!c.isActive());
+        QVERIFY(plant.valve[2] && plant.valve[5] && !plant.valve[1] && !plant.valve[4]);
+        QVERIFY(!plant.pump);
+        QCOMPARE(plant.duty, 0.0);
+        QVERIFY(!plant.log.contains("SOL3 1"));
+    }
+
+    void sensorFaultStops()
+    {
+        FakePlant plant;
+        PneumaticController c(&plant, PneumaticSettings{});
+        QSignalSpy spy(&c, &PneumaticController::sensorFault);
+        c.start();
+        c.setLegTarget(40);
+        qint64 t = 0;
+        run(c, plant, t, 1000);
+        plant.clit = std::numeric_limits<double>::quiet_NaN();
+        c.tick(t);
+        QCOMPARE(spy.count(), 1);
+        QVERIFY(!c.isActive());
+        QVERIFY(!plant.valve[1] && !plant.valve[4] && plant.valve[2] && plant.valve[5]);
     }
 
     void legTargetClamped()

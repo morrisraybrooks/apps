@@ -5,6 +5,7 @@
 #include <QMutex>
 #include <QTimer>
 #include <memory>
+#include <mutex>
 
 // libgpiod v2.x C++ API
 #include <gpiod.hpp>
@@ -75,6 +76,10 @@ public:
     bool readGPIO(int pin) const;
     void setPWM(int pin, int dutyCycle);  // 0-1024 range
 
+    // Clitoral pulser motor (software PWM on GPIO 15)
+    void setPulserDuty(double percent);   // 0-100 %
+    double getPulserDuty() const;
+
 Q_SIGNALS:
     void actuatorError(const QString& actuator, const QString& error);
     void emergencyStopActivated();
@@ -95,6 +100,8 @@ private:
     bool m_initialized;
     bool m_emergencyStop;
     mutable QMutex m_stateMutex;
+    std::mutex m_lineMutex;   ///< serialises line_request writes (the pulser PWM thread writes too)
+    std::unique_ptr<class SoftwarePwm> m_pulserPwm;
     
     // Pump state
     bool m_pumpEnabled;
@@ -130,6 +137,7 @@ private:
     // Pump control
     static const int GPIO_PUMP_ENABLE = 25;  // L293D Enable pin
     static const int GPIO_PUMP_PWM = 18;     // PWM for pump speed control
+    static const int GPIO_PULSER_PWM = 15;   // Clitoral pulser motor PWM (software PWM; UART RX pin - serial port must stay off)
     
     // PWM configuration
     static const int PWM_FREQUENCY = 5000;   // 5kHz as per specification
