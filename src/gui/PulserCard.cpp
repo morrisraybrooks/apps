@@ -13,13 +13,33 @@
 #include <QTimer>
 
 namespace {
-QPushButton* bigButton(const QString& text, const char* name, const QString& style, int w, int h)
+/// The app's button colours with much bigger, bolder text (low-vision owner)
+QString cardButtonStyle(const QString& type, double textScale = 1.0)
+{
+    return ModernMedicalStyle::getButtonStyle(type)
+        + QString("QPushButton { font-size: %1pt; font-weight: 800; border-radius: %2px; }")
+              .arg(static_cast<int>(ModernMedicalStyle::Typography::getDisplayTitle() * textScale))
+              .arg(ModernMedicalStyle::scaleValue(18));
+}
+
+QPushButton* bigButton(const QString& text, const char* name, const QString& style, int w, int h,
+                       double textScale = 1.0)
 {
     auto* b = new QPushButton(text);
     b->setObjectName(name);
     b->setMinimumSize(ModernMedicalStyle::scaleValue(w), ModernMedicalStyle::scaleValue(h));
-    b->setStyleSheet(ModernMedicalStyle::getButtonStyle(style));
+    b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    b->setStyleSheet(cardButtonStyle(style, textScale));
     return b;
+}
+
+QString labelStyle(int points, const QString& color)
+{
+    return QString("QLabel { font-family: %1; font-size: %2pt; font-weight: 800; color: %3;"
+                   " border: none; background: transparent; }")
+        .arg(ModernMedicalStyle::Typography::PRIMARY_FONT)
+        .arg(points)
+        .arg(color);
 }
 }  // namespace
 
@@ -31,25 +51,22 @@ PulserCard::PulserCard(HardwareManager* hw, std::function<bool()> automationActi
 {
     m_startStop = bigButton("START PULSES", "startStopPulses", "primary", 300, 150);
     m_ventTank = bigButton("VENT TANK", "ventTankButton", "secondary", 300, 150);
-    m_slower = bigButton("SLOWER", "slowerButton", "secondary", 300, 150);
-    m_faster = bigButton("FASTER", "fasterButton", "secondary", 300, 150);
-    m_pause = bigButton("PAUSE PULSES", "pauseButton", "success", 450, 180);
+    m_slower = bigButton(QString::fromUtf8("\u25C0  SLOWER"), "slowerButton", "primary", 300, 150);
+    m_faster = bigButton(QString::fromUtf8("FASTER  \u25B6"), "fasterButton", "primary", 300, 150);
+    m_pause = bigButton("PAUSE PULSES", "pauseButton", "success", 450, 230, 1.5);
 
     m_rate = new QLabel;
     m_rate->setObjectName("rateLabel");
     m_rate->setAlignment(Qt::AlignCenter);
-    m_rate->setStyleSheet(QString("QLabel { font-family: %1; font-size: %2pt; font-weight: %3; }")
-                              .arg(ModernMedicalStyle::Typography::PRIMARY_FONT)
-                              .arg(ModernMedicalStyle::Typography::getDisplayTitle() * 2)
-                              .arg(ModernMedicalStyle::Typography::WEIGHT_BOLD));
+    m_rate->setStyleSheet(labelStyle(ModernMedicalStyle::Typography::getDisplayTitle() * 2,
+                                     ModernMedicalStyle::Colors::TEXT_PRIMARY.name()));
 
     m_status = new QLabel;
     m_status->setObjectName("statusLabel");
     m_status->setAlignment(Qt::AlignCenter);
-    m_status->setStyleSheet(QString("QLabel { font-family: %1; font-size: %2pt; font-weight: %3; }")
-                                .arg(ModernMedicalStyle::Typography::PRIMARY_FONT)
-                                .arg(ModernMedicalStyle::Typography::getHeadline())
-                                .arg(ModernMedicalStyle::Typography::WEIGHT_BOLD));
+    m_status->setWordWrap(true);
+    m_status->setStyleSheet(labelStyle(ModernMedicalStyle::Typography::getHeadline() * 3 / 2,
+                                       ModernMedicalStyle::Colors::TEXT_PRIMARY.name()));
 
     auto* grid = new QGridLayout(this);
     grid->setSpacing(ModernMedicalStyle::Spacing::getLarge());
@@ -161,16 +178,27 @@ void PulserCard::refresh()
     m_pause->setText(paused ? "RESUME" : "PAUSE PULSES");
     if (m_pauseStyle != static_cast<int>(paused)) {
         m_pauseStyle = paused;
-        m_pause->setStyleSheet(ModernMedicalStyle::getButtonStyle(paused ? "warning" : "success"));
+        m_pause->setStyleSheet(cardButtonStyle(paused ? "warning" : "success", 1.5));
     }
 
+    QString status;
+    QColor statusColor = ModernMedicalStyle::Colors::TEXT_PRIMARY;
     if (paused) {
-        m_status->setText("Paused");   // what the owner just pressed comes first
+        status = "Paused";   // what the owner just pressed comes first
+        statusColor = ModernMedicalStyle::Colors::MEDICAL_ORANGE;
     } else if (!air->hasCalibration()) {
-        m_status->setText("Pulser not calibrated");
+        status = "Pulser not calibrated";
+        statusColor = ModernMedicalStyle::Colors::MEDICAL_RED;
     } else if (automation) {
-        m_status->setText("Program in charge");
-    } else {
-        m_status->setText(QString());
+        status = "Program in charge";
+        statusColor = ModernMedicalStyle::Colors::PRIMARY_BLUE;
+    } else if (running) {
+        status = "Pulsing";
+        statusColor = ModernMedicalStyle::Colors::MEDICAL_GREEN;
+    }
+    if (status != m_status->text()) {
+        m_status->setText(status);
+        m_status->setStyleSheet(labelStyle(ModernMedicalStyle::Typography::getHeadline() * 3 / 2,
+                                           statusColor.name()));
     }
 }
