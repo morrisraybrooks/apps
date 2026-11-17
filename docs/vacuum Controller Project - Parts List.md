@@ -23,6 +23,13 @@ Pin numbers are BCM GPIO; the full pin table is in the [README](README.md#gpio-p
   - Sensor 2 = Vacuum tank on MCP3008 channel 1
   - Sensor 3 = Clitoral chamber line on MCP3008 channel 2
   - Each line sensor tees into its tube at the controller (the cup has no sensor tap)
+  - **Hose on the P2 (vacuum) port**, P1 left open to room air — then the output rises with vacuum
+    (0.2 V at 0 mmHg to 4.7 V at 75 mmHg of vacuum). A hose on P1 reads zero all the time.
+  - Powered from **5 V**. Their output goes up to 4.7 V but the MCP3008 runs at 3.3 V, so **each sensor
+    output goes through a divider: 10 kΩ from the sensor output to the ADC input, 20 kΩ from the ADC input
+    to ground** (ADC sees 2/3 of the sensor voltage, 4.7 V → 3.13 V). Use 1 % resistors.
+    The software expects this divider (`MCP3008::PRESSURE_DIVIDER_RATIO`). Without it, any vacuum above about
+    52 mmHg pins the ADC at its top and the machine stops with a sensor fault.
 
 ## Display
 - 50 inch HDMI touch display
@@ -104,7 +111,9 @@ GPIO 18 (PWM)    ----> IN1 (Input 1)
 - The code does not yet claim the TENS pins, so TENS does not work in software yet
 
 ## Safety Hardware
-- Emergency stop button — GPIO 21 (active low, pull-up)
+- Emergency stop button — GPIO 21: a normally-open button from GPIO 21 to GND (internal pull-up; pressed = low).
+  The app reads it 20 times a second and does a full stop. **Also recommended:** a latching E-stop switch that
+  cuts the 12 V supply, so the vent valves open even if the software has frozen.
 - Silicone manual vent flaps on the cup (one per chamber) — work with no power
 - **Still to add:**
   - Passive relief valve (duckbill) on each line, opening at 85–100 mmHg
@@ -219,8 +228,12 @@ GPIO 11 (SCK)  → CLK
 GPIO 10 (MOSI) → DIN
 GPIO 9 (MISO)  → DOUT
 GPIO 8         → CS
-3.3V           → VDD
-GND            → GND
+3.3V           → VDD and VREF
+GND            → AGND and DGND
+
+Each MPX5010DP (5 V supply):
+Vout ──10 kΩ──┬── MCP3008 CHx      (ch0 legs/AVL, ch1 tank, ch2 clitoral)
+              └──20 kΩ── GND
 ```
 
 ### Pump Control
