@@ -115,8 +115,37 @@ double PneumaticController::pulseCeiling() const
     return m_calibration.maxClitoralTarget(m_pulser.rate());
 }
 
+void PneumaticController::setUserPaused(bool paused)
+{
+    if (paused == m_userPaused) return;
+    m_userPaused = paused;
+    if (!paused) {
+        m_resumeWait = true;
+        m_resumeWaitUntil = -1;
+    }
+    applyClitoralTarget();
+    emit userPauseChanged(paused);
+}
+
+void PneumaticController::clearUserPause()
+{
+    m_resumeWait = false;
+    if (!m_userPaused) return;
+    m_userPaused = false;
+    emit userPauseChanged(false);
+}
+
+double PneumaticController::maxPulseRate() const
+{
+    return m_calibration.isValid() ? m_calibration.maxRate() : 100.0;
+}
+
 void PneumaticController::applyClitoralTarget()
 {
+    if (m_userPaused) {
+        m_clitReg.setTarget(0.0);   // paused: clitoral chamber vented whatever was asked
+        return;
+    }
     double ceiling = std::min(m_settings.clitMaxMmHg, PulserCalibration::CAP_MMHG);
     if (m_pulser.isEnabled() && m_calibration.isValid()) {
         // The regulator lets the steady level sit up to target + ventAbove, so keep that
@@ -184,6 +213,7 @@ bool PneumaticController::setBenchDuty(double percent)
 
 void PneumaticController::ventAll()
 {
+    clearUserPause();
     m_pulser.setEnabled(false);
     m_benchDuty = -1.0;
     m_clitReg.setAveraging(false);
@@ -194,7 +224,7 @@ void PneumaticController::ventAll()
 
 void PneumaticController::stop()
 {
-    ventAll();
+    ventAll();   // also clears the pause
     m_active = false;
     m_timer->stop();
     m_ventingTank = false;
@@ -221,6 +251,7 @@ void PneumaticController::emergencyStop()
     m_active = false;
     m_latched = true;
     m_timer->stop();
+    clearUserPause();
     m_pulser.setEnabled(false);
     m_benchDuty = -1.0;
     m_ventingTank = false;
@@ -323,6 +354,15 @@ void PneumaticController::tick(qint64 nowMs)
         pulse = PulserOutput{};  // wait until the steady level is low enough for this rate
     }
     if (m_benchDuty >= 0.0) pulse = PulserOutput{m_benchDuty > 0.0, m_benchDuty};
+    if (m_resumeWait) {
+        if (m_resumeWaitUntil < 0) m_resumeWaitUntil = nowMs + 3000;
+        const double target = m_clitReg.target();
+        if (target <= 0.0 || clitAverage >= target - m_settings.feedBelowMmHg
+            || nowMs >= m_resumeWaitUntil) {
+            m_resumeWait = false;
+        }
+    }
+    if (m_userPaused || m_resumeWait) pulse = PulserOutput{};
     if (pulse.on != m_burstOn) {
         m_burstOn = pulse.on;
         emit pulseBurstChanged(pulse.on);

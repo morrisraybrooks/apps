@@ -70,6 +70,16 @@ public:
     bool isSealRecovering() const { return m_seal.state() == SealState::Recovering; }
     SealState sealState() const { return m_seal.state(); }
 
+    /// Owner's pause (self-edging): pulser off and clitoral chamber vented, legs kept.
+    /// Wins over every other caller - their requests are kept and come back on Resume,
+    /// where pulses wait (up to 3 s) for the clitoral level to return. Never starts the
+    /// loop; ventAll/stop/emergencyStop clear it.
+    void setUserPaused(bool paused);
+    bool isUserPaused() const { return m_userPaused; }
+    /// Highest pulse rate the bench calibration covers (100 when not calibrated)
+    double maxPulseRate() const;
+    const PneumaticSettings& settings() const { return m_settings; }
+
     /// Bench-only raw pulser duty (PulserBench tool); refused unless settings.benchMode.
     bool setBenchDuty(double percent);
 
@@ -80,6 +90,7 @@ signals:
     void pulseBurstChanged(bool on);
     /// A pressure reading was not a number (sensor/ADC failure) - controller has stopped.
     void sensorFault(const QString& reason);
+    void userPauseChanged(bool paused);
 
 private:
     void applyClitoralTarget();
@@ -88,6 +99,7 @@ private:
     double pulseCeiling() const;
     double clitMean(double clit, qint64 nowMs);
     void goIdle();
+    void clearUserPause();
     void write(int sol, bool open);
     void writePump(bool on);
     void writeDuty(double percent);
@@ -120,6 +132,9 @@ private:
     double m_dutyState = -1.0;
     bool m_burstOn = false;
     quint64 m_pulserOnCount = 0;
+    bool m_userPaused = false;
+    bool m_resumeWait = false;      ///< after Resume: pulses wait for the clitoral level
+    qint64 m_resumeWaitUntil = -1;  ///< deadline for that wait, set on the first tick
 };
 
 #endif // PNEUMATICCONTROLLER_H

@@ -30,6 +30,17 @@ void run(PneumaticController& c, FakePlant& plant, qint64& t, qint64 forMs)
         plant.step();
     }
 }
+/// Legs 40, clitoral 30, pulser on at 20/s, run until pulsing
+void startPulsing(PneumaticController& c, FakePlant& plant, qint64& t, QTemporaryFile& f)
+{
+    QVERIFY(c.loadCalibration(writeCalibration(f)));
+    c.setLegTarget(40);
+    c.setClitoralTarget(30);
+    c.setPulseRate(20);
+    QVERIFY(c.setPulserEnabled(true));
+    run(c, plant, t, 3000);
+    QVERIFY(plant.duty > 0);
+}
 }  // namespace
 
 class TestPneumaticController : public QObject
@@ -388,6 +399,106 @@ private slots:
         PneumaticController c(&plant, PneumaticSettings{});
         QVERIFY(!c.loadCalibration(f.fileName()));
         QVERIFY2(c.calibrationError().contains("not a JSON object"), qPrintable(c.calibrationError()));
+    }
+
+    // --- user pause (pulser card) ---
+    void pauseStopsPulsesVentsClitKeepsLegs()
+    {
+        QTemporaryFile f;
+        FakePlant plant;
+        PneumaticController c(&plant, PneumaticSettings{});
+        qint64 t = 0;
+        startPulsing(c, plant, t, f);
+        c.setUserPaused(true);
+        QVERIFY(c.isUserPaused());
+        run(c, plant, t, 1500);
+        QCOMPARE(plant.duty, 0.0);
+        QVERIFY2(plant.clit < 3, qPrintable(QString::number(plant.clit)));
+        QVERIFY2(plant.leg >= 38 && plant.leg <= 43, qPrintable(QString::number(plant.leg)));
+        QVERIFY(c.isPulserEnabled());    // the request is kept for Resume
+    }
+
+    void requestsWhilePausedWaitForResume()
+    {
+        QTemporaryFile f;
+        FakePlant plant;
+        PneumaticController c(&plant, PneumaticSettings{});
+        QVERIFY(c.loadCalibration(writeCalibration(f)));
+        c.setUserPaused(true);
+        c.setLegTarget(40);
+        c.setClitoralTarget(30);
+        c.setPulseRate(20);
+        QVERIFY(c.setPulserEnabled(true));
+        qint64 t = 0;
+        run(c, plant, t, 2000);
+        QCOMPARE(c.clitoralTarget(), 0.0);
+        QVERIFY2(plant.clit < 3, qPrintable(QString::number(plant.clit)));
+        QVERIFY(!plant.log.filter(QRegularExpression("^duty [1-9]")).size());
+    }
+
+    void resumeRestoresLevelThenPulses()
+    {
+        QTemporaryFile f;
+        FakePlant plant;
+        PneumaticController c(&plant, PneumaticSettings{});
+        qint64 t = 0;
+        startPulsing(c, plant, t, f);
+        c.setUserPaused(true);
+        run(c, plant, t, 1500);
+        c.setUserPaused(false);
+        QCOMPARE(c.clitoralTarget(), 30.0);
+        bool pulsedEarly = false;
+        for (const qint64 end = t + 4000; t < end; t += 10) {
+            c.tick(t);
+            if (plant.duty > 0 && plant.clit < 28) pulsedEarly = true;
+            plant.step();
+        }
+        QVERIFY(!pulsedEarly);           // pulses wait for the suction to come back
+        QVERIFY(plant.duty > 0);
+    }
+
+    void resumeStartsPulsesAfterTimeout()   // Review Focus 1
+    {
+        QTemporaryFile f;
+        FakePlant plant;
+        PneumaticController c(&plant, PneumaticSettings{});
+        qint64 t = 0;
+        startPulsing(c, plant, t, f);
+        c.setUserPaused(true);
+        run(c, plant, t, 1500);
+        plant.pumpRate = 0.0;            // level can't come back
+        plant.tank = 10.0;
+        c.setUserPaused(false);
+        run(c, plant, t, 3500);
+        QVERIFY(plant.duty > 0);
+    }
+
+    void pauseWhileIdleDoesNotStart()   // Review Focus 2
+    {
+        FakePlant plant;
+        PneumaticController c(&plant, PneumaticSettings{});
+        c.setUserPaused(true);
+        QVERIFY(!c.isActive());
+        QVERIFY(plant.log.isEmpty());
+    }
+
+    void sessionEndClearsPause()   // Review Focus 4
+    {
+        FakePlant plant;
+        PneumaticController c(&plant, PneumaticSettings{});
+        QSignalSpy spy(&c, &PneumaticController::userPauseChanged);
+        c.setLegTarget(40);
+        c.setUserPaused(true);
+        c.ventAll();
+        QVERIFY(!c.isUserPaused());
+        QCOMPARE(spy.count(), 2);
+        QCOMPARE(spy.last().at(0).toBool(), false);
+
+        c.setLegTarget(40);
+        c.setUserPaused(true);
+        c.emergencyStop();
+        QVERIFY(!c.isUserPaused());
+        QCOMPARE(spy.last().at(0).toBool(), false);
     }
 
     void legTargetClamped()
