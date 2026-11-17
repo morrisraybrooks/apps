@@ -139,6 +139,37 @@ private slots:
         QVERIFY(!hand.isRunning());
     }
 
+    void outsideStopForgetsSession()   // final review I1
+    {
+        QTemporaryFile f;
+        FakePlant plant;
+        PneumaticController air(&plant, PneumaticSettings{});
+        QVERIFY(air.loadCalibration(writeCalibration(f, 60)));
+        HandPulser hand(&air);
+        QVERIFY(hand.start());
+        air.ventAll();                   // a pattern/program stop
+        air.setPulseRate(20);
+        QVERIFY(air.setPulserEnabled(true));   // somebody else's pulser
+        QVERIFY(!hand.isRunning());
+        hand.faster();
+        QCOMPARE(air.pulseRate(), 20.0); // their rate is left alone
+    }
+
+    void yieldReleasesClitKeepsLegs()   // final review I2: a pattern takes over
+    {
+        QTemporaryFile f;
+        FakePlant plant;
+        PneumaticController air(&plant, PneumaticSettings{});
+        QVERIFY(air.loadCalibration(writeCalibration(f, 60)));
+        HandPulser hand(&air);
+        QVERIFY(hand.start());
+        hand.yield();
+        QVERIFY(!hand.isRunning());
+        QVERIFY(!air.isPulserEnabled());
+        QCOMPARE(air.clitoralTarget(), 0.0);
+        QCOMPARE(air.legTarget(), 40.0);
+    }
+
     void notRunningAfterEmergencyStop()
     {
         QTemporaryFile f;

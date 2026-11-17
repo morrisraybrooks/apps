@@ -31,7 +31,10 @@ public:
     bool canStart() const;   ///< calibrated and no emergency stop latched
     bool start();
     void stop();
-    bool isRunning() const;
+    bool isRunning() const;   ///< false once anyone else switched the pulser off or on
+    /// A program or pattern takes over: pulser off and clitoral suction released,
+    /// legs left as they are for the program
+    void yield();
 
 signals:
     void changed();
@@ -43,6 +46,7 @@ private:
     PneumaticController* m_air;
     double m_rate = 10.0;
     bool m_started = false;
+    quint64 m_onCount = 0;   ///< pulserOnCount() when this session switched the pulser on
 };
 
 #endif // HANDPULSER_H

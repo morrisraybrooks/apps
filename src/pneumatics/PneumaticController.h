@@ -72,8 +72,8 @@ public:
 
     /// Owner's pause (self-edging): pulser off and clitoral chamber vented, legs kept.
     /// Wins over every other caller - their requests are kept and come back on Resume,
-    /// where pulses wait (up to 3 s) for the clitoral level to return. Never starts the
-    /// loop; ventAll/stop/emergencyStop clear it.
+    /// where pulses wait (up to 3 s) for the clitoral level to return. Only takes while a
+    /// session runs (never starts the loop); ventAll/stop/emergencyStop/going idle clear it.
     void setUserPaused(bool paused);
     bool isUserPaused() const { return m_userPaused; }
     /// Highest pulse rate the bench calibration covers (100 when not calibrated)

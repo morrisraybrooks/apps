@@ -5,6 +5,8 @@
 #include <functional>
 
 class HardwareManager;
+class OrgasmControlAlgorithm;
+class PatternEngine;
 class QLabel;
 class QPushButton;
 class QTimer;
@@ -26,6 +28,11 @@ class PulserCard : public QWidget
 public:
     PulserCard(HardwareManager* hw, std::function<bool()> automationActive,
                QWidget* parent = nullptr);
+
+    /// A program or pattern is actually running (left-over ERROR states after an
+    /// emergency stop do not count)
+    static bool isAutomationActive(const OrgasmControlAlgorithm* algorithm,
+                                   const PatternEngine* patterns);
 
 public slots:
     void refresh();

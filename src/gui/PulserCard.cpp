@@ -2,6 +2,8 @@
 
 #include "HandPulser.h"
 #include "HardwareManager.h"
+#include "OrgasmControlAlgorithm.h"
+#include "PatternEngine.h"
 #include "PneumaticController.h"
 #include "styles/ModernMedicalStyle.h"
 
@@ -87,6 +89,30 @@ PulserCard::PulserCard(HardwareManager* hw, std::function<bool()> automationActi
     refresh();
 }
 
+bool PulserCard::isAutomationActive(const OrgasmControlAlgorithm* algorithm,
+                                    const PatternEngine* patterns)
+{
+    if (algorithm) {
+        const auto state = algorithm->getState();
+        if (state != OrgasmControlAlgorithm::ControlState::STOPPED
+            && state != OrgasmControlAlgorithm::ControlState::ERROR) {
+            return true;
+        }
+    }
+    if (patterns) {
+        switch (patterns->getState()) {
+        case PatternEngine::STARTING:
+        case PatternEngine::RUNNING:
+        case PatternEngine::PAUSED:
+        case PatternEngine::STOPPING:
+            return true;
+        default:
+            break;
+        }
+    }
+    return false;
+}
+
 void PulserCard::onStartStop()
 {
     HandPulser* hand = m_hw ? m_hw->handPulser() : nullptr;
@@ -118,6 +144,7 @@ void PulserCard::refresh()
     }
 
     const bool automation = m_automationActive && m_automationActive();
+    if (automation) hand->yield();   // a program or pattern took over: hand session ends
     const bool running = hand->isRunning();
     const bool paused = air->isUserPaused();
 
@@ -125,7 +152,7 @@ void PulserCard::refresh()
     m_startStop->setEnabled(running || (hand->canStart() && !automation));
     m_slower->setEnabled(!automation);
     m_faster->setEnabled(!automation);
-    m_pause->setEnabled(true);
+    m_pause->setEnabled(paused || (air->isActive() && !air->isLatched()));   // needs a session
     m_ventTank->setEnabled(!air->isActive());
 
     const double rate = automation ? air->pulseRate() : hand->rate();

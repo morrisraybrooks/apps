@@ -7,6 +7,8 @@
 #include <QPushButton>
 #include <QTemporaryDir>
 #include "HandPulser.h"
+#include "OrgasmControlAlgorithm.h"
+#include "PatternEngine.h"
 #include "HardwareManager.h"
 #include "PneumaticController.h"
 #include "PulserCard.h"
@@ -74,7 +76,7 @@ private slots:
         QScopedPointer<PulserCard> card(makeCard(hw));
         QVERIFY(!child<QPushButton>(card.data(), "startStopPulses")->isEnabled());
         QCOMPARE(child<QLabel>(card.data(), "statusLabel")->text(), QString("Pulser not calibrated"));
-        QVERIFY(child<QPushButton>(card.data(), "pauseButton")->isEnabled());
+        QVERIFY(!child<QPushButton>(card.data(), "pauseButton")->isEnabled());   // nothing running
         QVERIFY(child<QPushButton>(card.data(), "ventTankButton")->isEnabled());
     }
 
@@ -110,6 +112,7 @@ private slots:
     void pauseTogglesTextAndController()
     {
         HardwareManager* hw = makeHardware();
+        hw->pneumatics()->setLegTarget(40);   // a session is running
         QScopedPointer<PulserCard> card(makeCard(hw));
         auto* pause = child<QPushButton>(card.data(), "pauseButton");
         QCOMPARE(pause->text(), QString("PAUSE PULSES"));
@@ -125,6 +128,7 @@ private slots:
     void pauseFromElsewhereShows()   // e.g. emergency stop clears the pause
     {
         HardwareManager* hw = makeHardware();
+        hw->pneumatics()->setLegTarget(40);
         QScopedPointer<PulserCard> card(makeCard(hw));
         hw->pneumatics()->setUserPaused(true);
         QCOMPARE(child<QPushButton>(card.data(), "pauseButton")->text(), QString("RESUME"));
@@ -138,6 +142,7 @@ private slots:
         HardwareManager* hw = makeHardware();
         QScopedPointer<PulserCard> card(makeCard(hw));
         m_automation = true;
+        hw->pneumatics()->setLegTarget(40);   // the program's session
         hw->pneumatics()->setPulseRate(25);   // the program's rate
         card->refresh();
         QVERIFY(!child<QPushButton>(card.data(), "slowerButton")->isEnabled());
@@ -148,17 +153,32 @@ private slots:
         QCOMPARE(child<QLabel>(card.data(), "rateLabel")->text(), QString("25 /s"));
     }
 
-    void stopStaysAvailableWhenProgramStarts()   // Review Focus 3: never strand a hand session
+    void programTakesOverHandSession()   // final review I2
     {
         writeCalibration();
         HardwareManager* hw = makeHardware();
         QScopedPointer<PulserCard> card(makeCard(hw));
         auto* start = child<QPushButton>(card.data(), "startStopPulses");
         QTest::mouseClick(start, Qt::LeftButton);
-        m_automation = true;
+        QVERIFY(hw->handPulser()->isRunning());
+        m_automation = true;             // a pattern started
         card->refresh();
-        QCOMPARE(start->text(), QString("STOP PULSES"));
-        QVERIFY(start->isEnabled());
+        QVERIFY(!hw->handPulser()->isRunning());
+        QVERIFY(!hw->pneumatics()->isPulserEnabled());
+        QCOMPARE(hw->pneumatics()->legTarget(), 40.0);   // the pattern's legs are not vented
+        QCOMPARE(start->text(), QString("START PULSES"));
+        QVERIFY(!start->isEnabled());
+    }
+
+    void errorStatesAreNotAProgram()   // final review C1: after an estop + reset
+    {
+        HardwareManager* hw = makeHardware();
+        PatternEngine patterns(hw);
+        OrgasmControlAlgorithm algorithm(hw);
+        patterns.emergencyStop();
+        algorithm.emergencyStop();
+        QVERIFY(!PulserCard::isAutomationActive(&algorithm, &patterns));
+        QVERIFY(!PulserCard::isAutomationActive(nullptr, nullptr));
     }
 
     void ventTankOnlyWhenIdle()

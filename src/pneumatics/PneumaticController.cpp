@@ -118,6 +118,7 @@ double PneumaticController::pulseCeiling() const
 void PneumaticController::setUserPaused(bool paused)
 {
     if (paused == m_userPaused) return;
+    if (paused && (!m_active || m_latched)) return;   // nothing running: a tap must not carry over
     m_userPaused = paused;
     if (!paused) {
         m_resumeWait = true;
@@ -173,6 +174,7 @@ void PneumaticController::goIdle()
     m_active = false;
     m_hadSession = false;
     m_timer->stop();
+    clearUserPause();
     writeDuty(0.0);
     write(1, false);
     write(4, false);

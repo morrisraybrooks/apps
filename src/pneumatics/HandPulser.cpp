@@ -68,6 +68,7 @@ bool HandPulser::start()
     m_air->setPulseRate(m_rate);
     if (!m_air->setPulserEnabled(true)) return false;
     m_started = true;
+    m_onCount = m_air->pulserOnCount();
     emit changed();
     return true;
 }
@@ -82,5 +83,15 @@ void HandPulser::stop()
 
 bool HandPulser::isRunning() const
 {
-    return m_started && m_air->isPulserEnabled();
+    // Ours only while nobody has switched the pulser off (or off and on again) since
+    return m_started && m_air->isPulserEnabled() && m_air->pulserOnCount() == m_onCount;
+}
+
+void HandPulser::yield()
+{
+    if (!isRunning()) return;
+    m_started = false;
+    m_air->setPulserEnabled(false);
+    m_air->setClitoralTarget(0.0);
+    emit changed();
 }

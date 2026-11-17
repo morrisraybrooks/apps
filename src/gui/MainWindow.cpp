@@ -1100,10 +1100,8 @@ void MainWindow::setupPulserCard(QGridLayout* layout)
     // A program or pattern is in charge of the pulser: hand controls go gray
     VacuumController* controller = m_controller;
     auto automationActive = [controller]() {
-        const OrgasmControlAlgorithm* algorithm = controller->getOrgasmControlAlgorithm();
-        const PatternEngine* patterns = controller->getPatternEngine();
-        return (algorithm && algorithm->getState() != OrgasmControlAlgorithm::ControlState::STOPPED)
-            || (patterns && patterns->getState() != PatternEngine::STOPPED);
+        return PulserCard::isAutomationActive(controller->getOrgasmControlAlgorithm(),
+                                              controller->getPatternEngine());
     };
 
     auto* card = new PulserCard(hw, automationActive);

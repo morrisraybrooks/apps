@@ -424,8 +424,8 @@ private slots:
         FakePlant plant;
         PneumaticController c(&plant, PneumaticSettings{});
         QVERIFY(c.loadCalibration(writeCalibration(f)));
+        c.setLegTarget(40);              // session running (pause only works then)
         c.setUserPaused(true);
-        c.setLegTarget(40);
         c.setClitoralTarget(30);
         c.setPulseRate(20);
         QVERIFY(c.setPulserEnabled(true));
@@ -480,6 +480,53 @@ private slots:
         c.setUserPaused(true);
         QVERIFY(!c.isActive());
         QVERIFY(plant.log.isEmpty());
+    }
+
+    void pauseIgnoredWhenIdle()   // final review I3: an idle tap must not silence the next session
+    {
+        FakePlant plant;
+        PneumaticController c(&plant, PneumaticSettings{});
+        c.setUserPaused(true);
+        QVERIFY(!c.isUserPaused());
+        c.setLegTarget(40);
+        c.emergencyStop();
+        c.setUserPaused(true);           // latched: ignored too
+        QVERIFY(!c.isUserPaused());
+    }
+
+    void goingIdleClearsPause()   // final review I3
+    {
+        FakePlant plant;
+        PneumaticController c(&plant, PneumaticSettings{});
+        c.setLegTarget(40);
+        qint64 t = 0;
+        run(c, plant, t, 2000);
+        c.setUserPaused(true);
+        c.setLegTarget(0);               // session ends without ventAll
+        run(c, plant, t, 3000);
+        QVERIFY(!c.isActive());
+        QVERIFY(!c.isUserPaused());
+    }
+
+    void noResumeWaitIntoNextSession()   // final review I3: paused, idle, then Resume
+    {
+        QTemporaryFile f;
+        FakePlant plant;
+        PneumaticController c(&plant, PneumaticSettings{});
+        qint64 t = 0;
+        startPulsing(c, plant, t, f);
+        c.setUserPaused(true);
+        c.setPulserEnabled(false);
+        c.setClitoralTarget(0);
+        c.setLegTarget(0);               // session ends while paused
+        run(c, plant, t, 2000);
+        QVERIFY(!c.isActive());
+        c.setUserPaused(false);          // Resume tapped on an idle machine
+        c.setLegTarget(40);              // next session: pulses asked for straight away
+        c.setClitoralTarget(30);
+        QVERIFY(c.setPulserEnabled(true));
+        run(c, plant, t, 300);
+        QVERIFY2(plant.duty > 0, "pulses held back by a stale resume wait");
     }
 
     void sessionEndClearsPause()   // Review Focus 4
