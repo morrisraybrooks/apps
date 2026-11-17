@@ -17,6 +17,7 @@ pneumatics_test(sealwatch)
 pneumatics_test(pulserdrive)
 pneumatics_test(softwarepwm)
 pneumatics_test(pneumaticcontroller)
+pneumatics_test(handpulser)
 
 # Oscillator against the real HardwareManager in simulation mode
 add_executable(tst_clitoraloscillator tst_clitoraloscillator.cpp)

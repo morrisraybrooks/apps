@@ -26,6 +26,7 @@ struct PneumaticSettings {
     double leakRateMmHgPer100ms = 5; ///< Leak: legs falling faster than this
     int recoveryAttempts = 3;        ///< Reseal attempts before a safe stop
     int recoveryWindowMs = 2000;     ///< Time allowed per reseal attempt
+    double handClitMmHg = 20;        ///< Clitoral suction for a hand-run pulser session
     bool benchMode = false;          ///< Only the PulserBench tool sets this
 
     static PneumaticSettings fromJson(const QJsonObject& section)
@@ -48,6 +49,7 @@ struct PneumaticSettings {
         s.leakRateMmHgPer100ms = num("leak_rate_mmhg_per_100ms", s.leakRateMmHgPer100ms);
         s.recoveryAttempts = static_cast<int>(num("recovery_attempts", s.recoveryAttempts));
         s.recoveryWindowMs = static_cast<int>(num("recovery_window_ms", s.recoveryWindowMs));
+        s.handClitMmHg = num("hand_clit_mmhg", s.handClitMmHg);
         s.benchMode = section.value("bench_mode").toBool(s.benchMode);
         s.clampToSafeValues();
         return s;
@@ -63,6 +65,7 @@ struct PneumaticSettings {
         legMaxMmHg = std::clamp(legMaxMmHg, 0.0, 75.0);
         legMinMmHg = std::clamp(legMinMmHg, 0.0, legMaxMmHg);
         clitMaxMmHg = std::clamp(clitMaxMmHg, 0.0, 75.0);
+        handClitMmHg = std::clamp(handClitMmHg, 0.0, clitMaxMmHg);
         feedBelowMmHg = std::clamp(feedBelowMmHg, 0.5, 10.0);
         ventAboveMmHg = std::clamp(ventAboveMmHg, 0.5, 10.0);
         feedPulseMs = std::clamp(feedPulseMs, 10, 200);
