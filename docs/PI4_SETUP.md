@@ -92,7 +92,7 @@ Each MPX5010DP runs on 5 V and puts out up to 4.7 V, more than the 3.3 V MCP3008
 Put a divider on every sensor output (the software expects it):
   Sensor Vout ──10 kΩ──┬── MCP3008 CHx
                        └──20 kΩ── GND
-Vacuum hose on the sensor's P2 port; P1 open to room air.
+Vacuum hose on the sensor's P2 port; P1 open to room air. (Confirmed on the real sensors, 2026-11-17.)
 
 Pi SPI0 Pins:
 MOSI (GPIO10) → DIN

@@ -164,7 +164,7 @@ More detail: `docs/cup explination.md`, `docs/cup-cleaning-and-entrapment-safety
 | **5 solenoid valves** | 12 V, driven by 2 L293D chips. SOL1 GPIO 17, SOL2 GPIO 27, SOL3 GPIO 22, SOL4 GPIO 23, SOL5 GPIO 24. |
 | **Pulser pump** | A second small 12 V diaphragm pump (spare YOGULGUL) with its check valves removed. Both its intake and exhaust connect to the clitoral line through a T close to the cup, so the diaphragm just pushes air back and forth and makes **pressure pulses** at the motor's speed (pulses per second = motor RPM ÷ 60). Driven from GPIO 15 with software PWM (about 1 kHz) through a spare L293D half-bridge, or a MOSFET module if it draws more than about 0.5 A. |
 | **Tubing** | Silicone 3 mm ID / 5 mm OD for vacuum lines; short **stiff** PU or PVC from the pulser T to the cup (soft silicone absorbs the pulses). |
-| **3 vacuum sensors** | MPX5010DP differential, 0–10 kPa (0–75 mmHg). Vacuum hose on the **P2** port, P1 open to room air, so the output **rises with vacuum**: 0.2 V at 0 mmHg to 4.7 V at 75 mmHg of vacuum (a hose on P1 would read zero all the time). 5 V supply. Each output goes through a **10 kΩ / 20 kΩ divider** to the ADC. AVL/leg (ch0), tank (ch1), clitoral (ch2). |
+| **3 vacuum sensors** | MPX5010DP differential, 0–10 kPa (0–75 mmHg) (**part and port confirmed by the owner, 2026-11-17**). Vacuum hose on the **P2** port, P1 open to room air, so the output **rises with vacuum**: 0.2 V at 0 mmHg to 4.7 V at 75 mmHg of vacuum (a hose on P1 would read zero all the time). 5 V supply. Each output goes through a **10 kΩ / 20 kΩ divider** to the ADC. AVL/leg (ch0), tank (ch1), clitoral (ch2). |
 | **Relief valves** | 3 passive duckbill valves opening at 85–100 mmHg — **not fitted yet**. |
 
 ### 4.3 Pressure numbers used by the design
@@ -564,7 +564,8 @@ Every pneumatics value from the file is clamped to safe limits in `PneumaticSett
 **Before the first hardware run:**
 1. **Solder the three 10 kΩ / 20 kΩ dividers** between the vacuum sensors and the MCP3008 (section 5.1).
    Check with a meter: with a sensor at room air the ADC input should be about 0.13 V.
-2. Check each sensor's hose is on its **P2** port.
+2. ~~Check each sensor's hose is on its **P2** port.~~ **Confirmed 2026-11-17:** the sensors are MPX5010DP
+   and the hoses are on P2, which is what the software expects. Re-check only if a sensor or hose is replaced.
 3. Fit the pull-down resistor on GPIO 15 (pulser), so the motor cannot run while the Pi boots.
 4. Wire the E-stop button (GPIO 21 to GND) and **test it**: press it, and the screen must show EMERGENCY STOP.
 5. Fit the relief valves and filters.
