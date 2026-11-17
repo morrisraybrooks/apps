@@ -32,6 +32,7 @@ endif()
 
 # Build options
 option(BUILD_TESTS "Build test suite" ON)
+option(BUILD_PNEUMATICS_TESTS "Pneumatics unit tests" ON)
 option(BUILD_DOCS "Build documentation" ON)
 option(ENABLE_COVERAGE "Enable code coverage reporting" OFF)
 option(ENABLE_STATIC_ANALYSIS "Enable static analysis tools" OFF)
@@ -248,7 +249,11 @@ set(HEADERS
 )
 
 # Create shared library for better testing and modularity
+# Hardware-free pneumatics logic (tank, chambers, seal watch, pulser)
+add_subdirectory(src/pneumatics)
+
 add_library(VacuumControllerLib SHARED ${SOURCES} ${HEADERS})
+target_link_libraries(VacuumControllerLib PUBLIC PneumaticsLogic)
 
 # Set library properties
 set_target_properties(VacuumControllerLib PROPERTIES
@@ -315,6 +320,11 @@ target_compile_definitions(VacuumControllerLib
 # Create main executable
 add_executable(VacuumController src/main.cpp)
 
+# Bench calibration tool for the clitoral pulser (docs/pulser-bench-calibration.md)
+add_executable(PulserBench tools/pulser_bench/main.cpp)
+target_include_directories(PulserBench PRIVATE ${CMAKE_SOURCE_DIR}/src/hardware)
+target_link_libraries(PulserBench PRIVATE VacuumControllerLib)
+
 # Link executable to library
 target_link_libraries(VacuumController
     PRIVATE
@@ -322,6 +332,11 @@ target_link_libraries(VacuumController
 )
 
 # Testing configuration
+if(BUILD_PNEUMATICS_TESTS)
+    enable_testing()
+    add_subdirectory(tests/pneumatics)
+endif()
+
 if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)

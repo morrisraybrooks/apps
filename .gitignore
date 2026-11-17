@@ -91,6 +91,8 @@ coverage/
 # Configuration files with sensitive data
 config/local_settings.json
 config/production_settings.json
+# Measured on each machine with the PulserBench tool (see docs/pulser-bench-calibration.md)
+config/pulser_calibration.json
 
 # Runtime data
 data/

@@ -1,4 +1,5 @@
 #include "ActuatorControl.h"
+#include "SoftwarePwm.h"
 #include <QDebug>
 #include <QMutexLocker>
 #include <gpiod.h>
@@ -32,6 +33,7 @@ ActuatorControl::ActuatorControl(QObject *parent)
 
 ActuatorControl::~ActuatorControl()
 {
+    m_pulserPwm.reset();  // stop the PWM thread even if shutdown() returns early
     shutdown();
 }
 
@@ -75,6 +77,9 @@ void ActuatorControl::shutdown()
 
     // Stop PWM timer
     m_pwmTimer->stop();
+
+    // Pulser PWM thread first: it writes through m_outputRequest
+    m_pulserPwm.reset();
 
     // Safe shutdown all actuators
     safeShutdownAll();
@@ -218,6 +223,9 @@ void ActuatorControl::emergencyStop()
     qWarning() << "ACTUATOR EMERGENCY STOP ACTIVATED";
     
     m_emergencyStop = true;
+
+    // Pulser off first
+    if (m_pulserPwm) m_pulserPwm->setDuty(0.0);
     
     // Immediately stop pump
     m_pumpEnabled = false;
@@ -309,11 +317,8 @@ void ActuatorControl::updatePWM()
         pwmCounter = (pwmCounter + 1) % PWM_RANGE;
 
         bool pwmState = (pwmCounter < m_pwmValue);
-        try {
-            gpiod::line::value value = pwmState ? gpiod::line::value::ACTIVE : gpiod::line::value::INACTIVE;
-            m_outputRequest->set_value(GPIO_PUMP_PWM, value);
-        } catch (const std::exception& e) {
-            qWarning() << "PWM update failed:" << e.what();
+        if (!writeLine(GPIO_PUMP_PWM, pwmState)) {
+            qWarning() << "PWM update failed";
         }
     }
 }
@@ -338,7 +343,8 @@ bool ActuatorControl::initializeGPIO()
         std::vector<gpiod::line::offset> offsets = {
             GPIO_SOL1, GPIO_SOL2, GPIO_SOL3,  // Outer chamber + tank
             GPIO_SOL4, GPIO_SOL5,              // Clitoral cylinder
-            GPIO_PUMP_ENABLE, GPIO_PUMP_PWM    // Pump control
+            GPIO_PUMP_ENABLE, GPIO_PUMP_PWM,   // Pump control
+            GPIO_PULSER_PWM                    // Clitoral pulser motor
         };
 
         gpiod::line_settings settings;
@@ -349,6 +355,10 @@ bool ActuatorControl::initializeGPIO()
 
         // Create the request
         m_outputRequest = std::make_unique<gpiod::line_request>(request_builder.do_request());
+        m_pulserPwm = std::make_unique<SoftwarePwm>(
+            [this](bool level) { writeLine(GPIO_PULSER_PWM, level); });  // ~2000 edges/s: no logging
+        m_pulserPwm->setDuty(0.0);
+        m_pulserPwm->start();
 
         qDebug() << "GPIO pins initialized using libgpiod v2.x C++ API";
         qDebug() << "Configured pins: SOL1-5 =" << GPIO_SOL1 << GPIO_SOL2 << GPIO_SOL3
@@ -378,27 +388,30 @@ bool ActuatorControl::initializePWM()
     }
 }
 
+bool ActuatorControl::writeLine(int pin, bool state)
+{
+    std::lock_guard<std::mutex> lineLock(m_lineMutex);
+    if (!m_outputRequest) return false;
+    try {
+        m_outputRequest->set_value(pin, state ? gpiod::line::value::ACTIVE : gpiod::line::value::INACTIVE);
+        return true;
+    } catch (const std::exception&) {
+        return false;
+    }
+}
+
 void ActuatorControl::setGPIOOutput(int pin, bool state)
 {
-    if (!m_outputRequest) {
-        qWarning() << "GPIO not initialized";
+    if (!writeLine(pin, state)) {
+        qWarning() << "Failed to set GPIO pin" << pin << "to" << state << "(GPIO not initialized or write error)";
         return;
     }
-
-    try {
-        gpiod::line::value value = state ? gpiod::line::value::ACTIVE : gpiod::line::value::INACTIVE;
-        m_outputRequest->set_value(pin, value);
-
-        // Debug output for verification
-        qDebug() << "GPIO pin" << pin << "set to" << (state ? "HIGH" : "LOW");
-
-    } catch (const std::exception& e) {
-        qWarning() << "Failed to set GPIO pin" << pin << "to" << state << ":" << e.what();
-    }
+    qDebug() << "GPIO pin" << pin << "set to" << (state ? "HIGH" : "LOW");
 }
 
 bool ActuatorControl::getGPIOState(int pin)
 {
+    std::lock_guard<std::mutex> lineLock(m_lineMutex);
     if (!m_outputRequest) {
         qWarning() << "GPIO not initialized";
         return false;
@@ -416,6 +429,8 @@ bool ActuatorControl::getGPIOState(int pin)
 
 void ActuatorControl::safeShutdownAll()
 {
+    if (m_pulserPwm) m_pulserPwm->setDuty(0.0);
+
     // Set all actuators to safe state
     m_pumpEnabled = false;
     m_pumpSpeed = 0.0;
@@ -462,6 +477,7 @@ void ActuatorControl::setGPIO(int pin, bool state)
 bool ActuatorControl::readGPIO(int pin) const
 {
     QMutexLocker locker(&m_stateMutex);
+    std::lock_guard<std::mutex> lineLock(m_lineMutex);
 
     if (!m_outputRequest) {
         qWarning() << "GPIO not initialized for reading pin" << pin;
@@ -514,4 +530,19 @@ void ActuatorControl::setPWM(int pin, int dutyCycle)
         // Fall back to simple on/off
         setGPIOOutput(pin, dutyCycle > 0);
     }
+}
+
+void ActuatorControl::setPulserDuty(double percent)
+{
+    if (!m_pulserPwm) return;
+    if (m_emergencyStop && percent > 0.0) {
+        qWarning() << "Cannot run the pulser: Emergency stop active";
+        return;
+    }
+    m_pulserPwm->setDuty(percent);
+}
+
+double ActuatorControl::getPulserDuty() const
+{
+    return m_pulserPwm ? m_pulserPwm->duty() : 0.0;
 }

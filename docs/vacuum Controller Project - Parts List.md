@@ -62,7 +62,9 @@ Pin numbers are BCM GPIO; the full pin table is in the [README](README.md#gpio-p
   - SOL3 (GPIO 22): tank vent
   - SOL4 (GPIO 23): clitoral chamber vacuum
   - SOL5 (GPIO 24): clitoral chamber vent
-  - The vent valves (SOL2, SOL3, SOL5) should be **normally-open** types, so losing power vents the cup
+  - **SOL1, SOL3, SOL4 normally-closed** (power off = tank isolated and keeps its vacuum)
+  - **SOL2, SOL5 normally-open** (power off = both chambers vent)
+- 3x passive **relief valves** (duckbill), opening at **85–100 mmHg**: one on the tank, one on each chamber line
 
 
 ## Motor Driver
@@ -109,11 +111,12 @@ GPIO 18 (PWM)    ----> IN1 (Input 1)
   - Inline hydrophobic filter / backflow protector at each cup port
   - Normally-open vent solenoids (see Valves)
 
-## Planned: Clitoral Air-Pulse Pulser
-- A second 12 V diaphragm pump with its check valves removed and exhaust port sealed (the spare YOGULGUL is the first test candidate)
-- Its own PWM DC motor speed controller + hall sensor and magnet on the shaft to read the real pulse frequency
-- Small restrictor (needle valve or 0.5–1 mm orifice) between the SOL4 vacuum line and the T at the clitoral port
-- Safety rule: steady vacuum + pulse peak must stay under 75 mmHg
+## Clitoral Air-Pulse Pulser
+- A second 12 V diaphragm pump with its check valves removed; **intake and exhaust both** piped to the clitoral line, joined by a **T close to the cup** (the spare YOGULGUL is the first candidate)
+- Short, **stiff-walled** PU or PVC tube from the T to the clitoral port
+- Drive: a spare **L293D** half-bridge (12 V) with its input on **GPIO 15** (software PWM ~1 kHz); if the pump draws more than ~0.5 A use a logic-level MOSFET module instead
+- Must be bench-calibrated before use: `PulserBench` tool + `config/pulser_calibration.json` ([procedure](pulser-bench-calibration.md))
+- Safety rule: steady vacuum + pulse peak must stay under 75 mmHg (enforced from the calibration)
 
 ## Control Interface
   - graphical interface

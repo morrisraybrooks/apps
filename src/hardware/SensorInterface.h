@@ -36,6 +36,13 @@ public:
     double readTankPressure();        // Tank vacuum pressure (Sensor 2)
     double readClitoralPressure();    // Clitoral cylinder pressure (Sensor 3)
 
+    // One raw ADC read that leaves the smoothed values alone (-1 on error). The
+    // PneumaticController samples at 100 Hz; going through read*Pressure() would
+    // also feed the 20 Hz smoothing filter and make it ~6x faster than intended.
+    double sampleAVLPressure() { return sampleChannel(AVL_CHANNEL); }
+    double sampleTankPressure() { return sampleChannel(TANK_CHANNEL); }
+    double sampleClitoralPressure() { return sampleChannel(CLITORAL_CHANNEL); }
+
     // Filtered readings (with noise reduction)
     double getFilteredAVLPressure() const { return m_filteredAVL; }
     double getFilteredTankPressure() const { return m_filteredTank; }
@@ -76,6 +83,7 @@ private Q_SLOTS:
     void updateReadings();
 
 private:
+    double sampleChannel(int channel);
     void initializeFiltering();
     double applyFilter(double newValue, double& filteredValue);
     bool validateReading(double voltage, const QString& sensorName);

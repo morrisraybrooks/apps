@@ -395,7 +395,8 @@ bool SafetyManager::checkPressureLimits()
         }
         
         // Check warning thresholds
-        if (avlPressure > m_warningThreshold || tankPressure > m_warningThreshold) {
+        // Warn on body pressure only - a full tank (~70 mmHg) is normal (fill-then-stop)
+        if (avlPressure > m_warningThreshold) {
             if (getState() == SAFE) {
                 setState(WARNING);
                 emit safetyWarning(QString("Pressure approaching limit: AVL=%1, Tank=%2 mmHg")

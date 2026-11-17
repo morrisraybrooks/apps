@@ -182,6 +182,18 @@ double SensorInterface::readClitoralPressure()
     }
 }
 
+double SensorInterface::sampleChannel(int channel)
+{
+    if (!m_initialized || !m_adc) return -1.0;
+    try {
+        const double pressure = m_adc->readPressure(channel);
+        return pressure >= 0 ? pressure : -1.0;
+    } catch (const std::exception& e) {
+        qWarning() << "Pressure sample failed on channel" << channel << ":" << e.what();
+        return -1.0;
+    }
+}
+
 void SensorInterface::calibrateAVLSensor(double zeroVoltage, double fullScaleVoltage,
                                         double zeroPressure, double fullScalePressure)
 {

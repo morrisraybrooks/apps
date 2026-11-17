@@ -14,6 +14,8 @@ class TENSController;
 class FluidSensor;
 class MotionSensor;
 class ClitoralOscillator;
+class PneumaticController;
+class IPneumaticHardware;
 class CameraManager;
 class ConsentManager;
 
@@ -70,6 +72,18 @@ public:
     FluidSensor* getFluidSensor() const { return m_fluidSensor.get(); }
     MotionSensor* getMotionSensor() const { return m_motionSensor.get(); }
     ClitoralOscillator* getClitoralOscillator() const { return m_clitoralOscillator.get(); }
+
+    // Air side: tank, chambers, seal watch and clitoral pulser (the only owner of
+    // the pump, SOL1/2/4/5 and the pulser during a session)
+    PneumaticController* pneumatics() const { return m_pneumatics.get(); }
+    void setPulserDuty(double percent);   // 0-100 %, GPIO 15
+    double getPulserDuty() const;
+    double sampleClitoralSwing(int durationMs);  // bench: max - min of raw clitoral readings
+    /// Fresh, unfiltered reading for the 100 Hz pneumatic loop (0 = legs/AVL, 1 = tank, 2 = clitoral).
+    /// The filtered read*Pressure() values update at 20 Hz with heavy smoothing - too slow to regulate on.
+    /// Returns a negative value on a read error.
+    double readFreshPressure(int sensor);
+    void setPneumaticsBenchMode(bool on) { m_pneumaticsBenchMode = on; }  // PulserBench only; before initialize()
     CameraManager* getCameraManager() const { return m_cameraManager.get(); }
     ConsentManager* getConsentManager() const { return m_consentManager.get(); }
 
@@ -144,6 +158,11 @@ private:
     std::unique_ptr<FluidSensor> m_fluidSensor;
     std::unique_ptr<MotionSensor> m_motionSensor;
     std::unique_ptr<ClitoralOscillator> m_clitoralOscillator;
+    std::unique_ptr<IPneumaticHardware> m_pneumaticsHw;
+    std::unique_ptr<PneumaticController> m_pneumatics;
+    double m_simulatedPulserDuty = 0.0;
+    bool m_pneumaticsBenchMode = false;
+    void createPneumatics();
     std::unique_ptr<CameraManager> m_cameraManager;
     std::unique_ptr<ConsentManager> m_consentManager;
 

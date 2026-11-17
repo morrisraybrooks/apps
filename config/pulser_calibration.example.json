@@ -1,0 +1,11 @@
+{
+  "measured": false,
+  "measured_on": "YYYY-MM-DD",
+  "pump": "YOGULGUL 12 V mini air pump, valves removed, both ports on the clitoral line",
+  "note": "EXAMPLE ONLY - placeholder numbers. Copy to config/pulser_calibration.json, replace every point with your own bench measurements (docs/pulser-bench-calibration.md) and set \"measured\": true. The pulser will not run on this file.",
+  "points": [
+    {"pwm_percent": 40, "pulses_per_second": 30, "peak_mmhg": 10},
+    {"pwm_percent": 70, "pulses_per_second": 55, "peak_mmhg": 14},
+    {"pwm_percent": 100, "pulses_per_second": 80, "peak_mmhg": 18}
+  ]
+}

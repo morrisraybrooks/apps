@@ -3,6 +3,7 @@
 #include "../hardware/HardwareManager.h"
 #include "../hardware/ClitoralOscillator.h"
 #include "../hardware/TENSController.h"
+#include "PneumaticController.h"
 #include "../safety/AntiDetachmentMonitor.h"
 #include "../safety/SafetyConstants.h"
 #include <QDebug>
@@ -132,14 +133,11 @@ bool PatternEngine::startPattern(const QString& patternName, const QJsonObject& 
         // Start safety monitoring
         m_safetyTimer->start();
 
-        // Start anti-detachment monitoring if available
-        if (m_antiDetachmentMonitor && !m_antiDetachmentMonitor->isActive()) {
-            if (m_antiDetachmentMonitor->initialize()) {
-                m_antiDetachmentMonitor->startMonitoring();
-                qDebug() << "Anti-detachment monitoring started with pattern";
-            } else {
-                qWarning() << "Failed to initialize anti-detachment monitoring";
-            }
+        // Air side: tank, chamber targets and the leg seal watch (replaces the old
+        // AntiDetachmentMonitor, whose fixed 50/60/65 mmHg thresholds fought the
+        // 30-50 mmHg leg range)
+        if (m_hardware && m_hardware->pneumatics()) {
+            m_hardware->pneumatics()->start();
         }
 
         // Execute first step
@@ -190,16 +188,9 @@ void PatternEngine::stopPattern()
         qDebug() << "TENS stopped with pattern";
     }
 
-    // Set hardware to safe state
-    if (m_hardware) {
-        try {
-            m_hardware->setPumpSpeed(0.0);
-            m_hardware->setPumpEnabled(false);
-            m_hardware->setSOL2(true);  // Open vent valve
-            m_hardware->setSOL3(true);  // Open tank vent valve
-        } catch (const std::exception& e) {
-            qWarning() << "Error setting hardware to safe state:" << e.what();
-        }
+    // Release both chambers; the tank keeps its vacuum for a quiet next start (spec 5.5)
+    if (m_hardware && m_hardware->pneumatics()) {
+        m_hardware->pneumatics()->ventAll();
     }
     
     // Clear pattern data
@@ -222,10 +213,7 @@ void PatternEngine::pausePattern()
     m_pausedTime = QDateTime::currentMSecsSinceEpoch();
     m_stepTimer->stop();
     
-    // Set hardware to hold state
-    if (m_hardware) {
-        m_hardware->setPumpSpeed(0.0);
-    }
+    // Hold: the pneumatic controller keeps both chambers at their current targets
     
     setState(PAUSED);
     emit patternPaused();
@@ -1137,51 +1125,13 @@ void PatternEngine::executeStep(const PatternStep& step)
 
 void PatternEngine::applyPressureTarget(double targetPressure)
 {
-    if (!m_hardware) return;
+    if (!m_hardware || !m_hardware->pneumatics()) return;
 
-    // Check if anti-detachment is currently active
-    bool antiDetachmentActive = isAntiDetachmentActive();
-
-    // Convert pressure percentage to pump speed
-    double pumpSpeed = std::max(0.0, std::min(100.0, targetPressure));
-
-    if (pumpSpeed > 0) {
-        m_hardware->setPumpEnabled(true);
-        m_hardware->setPumpSpeed(pumpSpeed);
-
-        // Only control SOL1 if anti-detachment is not active
-        // Anti-detachment system takes priority for SOL1 control
-        if (!antiDetachmentActive) {
-            m_hardware->setSOL1(true);   // Open vacuum line
-        }
-        m_hardware->setSOL2(false);  // Close vent valve
-    } else {
-        // For therapeutic patterns, maintain minimal vacuum for seal
-        // instead of complete release
-        if (targetPressure > 0) {
-            // Maintain baseline pressure for seal integrity
-            m_hardware->setPumpEnabled(true);
-            m_hardware->setPumpSpeed(targetPressure);
-
-            // Only control SOL1 if anti-detachment is not active
-            if (!antiDetachmentActive) {
-                m_hardware->setSOL1(true);   // Keep vacuum line open
-            }
-            m_hardware->setSOL2(false);  // Keep vent valve closed
-        } else {
-            // Complete release only when explicitly set to 0
-            // And only if anti-detachment is not preventing it
-            if (!antiDetachmentActive) {
-                m_hardware->setPumpSpeed(0.0);
-                m_hardware->setSOL1(false);  // Close vacuum line
-                m_hardware->setSOL2(true);   // Open vent valve for release
-            } else {
-                // Anti-detachment active - maintain minimal pressure
-                qDebug() << "Anti-detachment active - maintaining minimal pressure instead of full release";
-                m_hardware->setPumpSpeed(20.0);  // Minimal pressure to maintain seal
-            }
-        }
-    }
+    // Pattern pressures are percent of the 75 mmHg sensor range and drive the leg
+    // (outer) chamber. While a pattern runs the legs never release - a 0 step holds
+    // the 30 mmHg minimum - so the cup stays sealed; stopPattern() releases them.
+    const double mmHg = std::max(0.0, targetPressure) / 100.0 * 75.0;
+    m_hardware->pneumatics()->setLegTarget(std::max(mmHg, 1.0));  // > 0: clamped to 30-50 mmHg
 }
 
 void PatternEngine::onStepTimer()
@@ -1204,11 +1154,7 @@ void PatternEngine::performSafetyCheck()
         double avlPressure = m_hardware->readAVLPressure();
         double tankPressure = m_hardware->readTankPressure();
 
-        // Convert mmHg to percentage for comparison (sensor FS = 75 mmHg)
-        double avlPercent = (avlPressure / SafetyConstants::MAX_PRESSURE_STIMULATION_MMHG) * 100.0;
-        double tankPercent = (tankPressure / SafetyConstants::MAX_PRESSURE_STIMULATION_MMHG) * 100.0;
-
-        if (avlPercent > m_maxPressure || tankPercent > m_maxPressure) {
+        if (isPressureLimitExceeded(avlPressure, tankPressure)) {
             emergencyStop();
             emit patternError("Pressure limit exceeded during pattern execution");
         }
@@ -1317,7 +1263,7 @@ void PatternEngine::setAntiDetachmentMonitor(AntiDetachmentMonitor* monitor)
 
 bool PatternEngine::isAntiDetachmentActive() const
 {
-    return m_antiDetachmentMonitor && m_antiDetachmentMonitor->isSOL1Active();
+    return m_hardware && m_hardware->pneumatics() && m_hardware->pneumatics()->isSealRecovering();
 }
 
 // ============================================================================
@@ -1698,4 +1644,13 @@ void PatternEngine::buildTENSVacuumPattern(const QJsonObject& params)
     m_patternSteps.append(afterglowStep);
 
     qDebug() << "Built TENS+Vacuum pattern with" << m_patternSteps.size() << "phases";
+}
+
+bool PatternEngine::isPressureLimitExceeded(double avlMmHg, double tankMmHg) const
+{
+    // Body pressure only. The tank is meant to sit at ~70 mmHg (fill-then-stop); it never
+    // touches the body directly and has its own fill limit and relief valve.
+    Q_UNUSED(tankMmHg);
+    const double avlPercent = (avlMmHg / SafetyConstants::MAX_PRESSURE_STIMULATION_MMHG) * 100.0;
+    return avlPercent > m_maxPressure;
 }
