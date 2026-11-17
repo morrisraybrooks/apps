@@ -10,6 +10,7 @@
 #include "ConsentManager.h"
 #include "IPneumaticHardware.h"
 #include "PneumaticController.h"
+#include "../safety/EmergencyStop.h"
 #include "PneumaticSettings.h"
 #include "HandPulser.h"
 
@@ -74,6 +75,7 @@ bool HardwareManager::initialize()
             // setter methods below.
 
             createPneumatics();
+            createEmergencyButton();
             m_initialized = true;
             return true;
         }
@@ -160,6 +162,9 @@ bool HardwareManager::initialize()
         // Air side controller (tank, chambers, seal watch, pulser)
         createPneumatics();
 
+        // Physical emergency stop button (GPIO 21)
+        createEmergencyButton();
+
         // Create and initialize clitoral oscillator (for air-pulse stimulation)
         m_clitoralOscillator = std::make_unique<ClitoralOscillator>(this, this);
         qDebug() << "Clitoral Oscillator initialized";
@@ -222,6 +227,7 @@ void HardwareManager::shutdown()
         m_pneumatics->stop();
         m_pneumatics.reset();
     }
+    if (m_emergencyButton) m_emergencyButton->shutdown();   // release GPIO 21
     
     // Safe shutdown sequence
     safeShutdown();
@@ -477,7 +483,8 @@ bool HardwareManager::resetEmergencyStop()
         return true;  // Already reset
     }
     
-    if (m_actuatorControl && m_actuatorControl->resetEmergencyStop()) {
+    // Simulation has no valve driver to reset
+    if (m_simulationMode || (m_actuatorControl && m_actuatorControl->resetEmergencyStop())) {
         m_emergencyStop = false;
         if (m_pneumatics) m_pneumatics->rearm();  // vacuum requests may start the air side again
         qDebug() << "Hardware emergency stop reset";
@@ -1021,5 +1028,19 @@ double HardwareManager::readFreshPressure(int sensor)
     case 0: return m_sensorInterface->sampleAVLPressure();
     case 1: return m_sensorInterface->sampleTankPressure();
     default: return m_sensorInterface->sampleClitoralPressure();
+    }
+}
+
+void HardwareManager::createEmergencyButton()
+{
+    m_emergencyButton = std::make_unique<EmergencyStop>(this);
+    connect(m_emergencyButton.get(), &EmergencyStop::emergencyStopTriggered,
+            this, &HardwareManager::emergencyButtonPressed);
+    if (!m_emergencyButton->initialize()) {
+        qCritical() << "Emergency stop button could not be started";
+        emit hardwareError("Emergency stop button (GPIO 21) could not be started");
+    } else if (!m_simulationMode && !m_emergencyButton->isHardwareButtonEnabled()) {
+        qCritical() << "Emergency stop button (GPIO 21) not available";
+        emit hardwareError("Emergency stop button (GPIO 21) not available - only the on-screen stop works");
     }
 }

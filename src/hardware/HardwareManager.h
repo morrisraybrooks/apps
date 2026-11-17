@@ -19,6 +19,7 @@ class HandPulser;
 class IPneumaticHardware;
 class CameraManager;
 class ConsentManager;
+class EmergencyStop;
 
 /**
  * @brief Hardware abstraction layer for the vacuum controller
@@ -118,6 +119,8 @@ public:
     // Emergency controls
     void emergencyStop();
     bool resetEmergencyStop();
+    /// The physical emergency stop button (GPIO 21), polled at 20 Hz from initialize() on
+    EmergencyStop* emergencyButton() const { return m_emergencyButton.get(); }
     bool isEmergencyStop() const { return m_emergencyStop; }
 
     // Safety helper states
@@ -139,6 +142,8 @@ public:
 
 Q_SIGNALS:
     void hardwareError(const QString& error);
+    /// The physical button was pressed; the machine is already stopped when this arrives
+    void emergencyButtonPressed(const QString& reason);
     void sensorError(const QString& sensor, const QString& error);
     void actuatorError(const QString& actuator, const QString& error);
 
@@ -166,8 +171,10 @@ private:
     double m_simulatedPulserDuty = 0.0;
     bool m_pneumaticsBenchMode = false;
     void createPneumatics();
+    void createEmergencyButton();
     std::unique_ptr<CameraManager> m_cameraManager;
     std::unique_ptr<ConsentManager> m_consentManager;
+    std::unique_ptr<EmergencyStop> m_emergencyButton;
 
     // System state
     bool m_initialized;

@@ -41,3 +41,17 @@ target_include_directories(tst_pulsercard PRIVATE ${CMAKE_SOURCE_DIR}/src/hardwa
 target_link_libraries(tst_pulsercard PRIVATE VacuumControllerLib Qt5::Test Qt5::Widgets)
 add_test(NAME pneumatics_pulsercard COMMAND tst_pulsercard)
 set_tests_properties(pneumatics_pulsercard PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+# Pressure sensor scaling: MPX5010DP (5 V) through a 2/3 divider into the 3.3 V MCP3008
+add_executable(tst_sensorscaling tst_sensorscaling.cpp)
+set_target_properties(tst_sensorscaling PROPERTIES AUTOMOC ON)
+target_include_directories(tst_sensorscaling PRIVATE ${CMAKE_SOURCE_DIR}/src/hardware)
+target_link_libraries(tst_sensorscaling PRIVATE VacuumControllerLib Qt5::Test)
+add_test(NAME pneumatics_sensorscaling COMMAND tst_sensorscaling)
+
+# Physical emergency stop button (GPIO 21) wired through HardwareManager (simulation mode)
+add_executable(tst_emergencybutton tst_emergencybutton.cpp)
+set_target_properties(tst_emergencybutton PROPERTIES AUTOMOC ON)
+target_include_directories(tst_emergencybutton PRIVATE ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/src/hardware ${CMAKE_SOURCE_DIR}/src/safety)
+target_link_libraries(tst_emergencybutton PRIVATE VacuumControllerLib Qt5::Test)
+add_test(NAME pneumatics_emergencybutton COMMAND tst_emergencybutton)

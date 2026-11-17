@@ -39,8 +39,9 @@ bool EmergencyStop::initialize()
     }
     
     try {
-        // Initialize hardware button if enabled
-        if (m_hardwareButtonEnabled) {
+        // Initialize the GPIO button unless a reader replaces it. In simulation mode there is
+        // no GPIO; the button is then only read through setButtonReader().
+        if (m_hardwareButtonEnabled && !m_buttonReader && !m_hardware->isSimulationMode()) {
             initializeHardwareButton();
         }
         
@@ -84,9 +85,11 @@ void EmergencyStop::shutdown()
 void EmergencyStop::trigger(const QString& reason)
 {
     QMutexLocker locker(&m_stateMutex);
-    
-    if (m_triggered) {
-        qWarning() << "Emergency stop already triggered";
+
+    // Skip only while the machine is still stopped. After a reset (screen or here) a new
+    // press must stop it again.
+    if (m_triggered && m_hardware && m_hardware->isEmergencyStop()) {
+        qWarning() << "Emergency stop already active";
         return;
     }
     
@@ -155,16 +158,36 @@ void EmergencyStop::setHardwareButtonEnabled(bool enabled)
     qDebug() << "Hardware emergency button" << (enabled ? "enabled" : "disabled");
 }
 
+void EmergencyStop::setButtonReader(std::function<bool()> reader)
+{
+    m_buttonReader = std::move(reader);
+    m_hardwareButtonEnabled = static_cast<bool>(m_buttonReader) || m_buttonRequest;
+    m_lastButtonState = false;   // a button already held counts as a press
+    if (m_active && m_hardwareButtonEnabled && !m_buttonCheckTimer->isActive()) {
+        m_buttonCheckTimer->start();
+    }
+}
+
 void EmergencyStop::checkHardwareButton()
 {
     if (!m_hardwareButtonEnabled || !m_active) return;
     
     try {
-        if (!m_buttonRequest) return;
-
-        // Read button state (assuming active low button)
-        enum gpiod_line_value buttonValue = gpiod_line_request_get_value(m_buttonRequest, GPIO_EMERGENCY_BUTTON);
-        bool currentButtonState = (buttonValue == GPIOD_LINE_VALUE_ACTIVE);  // Active low
+        bool currentButtonState = false;
+        if (m_buttonReader) {
+            currentButtonState = m_buttonReader();
+        } else if (m_buttonRequest) {
+            // The line is requested active-low: ACTIVE = pulled to ground = pressed
+            const enum gpiod_line_value buttonValue =
+                gpiod_line_request_get_value(m_buttonRequest, GPIO_EMERGENCY_BUTTON);
+            if (buttonValue == GPIOD_LINE_VALUE_ERROR) {
+                qWarning() << "Emergency button read failed";
+                return;
+            }
+            currentButtonState = (buttonValue == GPIOD_LINE_VALUE_ACTIVE);
+        } else {
+            return;
+        }
 
         // Detect button press (transition from not pressed to pressed)
         if (currentButtonState && !m_lastButtonState) {
@@ -190,12 +213,10 @@ void EmergencyStop::performEmergencyShutdown()
     }
     
     try {
-        // By default, enter a seal-maintained safe state so the
-        // outer AVL chamber remains attached unless a higher-level
-        // safety manager escalates to full vent.
-        m_hardware->enterSealMaintainedSafeState("Hardware emergency stop triggered");
+        // Full stop: pulser and pump off, both chambers vented, latched until reset (spec 5.5)
+        m_hardware->emergencyStop();
 
-        qDebug() << "Emergency shutdown (seal-maintained) completed";
+        qDebug() << "Emergency shutdown completed";
 
     } catch (const std::exception& e) {
         qCritical() << "Emergency shutdown failed:" << e.what();
@@ -246,7 +267,9 @@ void EmergencyStop::initializeHardwareButton()
             throw std::runtime_error("Failed to create line settings");
         }
         gpiod_line_settings_set_direction(settings, GPIOD_LINE_DIRECTION_INPUT);
-        gpiod_line_settings_set_edge_detection(settings, GPIOD_LINE_EDGE_FALLING); // Trigger on press (active low)
+        // Button to ground with the internal pull-up: pressed = low. Active-low makes
+        // "pressed" read as ACTIVE. Polled at 20 Hz, so no edge events are requested.
+        gpiod_line_settings_set_active_low(settings, true);
         gpiod_line_settings_set_bias(settings, GPIOD_LINE_BIAS_PULL_UP);
 
         struct gpiod_line_config *line_cfg = gpiod_line_config_new();
@@ -268,9 +291,8 @@ void EmergencyStop::initializeHardwareButton()
             throw std::runtime_error("Failed to request GPIO line for emergency button");
         }
 
-        // Read initial state
-        enum gpiod_line_value initial_value = gpiod_line_request_get_value(m_buttonRequest, GPIO_EMERGENCY_BUTTON);
-        m_lastButtonState = (initial_value == GPIOD_LINE_VALUE_ACTIVE);
+        // Start as "not pressed" so a button already held down stops the machine on the first poll
+        m_lastButtonState = false;
 
         qDebug() << "Emergency button initialized on GPIO" << GPIO_EMERGENCY_BUTTON;
 

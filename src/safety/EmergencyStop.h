@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QMutex>
 #include <QTimer>
+#include <functional>
 
 // Forward declarations
 class HardwareManager;
@@ -44,13 +45,19 @@ public:
     void setHardwareButtonEnabled(bool enabled);
     bool isHardwareButtonEnabled() const { return m_hardwareButtonEnabled; }
 
+    /// Read the button through this function instead of GPIO 21 (tests, simulation).
+    /// It returns true while the button is pressed. Starts polling if the system is active.
+    void setButtonReader(std::function<bool()> reader);
+
+public Q_SLOTS:
+    /// One poll of the button (the 20 Hz timer calls this). A press always stops the machine,
+    /// including a button already held down at start-up and a press after a reset.
+    void checkHardwareButton();
+
 Q_SIGNALS:
     void emergencyStopTriggered(const QString& reason);
     void emergencyStopReset();
     void hardwareButtonPressed();
-
-private Q_SLOTS:
-    void checkHardwareButton();
 
 private:
     void performEmergencyShutdown();
@@ -78,6 +85,7 @@ private:
     // GPIO control using libgpiod
     struct gpiod_chip* m_gpioChip;
     struct gpiod_line_request* m_buttonRequest; // For libgpiod v2.x
+    std::function<bool()> m_buttonReader;       // replaces GPIO when set
     
     // GPIO pin for emergency stop button (if implemented)
     static const int GPIO_EMERGENCY_BUTTON = 21;  // GPIO 21 for emergency button

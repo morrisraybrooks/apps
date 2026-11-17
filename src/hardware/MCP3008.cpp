@@ -121,17 +121,40 @@ double MCP3008::readVoltage(int channel)
         return -1.0;  // Error value
     }
     
-    return convertToVoltage(rawValue);
+    return sensorVolts(channel, rawValue);  // the sensor's own volts (divider undone)
 }
 
 double MCP3008::readPressure(int channel)
 {
-    double voltage = readVoltage(channel);
-    if (voltage < 0) {
+    const uint16_t rawValue = readRawValue(channel);
+    if (rawValue == 0xFFFF) {
         return -1.0;  // Error value
     }
-    
-    return convertToPressure(channel, voltage);
+    if (!isValidChannel(channel) || !m_calibration[channel].calibrated) {
+        return -1.0;
+    }
+    const double pressure = pressureFromRaw(channel, rawValue, m_calibration[channel].slope,
+                                            m_calibration[channel].offset);
+    if (pressure < 0.0) {
+        m_lastError = QString("Channel %1 input at the 3.3 V limit (raw %2): check the sensor's 10k/20k "
+                              "divider and wiring").arg(channel).arg(rawValue);
+        emit readingError(channel, m_lastError);
+    }
+    return pressure;
+}
+
+double MCP3008::sensorVolts(int channel, uint16_t raw)
+{
+    const double adcVolts = (static_cast<double>(raw) * REFERENCE_VOLTAGE) / ADC_RESOLUTION;
+    return isPressureChannel(channel) ? adcVolts / PRESSURE_DIVIDER_RATIO : adcVolts;
+}
+
+double MCP3008::pressureFromRaw(int channel, uint16_t raw, double slope, double offset)
+{
+    if (isPressureChannel(channel) && raw >= RAIL_RAW) {
+        return -1.0;  // pinned at the top: never report it as a valid vacuum
+    }
+    return std::max(0.0, sensorVolts(channel, raw) * slope + offset);
 }
 
 void MCP3008::calibrateChannel(int channel, double zeroVoltage, double fullScaleVoltage,
@@ -260,19 +283,4 @@ uint16_t MCP3008::spiTransfer(uint8_t channel)
     return result;
 }
 
-double MCP3008::convertToVoltage(uint16_t rawValue)
-{
-    return (static_cast<double>(rawValue) * REFERENCE_VOLTAGE) / ADC_RESOLUTION;
-}
 
-double MCP3008::convertToPressure(int channel, double voltage)
-{
-    if (!isValidChannel(channel) || !m_calibration[channel].calibrated) {
-        return -1.0;  // Error value
-    }
-    
-    double pressure = (voltage * m_calibration[channel].slope) + m_calibration[channel].offset;
-    
-    // Ensure pressure is not negative (vacuum systems)
-    return std::max(0.0, pressure);
-}

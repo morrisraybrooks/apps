@@ -77,6 +77,10 @@ void VacuumController::shutdown()
         m_threadManager->stopAllThreads();
     }
     m_threadManager.reset();
+    // Everything that holds the HardwareManager goes before it (the auto program's
+    // destructor stops the air side through it)
+    m_orgasmControlAlgorithm.reset();
+    m_calibrationManager.reset();
     m_antiDetachmentMonitor.reset();
     m_patternEngine.reset();
     m_safetyManager.reset();
@@ -275,6 +279,7 @@ void VacuumController::initializeSubsystems()
 {
     // Initialize hardware manager first
     m_hardwareManager = std::make_unique<HardwareManager>();
+    m_hardwareManager->setSimulationMode(m_simulationMode);   // set before initialize() takes effect
     if (!m_hardwareManager->initialize()) {
         throw std::runtime_error("Failed to initialize hardware manager");
     }
@@ -303,6 +308,12 @@ void VacuumController::initializeSubsystems()
 
 void VacuumController::connectSignals()
 {
+    // Physical emergency stop button: the hardware is already stopped; this updates the screen
+    if (m_hardwareManager) {
+        connect(m_hardwareManager.get(), &HardwareManager::emergencyButtonPressed,
+                this, &VacuumController::handleEmergencyStop);
+    }
+
     // Connect safety manager signals
     if (m_safetyManager) {
         connect(m_safetyManager.get(), &SafetyManager::emergencyStopTriggered,
