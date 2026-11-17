@@ -8,14 +8,16 @@
 
 /**
  * @brief Simple simulated tank + two chambers for controller tests (10 ms per step).
- * Feed open: chamber moves 10 % toward the tank. Vent open: chamber loses 10 %.
- * Pump on: tank +3 mmHg. Every hardware write is logged in order.
+ * Feed open: chamber and tank move toward each other (10 % of the gap per step,
+ * both ways - real solenoids are not check valves). Vent open: chamber loses 10 %.
+ * Pump on: tank +pumpRate (3) mmHg. Every hardware write is logged in order.
  */
 class FakePlant : public IPneumaticHardware
 {
 public:
     double tank = 0, leg = 0, clit = 0;
     double legLeakPerStep = 0;
+    double pumpRate = 3.0;       ///< tank mmHg gained per step while the pump runs
     bool refuseWrites = false;   ///< like HardwareManager during an emergency stop
     double pinClit = -1;         ///< >= 0: clitoral sensor reads this regardless
     bool valve[6] = {false, false, false, false, false, false};
@@ -45,18 +47,16 @@ public:
     void step()
     {
         auto feed = [this](double& chamber) {
-            if (tank > chamber) {
-                const double d = (tank - chamber) * 0.10;
-                chamber += d;
-                tank -= d * 0.2;
-            }
+            const double d = (tank - chamber) * 0.10;
+            chamber += d;
+            tank -= d * 0.2;
         };
         if (valve[1]) feed(leg);
         if (valve[4]) feed(clit);
         if (valve[2]) leg *= 0.90;
         if (valve[5]) clit *= 0.90;
         if (valve[3]) tank *= 0.90;
-        if (pump) tank = std::min(tank + 3.0, 90.0);
+        if (pump) tank = std::min(tank + pumpRate, 90.0);
         leg = std::max(0.0, leg - legLeakPerStep);
     }
 };

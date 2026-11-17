@@ -338,6 +338,58 @@ private slots:
         QVERIFY(plant.valve[5]);
     }
 
+    void feedWaitsForDeeperTank()   // review M1: valves flow both ways
+    {
+        FakePlant plant;
+        PneumaticController c(&plant, PneumaticSettings{});
+        c.setLegTarget(40);
+        qint64 t = 0;
+        run(c, plant, t, 5000);
+        QVERIFY2(plant.leg >= 38, qPrintable(QString::number(plant.leg)));
+        plant.pumpRate = 0.0;            // pump not keeping up...
+        plant.tank = 20.0;               // ...and the tank is shallower than the legs
+        plant.legLeakPerStep = 0.05;     // slow seep so the leg feed wants to open
+        double lowest = plant.leg;
+        for (const qint64 end = t + 1000; t < end; t += 10) {
+            c.tick(t);
+            plant.step();
+            lowest = std::min(lowest, plant.leg);
+        }
+        QVERIFY2(lowest >= 34, qPrintable(QString("legs fell to %1 through the feed").arg(lowest)));
+    }
+
+    void ventTankWorksWhenIdle()   // review M9
+    {
+        FakePlant plant;
+        plant.tank = 60;
+        PneumaticController c(&plant, PneumaticSettings{});
+        QVERIFY(!c.isActive());
+        c.ventTank();
+        QVERIFY(c.isActive());
+        bool pumpRan = false;
+        qint64 t = 0;
+        for (const qint64 end = t + 3000; t < end; t += 10) {
+            c.tick(t);
+            plant.step();
+            pumpRan = pumpRan || plant.pump;
+        }
+        QVERIFY2(plant.tank < 5, qPrintable(QString::number(plant.tank)));
+        QVERIFY(!pumpRan);               // venting the tank never refills it
+        QVERIFY(!c.isActive());          // and the loop goes idle afterwards
+    }
+
+    void calibrationErrorIsSpecific()   // review M4
+    {
+        QTemporaryFile f;
+        f.open();
+        f.write("{ not json");
+        f.close();
+        FakePlant plant;
+        PneumaticController c(&plant, PneumaticSettings{});
+        QVERIFY(!c.loadCalibration(f.fileName()));
+        QVERIFY2(c.calibrationError().contains("not a JSON object"), qPrintable(c.calibrationError()));
+    }
+
     void legTargetClamped()
     {
         FakePlant plant;

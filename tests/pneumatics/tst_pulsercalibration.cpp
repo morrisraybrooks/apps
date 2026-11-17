@@ -40,8 +40,17 @@ private slots:
         PulserCalibration c;
         QVERIFY(c.loadFromJson(threePoints()));
         QCOMPARE(c.pwmForRate(30), 40.0);
-        QCOMPARE(c.peakAtRate(50), 12.0);
         QCOMPARE(c.maxClitoralTarget(60), 61.0);
+    }
+
+    void peakBetweenPointsIsWorstNeighbour()   // review M2: never guess a smaller pulse
+    {
+        PulserCalibration c;
+        QVERIFY(c.loadFromJson(threePoints()));
+        QCOMPARE(c.peakAtRate(50), 14.0);
+        QCOMPARE(c.peakAtRate(25), 10.0);
+        QCOMPARE(c.peakAtRate(40), 10.0);   // exactly on a measured point
+        QCOMPARE(c.maxClitoralTarget(50), 61.0);
     }
 
     void clampsOutsideTable()

@@ -48,7 +48,9 @@ public:
     void start();
     void stop();
     void emergencyStop();  // Bug #13 fix: Immediate stop with safety venting
-    bool isRunning() const { return m_running; }
+    /// False as soon as the pulser is off, even if an emergency stop raised
+    /// elsewhere switched it off behind this oscillator's back
+    bool isRunning() const;
 
     // Single pulse for haptic feedback
     void pulse(double intensity, int durationMs);
@@ -95,6 +97,7 @@ Q_SIGNALS:
 
 private:
     PneumaticController* air() const;
+    QString unavailableReason() const;
     void onBurstChanged(bool on);
 
     HardwareManager* m_hardware;

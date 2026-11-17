@@ -15,6 +15,8 @@
 #include <QDebug>
 #include <QMutexLocker>
 #include <QElapsedTimer>
+#include <QCoreApplication>
+#include <QDir>
 #include <QFile>
 #include <QJsonDocument>
 #include <QStandardPaths>
@@ -902,18 +904,29 @@ private:
     HardwareManager* m_hw;
 };
 
+/// Config lookup that does not depend on the working directory (systemd starts the
+/// app in /). VACUUM_CONFIG_DIR, when set, is the only place looked at.
 QString findConfigFile(const QString& name)
 {
+    const QString overrideDir = qEnvironmentVariable("VACUUM_CONFIG_DIR");
+    if (!overrideDir.isEmpty()) return QDir(overrideDir).filePath(name);
+
+    const QString appDir = QCoreApplication::instance() ? QCoreApplication::applicationDirPath()
+                                                        : QDir::currentPath();
     const QStringList candidates = {
-        "config/" + name,
+        appDir + "/config/" + name,                           // next to the binary
+        appDir + "/../config/" + name,                        // build/ inside the repo
+        appDir + "/../share/vacuum-controller/" + name,       // installed (bin/ + share/)
+        "config/" + name,                                     // started from the repo
         "../config/" + name,
         "/usr/local/share/vacuum-controller/" + name,
+        "/usr/share/vacuum-controller/" + name,
         QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/" + name,
     };
     for (const QString& path : candidates) {
-        if (QFile::exists(path)) return path;
+        if (QFile::exists(path)) return QDir::cleanPath(path);
     }
-    return "config/" + name;
+    return QDir::cleanPath(candidates.first());
 }
 
 }  // namespace
@@ -983,7 +996,7 @@ double HardwareManager::sampleClitoralSwing(int durationMs)
     QElapsedTimer timer;
     timer.start();
     while (timer.elapsed() < durationMs) {
-        const double p = m_sensorInterface->readClitoralPressure();  // raw ADC read, unfiltered
+        const double p = m_sensorInterface->sampleClitoralPressure();  // raw, leaves smoothing alone
         if (p < 0.0) continue;  // read error value
         low = std::min(low, p);
         high = std::max(high, p);
@@ -1002,9 +1015,9 @@ double HardwareManager::readFreshPressure(int sensor)
         }
     }
     if (!m_sensorInterface) return -1.0;
-    switch (sensor) {   // SensorInterface reads the ADC directly (MCP3008 has its own SPI lock)
-    case 0: return m_sensorInterface->readAVLPressure();
-    case 1: return m_sensorInterface->readTankPressure();
-    default: return m_sensorInterface->readClitoralPressure();
+    switch (sensor) {   // raw ADC samples (MCP3008 has its own SPI lock); smoothing untouched
+    case 0: return m_sensorInterface->sampleAVLPressure();
+    case 1: return m_sensorInterface->sampleTankPressure();
+    default: return m_sensorInterface->sampleClitoralPressure();
     }
 }

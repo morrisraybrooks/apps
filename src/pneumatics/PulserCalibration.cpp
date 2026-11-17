@@ -101,7 +101,18 @@ double PulserCalibration::pwmForRate(double pps) const
 
 double PulserCalibration::peakAtRate(double pps) const
 {
-    return interpolate(pps, &CalibrationPoint::peakMmHg);
+    // Between two measured points use the bigger pulse, not a straight-line guess:
+    // pulse size need not change evenly with rate, and too big is the safe side
+    if (!m_valid) return 0.0;
+    if (pps <= m_points.first().pulsesPerSecond) return m_points.first().peakMmHg;
+    if (pps >= m_points.last().pulsesPerSecond) return m_points.last().peakMmHg;
+    for (int i = 1; i < m_points.size(); ++i) {
+        if (pps == m_points[i].pulsesPerSecond) return m_points[i].peakMmHg;
+        if (pps < m_points[i].pulsesPerSecond) {
+            return std::max(m_points[i - 1].peakMmHg, m_points[i].peakMmHg);
+        }
+    }
+    return m_points.last().peakMmHg;
 }
 
 double PulserCalibration::maxClitoralTarget(double pps) const

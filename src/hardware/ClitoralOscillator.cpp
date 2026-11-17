@@ -42,6 +42,20 @@ void ClitoralOscillator::onBurstChanged(bool on)
     if (on) emit cycleCompleted(++m_cycleCount);
 }
 
+bool ClitoralOscillator::isRunning() const
+{
+    const PneumaticController* controller = air();
+    return m_running && controller && controller->isPulserEnabled();
+}
+
+QString ClitoralOscillator::unavailableReason() const
+{
+    const PneumaticController* controller = air();
+    const QString reason = controller ? controller->calibrationError() : QString();
+    return reason.isEmpty() ? QString("Clitoral pulser unavailable")
+                            : QString("Clitoral pulser unavailable: %1").arg(reason);
+}
+
 void ClitoralOscillator::start()
 {
     PneumaticController* controller = air();
@@ -49,11 +63,13 @@ void ClitoralOscillator::start()
         emit error("Clitoral pulser unavailable: hardware not initialized");
         return;
     }
-    if (m_running) return;
+    if (isRunning()) return;
+    disconnect(m_burstConnection);   // stale after an outside emergency stop
 
     controller->setPulseRate(m_frequencyHz);
     if (!controller->setPulserEnabled(true)) {
-        emit error("Clitoral pulser not calibrated - run the bench calibration first");
+        m_running = false;
+        emit error(unavailableReason());
         return;
     }
 
@@ -97,17 +113,20 @@ void ClitoralOscillator::pulse(double intensity, int durationMs)
     Q_UNUSED(intensity);  // fixed-stroke pulser: strength is not adjustable
     durationMs = std::clamp(durationMs, 10, 1000);
     PneumaticController* controller = air();
-    if (!controller || m_running) return;
+    // Already pulsing (this oscillator or another one sharing the pulser): leave it be
+    if (!controller || isRunning() || controller->isPulserEnabled()) return;
 
     controller->setPulseRate(m_frequencyHz);
     if (!controller->setPulserEnabled(true)) {
-        emit error("Clitoral pulser not calibrated - run the bench calibration first");
+        emit error(unavailableReason());
         return;
     }
-    QTimer::singleShot(durationMs, this, [this]() {
-        if (!m_running) {
-            if (PneumaticController* c = air()) c->setPulserEnabled(false);
-        }
+    const quint64 onCount = controller->pulserOnCount();
+    QTimer::singleShot(durationMs, this, [this, onCount]() {
+        // Only switch off the pulser this pulse switched on - not one somebody
+        // started in the meantime
+        PneumaticController* c = air();
+        if (c && !m_running && c->pulserOnCount() == onCount) c->setPulserEnabled(false);
     });
 }
 

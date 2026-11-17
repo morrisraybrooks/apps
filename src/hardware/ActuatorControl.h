@@ -101,7 +101,7 @@ private:
     bool m_initialized;
     bool m_emergencyStop;
     mutable QMutex m_stateMutex;
-    std::mutex m_lineMutex;   ///< serialises line_request writes (the pulser PWM thread writes too)
+    mutable std::mutex m_lineMutex;   ///< serialises line_request writes (the pulser PWM thread writes too)
     
     // Pump state
     bool m_pumpEnabled;

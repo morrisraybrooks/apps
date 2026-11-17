@@ -34,7 +34,7 @@ public:
     double minRate() const;
     double maxRate() const;
     double pwmForRate(double pps) const;
-    double peakAtRate(double pps) const;
+    double peakAtRate(double pps) const;  ///< between points: the larger neighbour
     double maxClitoralTarget(double pps) const;
 
 private:

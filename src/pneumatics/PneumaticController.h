@@ -35,6 +35,8 @@ public:
 
     bool loadCalibration(const QString& path);
     bool hasCalibration() const { return m_calibration.isValid(); }
+    /// Why the pulser can't run (empty once a valid calibration is loaded)
+    QString calibrationError() const { return m_calibrationError; }
 
     /// Start the 100 Hz loop (also clears the emergency latch). Requests for vacuum
     /// (targets > 0, holdLegs, pulser on) start it automatically unless latched.
@@ -54,10 +56,15 @@ public:
     double pulseRate() const { return m_pulser.rate(); }
     bool setPulserEnabled(bool on);
     bool isPulserEnabled() const { return m_pulser.isEnabled(); }
+    /// Goes up every time the pulser is switched on, so a caller can tell whether
+    /// someone else switched it on after it did (shared pulser, ClitoralOscillator::pulse)
+    quint64 pulserOnCount() const { return m_pulserOnCount; }
 
     void ventAll();
     /// Normal end / shutdown: pulser and pump off, both chambers vented, tank keeps its vacuum.
     void stop();
+    /// Open the tank vent (pump off) until the tank is below 5 mmHg. Works with no
+    /// session running too; the loop goes idle again afterwards.
     void ventTank();
     void emergencyStop();
     bool isSealRecovering() const { return m_seal.state() == SealState::Recovering; }
@@ -112,6 +119,7 @@ private:
     int m_pumpState = -1;
     double m_dutyState = -1.0;
     bool m_burstOn = false;
+    quint64 m_pulserOnCount = 0;
 };
 
 #endif // PNEUMATICCONTROLLER_H

@@ -6,6 +6,12 @@
 #include <algorithm>
 #include <cmath>
 
+namespace {
+/// A feed valve only opens while the tank is at least this much deeper than the
+/// chamber: solenoids flow both ways, so a shallow tank would pull the chamber down.
+constexpr double FEED_MARGIN_MMHG = 1.0;
+}  // namespace
+
 PneumaticController::PneumaticController(IPneumaticHardware* hardware, PneumaticSettings settings,
                                          QObject* parent)
     : QObject(parent)
@@ -158,6 +164,7 @@ bool PneumaticController::setPulserEnabled(bool on)
         return false;
     }
     m_pulser.setEnabled(on);
+    if (on) ++m_pulserOnCount;
     m_clitReg.setAveraging(on);
     applyClitoralTarget();
     if (on) {
@@ -201,7 +208,12 @@ void PneumaticController::stop()
 
 void PneumaticController::ventTank()
 {
+    if (m_latched) return;   // the emergency stop already opened SOL3
     m_ventingTank = true;
+    if (!m_active) {
+        m_hadSession = true;  // lets the loop go idle once the tank is empty
+        start();
+    }
 }
 
 void PneumaticController::emergencyStop()
@@ -289,9 +301,11 @@ void PneumaticController::tick(qint64 nowMs)
         return;
     }
 
-    // Chambers
-    const ValveCommand legCmd = m_legReg.update(leg, nowMs);
-    const ValveCommand clitCmd = m_clitReg.update(clit, nowMs);
+    // Chambers (a feed waits while the tank is not deeper than the chamber)
+    ValveCommand legCmd = m_legReg.update(leg, nowMs);
+    ValveCommand clitCmd = m_clitReg.update(clit, nowMs);
+    if (tank < leg + FEED_MARGIN_MMHG) legCmd.feedOpen = false;
+    if (tank < clit + FEED_MARGIN_MMHG) clitCmd.feedOpen = false;
 
     // Tank
     double demand = 0.0;

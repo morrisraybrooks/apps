@@ -317,11 +317,8 @@ void ActuatorControl::updatePWM()
         pwmCounter = (pwmCounter + 1) % PWM_RANGE;
 
         bool pwmState = (pwmCounter < m_pwmValue);
-        try {
-            gpiod::line::value value = pwmState ? gpiod::line::value::ACTIVE : gpiod::line::value::INACTIVE;
-            m_outputRequest->set_value(GPIO_PUMP_PWM, value);
-        } catch (const std::exception& e) {
-            qWarning() << "PWM update failed:" << e.what();
+        if (!writeLine(GPIO_PUMP_PWM, pwmState)) {
+            qWarning() << "PWM update failed";
         }
     }
 }
@@ -414,6 +411,7 @@ void ActuatorControl::setGPIOOutput(int pin, bool state)
 
 bool ActuatorControl::getGPIOState(int pin)
 {
+    std::lock_guard<std::mutex> lineLock(m_lineMutex);
     if (!m_outputRequest) {
         qWarning() << "GPIO not initialized";
         return false;
@@ -479,6 +477,7 @@ void ActuatorControl::setGPIO(int pin, bool state)
 bool ActuatorControl::readGPIO(int pin) const
 {
     QMutexLocker locker(&m_stateMutex);
+    std::lock_guard<std::mutex> lineLock(m_lineMutex);
 
     if (!m_outputRequest) {
         qWarning() << "GPIO not initialized for reading pin" << pin;

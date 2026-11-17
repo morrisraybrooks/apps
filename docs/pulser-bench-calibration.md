@@ -20,11 +20,14 @@ and how big the pulses are, so it can keep **steady vacuum + pulse peak under 75
 1. **Build** the project; the tool is `build/PulserBench`.
 2. **Run it** with the cup on the plate:
    ```bash
-   ./build/PulserBench --steady 20 --duty 30,40,50,60,70,80,90,100 --seconds 10
+   ./build/PulserBench --steady 10,20,35 --duty 30,40,50,60,70,80,90,100 --seconds 10
    ```
-   It holds the legs at 30 mmHg and the clitoral chamber at 20 mmHg, then runs the pulser at each duty for
-   10 seconds and prints the measured **swing** at each step. If steady + swing would pass 75 mmHg it stops,
-   vents both chambers and tells you. **Ctrl-C** is an emergency stop.
+   It holds the legs at 30 mmHg, then for **each steady clitoral level** (10, 20, then 35 mmHg) runs the
+   pulser at each duty for 10 seconds and prints the measured **swing** at each step. Pulse size changes
+   with how much vacuum is already in the chamber, so testing several levels finds the worst case. If
+   steady + swing would pass 75 mmHg it stops the pulser, skips the higher duties at that level and moves
+   on. At the end it prints the **worst swing per duty** across all levels. **Ctrl-C** is an emergency
+   stop.
 3. **Read the pulse rate** at each step: hold the phone near the pulser; the strongest peak in the app is the
    motor hum = pulses per second. Write it next to the duty.
 4. **Measure your own air-pulse toy** the same way (phone app) at each of its levels — those are the rates
@@ -42,16 +45,19 @@ and how big the pulses are, so it can keep **steady vacuum + pulse peak under 75
      ]
    }
    ```
-   - `peak_mmhg` = the **swing** the tool printed. (It is the full up-and-down swing, which is bigger than
+   - `peak_mmhg` = the **worst swing per duty** from the summary at the end. (It is the full up-and-down swing, which is bigger than
      the peak above the steady level — so the limit it gives is on the safe side.)
    - Every point must have a higher duty **and** a higher rate than the one before.
    - Leave out duties where the motor stalls or the rate doesn't rise.
-6. **Restart** the app. The log says "Pulser calibration loaded". `"measured": true` is required — the example
+6. **Restart** the app. The log says "Pulser calibration loaded". The app finds `config/` next to its
+   program folder (or set `VACUUM_CONFIG_DIR` to the folder holding the file), so it works the same when
+   started as a service. `"measured": true` is required — the example
    file is always refused.
 
 ## What the numbers do
 
-- **Rates between your points** are interpolated. Rates **below** your lowest point are played as slow
+- **Rates between your points** get an in-between motor setting, but the **bigger** of the two neighbouring
+  pulse sizes (the safe side). Rates **below** your lowest point are played as slow
   **bursts** (pulser on for half of each beat, off for the other half).
 - While the pulser runs, the clitoral steady vacuum is capped at **75 mmHg − the measured swing** at that rate.
 - Re-measure after changing the pump, the tubing between pump and cup, or the cup.
