@@ -11,6 +11,7 @@ add_library(PneumaticsLogic STATIC
     PulserDrive.cpp
     SoftwarePwm.cpp
     PneumaticController.cpp
+    HandPulser.cpp
 )
 set_target_properties(PneumaticsLogic PROPERTIES
     AUTOMOC ON

@@ -11,6 +11,7 @@
 #include "IPneumaticHardware.h"
 #include "PneumaticController.h"
 #include "PneumaticSettings.h"
+#include "HandPulser.h"
 
 #include <QDebug>
 #include <QMutexLocker>
@@ -945,6 +946,7 @@ void HardwareManager::createPneumatics()
 
     m_pneumaticsHw = std::make_unique<HardwarePneumatics>(this);
     m_pneumatics = std::make_unique<PneumaticController>(m_pneumaticsHw.get(), settings);
+    m_handPulser = std::make_unique<HandPulser>(m_pneumatics.get());
 
     // One fault path: controller faults become a hardware emergency stop (TENS off,
     // both chambers vented, emergency flag set so the session ends) and are reported.

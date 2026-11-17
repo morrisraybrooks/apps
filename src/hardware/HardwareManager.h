@@ -15,6 +15,7 @@ class FluidSensor;
 class MotionSensor;
 class ClitoralOscillator;
 class PneumaticController;
+class HandPulser;
 class IPneumaticHardware;
 class CameraManager;
 class ConsentManager;
@@ -76,6 +77,7 @@ public:
     // Air side: tank, chambers, seal watch and clitoral pulser (the only owner of
     // the pump, SOL1/2/4/5 and the pulser during a session)
     PneumaticController* pneumatics() const { return m_pneumatics.get(); }
+    HandPulser* handPulser() const { return m_handPulser.get(); }   // pulser card hand sessions
     void setPulserDuty(double percent);   // 0-100 %, GPIO 15
     double getPulserDuty() const;
     double sampleClitoralSwing(int durationMs);  // bench: max - min of raw clitoral readings
@@ -160,6 +162,7 @@ private:
     std::unique_ptr<ClitoralOscillator> m_clitoralOscillator;
     std::unique_ptr<IPneumaticHardware> m_pneumaticsHw;
     std::unique_ptr<PneumaticController> m_pneumatics;
+    std::unique_ptr<HandPulser> m_handPulser;   // declared after m_pneumatics: destroyed first
     double m_simulatedPulserDuty = 0.0;
     bool m_pneumaticsBenchMode = false;
     void createPneumatics();

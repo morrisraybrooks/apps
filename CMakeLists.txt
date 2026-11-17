@@ -123,6 +123,7 @@ set(SOURCES
     src/hardware/ConsentManager.cpp
     src/control/OrgasmControlAlgorithm.cpp
     src/gui/MainWindow.cpp
+    src/gui/PulserCard.cpp
     src/gui/MotionMonitor.cpp
     src/gui/CameraMonitor.cpp
     src/gui/PressureMonitor.cpp
@@ -197,6 +198,7 @@ set(HEADERS
     src/hardware/ConsentManager.h
     src/control/OrgasmControlAlgorithm.h
     src/gui/MainWindow.h
+    src/gui/PulserCard.h
     src/gui/MotionMonitor.h
     src/gui/CameraMonitor.h
     src/gui/PressureMonitor.h

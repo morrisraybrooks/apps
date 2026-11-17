@@ -7,6 +7,9 @@
 #include "SystemDiagnosticsPanel.h"
 #include "CustomPatternEditor.h"
 #include "ExecutionModeSelector.h"
+#include "PulserCard.h"
+#include "../control/OrgasmControlAlgorithm.h"
+#include "../patterns/PatternEngine.h"
 #include "styles/ModernMedicalStyle.h"
 #include "../VacuumController.h"
 
@@ -544,6 +547,7 @@ void MainWindow::setupMainPanel()
     setupPressureMonitoringCard(dashboardLayout);
     setupArousalMonitoringCard(dashboardLayout);
     setupControlPanelCard(dashboardLayout);
+    setupPulserCard(dashboardLayout);
     setupStatusCard(dashboardLayout);
 
     // Add Execution Mode Selector card
@@ -558,7 +562,7 @@ void MainWindow::setupMainPanel()
     dashboardLayout->setColumnStretch(2, 2);  // Right column (mode selector) gets more space
     dashboardLayout->setRowStretch(0, 2);     // Top row gets more space
     dashboardLayout->setRowStretch(1, 2);     // Middle row gets more space
-    dashboardLayout->setRowStretch(2, 1);     // Bottom row gets less space
+    dashboardLayout->setRowStretch(2, 2);     // Bottom row: status + clitoral pulser card
 
     // Add the main panel to stacked widget
     m_stackedWidget->addWidget(m_mainPanel);
@@ -1086,6 +1090,22 @@ void MainWindow::setupControlPanelCard(QGridLayout* layout)
 
     QFrame* card = createDashboardCard("SYSTEM CONTROL", controlContent);
     layout->addWidget(card, 1, 1, 1, 1);  // Bottom right
+}
+
+void MainWindow::setupPulserCard(QGridLayout* layout)
+{
+    HardwareManager* hw = m_controller ? m_controller->getHardwareManager() : nullptr;
+    if (!hw) return;
+
+    // A program or pattern is in charge of the pulser: hand controls go gray
+    VacuumController* controller = m_controller;
+    auto automationActive = [controller]() {
+        return PulserCard::isAutomationActive(controller->getOrgasmControlAlgorithm(),
+                                              controller->getPatternEngine());
+    };
+
+    auto* card = new PulserCard(hw, automationActive);
+    layout->addWidget(createDashboardCard("CLITORAL PULSER", card), 2, 2, 1, 1);  // Bottom right
 }
 
 void MainWindow::setupStatusCard(QGridLayout* layout)

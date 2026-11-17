@@ -17,6 +17,7 @@ pneumatics_test(sealwatch)
 pneumatics_test(pulserdrive)
 pneumatics_test(softwarepwm)
 pneumatics_test(pneumaticcontroller)
+pneumatics_test(handpulser)
 
 # Oscillator against the real HardwareManager in simulation mode
 add_executable(tst_clitoraloscillator tst_clitoraloscillator.cpp)
@@ -31,3 +32,12 @@ set_target_properties(tst_hardwarepneumatics PROPERTIES AUTOMOC ON)
 target_include_directories(tst_hardwarepneumatics PRIVATE ${CMAKE_SOURCE_DIR}/src/hardware ${CMAKE_SOURCE_DIR}/src/patterns)
 target_link_libraries(tst_hardwarepneumatics PRIVATE VacuumControllerLib Qt5::Test)
 add_test(NAME pneumatics_hardwarepneumatics COMMAND tst_hardwarepneumatics)
+
+# Pulser card widget (offscreen) against HardwareManager in simulation mode
+find_package(Qt5 REQUIRED COMPONENTS Widgets)
+add_executable(tst_pulsercard tst_pulsercard.cpp)
+set_target_properties(tst_pulsercard PROPERTIES AUTOMOC ON)
+target_include_directories(tst_pulsercard PRIVATE ${CMAKE_SOURCE_DIR}/src/hardware ${CMAKE_SOURCE_DIR}/src/gui ${CMAKE_SOURCE_DIR}/src/patterns ${CMAKE_SOURCE_DIR}/src/control)
+target_link_libraries(tst_pulsercard PRIVATE VacuumControllerLib Qt5::Test Qt5::Widgets)
+add_test(NAME pneumatics_pulsercard COMMAND tst_pulsercard)
+set_tests_properties(pneumatics_pulsercard PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
