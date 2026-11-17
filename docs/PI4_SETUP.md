@@ -85,8 +85,14 @@ MCP3008 ADC Connections:
 │ VDD  VREF  AGND │ ← 3.3V, 3.3V, GND
 │ CLK  DOUT  DIN  │ ← GPIO11, GPIO9, GPIO10
 │ CS   DGND       │ ← GPIO8, GND
-│ CH0  CH1  ...   │ ← AVL Sensor, Tank Sensor
+│ CH0  CH1  CH2   │ ← Legs (AVL), Tank, Clitoral sensors - each through a divider
 └─────────────────┘
+
+Each MPX5010DP runs on 5 V and puts out up to 4.7 V, more than the 3.3 V MCP3008 can take.
+Put a divider on every sensor output (the software expects it):
+  Sensor Vout ──10 kΩ──┬── MCP3008 CHx
+                       └──20 kΩ── GND
+Vacuum hose on the sensor's P2 port; P1 open to room air.
 
 Pi SPI0 Pins:
 MOSI (GPIO10) → DIN
