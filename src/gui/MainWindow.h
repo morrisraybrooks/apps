@@ -96,6 +96,7 @@ private:
     void setupArousalMonitoringCard(QGridLayout* layout);
     void setupControlPanelCard(QGridLayout* layout);
     void setupStatusCard(QGridLayout* layout);
+    void setupPulserCard(QGridLayout* layout);
     QFrame* createDashboardCard(const QString& title, QWidget* content);
     void updateDashboardCardSizes(const QSize& windowSize);
     
